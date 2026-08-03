@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>乙抓记录卡</title>
+  <title>乙抓repo模板</title>
   <style>
     @font-face {
       font-family: "BlackSugarPlumCandy";
@@ -45,14 +45,25 @@
 
     .app {
       min-height: 100vh;
-      padding: 28px 18px 36px;
+      padding: 24px 18px 36px;
       display: grid;
       justify-items: center;
-      gap: 18px;
+      gap: 12px;
+    }
+
+    .site-title {
+      width: min(100%, 1080px);
+      margin: 0;
+      color: var(--rose-deep);
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1.1;
+      text-align: center;
     }
 
     .toolbar {
       width: min(100%, 1080px);
+      min-height: 44px;
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -120,7 +131,7 @@
         linear-gradient(90deg, rgba(255, 255, 255, 0.36) 1px, transparent 1px) 0 0 / 36px 36px,
         linear-gradient(rgba(255, 255, 255, 0.32) 1px, transparent 1px) 0 0 / 36px 36px,
         linear-gradient(145deg, #fff7f4 0%, #fffdf9 48%, #f2faf3 100%);
-      border: 18px solid #fff;
+      border: 0;
       border-radius: 44px;
       box-shadow: var(--shadow);
     }
@@ -283,8 +294,8 @@
       background: rgba(255, 255, 255, 0.72);
       backdrop-filter: blur(8px);
       box-shadow: 0 6px 14px rgba(128, 76, 95, 0.12);
-      opacity: 0;
-      pointer-events: none;
+      opacity: 1;
+      pointer-events: auto;
       transition: opacity 120ms ease;
     }
 
@@ -469,6 +480,20 @@
       gap: 3px;
     }
 
+    .metric-entry {
+      display: flex;
+      align-items: baseline;
+      min-width: 0;
+      gap: 0;
+    }
+
+    .metric-suffix {
+      color: var(--ink);
+      font-size: 22px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
     .metric-label {
       color: #5f9587;
       font-size: 18px;
@@ -479,6 +504,13 @@
       color: var(--ink);
       font-size: 26px;
       font-weight: 900;
+    }
+
+    .metric-entry input {
+      width: auto;
+      min-width: 0;
+      flex: 0 0 46px;
+      max-width: 46px;
     }
 
     .choice-group {
@@ -670,8 +702,8 @@
       font-size: 28px;
       line-height: 1;
       cursor: pointer;
-      opacity: 0;
-      pointer-events: none;
+      opacity: 1;
+      pointer-events: auto;
       transition: opacity 120ms ease;
       flex: 0 0 auto;
     }
@@ -704,7 +736,7 @@
     .card.compact {
       width: 540px;
       height: 720px;
-      border-width: 9px;
+      border-width: 0;
       border-radius: 22px;
     }
 
@@ -736,23 +768,147 @@
     .card.compact .metric-label { font-size: 10px; }
     .card.compact .metric-value,
     .card.compact .metric input { font-size: 14px; }
+    .card.compact .metric-suffix { font-size: 12px; }
+    .card.compact .metric-entry input { flex-basis: 25px; max-width: 25px; }
     .card.compact .ratings { left: 268px; top: 326px; width: 210px; height: 150px; gap: 6px; padding: 22px 12px 8px; border-radius: 13px; border-width: 1px; }
     .card.compact .rating-row { grid-template-columns: 38px 1fr; gap: 4px; }
     .card.compact .rating-label { font-size: 13px; }
     .card.compact .stars { grid-template-columns: repeat(5, 17px); gap: 4px; }
     .card.compact .star { width: 17px; height: 17px; font-size: 12px; line-height: 17px; box-shadow: inset 0 0 0 1px rgba(242, 183, 201, 0.32); }
 
+    .mobile-focus-back {
+      position: fixed;
+      right: 16px;
+      bottom: 18px;
+      z-index: 30;
+      min-height: 44px;
+      border: 0;
+      border-radius: 999px;
+      padding: 0 18px;
+      color: #fff;
+      background: linear-gradient(135deg, #d95f8c, #b84570);
+      box-shadow: 0 10px 24px rgba(184, 69, 112, 0.24);
+      cursor: pointer;
+    }
+
+    .export-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(75, 46, 62, 0.42);
+      backdrop-filter: blur(8px);
+    }
+
+    .export-modal[hidden] { display: none; }
+
+    .export-sheet {
+      position: relative;
+      width: min(100%, 520px);
+      max-height: min(88vh, 760px);
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 22px;
+      background: rgba(255, 248, 246, 0.96);
+      box-shadow: 0 20px 55px rgba(75, 46, 62, 0.28);
+    }
+
+    .export-preview-image {
+      width: 100%;
+      max-height: 68vh;
+      object-fit: contain;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .export-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .export-hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
     .hidden { display: none !important; }
 
     @media (max-width: 780px) {
-      .app { padding: 14px 8px 24px; }
-      .toolbar { justify-content: flex-start; }
-      .stage { padding: 0; }
+      .app {
+        min-height: 100dvh;
+        padding: 10px 8px 14px;
+        gap: 10px;
+        overflow: hidden;
+      }
+      .toolbar {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .action-button { min-height: 38px; padding: 0 14px; }
+      .stage {
+        width: 100%;
+        overflow: hidden;
+        padding: 0;
+        border-radius: 18px;
+      }
+      .stage.is-focused {
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x pan-y;
+      }
+      .card { transition: transform 180ms ease; }
+      .cover-tools { opacity: 1; pointer-events: auto; }
+      .tiny-button { min-height: 34px; font-size: 13px; padding: 4px 9px; }
+      .card .tags { gap: 6px; }
+      .card .tag { padding: 6px 11px; }
+      .card .tag-remove {
+        top: -7px;
+        right: -7px;
+        width: 16px;
+        height: 16px;
+        font-size: 10px;
+        line-height: 16px;
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .card .add-tag {
+        width: 34px;
+        height: 34px;
+        font-size: 22px;
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .card .metric {
+        padding-top: 12px;
+      }
+      .star,
+      .choice-button,
+      .add-tag { position: relative; }
+      .star::before,
+      .choice-button::before,
+      .add-tag::before {
+        content: "";
+        position: absolute;
+        inset: -5px;
+      }
+      .star::before,
+      .choice-button::before {
+        inset: -8px;
+      }
     }
   </style>
 </head>
 <body>
   <main class="app">
+    <h1 class="site-title">乙抓repo模板</h1>
     <div class="toolbar">
       <div class="template-switch" aria-label="模板版本">
         <button class="template-button active" data-template="full" type="button">完整版</button>
@@ -761,6 +917,8 @@
       <button class="action-button" id="resetButton" type="button">清空内容</button>
       <button class="action-button primary" id="downloadButton" type="button">导出 PNG</button>
     </div>
+
+    <button class="mobile-focus-back hidden" id="mobileFocusBack" type="button"></button>
 
     <div class="stage" id="stage">
       <section class="card" id="recordCard" aria-label="乙抓记录卡画布">
@@ -813,19 +971,19 @@
           <div class="section-label price-label">价格</div>
           <div class="metric">
             <div class="metric-label">原价</div>
-            <input class="soft-input" id="originalPrice" type="text" inputmode="decimal" />
+            <input class="soft-input numeric-input" id="originalPrice" type="text" inputmode="numeric" pattern="[0-9]*" />
           </div>
           <div class="metric">
             <div class="metric-label">现价</div>
-            <input class="soft-input" id="currentPrice" type="text" inputmode="decimal" />
+            <input class="soft-input numeric-input" id="currentPrice" type="text" inputmode="numeric" pattern="[0-9]*" />
           </div>
           <div class="metric">
             <div class="metric-label">现折扣</div>
-            <input class="soft-input" id="currentDiscount" type="text" />
+            <div class="metric-entry"><input class="soft-input numeric-input" id="currentDiscount" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" /><span class="metric-suffix">%off</span></div>
           </div>
           <div class="metric">
             <div class="metric-label">史低</div>
-            <input class="soft-input" id="lowestPrice" type="text" inputmode="decimal" />
+            <div class="metric-entry"><input class="soft-input numeric-input" id="lowestPrice" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" /><span class="metric-suffix">%off</span></div>
           </div>
         </section>
 
@@ -855,6 +1013,17 @@
 
       </section>
     </div>
+
+    <div class="export-modal" id="exportModal" hidden>
+      <div class="export-sheet">
+        <img class="export-preview-image" id="exportPreviewImage" alt="" />
+        <p class="export-hint" id="exportHint"></p>
+        <div class="export-actions">
+          <button class="action-button primary" id="modalDownloadButton" type="button"></button>
+          <button class="action-button" id="modalCloseButton" type="button"></button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -871,8 +1040,24 @@
     const downloadButton = document.getElementById("downloadButton");
     const resetButton = document.getElementById("resetButton");
     const templateButtons = Array.from(document.querySelectorAll(".template-button"));
+    const mobileFocusBack = document.getElementById("mobileFocusBack");
+    const exportModal = document.getElementById("exportModal");
+    const exportPreviewImage = document.getElementById("exportPreviewImage");
+    const exportHint = document.getElementById("exportHint");
+    const modalDownloadButton = document.getElementById("modalDownloadButton");
+    const modalCloseButton = document.getElementById("modalCloseButton");
     const coverTools = document.querySelector(".cover-tools");
     const STORAGE_KEY = "otome-record-card-v1";
+    let mobileFocusTarget = null;
+    let lastExportUrl = "";
+    const UI_BACK_FULL = String.fromCharCode(0x8fd4, 0x56de, 0x5168, 0x56fe);
+    const UI_DOWNLOAD_IMAGE = String.fromCharCode(0x4e0b, 0x8f7d, 0x56fe, 0x7247);
+    const UI_CLOSE = String.fromCharCode(0x5173, 0x95ed);
+    const UI_LONG_PRESS_SAVE = String.fromCharCode(0x53ef, 0x4ee5, 0x957f, 0x6309, 0x56fe, 0x7247, 0x4fdd, 0x5b58, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x70b9, 0x51fb, 0x4e0b, 0x8f7d, 0x3002);
+    mobileFocusBack.textContent = UI_BACK_FULL;
+    modalDownloadButton.textContent = UI_DOWNLOAD_IMAGE;
+    modalCloseButton.textContent = UI_CLOSE;
+    exportHint.textContent = UI_LONG_PRESS_SAVE;
 
     function currentTemplate() {
       return card.classList.contains("compact") ? "compact" : "full";
@@ -882,13 +1067,77 @@
       return currentTemplate() === "compact" ? { width: 540, height: 720 } : { width: 1080, height: 1440 };
     }
 
+    function isMobileView() {
+      return window.matchMedia("(max-width: 780px), (pointer: coarse)").matches || navigator.maxTouchPoints > 0;
+    }
+
+    function mobileViewportHeight() {
+      return window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 640;
+    }
+
+    function focusRectFor(element) {
+      const toolPad = element === coverBox ? 64 : 0;
+      return {
+        left: element.offsetLeft,
+        top: element.offsetTop,
+        width: element.offsetWidth,
+        height: element.offsetHeight + toolPad
+      };
+    }
+
+    function minimumFocusScale(element, fullScale) {
+      if (element.classList.contains("title-panel")) return Math.max(fullScale * 1.75, 0.68);
+      if (element.classList.contains("review-panel")) return Math.max(fullScale * 1.65, 0.62);
+      if (element.classList.contains("tags-panel")) return Math.max(fullScale * 1.9, 0.78);
+      return fullScale;
+    }
+
     function fitStage() {
       const stage = document.getElementById("stage");
       const size = templateSize();
+      const toolbarHeight = document.querySelector(".toolbar")?.offsetHeight || 0;
       const availableWidth = Math.max(1, stage.clientWidth - 16);
-      const scale = Math.min(1, availableWidth / size.width);
-      card.style.transform = `scale(${scale})`;
-      stage.style.height = `${size.height * scale + 16}px`;
+      const availableHeight = isMobileView()
+        ? Math.max(360, mobileViewportHeight() - toolbarHeight - 38)
+        : Number.POSITIVE_INFINITY;
+      const fullScale = Math.min(1, availableWidth / size.width, availableHeight / size.height);
+
+      stage.classList.toggle("is-focused", isMobileView() && Boolean(mobileFocusTarget) && currentTemplate() === "full");
+
+      if (isMobileView() && mobileFocusTarget && currentTemplate() === "full") {
+        const rect = focusRectFor(mobileFocusTarget);
+        const isTagsFocus = mobileFocusTarget.classList.contains("tags-panel");
+        const focusScale = isTagsFocus
+          ? Math.min(1, availableWidth / (rect.width + 24), availableHeight / (rect.height + 42))
+          : Math.min(1, availableWidth / (rect.width + 96), availableHeight / (rect.height + 110));
+        const scale = Math.min(1, Math.max(fullScale, focusScale, minimumFocusScale(mobileFocusTarget, fullScale)));
+        const preferLeft = mobileFocusTarget.classList.contains("title-panel") || mobileFocusTarget.classList.contains("tags-panel") || mobileFocusTarget.classList.contains("review-panel");
+        const horizontalPad = preferLeft ? 18 : (availableWidth - rect.width * scale) / 2;
+        const tx = Math.round(horizontalPad - rect.left * scale);
+        const ty = Math.round((availableHeight - rect.height * scale) / 2 - rect.top * scale);
+        card.style.transform = "translate(" + tx + "px, " + ty + "px) scale(" + scale + ")";
+        stage.style.height = availableHeight + "px";
+        mobileFocusBack.classList.remove("hidden");
+        return;
+      }
+
+      stage.classList.remove("is-focused");
+      card.style.transform = "scale(" + fullScale + ")";
+      stage.style.height = (size.height * fullScale + (isMobileView() ? 0 : 16)) + "px";
+      stage.scrollLeft = 0;
+      stage.scrollTop = 0;
+      mobileFocusBack.classList.add("hidden");
+    }
+
+    function clearMobileFocus() {
+      mobileFocusTarget = null;
+      fitStage();
+    }
+
+    function focusMobileArea(area) {
+      if (!isMobileView() || currentTemplate() !== "full") return;
+      mobileFocusTarget = area;
+      fitStage();
     }
 
     function setTemplate(template, persist = true) {
@@ -896,6 +1145,45 @@
       templateButtons.forEach((button) => button.classList.toggle("active", button.dataset.template === template));
       fitStage();
       if (persist) saveState();
+    }
+
+
+    function revokeLastExportUrl() {
+      if (lastExportUrl) URL.revokeObjectURL(lastExportUrl);
+      lastExportUrl = "";
+    }
+
+    function canvasToBlob(canvas) {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error("PNG export failed"));
+        }, "image/png");
+      });
+    }
+
+    function showExportPreview(blob) {
+      revokeLastExportUrl();
+      lastExportUrl = URL.createObjectURL(blob);
+      exportPreviewImage.src = lastExportUrl;
+      exportModal.hidden = false;
+    }
+
+    function handleExportBlob(blob) {
+      if (isMobileView()) {
+        showExportPreview(blob);
+      } else {
+        downloadBlob(blob);
+      }
+    }
+
+    function sanitizeNumericInput(input) {
+      let clean = input.value.replace(/\D+/g, "");
+      if (input === currentDiscount || input === lowestPrice) {
+        clean = clean.slice(0, 3);
+        if (Number(clean) > 100) clean = "100";
+      }
+      if (input.value !== clean) input.value = clean;
     }
 
     function updateDiscount() {}
@@ -1099,10 +1387,12 @@
       });
     });
 
-    originalPrice.addEventListener("input", scheduleSave);
-    currentPrice.addEventListener("input", scheduleSave);
-    currentDiscount.addEventListener("input", scheduleSave);
-    lowestPrice.addEventListener("input", scheduleSave);
+    [originalPrice, currentPrice, currentDiscount, lowestPrice].forEach((input) => {
+      input.addEventListener("input", () => {
+        sanitizeNumericInput(input);
+        scheduleSave();
+      });
+    });
 
     function focusTagText(node) {
       const range = document.createRange();
@@ -1340,7 +1630,7 @@
       });
     }
 
-    function drawMetric(ctx, label, value, x, y, w, h) {
+    function drawMetric(ctx, label, value, x, y, w, h, suffix = "") {
       fillRound(ctx, x, y, w, h, 18, "rgba(255,255,255,.66)");
       strokeRound(ctx, x, y, w, h, 18, "rgba(135,185,170,.28)", 2);
       ctx.fillStyle = "#5f9587";
@@ -1348,7 +1638,8 @@
       ctx.fillText(label, x + 10, y + 24);
       ctx.fillStyle = "#5d4051";
       ctx.font = canvasFont('900', 26);
-      ctx.fillText(value || "", x + 10, y + 56);
+      const text = value ? value + suffix : "";
+      ctx.fillText(text, x + 10, y + 56);
     }
 
     function drawChoiceMetric(ctx, activeText, x, y, w, h) {
@@ -1419,13 +1710,15 @@
       ctx.restore();
     }
 
-    function downloadDataUrl(dataUrl) {
+    function downloadBlob(blob) {
+      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.download = "record-card.png";
-      link.href = dataUrl;
+      link.href = url;
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 30000);
     }
 
 
@@ -1446,7 +1739,6 @@
       ctx.fillStyle = "rgba(255,255,255,.36)";
       for (let x = 0; x <= 1080; x += 36) ctx.fillRect(x, 0, 1, 1440);
       for (let y = 0; y <= 1440; y += 36) ctx.fillRect(0, y, 1080, 1);
-      strokeRound(ctx, 18, 18, 1044, 1404, 44, "#fff", 18);
       strokeRound(ctx, 26, 26, 1028, 1388, 30, "rgba(242,183,201,.78)", 3);
       strokeRound(ctx, 54, 54, 972, 1332, 22, "rgba(135,185,170,.42)", 2, true);
 
@@ -1472,8 +1764,8 @@
       drawStickerLabel(ctx, LABEL_PURCHASE, 110, 631);
       drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 110, 704, 184, 74);
       drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 310, 704, 184, 74);
-      drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 110, 812, 184, 74);
-      drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 310, 812, 184, 74);
+      drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 110, 812, 184, 74, "%off");
+      drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 310, 812, 184, 74, "%off");
 
       fillRound(ctx, 536, 652, 420, 300, 26, "rgba(255,255,255,.58)");
       strokeRound(ctx, 536, 652, 420, 300, 26, "rgba(242,183,201,.54)", 2);
@@ -1485,7 +1777,7 @@
       drawStars(ctx, "SE", ratingValue(rows[3]), 554, 878);
 
       ctx.restore();
-      downloadDataUrl(canvas.toDataURL("image/png"));
+      handleExportBlob(await canvasToBlob(canvas));
     }
 
     async function downloadCard() {
@@ -1510,7 +1802,6 @@
         ctx.fillStyle = "rgba(255,255,255,.36)";
         for (let x = 0; x <= 1080; x += 36) ctx.fillRect(x, 0, 1, 1440);
         for (let y = 0; y <= 1440; y += 36) ctx.fillRect(0, y, 1080, 1);
-        strokeRound(ctx, 18, 18, 1044, 1404, 44, "#fff", 18);
         strokeRound(ctx, 26, 26, 1028, 1388, 30, "rgba(242,183,201,.78)", 3);
         strokeRound(ctx, 54, 54, 972, 1332, 22, "rgba(135,185,170,.42)", 2, true);
 
@@ -1554,8 +1845,8 @@
         drawStickerLabel(ctx, LABEL_PURCHASE, 108, 738);
         drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 108, 797, 190, 64);
         drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 312, 797, 190, 64);
-        drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 108, 880, 190, 64);
-        drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 312, 880, 190, 64);
+        drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 108, 880, 190, 64, "%off");
+        drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 312, 880, 190, 64, "%off");
 
         fillRound(ctx, 548, 755, 442, 220, 26, "rgba(255,255,255,.58)");
         strokeRound(ctx, 548, 755, 442, 220, 26, "rgba(242,183,201,.54)", 2);
@@ -1573,7 +1864,7 @@
         ctx.font = canvasFont('400', 24);
         drawWrappedText(ctx, valueOf("#reviewText"), 112, 1070, 856, 31, 9);
 
-        downloadDataUrl(canvas.toDataURL("image/png"));
+        handleExportBlob(await canvasToBlob(canvas));
       } catch (error) {
         console.error(error);
         alert("导出失败：请告诉我你看到这条弹窗，我再继续修。");
@@ -1581,6 +1872,33 @@
         downloadButton.disabled = false;
       }
     }
+
+    const mobileFocusAreas = Array.from(card.querySelectorAll(".cover-box, .info-panel, .title-panel, .tags-panel, .price-panel, .ratings, .review-panel"));
+    mobileFocusAreas.forEach((area) => {
+      area.addEventListener("click", (event) => {
+        if (isMobileView() && currentTemplate() === "full" && mobileFocusTarget !== area) {
+          event.preventDefault();
+          event.stopPropagation();
+          focusMobileArea(area);
+        }
+      }, true);
+      area.addEventListener("focusin", () => focusMobileArea(area));
+    });
+    mobileFocusBack.addEventListener("click", clearMobileFocus);
+    modalCloseButton.addEventListener("click", () => { exportModal.hidden = true; revokeLastExportUrl(); });
+    exportModal.addEventListener("click", (event) => {
+      if (event.target === exportModal) { exportModal.hidden = true; revokeLastExportUrl(); }
+    });
+    modalDownloadButton.addEventListener("click", () => {
+      if (lastExportUrl) {
+        const link = document.createElement("a");
+        link.download = "record-card.png";
+        link.href = lastExportUrl;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+    });
 
     templateButtons.forEach((button) => {
       button.addEventListener("click", () => setTemplate(button.dataset.template || "full"));
