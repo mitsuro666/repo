@@ -1,0 +1,1609 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>乙抓记录卡</title>
+  <style>
+    @font-face {
+      font-family: "BlackSugarPlumCandy";
+      src: url("./font/BlackSugarPlumCandy-Bold.ttf") format("truetype");
+      font-weight: 400 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --ink: #5d4051;
+      --muted: #9b7a8d;
+      --rose: #d95f8c;
+      --rose-deep: #b84570;
+      --cream: #fff8f6;
+      --mint: #87b9aa;
+      --gold: #d7a64a;
+      --shadow: 0 18px 45px rgba(123, 68, 91, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "BlackSugarPlumCandy", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(255, 238, 220, 0.95), transparent 30%),
+        radial-gradient(circle at 88% 18%, rgba(214, 235, 229, 0.9), transparent 28%),
+        linear-gradient(135deg, #fff1f5 0%, #f8fbf4 48%, #fff8ed 100%);
+    }
+
+    button, input, textarea { font: inherit; }
+
+    body * {
+      font-family: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      padding: 28px 18px 36px;
+      display: grid;
+      justify-items: center;
+      gap: 18px;
+    }
+
+    .toolbar {
+      width: min(100%, 1080px);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+
+    .action-button {
+      min-height: 40px;
+      border: 1px solid rgba(217, 95, 140, 0.32);
+      border-radius: 999px;
+      padding: 0 16px;
+      color: var(--rose-deep);
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 8px 18px rgba(184, 69, 112, 0.12);
+      cursor: pointer;
+    }
+
+    .action-button.primary {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, #d95f8c, #c84c79);
+    }
+
+    .template-switch {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      margin-right: auto;
+      padding: 4px;
+      border: 1px solid rgba(217, 95, 140, 0.24);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.66);
+    }
+
+    .template-button {
+      min-height: 32px;
+      border: 0;
+      border-radius: 999px;
+      padding: 0 14px;
+      color: var(--rose-deep);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .template-button.active {
+      color: #fff;
+      background: linear-gradient(135deg, #d95f8c, #b84570);
+      box-shadow: 0 6px 13px rgba(184, 69, 112, 0.14);
+    }
+
+    .stage {
+      width: min(100%, 1080px);
+      overflow: visible;
+      padding: 8px;
+    }
+
+    .card {
+      position: relative;
+      width: 1080px;
+      height: 1440px;
+      overflow: hidden;
+      transform-origin: top left;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.36) 1px, transparent 1px) 0 0 / 36px 36px,
+        linear-gradient(rgba(255, 255, 255, 0.32) 1px, transparent 1px) 0 0 / 36px 36px,
+        linear-gradient(145deg, #fff7f4 0%, #fffdf9 48%, #f2faf3 100%);
+      border: 18px solid #fff;
+      border-radius: 44px;
+      box-shadow: var(--shadow);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 26px;
+      border: 3px solid rgba(242, 183, 201, 0.78);
+      border-radius: 30px;
+      pointer-events: none;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 54px;
+      border: 2px dashed rgba(135, 185, 170, 0.42);
+      border-radius: 22px;
+      pointer-events: none;
+    }
+
+    .editable, .soft-input, .soft-area {
+      border: 0;
+      outline: 0;
+      color: var(--ink);
+      background: transparent;
+    }
+
+    .editable {
+      min-height: 1.2em;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .editable *,
+    .tag * {
+      color: inherit !important;
+      background: transparent !important;
+      font: inherit !important;
+      text-decoration: none !important;
+    }
+
+    .editable:empty::before { content: ""; }
+    .title-panel .editable:empty::before {
+      content: attr(data-placeholder);
+      color: rgba(155, 122, 141, 0.48);
+    }
+    .soft-input { width: 100%; min-width: 0; }
+    .soft-input::placeholder, .soft-area::placeholder { color: transparent; }
+    #recordAuthor::placeholder {
+      color: rgba(155, 122, 141, 0.58);
+    }
+
+    .soft-area {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      padding: 0;
+      resize: none;
+      line-height: 1.32;
+      overflow: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(217, 95, 140, 0.38) transparent;
+      display: block;
+    }
+
+    .soft-area::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .soft-area::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: rgba(217, 95, 140, 0.38);
+    }
+
+    .soft-area::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .card-header { display: none; }
+
+    .meta-chip { display: none; }
+
+    .title-panel {
+      position: absolute;
+      left: 92px;
+      top: 445px;
+      width: 864px;
+      height: 112px;
+      z-index: 2;
+      padding: 28px 22px 16px;
+      border: 2px solid rgba(242, 183, 201, 0.54);
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .record-title {
+      color: var(--ink);
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1.3;
+      outline: 0;
+    }
+
+    .cover-box {
+      position: absolute;
+      left: 92px;
+      top: 86px;
+      width: 420px;
+      height: 315px;
+      z-index: 2;
+      border: 4px solid #fff;
+      border-radius: 24px;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(255, 224, 234, 0.76), rgba(232, 246, 239, 0.86)),
+        repeating-linear-gradient(-45deg, rgba(255,255,255,.5) 0 12px, transparent 12px 24px);
+      box-shadow: 0 14px 24px rgba(128, 76, 95, 0.16);
+      cursor: pointer;
+    }
+
+    .cover-box img {
+      width: 100%;
+      height: 100%;
+      display: none;
+      object-fit: contain;
+      object-position: center;
+      background: rgba(255, 255, 255, 0.52);
+    }
+
+    .cover-box.has-image img { display: block; }
+
+    .cover-placeholder {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--rose-deep);
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .cover-box.has-image .cover-placeholder { display: none; }
+
+    .cover-tools {
+      position: absolute;
+      left: 156px;
+      top: 361px;
+      width: 292px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      z-index: 4;
+      padding: 5px 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 6px 14px rgba(128, 76, 95, 0.12);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 120ms ease;
+    }
+
+    .cover-box:hover + .cover-tools,
+    .cover-tools:hover,
+    .cover-tools:focus-within {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .tiny-button {
+      border: 1px solid rgba(135, 185, 170, 0.42);
+      border-radius: 999px;
+      padding: 3px 7px;
+      color: #4c7e70;
+      background: rgba(255, 255, 255, 0.88);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .info-panel {
+      position: absolute;
+      left: 536px;
+      top: 86px;
+      width: 420px;
+      height: 315px;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-content: start;
+      gap: 14px 18px;
+      padding: 48px 24px 14px;
+      border: 2px solid rgba(242, 183, 201, 0.6);
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .panel-title,
+    .price-label,
+    .rating-section-label,
+    .review-label {
+      position: absolute;
+      top: -21px;
+      left: 18px;
+      z-index: 3;
+      padding: 7px 22px 8px;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(135deg, #d95f8c, #b84570);
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 6px 14px rgba(184, 69, 112, 0.18);
+    }
+
+    .panel-title {
+      position: absolute;
+      top: -21px;
+      left: 18px;
+      z-index: 3;
+      padding: 7px 22px 8px;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(135deg, #d95f8c, #b84570);
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 6px 14px rgba(184, 69, 112, 0.18);
+    }
+
+    .title-field {
+      grid-column: 1 / -1;
+    }
+
+    .price-label,
+    .rating-section-label {
+      position: absolute;
+      top: -21px;
+      left: 18px;
+      z-index: 3;
+      padding: 7px 22px 8px;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(135deg, #d95f8c, #b84570);
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 6px 14px rgba(184, 69, 112, 0.18);
+    }
+
+    .review-label {
+      margin-bottom: 12px;
+    }
+
+    .title-field .editable {
+      color: var(--rose-deep);
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.24;
+    }
+
+    .field {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: 22px 14px 31px;
+      align-items: start;
+      height: 67px;
+      row-gap: 0;
+      padding-bottom: 0;
+      overflow: visible;
+      align-content: start;
+    }
+
+    .field::after {
+      content: "";
+      grid-column: 1;
+      grid-row: 2;
+      align-self: center;
+      width: 100%;
+      border-bottom: 1px dashed rgba(217, 95, 140, 0.32);
+      pointer-events: none;
+    }
+
+    .cn-field {
+      grid-column: 1 / -1;
+      height: 86px;
+      grid-template-rows: 22px 22px 34px;
+    }
+
+    .field label {
+      color: var(--rose);
+      font-size: 21px;
+      font-weight: 800;
+      position: relative;
+      z-index: 1;
+    }
+
+    .info-panel .field label {
+      transform: translateY(-3px);
+    }
+
+    .field .editable, .field .soft-input {
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1.08;
+      position: relative;
+      z-index: 1;
+      padding-top: 0;
+      grid-column: 1;
+      grid-row: 3;
+      min-height: 31px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .price-panel {
+      position: absolute;
+      left: 92px;
+      top: 740px;
+      width: 420px;
+      height: 220px;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 11px 12px;
+      padding: 34px 18px 16px;
+      border: 2px solid rgba(242, 183, 201, 0.54);
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .metric {
+      min-height: 68px;
+      padding: 8px 11px;
+      border-radius: 18px;
+      border: 2px solid rgba(135, 185, 170, 0.28);
+      background: rgba(255, 255, 255, 0.66);
+      display: grid;
+      align-content: center;
+      gap: 3px;
+    }
+
+    .metric-label {
+      color: #5f9587;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .metric-value, .metric input {
+      color: var(--ink);
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    .choice-group {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+    }
+
+    .cn-field .choice-group {
+      grid-column: 1;
+      grid-row: 3;
+      width: 260px;
+    }
+
+    .choice-button {
+      min-height: 34px;
+      border: 1px solid rgba(217, 95, 140, 0.26);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.62);
+      padding: 0 4px;
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .choice-button.active {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, #d95f8c, #bf4773);
+      box-shadow: 0 6px 13px rgba(184, 69, 112, 0.16);
+    }
+
+    .ratings {
+      position: absolute;
+      left: 536px;
+      top: 740px;
+      width: 420px;
+      height: 220px;
+      z-index: 2;
+      display: grid;
+      align-content: start;
+      gap: 9px;
+      padding: 36px 24px 14px;
+      border: 2px solid rgba(242, 183, 201, 0.54);
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .rating-row {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rating-label {
+      color: var(--rose-deep);
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .stars {
+      display: grid;
+      grid-template-columns: repeat(5, 34px);
+      gap: 7px;
+      justify-content: start;
+    }
+
+    .star {
+      border: 0;
+      padding: 0;
+      width: 34px;
+      height: 34px;
+      color: rgba(217, 95, 140, 0.32);
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 2px rgba(242, 183, 201, 0.32);
+      font-size: 23px;
+      line-height: 34px;
+      cursor: pointer;
+      transition: transform 120ms ease, color 120ms ease, background 120ms ease;
+    }
+
+    .star.active {
+      color: #fff;
+      background: linear-gradient(135deg, #f5b5ca, #d95f8c);
+      box-shadow:
+        inset 0 -3px 0 rgba(160, 59, 98, 0.16),
+        0 5px 10px rgba(184, 69, 112, 0.18);
+      text-shadow: 0 1px 0 rgba(160, 59, 98, 0.25);
+    }
+
+    .star:hover { transform: translateY(-1px) scale(1.04); }
+
+    .tags-panel {
+      position: absolute;
+      left: 92px;
+      top: 598px;
+      width: 864px;
+      height: 105px;
+      z-index: 2;
+      padding: 34px 30px 16px 18px;
+      border: 2px solid rgba(242, 183, 201, 0.54);
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.58);
+      overflow: visible;
+    }
+
+    .section-label {
+      position: absolute;
+      top: -21px;
+      left: 18px;
+      z-index: 3;
+      padding: 7px 22px 8px;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(135deg, #d95f8c, #b84570);
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 6px 14px rgba(184, 69, 112, 0.18);
+    }
+
+    .tags {
+      display: flex;
+      align-items: flex-start;
+      flex-wrap: nowrap;
+      gap: 9px;
+      height: 54px;
+      overflow: visible;
+      padding-right: 4px;
+    }
+
+    .tag-chip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      width: max-content;
+      flex: 0 0 auto;
+    }
+
+    .tag {
+      border: 1px solid rgba(217, 95, 140, 0.24);
+      border-radius: 999px;
+      padding: 6px 12px;
+      color: var(--rose-deep);
+      background: rgba(255, 244, 248, 0.82);
+      font-size: 21px;
+      font-weight: 900;
+      outline: 0;
+    }
+
+    .tag-remove {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 20px;
+      height: 20px;
+      border: 0;
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(217, 95, 140, 0.86);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 19px;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(184, 69, 112, 0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 120ms ease;
+    }
+
+    .tag-chip:hover .tag-remove,
+    .tag-chip:focus-within .tag-remove {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .add-tag {
+      width: 42px;
+      height: 42px;
+      border: 0;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--mint);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 120ms ease;
+      flex: 0 0 auto;
+    }
+
+    .tags-panel:hover .add-tag,
+    .tags-panel:focus-within .add-tag {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .review-panel {
+      position: absolute;
+      left: 92px;
+      top: 990px;
+      width: 864px;
+      height: 340px;
+      z-index: 2;
+      padding: 28px 22px 20px;
+      border: 2px solid rgba(217, 95, 140, 0.28);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.62);
+    }
+
+    .review-panel .soft-area {
+      font-size: 24px;
+      color: var(--ink);
+    }
+
+
+    .card.compact {
+      width: 540px;
+      height: 720px;
+      border-width: 9px;
+      border-radius: 22px;
+    }
+
+    .card.compact::before { inset: 13px; border-width: 2px; border-radius: 15px; }
+    .card.compact::after { inset: 27px; border-width: 1px; border-radius: 11px; }
+    .card.compact .cover-box { left: 46px; top: 43px; width: 210px; height: 158px; border-width: 2px; border-radius: 12px; }
+    .card.compact .cover-placeholder { font-size: 14px; }
+    .card.compact .cover-tools { left: 78px; top: 181px; width: 146px; gap: 3px; padding: 3px 4px; }
+    .card.compact .tiny-button { font-size: 8px; padding: 2px 4px; }
+    .card.compact .info-panel { left: 268px; top: 43px; width: 210px; height: 158px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 9px; padding: 24px 12px 7px; border-radius: 13px; border-width: 1px; }
+    .card.compact .panel-title,
+    .card.compact .section-label,
+    .card.compact .price-label,
+    .card.compact .rating-section-label,
+    .card.compact .review-label { top: -11px; left: 9px; padding: 4px 11px; font-size: 12px; }
+    .card.compact .field { grid-template-rows: 11px 7px 16px; height: 34px; }
+    .card.compact .field label { font-size: 11px; transform: translateY(-2px); }
+    .card.compact .field .editable,
+    .card.compact .field .soft-input { font-size: 13px; min-height: 16px; line-height: 1.08; }
+    .card.compact .cn-field { height: 43px; grid-template-rows: 11px 11px 17px; }
+    .card.compact .cn-field .choice-group { width: 130px; gap: 2px; }
+    .card.compact .choice-button { min-height: 17px; font-size: 8px; padding: 0 2px; }
+    .card.compact .title-panel { left: 46px; top: 224px; width: 432px; height: 62px; padding: 17px 11px 8px; border-radius: 13px; border-width: 1px; }
+    .card.compact .record-title { font-size: 14px; line-height: 1.3; }
+    .card.compact .tags-panel,
+    .card.compact .review-panel { display: none; }
+    .card.compact .price-panel { left: 46px; top: 326px; width: 210px; height: 150px; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 20px 9px 8px; border-radius: 13px; border-width: 1px; }
+    .card.compact .metric { min-height: 42px; padding: 5px 6px; border-radius: 9px; border-width: 1px; gap: 2px; }
+    .card.compact .metric-label { font-size: 10px; }
+    .card.compact .metric-value,
+    .card.compact .metric input { font-size: 14px; }
+    .card.compact .ratings { left: 268px; top: 326px; width: 210px; height: 150px; gap: 6px; padding: 22px 12px 8px; border-radius: 13px; border-width: 1px; }
+    .card.compact .rating-row { grid-template-columns: 38px 1fr; gap: 4px; }
+    .card.compact .rating-label { font-size: 13px; }
+    .card.compact .stars { grid-template-columns: repeat(5, 17px); gap: 4px; }
+    .card.compact .star { width: 17px; height: 17px; font-size: 12px; line-height: 17px; box-shadow: inset 0 0 0 1px rgba(242, 183, 201, 0.32); }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 780px) {
+      .app { padding: 14px 8px 24px; }
+      .toolbar { justify-content: flex-start; }
+      .stage { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="toolbar">
+      <div class="template-switch" aria-label="模板版本">
+        <button class="template-button active" data-template="full" type="button">完整版</button>
+        <button class="template-button" data-template="compact" type="button">无评价版</button>
+      </div>
+      <button class="action-button" id="resetButton" type="button">清空内容</button>
+      <button class="action-button primary" id="downloadButton" type="button">导出 PNG</button>
+    </div>
+
+    <div class="stage" id="stage">
+      <section class="card" id="recordCard" aria-label="乙抓记录卡画布">
+
+        <label class="cover-box" id="coverBox" aria-label="上传 BK 图片">
+          <input class="hidden" id="coverInput" type="file" accept="image/*" />
+          <img id="coverImage" alt="" />
+          <span class="cover-placeholder">点击上传 BK<br />420 × 315</span>
+        </label>
+        <div class="cover-tools">
+          <button class="tiny-button" id="containButton" type="button">完整显示</button>
+          <button class="tiny-button" id="coverButton" type="button">铺满裁切</button>
+          <button class="tiny-button" id="blurButton" type="button">安全模糊</button>
+        </div>
+
+        <aside class="info-panel">
+          <div class="panel-title">基本信息</div>
+          <div class="field">
+            <label>CV</label>
+            <div class="editable" id="cvText" contenteditable="true" aria-label="CV"></div>
+          </div>
+          <div class="field">
+            <label>社团</label>
+            <div class="editable" id="circleText" contenteditable="true" aria-label="社团"></div>
+          </div>
+          <div class="field">
+            <label>RJ号</label>
+            <div class="editable" id="rjText" contenteditable="true" aria-label="RJ号"></div>
+          </div>
+          <div class="field">
+            <label>时长</label>
+            <div class="editable" id="durationText" contenteditable="true" aria-label="时长"></div>
+          </div>
+          <div class="field cn-field">
+            <label>中文</label>
+            <div class="choice-group" id="cnChoices" aria-label="中文">
+              <button class="choice-button active" type="button">字幕</button>
+              <button class="choice-button" type="button">台本</button>
+              <button class="choice-button" type="button">无中文</button>
+            </div>
+          </div>
+        </aside>
+
+        <section class="title-panel" aria-label="标题">
+          <div class="section-label title-label">标题</div>
+          <div class="editable record-title" id="recordTitle" contenteditable="true" data-placeholder="标题" aria-label="标题"></div>
+        </section>
+
+        <section class="price-panel" aria-label="价格">
+          <div class="section-label price-label">价格</div>
+          <div class="metric">
+            <div class="metric-label">原价</div>
+            <input class="soft-input" id="originalPrice" type="text" inputmode="decimal" />
+          </div>
+          <div class="metric">
+            <div class="metric-label">现价</div>
+            <input class="soft-input" id="currentPrice" type="text" inputmode="decimal" />
+          </div>
+          <div class="metric">
+            <div class="metric-label">现折扣</div>
+            <input class="soft-input" id="currentDiscount" type="text" />
+          </div>
+          <div class="metric">
+            <div class="metric-label">史低</div>
+            <input class="soft-input" id="lowestPrice" type="text" inputmode="decimal" />
+          </div>
+        </section>
+
+        <section class="ratings" aria-label="评价">
+          <div class="section-label rating-section-label">评分</div>
+          <div class="rating-row" data-rating="overall"><div class="rating-label">总体</div><div class="stars" aria-label="总体评分"></div></div>
+          <div class="rating-row" data-rating="cv"><div class="rating-label">CV</div><div class="stars" aria-label="CV评分"></div></div>
+          <div class="rating-row" data-rating="story"><div class="rating-label">剧本</div><div class="stars" aria-label="剧本评分"></div></div>
+          <div class="rating-row" data-rating="se"><div class="rating-label">SE</div><div class="stars" aria-label="SE评分"></div></div>
+        </section>
+
+        <section class="tags-panel">
+          <div class="section-label">关键词</div>
+          <div class="tags" id="tags">
+            <span class="tag-chip"><span class="tag" contenteditable="true">年下</span><button class="tag-remove" type="button" aria-label="删除关键词">×</button></span>
+            <span class="tag-chip"><span class="tag" contenteditable="true">纯爱</span><button class="tag-remove" type="button" aria-label="删除关键词">×</button></span>
+            <span class="tag-chip"><span class="tag" contenteditable="true">嫉妒</span><button class="tag-remove" type="button" aria-label="删除关键词">×</button></span>
+            <button class="add-tag" id="addTagButton" type="button" aria-label="添加关键词">+</button>
+          </div>
+        </section>
+
+        <section class="review-panel">
+          <div class="section-label review-label">评价</div>
+          <textarea class="soft-area" id="reviewText" aria-label="简介与短评"></textarea>
+        </section>
+
+
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const card = document.getElementById("recordCard");
+    const coverInput = document.getElementById("coverInput");
+    const coverBox = document.getElementById("coverBox");
+    const coverImage = document.getElementById("coverImage");
+    const originalPrice = document.getElementById("originalPrice");
+    const currentPrice = document.getElementById("currentPrice");
+    const currentDiscount = document.getElementById("currentDiscount");
+    const lowestPrice = document.getElementById("lowestPrice");
+    const addTagButton = document.getElementById("addTagButton");
+    const tags = document.getElementById("tags");
+    const downloadButton = document.getElementById("downloadButton");
+    const resetButton = document.getElementById("resetButton");
+    const templateButtons = Array.from(document.querySelectorAll(".template-button"));
+    const coverTools = document.querySelector(".cover-tools");
+    const STORAGE_KEY = "otome-record-card-v1";
+
+    function currentTemplate() {
+      return card.classList.contains("compact") ? "compact" : "full";
+    }
+
+    function templateSize() {
+      return currentTemplate() === "compact" ? { width: 540, height: 720 } : { width: 1080, height: 1440 };
+    }
+
+    function fitStage() {
+      const stage = document.getElementById("stage");
+      const size = templateSize();
+      const availableWidth = Math.max(1, stage.clientWidth - 16);
+      const scale = Math.min(1, availableWidth / size.width);
+      card.style.transform = `scale(${scale})`;
+      stage.style.height = `${size.height * scale + 16}px`;
+    }
+
+    function setTemplate(template, persist = true) {
+      card.classList.toggle("compact", template === "compact");
+      templateButtons.forEach((button) => button.classList.toggle("active", button.dataset.template === template));
+      fitStage();
+      if (persist) saveState();
+    }
+
+    function updateDiscount() {}
+
+    function makeStars(row, value = 4) {
+      const wrap = row.querySelector(".stars");
+      for (let index = 1; index <= 5; index += 1) {
+        const star = document.createElement("button");
+        star.className = `star${index <= value ? " active" : ""}`;
+        star.type = "button";
+        star.textContent = "★";
+        star.setAttribute("aria-label", `${index} 星`);
+        star.addEventListener("click", () => {
+          wrap.querySelectorAll(".star").forEach((item, itemIndex) => {
+            item.classList.toggle("active", itemIndex < index);
+          });
+        });
+        wrap.appendChild(star);
+      }
+    }
+
+    document.querySelectorAll(".rating-row").forEach((row) => makeStars(row));
+    function insertPlainText(text) {
+      const selection = window.getSelection();
+      if (!selection || !selection.rangeCount) return;
+      selection.deleteFromDocument();
+      selection.getRangeAt(0).insertNode(document.createTextNode(text));
+      selection.collapseToEnd();
+    }
+
+
+    function normalizeEditableNode(node) {
+      if (!node || (!node.isContentEditable && !node.classList?.contains("tag"))) return;
+      if (!node.querySelector?.("a, span, font, b, strong, i, em, u")) return;
+      const selection = window.getSelection();
+      const text = node.textContent;
+      node.textContent = text;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    document.addEventListener("input", (event) => {
+      const target = event.target;
+      if (target instanceof HTMLElement && target.isContentEditable) {
+        normalizeEditableNode(target);
+      }
+    });
+
+    document.addEventListener("paste", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (!target.isContentEditable && !target.matches("textarea, input")) return;
+      const text = event.clipboardData?.getData("text/plain");
+      if (text == null) return;
+      event.preventDefault();
+      if (target.matches("textarea, input")) {
+        const start = target.selectionStart ?? target.value.length;
+        const end = target.selectionEnd ?? target.value.length;
+        target.value = target.value.slice(0, start) + text + target.value.slice(end);
+        target.selectionStart = target.selectionEnd = start + text.length;
+        target.dispatchEvent(new Event("input", { bubbles: true }));
+      } else {
+        insertPlainText(text);
+      }
+    });
+
+
+
+    function editableText(id) {
+      return document.getElementById(id)?.textContent || "";
+    }
+
+    function setEditableText(id, value) {
+      const node = document.getElementById(id);
+      if (node) node.textContent = value || "";
+    }
+
+    function currentRatings() {
+      return Array.from(document.querySelectorAll(".rating-row")).map((row) => ratingValue(row));
+    }
+
+    function setRating(row, value) {
+      row.querySelectorAll(".star").forEach((star, index) => {
+        star.classList.toggle("active", index < value);
+      });
+    }
+
+    function collectState() {
+      return {
+        template: currentTemplate(),
+        recordTitle: editableText("recordTitle"),
+
+        cvText: editableText("cvText"),
+        circleText: editableText("circleText"),
+        rjText: editableText("rjText"),
+        durationText: editableText("durationText"),
+        originalPrice: valueOf("#originalPrice"),
+        currentPrice: valueOf("#currentPrice"),
+        currentDiscount: valueOf("#currentDiscount"),
+        lowestPrice: valueOf("#lowestPrice"),
+        cnChoice: document.querySelector(".choice-button.active")?.textContent.trim() || "",
+        ratings: currentRatings(),
+        tags: Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean),
+        reviewText: valueOf("#reviewText"),
+        coverSrc: coverImage.getAttribute("src") || "",
+        coverFit: coverImage.style.objectFit || "contain",
+        coverFilter: coverImage.style.filter || "",
+      };
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+      } catch (error) {
+        console.warn("save failed", error);
+      }
+    }
+
+    function renderTags(savedTags) {
+      const nextTags = savedTags && savedTags.length ? savedTags : [String.fromCharCode(0x5e74, 0x4e0b), String.fromCharCode(0x7eaf, 0x7231), String.fromCharCode(0x5ac9, 0x5992)];
+      tags.querySelectorAll(".tag-chip").forEach((chip) => chip.remove());
+      nextTags.forEach((text) => tags.insertBefore(createTag(text), addTagButton));
+    }
+
+    function restoreState() {
+      let state;
+      try {
+        state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      } catch {
+        state = null;
+      }
+      if (!state) return;
+      setTemplate("full", false);
+      setEditableText("recordTitle", state.recordTitle || state.jpTitle || state.cnTitle || "");
+      setEditableText("cvText", state.cvText);
+      setEditableText("circleText", state.circleText);
+      setEditableText("rjText", state.rjText);
+      setEditableText("durationText", state.durationText);
+      originalPrice.value = state.originalPrice || "";
+      currentPrice.value = state.currentPrice || state.paidPrice || "";
+      currentDiscount.value = state.currentDiscount || "";
+      lowestPrice.value = state.lowestPrice || "";
+      document.querySelectorAll(".choice-button").forEach((button) => {
+        button.classList.toggle("active", button.textContent.trim() === (state.cnChoice || CHOICE_SUBTITLE));
+      });
+      document.querySelectorAll(".rating-row").forEach((row, index) => setRating(row, state.ratings?.[index] ?? 4));
+      renderTags(state.tags);
+      document.getElementById("reviewText").value = state.reviewText || "";
+      if (state.coverSrc) {
+        coverImage.src = state.coverSrc;
+        coverBox.classList.add("has-image");
+      }
+      coverImage.style.objectFit = state.coverFit || "contain";
+      coverImage.style.filter = state.coverFilter || "";
+      updateDiscount();
+    }
+
+    function scheduleSave() {
+      window.clearTimeout(scheduleSave.timer);
+      scheduleSave.timer = window.setTimeout(saveState, 80);
+    }
+
+    coverInput.addEventListener("change", () => {
+      const file = coverInput.files && coverInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        coverImage.src = reader.result;
+        coverBox.classList.add("has-image");
+        saveState();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById("containButton").addEventListener("click", (event) => {
+      event.preventDefault();
+      coverImage.style.objectFit = "contain";
+      saveState();
+    });
+
+    document.getElementById("coverButton").addEventListener("click", (event) => {
+      event.preventDefault();
+      coverImage.style.objectFit = "cover";
+      saveState();
+    });
+
+    document.getElementById("blurButton").addEventListener("click", (event) => {
+      event.preventDefault();
+      coverImage.style.filter = coverImage.style.filter ? "" : "blur(12px)";
+      saveState();
+    });
+
+    document.querySelectorAll(".choice-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".choice-button").forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+        saveState();
+      });
+    });
+
+    originalPrice.addEventListener("input", scheduleSave);
+    currentPrice.addEventListener("input", scheduleSave);
+    currentDiscount.addEventListener("input", scheduleSave);
+    lowestPrice.addEventListener("input", scheduleSave);
+
+    function focusTagText(node) {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    function createTag(text = "新标签") {
+      const chip = document.createElement("span");
+      chip.className = "tag-chip";
+      chip.innerHTML = `<span class="tag" contenteditable="true"></span><button class="tag-remove" type="button" aria-label="删除关键词">×</button>`;
+      chip.querySelector(".tag").textContent = text;
+      return chip;
+    }
+
+    tags.addEventListener("click", (event) => {
+      const removeButton = event.target.closest(".tag-remove");
+      if (removeButton) {
+        removeButton.closest(".tag-chip").remove();
+        saveState();
+      }
+    });
+
+    addTagButton.addEventListener("click", () => {
+      const chip = createTag();
+      const tag = chip.querySelector(".tag");
+      tags.insertBefore(chip, addTagButton);
+      tag.focus();
+      focusTagText(tag);
+      saveState();
+    });
+
+    resetButton.addEventListener("click", () => {
+      card.querySelectorAll("[contenteditable='true']").forEach((node) => {
+        if (node.classList.contains("tag")) return;
+        node.textContent = "";
+      });
+      card.querySelectorAll("input:not([type='file'])").forEach((node) => {
+        node.value = "";
+      });
+      document.getElementById("reviewText").value = "";
+      coverImage.removeAttribute("src");
+      coverImage.style.filter = "";
+      coverImage.style.objectFit = "contain";
+      coverBox.classList.remove("has-image");
+      document.querySelectorAll(".choice-button").forEach((item, index) => item.classList.toggle("active", index === 0));
+      updateDiscount();
+      saveState();
+    });
+
+    const CANVAS_FONT = 'BlackSugarPlumCandy';
+    const CANVAS_FALLBACK = '"Microsoft YaHei", "PingFang SC", Arial, sans-serif';
+
+    function canvasFont(weight, size) {
+      return weight + ' ' + size + 'px "' + CANVAS_FONT + '", ' + CANVAS_FALLBACK;
+    }
+
+    async function ensureCanvasFontReady() {
+      if (!document.fonts || !window.FontFace) return;
+      const alreadyLoaded = Array.from(document.fonts).some((font) => font.family === CANVAS_FONT && font.status === 'loaded');
+      if (!alreadyLoaded) {
+        const font = new FontFace(CANVAS_FONT, 'url("./font/BlackSugarPlumCandy-Bold.ttf")');
+        await font.load();
+        document.fonts.add(font);
+      }
+      await document.fonts.load(canvasFont('900', 50), '乙抓记录中文测试');
+      await document.fonts.ready;
+    }
+
+    function textOf(selector) {
+      const node = document.querySelector(selector);
+      return node ? node.textContent.trim() : "";
+    }
+
+    function valueOf(selector) {
+      const node = document.querySelector(selector);
+      return node ? node.value.trim() : "";
+    }
+
+    function ratingValue(row) {
+      return row.querySelectorAll(".star.active").length;
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      const radius = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.arcTo(x + w, y, x + w, y + h, radius);
+      ctx.arcTo(x + w, y + h, x, y + h, radius);
+      ctx.arcTo(x, y + h, x, y, radius);
+      ctx.arcTo(x, y, x + w, y, radius);
+      ctx.closePath();
+    }
+
+    function strokeRound(ctx, x, y, w, h, r, stroke, width = 2, dashed = false) {
+      ctx.save();
+      roundRect(ctx, x, y, w, h, r);
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = width;
+      if (dashed) ctx.setLineDash([10, 10]);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function fillRound(ctx, x, y, w, h, r, fill) {
+      ctx.save();
+      roundRect(ctx, x, y, w, h, r);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    const STAR_CHAR = String.fromCharCode(0x2605);
+    const MULTIPLY_CHAR = String.fromCharCode(0x00d7);
+    const CHOICE_LABEL = String.fromCharCode(0x4e2d, 0x6587);
+    const CHOICE_SUBTITLE = String.fromCharCode(0x5b57, 0x5e55);
+    const CHOICE_SCRIPT = String.fromCharCode(0x53f0, 0x672c);
+    const CHOICE_NONE = String.fromCharCode(0x65e0, 0x4e2d, 0x6587);
+    const COVER_UPLOAD_TEXT = String.fromCharCode(0x70b9, 0x51fb, 0x4e0a, 0x4f20, 0x20, 0x42, 0x4b);
+    const LABEL_BASIC = String.fromCharCode(0x57fa, 0x672c, 0x4fe1, 0x606f);
+    const LABEL_TITLE = String.fromCharCode(0x6807, 0x9898);
+    const LABEL_CIRCLE = String.fromCharCode(0x793e, 0x56e2);
+    const LABEL_RJ = String.fromCharCode(0x52, 0x4a, 0x53f7);
+    const LABEL_DURATION = String.fromCharCode(0x65f6, 0x957f);
+    const LABEL_TAGS = String.fromCharCode(0x5173, 0x952e, 0x8bcd);
+    const LABEL_PURCHASE = String.fromCharCode(0x4ef7, 0x683c);
+    const LABEL_ORIGINAL = String.fromCharCode(0x539f, 0x4ef7);
+    const LABEL_PAID = String.fromCharCode(0x73b0, 0x4ef7);
+    const LABEL_DISCOUNT = String.fromCharCode(0x73b0, 0x6298, 0x6263);
+    const LABEL_LOWEST = String.fromCharCode(0x53f2, 0x4f4e);
+    const LABEL_RATING = String.fromCharCode(0x8bc4, 0x5206);
+    const LABEL_OVERALL = String.fromCharCode(0x603b, 0x4f53);
+    const LABEL_STORY = String.fromCharCode(0x5267, 0x672c);
+    const LABEL_REVIEW = String.fromCharCode(0x8bc4, 0x4ef7);
+
+    function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3) {
+      const lines = [];
+      const sourceLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+      for (const sourceLine of sourceLines) {
+        if (lines.length >= maxLines) break;
+        if (!sourceLine) {
+          lines.push("");
+          continue;
+        }
+        let line = "";
+        for (const char of Array.from(sourceLine)) {
+          const test = line + char;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            lines.push(line);
+            line = char;
+            if (lines.length >= maxLines) break;
+          } else {
+            line = test;
+          }
+        }
+        if (line && lines.length < maxLines) lines.push(line);
+      }
+      lines.forEach((item, index) => ctx.fillText(item, x, y + index * lineHeight));
+      return lines.length * lineHeight;
+    }
+
+    function drawStickerLabel(ctx, text, x, y) {
+      ctx.save();
+      ctx.font = canvasFont('900', 24);
+      const w = Math.ceil(ctx.measureText(text).width) + 44;
+      const grad = ctx.createLinearGradient(x, y, x + w, y + 34);
+      grad.addColorStop(0, "#d95f8c");
+      grad.addColorStop(1, "#b84570");
+      fillRound(ctx, x, y, w, 34, 17, grad);
+      ctx.fillStyle = "#fff";
+      ctx.fillText(text, x + 22, y + 25);
+      ctx.restore();
+    }
+
+    function drawFieldRule(ctx, x, y, w) {
+      ctx.strokeStyle = "rgba(217,95,140,.32)";
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath();
+      ctx.moveTo(x, y + 18);
+      ctx.lineTo(x + w, y + 18);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function drawTitleLabel(ctx, label, value, x, y, w) {
+      ctx.fillStyle = "#d95f8c";
+      ctx.font = canvasFont('800', 18);
+      ctx.fillText(label, x, y - 3);
+      drawFieldRule(ctx, x, y, w);
+      ctx.fillStyle = "#5d4051";
+      ctx.font = canvasFont('900', 22);
+      drawWrappedText(ctx, value, x, y + 40, w, 29, 3);
+    }
+
+    function drawLabel(ctx, label, value, x, y, w) {
+      ctx.fillStyle = "#d95f8c";
+      ctx.font = canvasFont('800', 21);
+      ctx.fillText(label, x, y - 3);
+      drawFieldRule(ctx, x, y, w);
+      ctx.fillStyle = "#5d4051";
+      ctx.font = canvasFont('900', 26);
+      drawWrappedText(ctx, value, x, y + 48, w, 31, 1);
+    }
+
+    function drawPreviewInfoField(ctx, label, value, x, top, w) {
+      ctx.fillStyle = "#d95f8c";
+      ctx.font = canvasFont('800', 21);
+      ctx.fillText(label, x, top + 19);
+      drawFieldRule(ctx, x, top + 11, w);
+      ctx.fillStyle = "#5d4051";
+      ctx.font = canvasFont('900', 26);
+      drawWrappedText(ctx, value, x, top + 61, w, 31, 1);
+    }
+
+    function drawPreviewChoiceField(ctx, activeText, x, top, w) {
+      ctx.fillStyle = "#d95f8c";
+      ctx.font = canvasFont('800', 21);
+      ctx.fillText(CHOICE_LABEL, x, top + 19);
+      drawFieldRule(ctx, x, top + 11, w);
+      const labels = [CHOICE_SUBTITLE, CHOICE_SCRIPT, CHOICE_NONE];
+      const bw = 74;
+      labels.forEach((label, index) => {
+        const bx = x + index * (bw + 12);
+        const by = top + 44;
+        const active = label === activeText;
+        fillRound(ctx, bx, by, bw, 34, 17, active ? "#d95f8c" : "rgba(255,255,255,.62)");
+        strokeRound(ctx, bx, by, bw, 34, 17, active ? "transparent" : "rgba(217,95,140,.26)", 1);
+        ctx.fillStyle = active ? "#fff" : "#9b7a8d";
+        ctx.font = canvasFont('900', 17);
+        ctx.textAlign = "center";
+        ctx.fillText(label, bx + bw / 2, by + 23);
+        ctx.textAlign = "left";
+      });
+    }
+
+    function drawMetric(ctx, label, value, x, y, w, h) {
+      fillRound(ctx, x, y, w, h, 18, "rgba(255,255,255,.66)");
+      strokeRound(ctx, x, y, w, h, 18, "rgba(135,185,170,.28)", 2);
+      ctx.fillStyle = "#5f9587";
+      ctx.font = canvasFont('800', 18);
+      ctx.fillText(label, x + 10, y + 24);
+      ctx.fillStyle = "#5d4051";
+      ctx.font = canvasFont('900', 26);
+      ctx.fillText(value || "", x + 10, y + 56);
+    }
+
+    function drawChoiceMetric(ctx, activeText, x, y, w, h) {
+      ctx.fillStyle = "#d95f8c";
+      ctx.font = canvasFont('800', 21);
+      ctx.fillText(CHOICE_LABEL, x, y - 3);
+      drawFieldRule(ctx, x, y, w);
+      const labels = [CHOICE_SUBTITLE, CHOICE_SCRIPT, CHOICE_NONE];
+      const bw = 74;
+      labels.forEach((label, index) => {
+        const bx = x + index * (bw + 12);
+        const active = label === activeText;
+        fillRound(ctx, bx, y + 35, bw, 34, 17, active ? "#d95f8c" : "rgba(255,255,255,.62)");
+        strokeRound(ctx, bx, y + 35, bw, 34, 17, active ? "transparent" : "rgba(217,95,140,.26)", 1);
+        ctx.fillStyle = active ? "#fff" : "#9b7a8d";
+        ctx.font = canvasFont('900', 17);
+        ctx.textAlign = "center";
+        ctx.fillText(label, bx + bw / 2, y + 58);
+        ctx.textAlign = "left";
+      });
+    }
+
+    function drawStars(ctx, label, count, x, y) {
+      ctx.fillStyle = "#b84570";
+      ctx.font = canvasFont('900', 24);
+      ctx.fillText(label, x, y + 27);
+      for (let i = 0; i < 5; i += 1) {
+        const sx = x + 92 + i * 44;
+        fillRound(ctx, sx, y, 34, 34, 17, i < count ? "#d95f8c" : "rgba(255,255,255,.7)");
+        strokeRound(ctx, sx, y, 34, 34, 17, "rgba(242,183,201,.32)", 2);
+        ctx.fillStyle = i < count ? "#fff" : "rgba(217,95,140,.32)";
+        ctx.font = canvasFont('900', 24);
+        ctx.textAlign = "center";
+        ctx.fillText(STAR_CHAR, sx + 17, y + 26);
+        ctx.textAlign = "left";
+      }
+    }
+
+    async function drawCover(ctx) {
+      fillRound(ctx, 90, 110, 420, 315, 24, "#ffe8f0");
+      strokeRound(ctx, 90, 110, 420, 315, 24, "#fff", 4);
+      if (!coverImage.src || !coverBox.classList.contains("has-image")) {
+        ctx.fillStyle = "#b84570";
+        ctx.font = canvasFont('800', 24);
+        ctx.textAlign = "center";
+        ctx.fillText(COVER_UPLOAD_TEXT, 300, 238);
+        ctx.font = canvasFont('800', 21);
+        ctx.fillText("420 " + MULTIPLY_CHAR + " 315", 300, 272);
+        ctx.textAlign = "left";
+        return;
+      }
+      if (!coverImage.complete) await coverImage.decode().catch(() => {});
+      ctx.save();
+      roundRect(ctx, 90, 110, 420, 315, 24);
+      ctx.clip();
+      const mode = coverImage.style.objectFit === "cover" ? "cover" : "contain";
+      const iw = coverImage.naturalWidth || coverImage.width;
+      const ih = coverImage.naturalHeight || coverImage.height;
+      const scale = mode === "cover" ? Math.max(420 / iw, 315 / ih) : Math.min(420 / iw, 315 / ih);
+      const dw = iw * scale;
+      const dh = ih * scale;
+      const dx = 90 + (420 - dw) / 2;
+      const dy = 110 + (315 - dh) / 2;
+      ctx.fillStyle = "rgba(255,255,255,.52)";
+      ctx.fillRect(90, 110, 420, 315);
+      if (coverImage.style.filter) ctx.filter = "blur(12px)";
+      ctx.drawImage(coverImage, dx, dy, dw, dh);
+      ctx.restore();
+    }
+
+    function downloadDataUrl(dataUrl) {
+      const link = document.createElement("a");
+      link.download = "record-card.png";
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+
+    async function downloadCompactCard() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 540;
+      canvas.height = 720;
+      const ctx = canvas.getContext("2d");
+      ctx.save();
+      ctx.scale(0.5, 0.5);
+
+      const bg = ctx.createLinearGradient(0, 0, 1080, 1440);
+      bg.addColorStop(0, "#fff7f4");
+      bg.addColorStop(0.48, "#fffdf9");
+      bg.addColorStop(1, "#f2faf3");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, 1080, 1440);
+      ctx.fillStyle = "rgba(255,255,255,.36)";
+      for (let x = 0; x <= 1080; x += 36) ctx.fillRect(x, 0, 1, 1440);
+      for (let y = 0; y <= 1440; y += 36) ctx.fillRect(0, y, 1080, 1);
+      strokeRound(ctx, 18, 18, 1044, 1404, 44, "#fff", 18);
+      strokeRound(ctx, 26, 26, 1028, 1388, 30, "rgba(242,183,201,.78)", 3);
+      strokeRound(ctx, 54, 54, 972, 1332, 22, "rgba(135,185,170,.42)", 2, true);
+
+      await drawCover(ctx);
+      fillRound(ctx, 548, 110, 420, 315, 26, "rgba(255,255,255,.58)");
+      strokeRound(ctx, 548, 110, 420, 315, 26, "rgba(242,183,201,.6)", 2);
+      drawStickerLabel(ctx, LABEL_BASIC, 566, 89);
+      drawPreviewInfoField(ctx, "CV", textOf('#cvText'), 572, 134, 177);
+      drawPreviewInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 767, 134, 177);
+      drawPreviewInfoField(ctx, LABEL_RJ, textOf('#rjText'), 572, 215, 177);
+      drawPreviewInfoField(ctx, LABEL_DURATION, textOf('#durationText'), 767, 215, 177);
+      drawPreviewChoiceField(ctx, document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE, 572, 296, 372);
+
+      fillRound(ctx, 92, 448, 864, 124, 26, "rgba(255,255,255,.58)");
+      strokeRound(ctx, 92, 448, 864, 124, 26, "rgba(242,183,201,.54)", 2);
+      drawStickerLabel(ctx, LABEL_TITLE, 110, 427);
+      ctx.fillStyle = "#5d4051";
+      ctx.font = canvasFont('900', 28);
+      drawWrappedText(ctx, textOf('#recordTitle'), 114, 503, 820, 34, 2);
+
+      fillRound(ctx, 92, 652, 420, 300, 26, "rgba(255,255,255,.58)");
+      strokeRound(ctx, 92, 652, 420, 300, 26, "rgba(242,183,201,.54)", 2);
+      drawStickerLabel(ctx, LABEL_PURCHASE, 110, 631);
+      drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 110, 704, 184, 74);
+      drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 310, 704, 184, 74);
+      drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 110, 812, 184, 74);
+      drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 310, 812, 184, 74);
+
+      fillRound(ctx, 536, 652, 420, 300, 26, "rgba(255,255,255,.58)");
+      strokeRound(ctx, 536, 652, 420, 300, 26, "rgba(242,183,201,.54)", 2);
+      drawStickerLabel(ctx, LABEL_RATING, 554, 631);
+      const rows = Array.from(document.querySelectorAll(".rating-row"));
+      drawStars(ctx, LABEL_OVERALL, ratingValue(rows[0]), 554, 716);
+      drawStars(ctx, "CV", ratingValue(rows[1]), 554, 770);
+      drawStars(ctx, LABEL_STORY, ratingValue(rows[2]), 554, 824);
+      drawStars(ctx, "SE", ratingValue(rows[3]), 554, 878);
+
+      ctx.restore();
+      downloadDataUrl(canvas.toDataURL("image/png"));
+    }
+
+    async function downloadCard() {
+      downloadButton.disabled = true;
+      try {
+        await ensureCanvasFontReady();
+        if (currentTemplate() === "compact") {
+          await downloadCompactCard();
+          return;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = 1080;
+        canvas.height = 1440;
+        const ctx = canvas.getContext("2d");
+
+        const bg = ctx.createLinearGradient(0, 0, 1080, 1440);
+        bg.addColorStop(0, "#fff7f4");
+        bg.addColorStop(0.48, "#fffdf9");
+        bg.addColorStop(1, "#f2faf3");
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, 1080, 1440);
+        ctx.fillStyle = "rgba(255,255,255,.36)";
+        for (let x = 0; x <= 1080; x += 36) ctx.fillRect(x, 0, 1, 1440);
+        for (let y = 0; y <= 1440; y += 36) ctx.fillRect(0, y, 1080, 1);
+        strokeRound(ctx, 18, 18, 1044, 1404, 44, "#fff", 18);
+        strokeRound(ctx, 26, 26, 1028, 1388, 30, "rgba(242,183,201,.78)", 3);
+        strokeRound(ctx, 54, 54, 972, 1332, 22, "rgba(135,185,170,.42)", 2, true);
+
+        await drawCover(ctx);
+
+        fillRound(ctx, 548, 110, 420, 315, 26, "rgba(255,255,255,.58)");
+        strokeRound(ctx, 548, 110, 420, 315, 26, "rgba(242,183,201,.6)", 2);
+        drawStickerLabel(ctx, LABEL_BASIC, 566, 89);
+        drawPreviewInfoField(ctx, "CV", textOf('#cvText'), 572, 134, 177);
+        drawPreviewInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 767, 134, 177);
+        drawPreviewInfoField(ctx, LABEL_RJ, textOf('#rjText'), 572, 215, 177);
+        drawPreviewInfoField(ctx, LABEL_DURATION, textOf('#durationText'), 767, 215, 177);
+        drawPreviewChoiceField(ctx, document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE, 572, 296, 372);
+
+        fillRound(ctx, 90, 470, 900, 112, 26, "rgba(255,255,255,.58)");
+        strokeRound(ctx, 90, 470, 900, 112, 26, "rgba(242,183,201,.54)", 2);
+        drawStickerLabel(ctx, LABEL_TITLE, 108, 449);
+        ctx.fillStyle = "#5d4051";
+        ctx.font = canvasFont('900', 26);
+        drawWrappedText(ctx, textOf('#recordTitle'), 112, 522, 856, 33, 2);
+
+        fillRound(ctx, 90, 625, 900, 82, 26, "rgba(255,255,255,.58)");
+        strokeRound(ctx, 90, 625, 900, 82, 26, "rgba(242,183,201,.54)", 2);
+        drawStickerLabel(ctx, LABEL_TAGS, 108, 604);
+        const tagTexts = Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean);
+        let tx = 112;
+        const ty = 657;
+        ctx.font = canvasFont('900', 21);
+        tagTexts.forEach((tag) => {
+          const tw = Math.max(70, ctx.measureText(tag).width + 24);
+          if (tx + tw > 972) return;
+          fillRound(ctx, tx, ty, tw, 38, 19, "rgba(255,244,248,.82)");
+          strokeRound(ctx, tx, ty, tw, 38, 19, "rgba(217,95,140,.24)", 1);
+          ctx.fillStyle = "#b84570";
+          ctx.fillText(tag, tx + 12, ty + 27);
+          tx += tw + 9;
+        });
+
+        fillRound(ctx, 90, 755, 430, 220, 26, "rgba(255,255,255,.58)");
+        strokeRound(ctx, 90, 755, 430, 220, 26, "rgba(242,183,201,.54)", 2);
+        drawStickerLabel(ctx, LABEL_PURCHASE, 108, 738);
+        drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 108, 797, 190, 64);
+        drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 312, 797, 190, 64);
+        drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 108, 880, 190, 64);
+        drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 312, 880, 190, 64);
+
+        fillRound(ctx, 548, 755, 442, 220, 26, "rgba(255,255,255,.58)");
+        strokeRound(ctx, 548, 755, 442, 220, 26, "rgba(242,183,201,.54)", 2);
+        drawStickerLabel(ctx, LABEL_RATING, 566, 738);
+        const rows = Array.from(document.querySelectorAll(".rating-row"));
+        drawStars(ctx, LABEL_OVERALL, ratingValue(rows[0]), 566, 797);
+        drawStars(ctx, "CV", ratingValue(rows[1]), 566, 839);
+        drawStars(ctx, LABEL_STORY, ratingValue(rows[2]), 566, 881);
+        drawStars(ctx, "SE", ratingValue(rows[3]), 566, 923);
+
+        fillRound(ctx, 90, 1014, 900, 328, 28, "rgba(255,255,255,.62)");
+        strokeRound(ctx, 90, 1014, 900, 328, 28, "rgba(217,95,140,.28)", 2);
+        drawStickerLabel(ctx, LABEL_REVIEW, 108, 997);
+        ctx.fillStyle = "#5d4051";
+        ctx.font = canvasFont('400', 24);
+        drawWrappedText(ctx, valueOf("#reviewText"), 112, 1070, 856, 31, 9);
+
+        downloadDataUrl(canvas.toDataURL("image/png"));
+      } catch (error) {
+        console.error(error);
+        alert("导出失败：请告诉我你看到这条弹窗，我再继续修。");
+      } finally {
+        downloadButton.disabled = false;
+      }
+    }
+
+    templateButtons.forEach((button) => {
+      button.addEventListener("click", () => setTemplate(button.dataset.template || "full"));
+    });
+
+    downloadButton.addEventListener("click", downloadCard);
+    document.addEventListener("input", scheduleSave);
+    document.addEventListener("click", (event) => {
+      if (event.target.closest(".star, .choice-button")) scheduleSave();
+    });
+    restoreState();
+    window.addEventListener("resize", fitStage);
+    fitStage();
+    updateDiscount();
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
