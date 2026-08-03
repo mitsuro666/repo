@@ -426,12 +426,43 @@
       grid-template-rows: 22px 22px 34px;
     }
 
+    .field-label-row {
+      grid-column: 1;
+      grid-row: 1;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      min-width: 0;
+      position: relative;
+      z-index: 2;
+    }
+
     .field label {
       color: var(--rose);
       font-size: 21px;
       font-weight: 800;
       position: relative;
       z-index: 1;
+    }
+
+    .import-button {
+      min-height: 22px;
+      border: 1px solid rgba(217, 95, 140, 0.36);
+      border-radius: 999px;
+      padding: 0 9px;
+      color: var(--rose-deep);
+      background: rgba(255, 255, 255, 0.82);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 5px 12px rgba(217, 95, 140, 0.12);
+    }
+
+    .import-button:disabled {
+      opacity: 0.62;
+      cursor: default;
     }
 
     .info-panel .field label {
@@ -945,7 +976,10 @@
             <div class="editable" id="circleText" contenteditable="true" aria-label="社团"></div>
           </div>
           <div class="field">
-            <label>RJ号</label>
+            <div class="field-label-row">
+              <label>RJ号</label>
+              <button class="import-button" id="importButton" type="button"></button>
+            </div>
             <div class="editable" id="rjText" contenteditable="true" aria-label="RJ号"></div>
           </div>
           <div class="field">
@@ -1038,6 +1072,7 @@
     const addTagButton = document.getElementById("addTagButton");
     const tags = document.getElementById("tags");
     const downloadButton = document.getElementById("downloadButton");
+    const importButton = document.getElementById("importButton");
     const resetButton = document.getElementById("resetButton");
     const templateButtons = Array.from(document.querySelectorAll(".template-button"));
     const mobileFocusBack = document.getElementById("mobileFocusBack");
@@ -1048,16 +1083,24 @@
     const modalCloseButton = document.getElementById("modalCloseButton");
     const coverTools = document.querySelector(".cover-tools");
     const STORAGE_KEY = "otome-record-card-v1";
+    const DLSITE_PROXY_URL = "https://dlsite-rj-import.shuiyingsheng.workers.dev/";
     let mobileFocusTarget = null;
     let lastExportUrl = "";
+    let currentDiscountManual = false;
     const UI_BACK_FULL = String.fromCharCode(0x8fd4, 0x56de, 0x5168, 0x56fe);
     const UI_DOWNLOAD_IMAGE = String.fromCharCode(0x4e0b, 0x8f7d, 0x56fe, 0x7247);
     const UI_CLOSE = String.fromCharCode(0x5173, 0x95ed);
     const UI_LONG_PRESS_SAVE = String.fromCharCode(0x53ef, 0x4ee5, 0x957f, 0x6309, 0x56fe, 0x7247, 0x4fdd, 0x5b58, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x70b9, 0x51fb, 0x4e0b, 0x8f7d, 0x3002);
+    const UI_IMPORT_INFO = String.fromCharCode(0x5bfc, 0x5165, 0x4fe1, 0x606f);
+    const UI_IMPORT_LOADING = String.fromCharCode(0x8bfb, 0x53d6, 0x4e2d);
+    const UI_IMPORT_DONE = String.fromCharCode(0x5df2, 0x5bfc, 0x5165);
+    const UI_IMPORT_NEED_RJ = String.fromCharCode(0x8bf7, 0x5148, 0x586b, 0x5199, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x3002);
+    const UI_IMPORT_FAILED = String.fromCharCode(0x6ca1, 0x6709, 0x8bfb, 0x53d6, 0x5230, 0x8d44, 0x6599, 0xff0c, 0x53ef, 0x80fd, 0x662f, 0x20, 0x44, 0x4c, 0x73, 0x69, 0x74, 0x65, 0x20, 0x6682, 0x65f6, 0x4e0d, 0x5141, 0x8bb8, 0x8de8, 0x57df, 0x8bfb, 0x53d6, 0x3002, 0x53ef, 0x4ee5, 0x5148, 0x624b, 0x52a8, 0x586b, 0x5199, 0x3002);
     mobileFocusBack.textContent = UI_BACK_FULL;
     modalDownloadButton.textContent = UI_DOWNLOAD_IMAGE;
     modalCloseButton.textContent = UI_CLOSE;
     exportHint.textContent = UI_LONG_PRESS_SAVE;
+    importButton.textContent = UI_IMPORT_INFO;
 
     function currentTemplate() {
       return card.classList.contains("compact") ? "compact" : "full";
@@ -1186,7 +1229,180 @@
       if (input.value !== clean) input.value = clean;
     }
 
-    function updateDiscount() {}
+    function calculateDiscountPercent(original, current) {
+      const originalText = String(original || "").replace(/D+/g, "");
+      const currentText = String(current || "").replace(/D+/g, "");
+      const originalNumber = Number(originalText);
+      const currentNumber = Number(currentText);
+      if (!originalNumber || currentText === "" || currentNumber > originalNumber) return "";
+      const percent = Math.round((1 - currentNumber / originalNumber) * 100);
+      return String(Math.min(100, Math.max(0, percent)));
+    }
+
+    function updateDiscount(force = false) {
+      if (currentDiscountManual && !force) return;
+      const next = calculateDiscountPercent(originalPrice.value, currentPrice.value);
+      if (currentDiscount.value !== next) currentDiscount.value = next;
+    }
+
+    function normalizeWorkno(value) {
+      const clean = String(value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+      const match = clean.match(/(?:RJ)?\d+/);
+      if (!match) return "";
+      return match[0].startsWith("RJ") ? match[0] : "RJ" + match[0];
+    }
+
+    function firstText(...values) {
+      for (const value of values) {
+        if (Array.isArray(value)) {
+          const text = value.map((item) => firstText(item?.name, item?.work_name, item?.title, item)).filter(Boolean).join(" / ");
+          if (text) return text;
+        } else if (value && typeof value === "object") {
+          const text = firstText(value.name, value.work_name, value.title, value.value);
+          if (text) return text;
+        } else if (value != null && String(value).trim()) {
+          return String(value).trim();
+        }
+      }
+      return "";
+    }
+
+    function creatorText(creators, key) {
+      return firstText(creators?.[key], creators?.[key + "s"]);
+    }
+
+    function collectVoiceText(value) {
+      if (!value) return "";
+      if (Array.isArray(value)) {
+        return value.map((item) => collectVoiceText(item)).filter(Boolean).join(" / ");
+      }
+      if (typeof value === "object") {
+        return firstText(value.name, value.work_name, value.title, value.value, value.name_ja, value.name_en);
+      }
+      return String(value).trim();
+    }
+
+    function findVoiceText(source, depth = 0) {
+      if (!source || depth > 4) return "";
+      if (Array.isArray(source)) {
+        for (const item of source) {
+          const roleText = firstText(item?.type, item?.role, item?.author_type, item?.creator_type, item?.type_name);
+          if (/voice|cv|seiyu|cast/i.test(roleText)) {
+            const text = collectVoiceText(item?.name || item?.names || item?.creators || item?.value || item);
+            if (text) return text;
+          }
+        }
+        for (const item of source) {
+          const text = findVoiceText(item, depth + 1);
+          if (text) return text;
+        }
+        return "";
+      }
+      if (typeof source === "object") {
+        for (const key of ["voice_by", "voice_bys", "voice", "voices", "cv", "cvs", "cast", "casts"]) {
+          const text = collectVoiceText(source[key]);
+          if (text) return text;
+        }
+        for (const [key, value] of Object.entries(source)) {
+          if (/voice|cv|seiyu|cast/i.test(key)) {
+            const text = collectVoiceText(value);
+            if (text) return text;
+          }
+        }
+        for (const value of Object.values(source)) {
+          const text = findVoiceText(value, depth + 1);
+          if (text) return text;
+        }
+      }
+      return "";
+    }
+
+    function numericText(value) {
+      const text = firstText(value).replace(/[^0-9]/g, "");
+      return text;
+    }
+
+    function parseDlsiteProduct(raw) {
+      let product = Array.isArray(raw) ? raw[0] : raw;
+      if (product && typeof product === "object" && !product.work_name && !product.title) {
+        const firstKey = Object.keys(product)[0];
+        if (firstKey && product[firstKey] && typeof product[firstKey] === "object") product = product[firstKey];
+      }
+      if (!product || typeof product !== "object") return null;
+      const creators = product.creators || product.creaters || product.maker || {};
+      return {
+        title: firstText(product.work_name, product.title, product.name, product.work?.work_name),
+        cv: firstText(findVoiceText(creators), findVoiceText(product), creatorText(creators, "voice_by"), product.voice_by, product.voice),
+        circle: firstText(product.maker_name, product.circle, product.maker?.name, product.brand?.name),
+        originalPrice: numericText(product.official_price, product.price, product.price_str, product.work_price)
+      };
+    }
+
+    function dlsiteProxyUrl() {
+      const param = new URLSearchParams(window.location.search).get("dlsiteProxy");
+      return (param || DLSITE_PROXY_URL).trim();
+    }
+
+    function buildProxyUrl(base, workno) {
+      if (!base) return "";
+      if (base.includes("{workno}")) return base.replace("{workno}", encodeURIComponent(workno));
+      const url = new URL(base, window.location.href);
+      url.searchParams.set("workno", workno);
+      return url.toString();
+    }
+
+    async function fetchProductJson(workno) {
+      const directUrl = "https://www.dlsite.com/maniax/api/=/product.json?workno=" + encodeURIComponent(workno);
+      const attempts = [directUrl];
+      const proxyUrl = buildProxyUrl(dlsiteProxyUrl(), workno);
+      if (proxyUrl) attempts.push(proxyUrl);
+      let lastError;
+      for (const url of attempts) {
+        try {
+          const response = await fetch(url, { mode: "cors", credentials: "omit" });
+          if (!response.ok) throw new Error("HTTP " + response.status);
+          return await response.json();
+        } catch (error) {
+          lastError = error;
+          console.warn("DLsite import attempt failed", url, error);
+        }
+      }
+      throw lastError || new Error("DLsite import failed");
+    }
+
+    function applyImportedProduct(product) {
+      if (product.title) setEditableText("recordTitle", product.title);
+      if (product.cv) setEditableText("cvText", product.cv);
+      if (product.circle) setEditableText("circleText", product.circle);
+      if (product.originalPrice) originalPrice.value = product.originalPrice;
+      updateDiscount();
+      saveState();
+    }
+
+    async function importProductInfo() {
+      const workno = normalizeWorkno(editableText("rjText"));
+      if (!workno) {
+        alert(UI_IMPORT_NEED_RJ);
+        return;
+      }
+      importButton.disabled = true;
+      importButton.textContent = UI_IMPORT_LOADING;
+      try {
+        const product = parseDlsiteProduct(await fetchProductJson(workno));
+        if (!product || (!product.title && !product.cv && !product.circle && !product.originalPrice)) {
+          throw new Error("empty product");
+        }
+        applyImportedProduct(product);
+        importButton.textContent = UI_IMPORT_DONE;
+        window.setTimeout(() => { importButton.textContent = UI_IMPORT_INFO; }, 1200);
+      } catch (error) {
+        console.warn("import failed", error);
+        alert(UI_IMPORT_FAILED);
+        importButton.textContent = UI_IMPORT_INFO;
+      } finally {
+        importButton.disabled = false;
+      }
+    }
 
     function makeStars(row, value = 4) {
       const wrap = row.querySelector(".stars");
@@ -1286,6 +1502,7 @@
         originalPrice: valueOf("#originalPrice"),
         currentPrice: valueOf("#currentPrice"),
         currentDiscount: valueOf("#currentDiscount"),
+        currentDiscountManual,
         lowestPrice: valueOf("#lowestPrice"),
         cnChoice: document.querySelector(".choice-button.active")?.textContent.trim() || "",
         ratings: currentRatings(),
@@ -1328,6 +1545,7 @@
       originalPrice.value = state.originalPrice || "";
       currentPrice.value = state.currentPrice || state.paidPrice || "";
       currentDiscount.value = state.currentDiscount || "";
+      currentDiscountManual = Boolean(state.currentDiscountManual);
       lowestPrice.value = state.lowestPrice || "";
       document.querySelectorAll(".choice-button").forEach((button) => {
         button.classList.toggle("active", button.textContent.trim() === (state.cnChoice || CHOICE_SUBTITLE));
@@ -1387,11 +1605,23 @@
       });
     });
 
-    [originalPrice, currentPrice, currentDiscount, lowestPrice].forEach((input) => {
+    [originalPrice, currentPrice].forEach((input) => {
       input.addEventListener("input", () => {
         sanitizeNumericInput(input);
+        updateDiscount();
         scheduleSave();
       });
+    });
+
+    currentDiscount.addEventListener("input", () => {
+      sanitizeNumericInput(currentDiscount);
+      currentDiscountManual = true;
+      scheduleSave();
+    });
+
+    lowestPrice.addEventListener("input", () => {
+      sanitizeNumericInput(lowestPrice);
+      scheduleSave();
     });
 
     function focusTagText(node) {
@@ -1441,7 +1671,8 @@
       coverImage.style.objectFit = "contain";
       coverBox.classList.remove("has-image");
       document.querySelectorAll(".choice-button").forEach((item, index) => item.classList.toggle("active", index === 0));
-      updateDiscount();
+      currentDiscountManual = false;
+      updateDiscount(true);
       saveState();
     });
 
@@ -1889,6 +2120,8 @@
     exportModal.addEventListener("click", (event) => {
       if (event.target === exportModal) { exportModal.hidden = true; revokeLastExportUrl(); }
     });
+    importButton.addEventListener("click", importProductInfo);
+
     modalDownloadButton.addEventListener("click", () => {
       if (lastExportUrl) {
         const link = document.createElement("a");
