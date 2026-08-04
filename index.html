@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>乙抓repo模板</title>
+  <title>&#20057;&#25235;&#35760;&#24405;&#27169;&#26495;</title>
   <style>
     @font-face {
       font-family: "BlackSugarPlumCandy";
@@ -51,30 +51,387 @@
       gap: 12px;
     }
 
-    .site-title {
+    .site-header {
       width: min(100%, 1080px);
-      margin: 0;
-      color: var(--rose-deep);
-      font-size: 32px;
-      font-weight: 900;
-      line-height: 1.1;
-      text-align: center;
+      display: grid;
+      justify-items: center;
+      gap: 7px;
+      padding: 8px 0 2px;
     }
 
-    .toolbar {
+    .site-title-row {
+      width: min(100%, 900px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+
+    .title-side-ornament {
+      width: min(28vw, 250px);
+      height: 26px;
+      flex: 0 1 250px;
+      color: rgba(217, 95, 140, 0.66);
+      filter: drop-shadow(0 2px 4px rgba(93, 64, 81, 0.1));
+    }
+
+    .title-side-ornament.is-right {
+      transform: scaleX(-1);
+    }
+
+    .site-title {
+      margin: 0;
+      color: var(--rose-deep);
+      font-size: 48px;
+      font-weight: 900;
+      line-height: 1.05;
+      text-align: center;
+      letter-spacing: 0;
+      white-space: nowrap;
+      -webkit-text-stroke: 1.2px rgba(255, 255, 255, 0.92);
+      text-shadow:
+        0 2px 0 rgba(255, 255, 255, 0.76),
+        0 4px 8px rgba(93, 64, 81, 0.28);
+    }
+
+    .site-subtitle-wrap {
+      position: relative;
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 42px;
+    }
+
+    .site-subtitle-wrap::before,
+    .site-subtitle-wrap::after {
+      content: "";
+      position: absolute;
+      top: 7px;
+      width: 42px;
+      height: 20px;
+      background: linear-gradient(135deg, rgba(255, 189, 214, 0.86), rgba(217, 95, 140, 0.38));
+      border: 1px solid rgba(217, 95, 140, 0.22);
+      filter: drop-shadow(0 4px 8px rgba(184, 69, 112, 0.12));
+      z-index: 0;
+    }
+
+    .site-subtitle-wrap::before {
+      left: 10px;
+      clip-path: polygon(0 0, 100% 0, 82% 50%, 100% 100%, 0 100%, 16% 50%);
+    }
+
+    .site-subtitle-wrap::after {
+      right: 10px;
+      clip-path: polygon(0 0, 100% 0, 84% 50%, 100% 100%, 0 100%, 18% 50%);
+      transform: scaleX(-1);
+    }
+
+    .site-subtitle {
+      position: relative;
+      z-index: 1;
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(242, 183, 201, 0.76);
+      border-radius: 999px;
+      padding: 0 34px;
+      color: #c65c82;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.88), rgba(255, 244, 248, 0.92), rgba(255, 255, 255, 0.88));
+      box-shadow:
+        inset 0 0 0 3px rgba(255, 255, 255, 0.58),
+        0 8px 18px rgba(184, 69, 112, 0.13);
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .menu-toolbar {
       width: min(100%, 1080px);
+      display: grid;
+      gap: 10px;
+    }
+
+    .menu-primary-row {
+      min-height: 58px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 12px;
+      border: 1px solid rgba(217, 95, 140, 0.2);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.48);
+    }
+
+    .menu-tabs {
+      display: flex;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .menu-tab {
+      position: relative;
+      min-height: 42px;
+      border: 0;
+      border-radius: 14px;
+      padding: 0 18px;
+      color: var(--ink);
+      background: transparent;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .menu-tab.active {
+      color: var(--rose-deep);
+      background: rgba(255, 255, 255, 0.74);
+      box-shadow: 0 10px 18px rgba(184, 69, 112, 0.08);
+    }
+
+    .menu-tab.active::after {
+      content: "";
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 0;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #d95f8c, #b84570);
+    }
+
+    .menu-icon {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      color: currentColor;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+    }
+
+    svg.menu-icon {
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      overflow: visible;
+    }
+
+    .menu-icon.icon-heart::before,
+    .menu-icon.icon-heart::after {
+      content: "";
+      position: absolute;
+      width: 9px;
+      height: 14px;
+      border: 2px solid currentColor;
+      border-bottom: 0;
+      border-radius: 9px 9px 0 0;
+      top: 2px;
+      background: transparent;
+    }
+
+    .menu-icon.icon-heart::before {
+      left: 4px;
+      transform: rotate(-45deg);
+      transform-origin: 0 100%;
+    }
+
+    .menu-icon.icon-heart::after {
+      right: 4px;
+      transform: rotate(45deg);
+      transform-origin: 100% 100%;
+    }
+
+    .menu-icon.icon-template::before {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border: 2px solid currentColor;
+      border-radius: 3px;
+      box-shadow: inset 0 5px 0 rgba(217, 95, 140, 0.16);
+    }
+
+    .menu-icon.icon-template::after {
+      content: "";
+      position: absolute;
+      left: 6px;
+      right: 6px;
+      top: 8px;
+      border-top: 2px solid currentColor;
+      box-shadow: 0 4px 0 currentColor;
+      opacity: 0.72;
+    }
+
+    .menu-icon.icon-palette::before {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border: 2px solid currentColor;
+      border-radius: 50%;
+    }
+
+    .menu-icon.icon-palette::after {
+      content: "";
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+      left: 5px;
+      top: 5px;
+      box-shadow: 6px 1px 0 currentColor, 3px 7px 0 currentColor;
+    }
+
+    .menu-icon.icon-clear::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 10px;
+      height: 11px;
+      border: 2px solid currentColor;
+      border-top: 0;
+      border-radius: 0 0 3px 3px;
+    }
+
+    .menu-icon.icon-clear::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 2px;
+      width: 12px;
+      border-top: 2px solid currentColor;
+      box-shadow: 4px -2px 0 -1px currentColor;
+      transform: rotate(-8deg);
+    }
+
+    .menu-icon.icon-import::before,
+    .menu-icon.icon-export::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 4px;
+      height: 9px;
+      border-left: 2px solid currentColor;
+    }
+
+    .menu-icon.icon-import::after,
+    .menu-icon.icon-export::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 3px;
+      width: 6px;
+      height: 6px;
+      border-left: 2px solid currentColor;
+      border-top: 2px solid currentColor;
+      transform: rotate(45deg);
+    }
+
+    .menu-icon.icon-export::after {
+      top: 8px;
+      transform: rotate(225deg);
+    }
+
+    .menu-icon.icon-image::before {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border: 2px solid currentColor;
+      border-radius: 4px;
+    }
+
+    .menu-icon.icon-image::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      bottom: 5px;
+      width: 9px;
+      height: 7px;
+      background: currentColor;
+      clip-path: polygon(0 100%, 38% 40%, 58% 68%, 76% 28%, 100% 100%);
+    }
+
+    .menu-icon.icon-star::before {
+      content: "";
+      position: absolute;
+      inset: 1px;
+      background: currentColor;
+      clip-path: polygon(50% 0, 62% 34%, 98% 34%, 69% 55%, 80% 91%, 50% 70%, 20% 91%, 31% 55%, 2% 34%, 38% 34%);
+    }
+
+    .menu-icon.icon-list::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      right: 3px;
+      top: 4px;
+      border-top: 2px solid currentColor;
+      box-shadow: 0 5px 0 currentColor, 0 10px 0 currentColor;
+    }
+
+    .menu-icon.icon-list::after {
+      content: "";
+      position: absolute;
+      left: 1px;
+      top: 3px;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 5px 0 currentColor, 0 10px 0 currentColor;
+    }
+
+    .menu-secondary-row {
+      min-height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 14px 28px;
+      border: 1px solid rgba(217, 95, 140, 0.18);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.36);
+    }
+
+    .menu-panel {
       min-height: 44px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
+    }
+
+    .menu-panel[hidden] { display: none !important; }
+
+    .menu-placeholder {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
       gap: 8px;
-      flex-wrap: nowrap;
+      border: 1px dashed rgba(217, 95, 140, 0.28);
+      border-radius: 999px;
+      padding: 0 18px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.62);
+      font-weight: 900;
     }
 
     .toolbar-actions {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: center;
       gap: 8px;
       flex-wrap: nowrap;
     }
@@ -83,14 +440,20 @@
       min-height: 40px;
       border: 1px solid rgba(217, 95, 140, 0.32);
       border-radius: 999px;
-      padding: 0 16px;
+      padding: 0 14px;
       color: var(--rose-deep);
       background: rgba(255, 255, 255, 0.8);
       box-shadow: 0 8px 18px rgba(184, 69, 112, 0.12);
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
     }
 
-    .action-button.primary {
+    .action-button.primary,
+    .action-button.primary .menu-icon {
       color: #fff;
       border-color: transparent;
       background: linear-gradient(135deg, #d95f8c, #c84c79);
@@ -99,28 +462,84 @@
     .template-switch {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 10px;
       margin-right: 0;
-      padding: 4px;
-      border: 1px solid rgba(217, 95, 140, 0.24);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.66);
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
     }
 
     .template-button {
-      min-height: 32px;
-      border: 0;
+      min-height: 36px;
+      border: 1px solid rgba(217, 95, 140, 0.24);
       border-radius: 999px;
-      padding: 0 14px;
+      padding: 0 16px;
       color: var(--rose-deep);
-      background: transparent;
+      background: rgba(255, 255, 255, 0.72);
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
     .template-button.active {
       color: #fff;
       background: linear-gradient(135deg, #d95f8c, #b84570);
       box-shadow: 0 6px 13px rgba(184, 69, 112, 0.14);
+    }
+
+    .theme-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 46px;
+    }
+
+    .theme-button {
+      width: 118px;
+      height: 38px;
+      border: 1px solid rgba(217, 95, 140, 0.24);
+      border-radius: 999px;
+      padding: 0 12px;
+      background: rgba(255, 255, 255, 0.82);
+      cursor: pointer;
+      box-shadow: 0 7px 16px rgba(184, 69, 112, 0.08);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      font-size: 21px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .theme-button.active {
+      border-width: 3px;
+      border-color: rgba(184, 69, 112, 0.62);
+      box-shadow: 0 9px 18px rgba(184, 69, 112, 0.18);
+      background: #fff;
+    }
+
+    .theme-button .c1 { color: var(--theme-c1); }
+    .theme-button .c2 { color: var(--theme-c2); }
+    .theme-button .c3 { color: var(--theme-c3); }
+    .theme-button .c4 { color: var(--theme-c4); }
+
+    .theme-more-button {
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(217, 95, 140, 0.28);
+      border-radius: 999px;
+      color: var(--rose-deep);
+      background: rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+    }
+
+    .theme-bar.is-collapsed .theme-button:nth-of-type(n+5) {
+      display: none;
     }
 
     .stage {
@@ -130,6 +549,22 @@
     }
 
     .card {
+      --card-ink: #5d4051;
+      --card-muted: #9b7a8d;
+      --card-accent: #d95f8c;
+      --card-accent-deep: #b84570;
+      --card-line: #f2b7c9;
+      --card-line-soft: rgba(242, 183, 201, 0.54);
+      --card-dash: rgba(135, 185, 170, 0.42);
+      --card-mint: #87b9aa;
+      --card-mint-soft: rgba(135, 185, 170, 0.28);
+      --card-chip-bg: rgba(255, 244, 248, 0.82);
+      --card-panel-bg: rgba(255, 255, 255, 0.58);
+      --card-review-bg: rgba(255, 255, 255, 0.62);
+      --card-cover-bg: #ffe8f0;
+      --card-bg-a: #fff7f4;
+      --card-bg-b: #fffdf9;
+      --card-bg-c: #f2faf3;
       position: relative;
       width: 1080px;
       height: 1440px;
@@ -142,6 +577,25 @@
       border: 0;
       border-radius: 44px;
       box-shadow: var(--shadow);
+    }
+
+    .card[data-theme="sakura-ice"] {
+      --card-ink: #55415c;
+      --card-muted: #91758a;
+      --card-accent: #ff9ac6;
+      --card-accent-deep: #8f78df;
+      --card-line: #ffbdd6;
+      --card-line-soft: rgba(255, 189, 214, 0.58);
+      --card-dash: rgba(176, 221, 254, 0.6);
+      --card-mint: #b0ddfe;
+      --card-mint-soft: rgba(176, 221, 254, 0.42);
+      --card-chip-bg: rgba(255, 229, 249, 0.78);
+      --card-panel-bg: rgba(255, 255, 255, 0.62);
+      --card-review-bg: rgba(255, 255, 255, 0.64);
+      --card-cover-bg: #ffe5f9;
+      --card-bg-a: #fff7fb;
+      --card-bg-b: #fffdfd;
+      --card-bg-c: #f4fbff;
     }
 
     .card::before {
@@ -1042,6 +1496,15 @@
       flex-wrap: wrap;
     }
 
+    .image-tool-row,
+    .image-action-row {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     .image-tool-button {
       min-height: 34px;
       border: 1px solid rgba(217, 95, 140, 0.28);
@@ -1059,6 +1522,100 @@
       border-color: transparent;
       background: linear-gradient(135deg, #d95f8c, #b84570);
     }
+
+    .image-icon-button {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      min-height: 38px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+
+    .image-icon-button span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    .image-icon-button::before,
+    .image-icon-button::after {
+      content: "";
+      position: absolute;
+      color: currentColor;
+      box-sizing: border-box;
+    }
+
+    .icon-mosaic::before {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid rgba(95, 76, 88, 0.28);
+      background:
+        linear-gradient(90deg,
+          #f8f8f8 0 25%, #797979 25% 50%, #d8d8d8 50% 75%, #1f1f1f 75% 100%) 0 0 / 100% 25%,
+        linear-gradient(90deg,
+          #9c9c9c 0 25%, #262626 25% 50%, #efefef 50% 75%, #6b6b6b 75% 100%) 0 33.33% / 100% 25%,
+        linear-gradient(90deg,
+          #d1d1d1 0 25%, #fafafa 25% 50%, #5d5d5d 50% 75%, #303030 75% 100%) 0 66.66% / 100% 25%,
+        linear-gradient(90deg,
+          #3a3a3a 0 25%, #b6b6b6 25% 50%, #242424 50% 75%, #eeeeee 75% 100%) 0 100% / 100% 25%;
+      background-repeat: no-repeat;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.58) inset;
+    }
+
+    .icon-blur::before {
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+      background: radial-gradient(circle, currentColor 0 34%, rgba(217,95,140,0.58) 48%, rgba(217,95,140,0.18) 66%, transparent 78%);
+      filter: blur(1.5px);
+      opacity: 0.95;
+    }
+
+    .icon-blur.active::before,
+    .image-tool-button.active.icon-blur::before {
+      background: radial-gradient(circle, #fff 0 34%, rgba(255,255,255,0.58) 48%, rgba(255,255,255,0.18) 66%, transparent 78%);
+    }
+
+    .tool-image {
+      width: 30px;
+      height: 30px;
+      display: block;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    .icon-erase::before,
+    .icon-erase::after { display: none; }
+
+    .eraser-image-active { display: none; }
+    .image-tool-button.active .eraser-image-default { display: none; }
+    .image-tool-button.active .eraser-image-active { display: block; }
+
+    .icon-undo::before {
+      width: 28px;
+      height: 28px;
+      background: currentColor;
+      -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="black" d="M13.5 6.3 3.6 15c-.8.7-.8 1.9 0 2.6l9.9 8.1c1.2 1 3 .1 3-1.5v-4.1h4.1c4.1 0 6.8 1.7 8.5 4.6.5.9 1.9.6 1.9-.5-.1-9.2-4.8-14.1-13.5-14.1h-1V7.8c0-1.6-1.8-2.5-3-1.5z"/></svg>') center / contain no-repeat;
+      mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="black" d="M13.5 6.3 3.6 15c-.8.7-.8 1.9 0 2.6l9.9 8.1c1.2 1 3 .1 3-1.5v-4.1h4.1c4.1 0 6.8 1.7 8.5 4.6.5.9 1.9.6 1.9-.5-.1-9.2-4.8-14.1-13.5-14.1h-1V7.8c0-1.6-1.8-2.5-3-1.5z"/></svg>') center / contain no-repeat;
+    }
+
+    .icon-undo::after { display: none; }
+
+    .icon-redo::before {
+      width: 28px;
+      height: 28px;
+      background: currentColor;
+      transform: scaleX(-1);
+      -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="black" d="M13.5 6.3 3.6 15c-.8.7-.8 1.9 0 2.6l9.9 8.1c1.2 1 3 .1 3-1.5v-4.1h4.1c4.1 0 6.8 1.7 8.5 4.6.5.9 1.9.6 1.9-.5-.1-9.2-4.8-14.1-13.5-14.1h-1V7.8c0-1.6-1.8-2.5-3-1.5z"/></svg>') center / contain no-repeat;
+      mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="black" d="M13.5 6.3 3.6 15c-.8.7-.8 1.9 0 2.6l9.9 8.1c1.2 1 3 .1 3-1.5v-4.1h4.1c4.1 0 6.8 1.7 8.5 4.6.5.9 1.9.6 1.9-.5-.1-9.2-4.8-14.1-13.5-14.1h-1V7.8c0-1.6-1.8-2.5-3-1.5z"/></svg>') center / contain no-repeat;
+    }
+
+    .icon-redo::after { display: none; }
 
     .brush-control {
       display: inline-flex;
@@ -1090,6 +1647,7 @@
 
     .sticker-panel {
       display: grid;
+      grid-template-rows: 34px 322px 28px;
       align-content: start;
       gap: 10px;
       min-height: 100%;
@@ -1123,7 +1681,9 @@
     .sticker-list {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(5, 58px);
       gap: 8px;
+      min-height: 322px;
     }
 
     .sticker-option {
@@ -1143,6 +1703,40 @@
       max-height: 46px;
       object-fit: contain;
       pointer-events: none;
+    }
+
+    .sticker-pager {
+      display: grid;
+      grid-template-columns: 32px 58px 32px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 28px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    #stickerPageText {
+      display: inline-block;
+      width: 58px;
+      text-align: center;
+    }
+
+    .sticker-page-button {
+      width: 32px;
+      height: 28px;
+      border: 1px solid rgba(217, 95, 140, 0.28);
+      border-radius: 999px;
+      color: var(--rose-deep);
+      background: rgba(255, 255, 255, 0.82);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .sticker-page-button:disabled {
+      opacity: 0.38;
+      cursor: default;
     }
 
     #imageEditCanvas {
@@ -1257,29 +1851,244 @@
 
     .hidden { display: none !important; }
 
+
+
+    .card {
+      color: var(--card-ink);
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.36) 1px, transparent 1px) 0 0 / 36px 36px,
+        linear-gradient(rgba(255, 255, 255, 0.32) 1px, transparent 1px) 0 0 / 36px 36px,
+        linear-gradient(145deg, var(--card-bg-a) 0%, var(--card-bg-b) 48%, var(--card-bg-c) 100%);
+    }
+
+    .card::before { border-color: color-mix(in srgb, var(--card-line) 78%, transparent); }
+    .card::after { border-color: var(--card-dash); }
+    .card .editable,
+    .card .soft-input,
+    .card .soft-area,
+    .card .metric-value,
+    .card .metric input,
+    .card .metric-suffix,
+    .card .player-deco { color: var(--card-ink); }
+    .card .title-panel .editable:empty::before { color: color-mix(in srgb, var(--card-muted) 48%, transparent); }
+    .card .cover-box,
+    .card .cover-placeholder { background: var(--card-cover-bg); }
+    .card .cover-box { border-color: #fff; }
+    .card .tiny-button {
+      border-color: var(--card-dash);
+      color: color-mix(in srgb, var(--card-mint) 65%, #24473e);
+    }
+    .card .info-panel,
+    .card .price-panel,
+    .card .ratings,
+    .card .tags-panel { border-color: var(--card-line-soft); background: var(--card-panel-bg); }
+    .card .review-panel { border-color: color-mix(in srgb, var(--card-accent) 28%, transparent); background: var(--card-review-bg); }
+    .card .panel-title,
+    .card .price-label,
+    .card .rating-section-label,
+    .card .review-label,
+    .card .section-label {
+      background: linear-gradient(135deg, var(--card-accent), var(--card-accent-deep));
+      box-shadow: 0 6px 14px color-mix(in srgb, var(--card-accent-deep) 18%, transparent);
+    }
+    .card .field label,
+    .card .metric-label,
+    .card .title-field .editable { color: var(--card-accent); }
+    .card .field::after,
+    .card.compact .info-panel .field::after { border-bottom-color: color-mix(in srgb, var(--card-accent) 32%, transparent); }
+    .card .metric { border-color: var(--card-mint-soft); background: rgba(255, 255, 255, 0.66); }
+    .card .choice-button { border-color: color-mix(in srgb, var(--card-accent) 26%, transparent); color: var(--card-muted); }
+    .card .choice-button.active {
+      background: linear-gradient(135deg, var(--card-accent), var(--card-accent-deep));
+      box-shadow: 0 6px 13px color-mix(in srgb, var(--card-accent-deep) 16%, transparent);
+    }
+    .card .rating-label,
+    .card .tag,
+    .card .tag-remove { color: var(--card-accent-deep); }
+    .card .tag { border-color: color-mix(in srgb, var(--card-accent) 24%, transparent); background: var(--card-chip-bg); }
+    .card .tag-remove { color: #fff; background: color-mix(in srgb, var(--card-accent) 86%, transparent); }
+    .card .add-tag { background: var(--card-mint); }
+    .card .star { color: color-mix(in srgb, var(--card-accent) 32%, transparent); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--card-line) 32%, transparent); }
+    .card .star.active {
+      background: linear-gradient(135deg, color-mix(in srgb, var(--card-line) 82%, #fff), var(--card-accent));
+      box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--card-accent-deep) 16%, transparent), 0 5px 10px color-mix(in srgb, var(--card-accent-deep) 18%, transparent);
+    }
+    .card .player-bar { background: color-mix(in srgb, var(--card-line) 34%, transparent); }
+    .card .player-bar-fill { background: linear-gradient(90deg, color-mix(in srgb, var(--card-accent) 88%, transparent), color-mix(in srgb, var(--card-line) 96%, transparent)); }
+    .card .player-dot { border-color: color-mix(in srgb, var(--card-accent) 70%, transparent); }
+    .card .player-time { color: color-mix(in srgb, var(--card-ink) 68%, transparent); }
+    .card .player-time:focus { color: var(--card-accent-deep); }
+    .card .player-icon,
+    .card .player-icon.shuffle,
+    .card .player-icon.loop { color: color-mix(in srgb, var(--card-accent-deep) 78%, transparent); }
+    .card .player-play { background: linear-gradient(135deg, var(--card-accent), color-mix(in srgb, var(--card-accent-deep) 72%, #8f659f)); }
+
+
+    .card[data-theme="sakura-ice"] .choice-button.active {
+      color: #fff;
+    }
+
+    .card[data-theme="sakura-ice"] .metric-label {
+      color: var(--card-mint);
+    }
+
+    .card.compact[data-theme="sakura-ice"] .player-bar-fill {
+      background: linear-gradient(90deg, rgba(176, 221, 254, 0.95), rgba(183, 182, 255, 0.92));
+    }
+
+    .card.compact[data-theme="sakura-ice"] .player-dot {
+      border-color: rgba(176, 221, 254, 0.95);
+    }
+
+
+    .card .choice-button.active {
+      color: #fff;
+    }
+
+    .card .metric-label {
+      color: var(--card-mint);
+    }
+
+    .card .star.active {
+      color: #fff;
+    }
+
     @media (max-width: 780px) {
+      .image-edit-toolbar {
+        display: grid;
+        gap: 10px;
+        justify-items: center;
+      }
+      .image-tool-row {
+        display: grid;
+        grid-template-columns: repeat(5, 38px) minmax(104px, 1fr);
+        width: min(100%, 420px);
+        gap: 7px;
+      }
+      .image-action-row {
+        width: min(100%, 320px);
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .image-action-row .image-tool-button { padding: 0 10px; }
+      .brush-control {
+        justify-self: stretch;
+        min-width: 0;
+        gap: 6px;
+        font-size: 13px;
+      }
+      .brush-control input { width: 100%; min-width: 0; }
       .image-edit-workspace { grid-template-columns: 1fr; }
-      .sticker-panel { max-height: 160px; overflow: auto; }
-      .sticker-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .sticker-panel { grid-template-rows: 34px 116px 28px; max-height: 220px; overflow: auto; }
+      .sticker-list { grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: repeat(2, 54px); min-height: 116px; }
       .app {
         min-height: 100dvh;
         padding: 10px 8px 14px;
         gap: 10px;
         overflow: hidden;
       }
-      .toolbar {
+      .site-header {
+        gap: 5px;
+        padding: 4px 0 0;
+      }
+      .site-title-row {
         width: 100%;
-        display: grid;
-        justify-items: center;
-        justify-content: center;
         gap: 8px;
       }
-      .template-switch { margin-right: 0; }
-      .toolbar-actions {
-        justify-content: center;
-        flex-wrap: wrap;
+      .title-side-ornament {
+        width: min(25vw, 96px);
+        height: 20px;
+        flex-basis: 96px;
       }
+      .site-title {
+        font-size: 32px;
+        -webkit-text-stroke-width: 0.8px;
+      }
+      .site-subtitle-wrap {
+        min-height: 28px;
+        padding: 0 24px;
+      }
+      .site-subtitle-wrap::before,
+      .site-subtitle-wrap::after {
+        top: 6px;
+        width: 30px;
+        height: 16px;
+      }
+      .site-subtitle-wrap::before { left: 5px; }
+      .site-subtitle-wrap::after { right: 5px; }
+      .site-subtitle {
+        min-height: 28px;
+        padding: 0 20px;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+      }
+      .menu-toolbar {
+        width: 100%;
+        display: grid;
+        justify-items: stretch;
+        justify-content: stretch;
+        gap: 8px;
+      }
+      .menu-primary-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .menu-tabs {
+        order: 2;
+        max-width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+        justify-content: center;
+      }
+      .menu-tabs::-webkit-scrollbar { display: none; }
+      .menu-tab {
+        min-height: 32px;
+        padding: 0 10px;
+        font-size: 15px;
+      }
+      .template-switch { margin-right: 0; }
       .action-button { min-height: 38px; padding: 0 14px; }
+      .toolbar-actions {
+        order: 1;
+        width: min(100%, 360px);
+        justify-self: center;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        justify-content: center;
+        gap: 8px 10px;
+      }
+      #importDataButton { order: 1; }
+      #exportDataButton { order: 2; }
+      #resetButton { order: 3; }
+      #downloadButton { order: 4; }
+      #importDataInput { order: 5; }
+      .toolbar-actions .action-button {
+        width: 100%;
+        min-height: 34px;
+        padding: 0 8px;
+        font-size: 15px;
+        letter-spacing: 0;
+        box-shadow: 0 5px 12px rgba(184, 69, 112, 0.1);
+      }
+      .theme-bar {
+        width: 100%;
+        min-height: 44px;
+        gap: 8px;
+        flex-wrap: nowrap;
+      }
+      .theme-button {
+        width: 124px;
+        height: 34px;
+        border-radius: 999px;
+        flex: 0 0 auto;
+        font-size: 20px;
+      }
+      .theme-more-button {
+        width: 28px;
+        height: 28px;
+        flex: 0 0 auto;
+      }
       .stage {
         width: 100%;
         overflow: hidden;
@@ -1351,18 +2160,68 @@
 </head>
 <body>
   <main class="app">
-    <h1 class="site-title">乙抓repo模板</h1>
-    <div class="toolbar">
-      <div class="template-switch" aria-label="template">
-        <button class="template-button active" data-template="full" type="button">&#23436;&#25972;&#29256;</button>
-        <button class="template-button" data-template="compact" type="button">&#31616;&#30053;&#29256;</button>
+    <header class="site-header">
+      <div class="site-title-row">
+        <svg class="title-side-ornament" viewBox="0 0 250 26" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 13h48M198 13h50" opacity=".52"/>
+            <path d="M68 13h24M158 13h24" opacity=".42"/>
+            <path d="M112 13h26" opacity=".36"/>
+            <path d="M58 9c2.5-3.4 7.5-1.7 7.5 2.4 0 5-7.5 8.3-7.5 8.3s-7.5-3.3-7.5-8.3C50.5 7.3 55.5 5.6 58 9Z" opacity=".78"/>
+            <path d="M190 9c2.5-3.4 7.5-1.7 7.5 2.4 0 5-7.5 8.3-7.5 8.3s-7.5-3.3-7.5-8.3c0-4.1 5-5.8 7.5-2.4Z" opacity=".78"/>
+          </g>
+          <g fill="currentColor">
+            <circle cx="102" cy="13" r="2.2" opacity=".48"/>
+            <circle cx="148" cy="13" r="2.2" opacity=".48"/>
+            <path d="M125 5c2.3 4 4 5.7 7.8 8-3.8 2.3-5.5 4-7.8 8-2.3-4-4-5.7-7.8-8 3.8-2.3 5.5-4 7.8-8Z" opacity=".72"/>
+          </g>
+        </svg>
+        <h1 class="site-title">&#20057;&#25235;&#35760;&#24405;&#27169;&#26495;</h1>
+        <svg class="title-side-ornament is-right" viewBox="0 0 250 26" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 13h48M198 13h50" opacity=".52"/>
+            <path d="M68 13h24M158 13h24" opacity=".42"/>
+            <path d="M112 13h26" opacity=".36"/>
+            <path d="M58 9c2.5-3.4 7.5-1.7 7.5 2.4 0 5-7.5 8.3-7.5 8.3s-7.5-3.3-7.5-8.3C50.5 7.3 55.5 5.6 58 9Z" opacity=".78"/>
+            <path d="M190 9c2.5-3.4 7.5-1.7 7.5 2.4 0 5-7.5 8.3-7.5 8.3s-7.5-3.3-7.5-8.3c0-4.1 5-5.8 7.5-2.4Z" opacity=".78"/>
+          </g>
+          <g fill="currentColor">
+            <circle cx="102" cy="13" r="2.2" opacity=".48"/>
+            <circle cx="148" cy="13" r="2.2" opacity=".48"/>
+            <path d="M125 5c2.3 4 4 5.7 7.8 8-3.8 2.3-5.5 4-7.8 8-2.3-4-4-5.7-7.8-8 3.8-2.3 5.5-4 7.8-8Z" opacity=".72"/>
+          </g>
+        </svg>
       </div>
-      <div class="toolbar-actions">
-        <button class="action-button" id="resetButton" type="button">&#28165;&#31354;&#20869;&#23481;</button>
-        <button class="action-button" id="importDataButton" type="button">&#23548;&#20837;&#25968;&#25454;</button>
-        <button class="action-button" id="exportDataButton" type="button">&#23548;&#20986;&#25968;&#25454;</button>
-        <button class="action-button primary" id="downloadButton" type="button">&#23548;&#20986;&#22270;&#29255;</button>
-        <input class="hidden" id="importDataInput" type="file" accept="application/json,.json" />
+      <div class="site-subtitle-wrap"><div class="site-subtitle">&#20057;&#22899;&#21521;&#12489;&#12521;&#12510;CD&#12539;&#38899;&#22768;&#20316;&#21697;&#35352;&#37682;</div></div>
+    </header>
+    <div class="menu-toolbar">
+      <div class="menu-primary-row">
+        <nav class="menu-tabs" aria-label="toolbar menu">
+          <button class="menu-tab" data-menu="collection" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12.6 12 20l-7.5-7.4a5 5 0 0 1 7.1-7.1l.4.4.4-.4a5 5 0 0 1 7.1 7.1Z"/></svg><span>&#25105;&#30340;&#25910;&#34255;</span></button>
+          <button class="menu-tab active" data-menu="template" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16"/><path d="M9 9v11"/></svg><span>&#27169;&#26495;&#26679;&#24335;</span></button>
+          <button class="menu-tab" data-menu="theme" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 0 0 0 16h1.3a1.7 1.7 0 0 0 1.2-2.9 1.7 1.7 0 0 1 1.2-2.9H17a3 3 0 0 0 3-3C20 7.3 16.4 4 12 4Z"/><circle cx="8.3" cy="10" r=".7"/><circle cx="11" cy="7.7" r=".7"/><circle cx="14" cy="8" r=".7"/></svg><span>&#27169;&#26495;&#33394;&#21345;</span></button>
+        </nav>
+        <div class="toolbar-actions">
+          <button class="action-button" id="resetButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6.5 6l1 14h9l1-14"/><path d="M10 11v5"/><path d="M14 11v5"/></svg><span>&#28165;&#31354;&#20869;&#23481;</span></button>
+          <button class="action-button" id="importDataButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg><span>&#23548;&#20837;&#25968;&#25454;</span></button>
+          <button class="action-button" id="exportDataButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span>&#23548;&#20986;&#25968;&#25454;</span></button>
+          <button class="action-button primary" id="downloadButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="m7 17 4-4 3 3 2-2 3 3"/></svg><span>&#23548;&#20986;&#22270;&#29255;</span></button>
+          <input class="hidden" id="importDataInput" type="file" accept="application/json,.json" />
+        </div>
+      </div>
+      <div class="menu-secondary-row">
+        <div class="menu-panel" data-menu-panel="collection" hidden>
+          <span class="menu-placeholder"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12.6 12 20l-7.5-7.4a5 5 0 0 1 7.1-7.1l.4.4.4-.4a5 5 0 0 1 7.1 7.1Z"/></svg><span>&#25910;&#34255;&#21151;&#33021;&#20934;&#22791;&#20013;</span></span>
+        </div>
+        <div class="menu-panel template-switch" data-menu-panel="template" aria-label="template">
+          <button class="template-button active" data-template="full" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7L6.8 19l1-5.8-4.2-4.1 5.8-.8L12 3Z"/></svg><span>&#23436;&#25972;&#29256;</span></button>
+          <button class="template-button" data-template="compact" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12"/><path d="M8 12h12"/><path d="M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span>&#31616;&#30053;&#29256;</span></button>
+        </div>
+        <div class="menu-panel theme-bar is-collapsed" id="themeBar" data-menu-panel="theme" hidden>
+          <button class="theme-button active" data-theme="berry-mint" type="button" aria-label="berry mint" style="--theme-c1:#d95f8c;--theme-c2:#f2b7c9;--theme-c3:#87b9aa;--theme-c4:#b84570"><span class="theme-dot"></span><span class="c1">&#x8393;</span><span class="c2">&#x7c89;</span><span class="c3">&#x8584;</span><span class="c4">&#x8377;</span></button>
+          <button class="theme-button" data-theme="sakura-ice" type="button" aria-label="sakura ice" style="--theme-c1:#ff9ac6;--theme-c2:#ffbdd6;--theme-c3:#b7b6ff;--theme-c4:#b0ddfe"><span class="theme-dot"></span><span class="c1">&#x6a31;</span><span class="c2">&#x82b1;</span><span class="c3">&#x661f;</span><span class="c4">&#x51b0;</span></button>
+          <button class="theme-more-button hidden" id="themeMoreButton" type="button" aria-label="more themes">&#9662;</button>
+        </div>
       </div>
     </div>
 
@@ -1504,27 +2363,34 @@
 
     <div class="image-edit-modal" id="imageEditModal" hidden>
       <div class="image-edit-sheet">
-        <h2 class="image-edit-title">&#32534;&#36753;&#22270;&#29255;</h2>
         <div class="image-edit-toolbar">
-          <button class="image-tool-button active" id="imageToolMosaic" type="button">&#39532;&#36187;&#20811;</button>
-          <button class="image-tool-button" id="imageToolBlur" type="button">&#27169;&#31946;</button>
-          <button class="image-tool-button" id="imageToolErase" type="button">&#27233;&#30382;&#25830;</button>
-          <button class="image-tool-button" id="imageToolSticker" type="button">&#28155;&#21152;&#36148;&#32440;</button>
-          <label class="brush-control">&#30011;&#31508; <input id="brushSize" type="range" min="12" max="120" value="42" /></label>
-          <button class="image-tool-button" id="imageUndoButton" type="button">&#25764;&#38144;</button>
-          <button class="image-tool-button" id="imageClearButton" type="button">&#28165;&#31354;</button>
-          <button class="image-tool-button primary" id="imageDoneButton" type="button">&#23436;&#25104;</button>
-          <button class="image-tool-button" id="imageCancelButton" type="button">&#21462;&#28040;</button>
+          <div class="image-tool-row">
+            <button class="image-tool-button image-icon-button icon-mosaic active" id="imageToolMosaic" type="button" aria-label="mosaic"><span>&#39532;&#36187;&#20811;</span></button>
+            <button class="image-tool-button image-icon-button icon-blur" id="imageToolBlur" type="button" aria-label="blur"><span>&#27169;&#31946;</span></button>
+            <button class="image-tool-button image-icon-button icon-erase" id="imageToolErase" type="button" aria-label="erase"><span>&#27233;&#30382;&#25830;</span><img class="tool-image eraser-image eraser-image-default" src="tool-icons/eraser1.png" alt="" /><img class="tool-image eraser-image eraser-image-active" src="tool-icons/eraser2.png" alt="" /></button>
+            <button class="image-tool-button image-icon-button icon-undo" id="imageUndoButton" type="button" aria-label="undo"><span>&#25764;&#38144;</span></button>
+            <button class="image-tool-button image-icon-button icon-redo" id="imageRedoButton" type="button" aria-label="redo"><span>&#37325;&#20570;</span></button>
+            <label class="brush-control"><span>&#30011;&#31508;</span> <input id="brushSize" type="range" min="12" max="120" value="42" /></label>
+          </div>
+          <div class="image-action-row">
+            <button class="image-tool-button" id="imageClearButton" type="button">&#28165;&#31354;</button>
+            <button class="image-tool-button primary" id="imageDoneButton" type="button">&#23436;&#25104;</button>
+            <button class="image-tool-button" id="imageCancelButton" type="button">&#21462;&#28040;</button>
+          </div>
         </div>
         <div class="image-edit-workspace">
           <div class="image-edit-canvas-wrap">
             <canvas id="imageEditCanvas"></canvas>
           </div>
           <aside class="sticker-panel" aria-label="sticker picker">
-            <div class="sticker-panel-title">&#36148;&#32440;</div>
             <label class="sticker-upload-label" for="stickerUploadInput">&#19978;&#20256;&#36148;&#32440;</label>
             <input class="hidden" id="stickerUploadInput" type="file" accept="image/*" />
             <div class="sticker-list" id="stickerList"></div>
+            <div class="sticker-pager" id="stickerPager">
+              <button class="sticker-page-button" id="stickerPrevPage" type="button">&lt;</button>
+              <span id="stickerPageText">1 / 1</span>
+              <button class="sticker-page-button" id="stickerNextPage" type="button">&gt;</button>
+            </div>
           </aside>
         </div>
       </div>
@@ -1532,6 +2398,8 @@
   </main>
 
   <script>
+    const menuTabs = Array.from(document.querySelectorAll(".menu-tab"));
+    const menuPanels = Array.from(document.querySelectorAll("[data-menu-panel]"));
     const card = document.getElementById("recordCard");
     const coverInput = document.getElementById("coverInput");
     const coverBox = document.getElementById("coverBox");
@@ -1549,6 +2417,9 @@
     const importButton = document.getElementById("importButton");
     const resetButton = document.getElementById("resetButton");
     const templateButtons = Array.from(document.querySelectorAll(".template-button"));
+    const themeBar = document.getElementById("themeBar");
+    const themeButtons = Array.from(document.querySelectorAll(".theme-button"));
+    const themeMoreButton = document.getElementById("themeMoreButton");
     const mobileFocusBack = document.getElementById("mobileFocusBack");
     const exportModal = document.getElementById("exportModal");
     const exportPreviewImage = document.getElementById("exportPreviewImage");
@@ -1565,14 +2436,17 @@
     const imageToolMosaic = document.getElementById("imageToolMosaic");
     const imageToolBlur = document.getElementById("imageToolBlur");
     const imageToolErase = document.getElementById("imageToolErase");
-    const imageToolSticker = document.getElementById("imageToolSticker");
     const brushSize = document.getElementById("brushSize");
     const imageUndoButton = document.getElementById("imageUndoButton");
+    const imageRedoButton = document.getElementById("imageRedoButton");
     const imageClearButton = document.getElementById("imageClearButton");
     const imageDoneButton = document.getElementById("imageDoneButton");
     const imageCancelButton = document.getElementById("imageCancelButton");
     const stickerUploadInput = document.getElementById("stickerUploadInput");
     const stickerList = document.getElementById("stickerList");
+    const stickerPrevPage = document.getElementById("stickerPrevPage");
+    const stickerNextPage = document.getElementById("stickerNextPage");
+    const stickerPageText = document.getElementById("stickerPageText");
     const coverTools = document.querySelector(".cover-tools");
     const playerBar = document.getElementById("playerBar");
     const playerBarFill = document.getElementById("playerBarFill");
@@ -1581,7 +2455,45 @@
     const playerRemaining = document.getElementById("playerRemaining");
     const playerPlay = document.getElementById("playerPlay");
     const STORAGE_KEY = "otome-record-card-v1";
+    const MENU_STORAGE_KEY = "otome-record-card-active-menu";
     const DLSITE_PROXY_URL = "https://dlsite-rj-import.shuiyingsheng.workers.dev/";
+    const DEFAULT_THEME_ID = "berry-mint";
+    const CARD_THEMES = {
+      "berry-mint": {
+        id: "berry-mint",
+        accent: "#d95f8c",
+        accentDeep: "#b84570",
+        line: "#f2b7c9",
+        dash: "#87b9aa",
+        mint: "#87b9aa",
+        ink: "#5d4051",
+        muted: "#9b7a8d",
+        coverBg: "#ffe8f0",
+        chipBg: "rgba(255,244,248,.82)",
+        panelBg: "rgba(255,255,255,.58)",
+        reviewBg: "rgba(255,255,255,.62)",
+        bgStops: ["#fff7f4", "#fffdf9", "#f2faf3"],
+        playDeep: "#8f659f"
+      },
+      "sakura-ice": {
+        id: "sakura-ice",
+        accent: "#ff9ac6",
+        accentDeep: "#8f78df",
+        line: "#ffbdd6",
+        dash: "#b0ddfe",
+        mint: "#b0ddfe",
+        ink: "#55415c",
+        muted: "#91758a",
+        coverBg: "#ffe5f9",
+        chipBg: "rgba(255,229,249,.78)",
+        panelBg: "rgba(255,255,255,.62)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#fff7fb", "#fffdfd", "#f4fbff"],
+        playDeep: "#8f78df"
+      }
+    };
+    let currentThemeId = DEFAULT_THEME_ID;
+    let themeExpanded = false;
     let mobileFocusTarget = null;
     let lastExportUrl = "";
     let currentDiscountManual = false;
@@ -1596,21 +2508,51 @@
     let coverMosaicMaskSrc = "";
     let coverBlurMaskSrc = "";
     let coverEditorUndoStack = [];
+    let coverEditorRedoStack = [];
     let coverStickers = [];
     let stickerSources = [];
     const defaultStickerSources = [
-      { id: "default-heart-line", type: "text", text: String.fromCharCode(0x2661) },
-      { id: "default-heart-fill", type: "text", text: String.fromCharCode(0x2665) },
-      { id: "default-question", type: "text", text: "!?" },
-      { id: "default-shout", type: "text", text: "!!!" }
+      { id: "stamp-heart-3d-png", type: "image", src: "stamp/heart_3d.png" },
+      { id: "stamp-heart-cloud-png", type: "image", src: "stamp/heart_cloud.png" },
+      { id: "stamp-heart-dot-png", type: "image", src: "stamp/heart_dot.png" },
+      { id: "stamp-heart-gloss-png", type: "image", src: "stamp/heart_gloss.png" },
+      { id: "stamp-heart-pattern-png", type: "image", src: "stamp/heart_pattern.png" },
+      { id: "stamp-heart-shiny-png", type: "image", src: "stamp/heart_shiny.png" },
+      { id: "stamp-heart-small-png", type: "image", src: "stamp/heart_small.png" },
+      { id: "stamp-lock-nankinjou-heart-png", type: "image", src: "stamp/lock_nankinjou_heart.png" },
+      { id: "stamp-mark-heart-png", type: "image", src: "stamp/mark_heart.png" },
+      { id: "stamp-valentine-heart-bear-png", type: "image", src: "stamp/valentine_heart_bear.png" },
+      { id: "stamp-audience-penlight-png", type: "image", src: "stamp/audience_penlight.png" },
+      { id: "stamp-christmas-cake-title-png", type: "image", src: "stamp/christmas_cake_title.png" },
+      { id: "stamp-fantasy-unicorn-rainbow-png", type: "image", src: "stamp/fantasy_unicorn_rainbow.png" },
+      { id: "stamp-food-curry-mukashi-yellow-png", type: "image", src: "stamp/food_curry_mukashi_yellow.png" },
+      { id: "stamp-food-thai-somtom-salad-png", type: "image", src: "stamp/food_thai_somtom_salad.png" },
+      { id: "stamp-fruit-apple-yellow-png", type: "image", src: "stamp/fruit_apple_yellow.png" },
+      { id: "stamp-hamster-sleeping-golden-png", type: "image", src: "stamp/hamster_sleeping_golden.png" },
+      { id: "stamp-kandume-kuuki-close-png", type: "image", src: "stamp/kandume_kuuki_close.png" },
+      { id: "stamp-mark-star-png", type: "image", src: "stamp/mark_star.png" },
+      { id: "stamp-mark-syouzai-shinpou-png", type: "image", src: "stamp/mark_syouzai_shinpou.png" },
+      { id: "stamp-matryoshkas-solo2-png", type: "image", src: "stamp/matryoshkas_solo2.png" },
+      { id: "stamp-otanjoubi-omedetou-balloon-png", type: "image", src: "stamp/otanjoubi_omedetou_balloon.png" },
+      { id: "stamp-sweets-creampuff-png", type: "image", src: "stamp/sweets_creampuff.png" },
+      { id: "stamp-sweets-purin-png", type: "image", src: "stamp/sweets_purin.png" },
+      { id: "stamp-sweets-tarte-strawberry-png", type: "image", src: "stamp/sweets_tarte_strawberry.png" },
+      { id: "stamp-syugei-glass-dome-herbarium-png", type: "image", src: "stamp/syugei_glass_dome_herbarium.png" },
+      { id: "stamp-teddybear-png", type: "image", src: "stamp/teddybear.png" },
+      { id: "stamp-text-gameover-e-png", type: "image", src: "stamp/text_gameover_e.png" },
+      { id: "stamp-toy-amigurumi-nuigurumi-png", type: "image", src: "stamp/toy_amigurumi_nuigurumi.png" },
+      { id: "stamp-uranai-suisyou-png", type: "image", src: "stamp/uranai_suisyou.png" }
     ];
     const stickerImageCache = new Map();
+    const STICKERS_PER_PAGE = 10;
+    let stickerPage = 0;
     let selectedStickerId = null;
     let editorStickerDrag = null;
     let editorTool = "mosaic";
     let editorImage = null;
     let editorSourceSrc = "";
     let editorUndoStack = [];
+    let editorRedoStack = [];
     let editorDrawing = false;
     let editorLastPoint = null;
     let editorSessionSnapshot = null;
@@ -1638,6 +2580,7 @@
     const UI_REVIEW_CONFIRM = String.fromCharCode(0x786e, 0x5b9a);
     const UI_REVIEW_CANCEL = String.fromCharCode(0x53d6, 0x6d88);
     const UI_IMPORT_DATA_FAILED = String.fromCharCode(0x5bfc, 0x5165, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x786e, 0x8ba4, 0x6587, 0x4ef6, 0x662f, 0x672c, 0x9879, 0x76ee, 0x5bfc, 0x51fa, 0x7684, 0x20, 0x4a, 0x53, 0x4f, 0x4e, 0x3002);
+    const UI_RESET_CONFIRM = String.fromCharCode(0x786e, 0x5b9a, 0x8981, 0x6e05, 0x7a7a, 0x5f53, 0x524d, 0x586b, 0x5199, 0x7684, 0x5168, 0x90e8, 0x5185, 0x5bb9, 0x5417, 0xff1f, 0x8fd9, 0x4e2a, 0x64cd, 0x4f5c, 0x4e0d, 0x80fd, 0x64a4, 0x9500, 0x3002);
     mobileFocusBack.textContent = UI_BACK_FULL;
     modalDownloadButton.textContent = UI_DOWNLOAD_IMAGE;
     modalCloseButton.textContent = UI_CLOSE;
@@ -1651,8 +2594,44 @@
       return card.classList.contains("compact") ? "compact" : "full";
     }
 
+    function setActiveMenu(menuName, persist = true) {
+      const allowedMenus = new Set(["collection", "template", "theme"]);
+      const nextMenu = allowedMenus.has(menuName) ? menuName : "template";
+      menuTabs.forEach((button) => button.classList.toggle("active", button.dataset.menu === nextMenu));
+      menuPanels.forEach((panel) => {
+        panel.hidden = panel.dataset.menuPanel !== nextMenu;
+      });
+      if (persist) localStorage.setItem(MENU_STORAGE_KEY, nextMenu);
+      fitStage();
+    }
+
+    function restoreActiveMenu() {
+      setActiveMenu(localStorage.getItem(MENU_STORAGE_KEY) || "template", false);
+    }
+
     function templateSize() {
       return currentTemplate() === "compact" ? { width: 600, height: 800 } : { width: 1080, height: 1440 };
+    }
+
+    function currentCardTheme() {
+      return CARD_THEMES[currentThemeId] || CARD_THEMES[DEFAULT_THEME_ID];
+    }
+
+    function updateThemeMoreButton() {
+      const needsFold = themeButtons.length > 4;
+      if (!themeMoreButton || !themeBar) return;
+      themeMoreButton.classList.toggle("hidden", !needsFold);
+      themeBar.classList.toggle("is-collapsed", needsFold && !themeExpanded);
+      themeMoreButton.textContent = themeExpanded ? String.fromCharCode(0x25b4) : String.fromCharCode(0x25be);
+    }
+
+    function applyCardTheme(themeId, persist = true) {
+      const nextId = CARD_THEMES[themeId] ? themeId : DEFAULT_THEME_ID;
+      currentThemeId = nextId;
+      card.dataset.theme = nextId;
+      themeButtons.forEach((button) => button.classList.toggle("active", button.dataset.theme === nextId));
+      updateThemeMoreButton();
+      if (persist) saveState();
     }
 
     function isMobileView() {
@@ -1683,10 +2662,11 @@
     function fitStage() {
       const stage = document.getElementById("stage");
       const size = templateSize();
-      const toolbarHeight = document.querySelector(".toolbar")?.offsetHeight || 0;
+      const toolbarHeight = document.querySelector(".menu-toolbar")?.offsetHeight || 0;
+      const themeBarHeight = 0;
       const availableWidth = Math.max(1, stage.clientWidth - 16);
       const availableHeight = isMobileView()
-        ? Math.max(360, mobileViewportHeight() - toolbarHeight - 38)
+        ? Math.max(360, mobileViewportHeight() - toolbarHeight - themeBarHeight - 38)
         : Number.POSITIVE_INFINITY;
       const fullScale = Math.min(1, availableWidth / size.width, availableHeight / size.height);
 
@@ -2173,8 +3153,11 @@
 
     function renderStickerPicker() {
       if (!stickerList) return;
+      const sources = allStickerSources();
+      const pageCount = Math.max(1, Math.ceil(sources.length / STICKERS_PER_PAGE));
+      stickerPage = clamp(Math.round(stickerPage) || 0, 0, pageCount - 1);
       stickerList.innerHTML = "";
-      allStickerSources().forEach((source) => {
+      sources.slice(stickerPage * STICKERS_PER_PAGE, (stickerPage + 1) * STICKERS_PER_PAGE).forEach((source) => {
         const button = document.createElement("button");
         button.className = "sticker-option";
         button.type = "button";
@@ -2189,14 +3172,35 @@
         }
         stickerList.appendChild(button);
       });
+      if (stickerPageText) stickerPageText.textContent = String(stickerPage + 1) + " / " + String(pageCount);
+      if (stickerPrevPage) stickerPrevPage.disabled = stickerPage <= 0;
+      if (stickerNextPage) stickerNextPage.disabled = stickerPage >= pageCount - 1;
     }
 
-    function addSticker(sourceId) {
+    async function stickerNaturalSize(source) {
+      if (!source || source.type !== "image") return { width: 128, height: 82 };
+      let img = stickerImageCache.get(source.id);
+      if (!img || !img.naturalWidth) {
+        img = await loadImage(source.src).catch(() => null);
+        if (img) stickerImageCache.set(source.id, img);
+      }
+      return img && img.naturalWidth ? { width: img.naturalWidth, height: img.naturalHeight } : { width: 128, height: 128 };
+    }
+
+    async function addSticker(sourceId) {
       const source = stickerById(sourceId);
       if (!source || !imageEditCanvas.width || !imageEditCanvas.height) return;
       snapshotEditorMasks();
-      const w = Math.min(128, imageEditCanvas.width * 0.28);
-      const h = source.type === "image" ? w : Math.round(w * 0.64);
+      const natural = await stickerNaturalSize(source);
+      const ratio = Math.max(0.1, natural.width / Math.max(1, natural.height));
+      const maxW = imageEditCanvas.width * 0.3;
+      const maxH = imageEditCanvas.height * 0.3;
+      let w = source.type === "image" ? Math.min(natural.width, maxW, maxH * ratio) : Math.min(128, imageEditCanvas.width * 0.28);
+      let h = source.type === "image" ? w / ratio : Math.round(w * 0.64);
+      if (h > maxH) {
+        h = maxH;
+        w = h * ratio;
+      }
       const sticker = {
         id: nextStickerId(),
         sourceId,
@@ -2213,13 +3217,21 @@
       saveState();
     }
 
-    function snapshotEditorMasks() {
-      editorUndoStack.push({
+    function currentEditorSnapshot() {
+      if (!editMosaicMaskCanvas.width || !editMosaicMaskCanvas.height) return null;
+      return {
         mosaic: editMosaicMaskCtx.getImageData(0, 0, editMosaicMaskCanvas.width, editMosaicMaskCanvas.height),
         blur: editBlurMaskCtx.getImageData(0, 0, editBlurMaskCanvas.width, editBlurMaskCanvas.height),
         stickers: cloneStickerList(coverStickers)
-      });
+      };
+    }
+
+    function snapshotEditorMasks(clearRedo = true) {
+      const snapshot = currentEditorSnapshot();
+      if (!snapshot) return;
+      editorUndoStack.push(snapshot);
       if (editorUndoStack.length > 24) editorUndoStack.shift();
+      if (clearRedo) editorRedoStack = [];
     }
 
     function restoreEditorSnapshot(snapshot) {
@@ -2229,6 +3241,28 @@
       coverStickers = cloneStickerList(snapshot.stickers);
       selectedStickerId = null;
       renderImageEditor();
+    }
+
+    function undoEditorStep() {
+      const previous = editorUndoStack.pop();
+      if (!previous) return;
+      const current = currentEditorSnapshot();
+      if (current) editorRedoStack.push(current);
+      if (editorRedoStack.length > 24) editorRedoStack.shift();
+      restoreEditorSnapshot(previous);
+      saveEditorProject();
+      saveState();
+    }
+
+    function redoEditorStep() {
+      const next = editorRedoStack.pop();
+      if (!next) return;
+      const current = currentEditorSnapshot();
+      if (current) editorUndoStack.push(current);
+      if (editorUndoStack.length > 24) editorUndoStack.shift();
+      restoreEditorSnapshot(next);
+      saveEditorProject();
+      saveState();
     }
 
     function maskSnapshotToDataUrls(snapshot) {
@@ -2262,15 +3296,19 @@
       if (img) ctx.drawImage(img, 0, 0, width, height);
     }
 
-    async function restoreEditorUndoStack(width, height) {
-      const items = Array.isArray(coverEditorUndoStack) ? coverEditorUndoStack.slice(-12) : [];
+    async function restoreEditorStack(items, width, height) {
       const restored = [];
-      for (const item of items) {
+      for (const item of (Array.isArray(items) ? items.slice(-12) : [])) {
         const mosaic = await dataUrlToImageData(item?.mosaic, width, height);
         const blur = await dataUrlToImageData(item?.blur, width, height);
         if (mosaic && blur) restored.push({ mosaic, blur, stickers: cloneStickerList(item?.stickers) });
       }
-      editorUndoStack = restored;
+      return restored;
+    }
+
+    async function restoreEditorUndoStack(width, height) {
+      editorUndoStack = await restoreEditorStack(coverEditorUndoStack, width, height);
+      editorRedoStack = await restoreEditorStack(coverEditorRedoStack, width, height);
     }
 
     function saveEditorProject() {
@@ -2278,6 +3316,7 @@
       coverMosaicMaskSrc = editMosaicMaskCanvas.toDataURL("image/png");
       coverBlurMaskSrc = editBlurMaskCanvas.toDataURL("image/png");
       coverEditorUndoStack = editorUndoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-12);
+      coverEditorRedoStack = editorRedoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-12);
       coverStickers = cloneStickerList(coverStickers);
     }
 
@@ -2337,7 +3376,7 @@
       ctx.lineWidth = Math.max(2, sticker.w / 70);
       ctx.strokeStyle = "rgba(217, 95, 140, 0.36)";
       ctx.stroke();
-      ctx.fillStyle = "#d95f8c";
+      ctx.fillStyle = currentCardTheme().accent;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.font = canvasFont("900", Math.max(18, Math.round(sticker.h * 0.52)));
@@ -2378,7 +3417,7 @@
         ctx.fill();
         ctx.stroke();
       });
-      ctx.fillStyle = "#d95f8c";
+      ctx.fillStyle = currentCardTheme().accent;
       ctx.beginPath();
       ctx.arc(sticker.x + sticker.w, sticker.y, handle * 0.58, 0, Math.PI * 2);
       ctx.fill();
@@ -2539,7 +3578,6 @@
       imageToolMosaic.classList.toggle("active", tool === "mosaic");
       imageToolBlur.classList.toggle("active", tool === "blur");
       imageToolErase.classList.toggle("active", tool === "erase");
-      imageToolSticker.classList.toggle("active", tool === "sticker");
       imageEditCanvas.style.cursor = tool === "sticker" ? "default" : "crosshair";
     }
 
@@ -2556,6 +3594,7 @@
         coverMosaicMaskSrc,
         coverBlurMaskSrc,
         coverEditorUndoStack: JSON.parse(JSON.stringify(coverEditorUndoStack || [])),
+        coverEditorRedoStack: JSON.parse(JSON.stringify(coverEditorRedoStack || [])),
         coverStickers: cloneStickerList(coverStickers),
         stickerSources: JSON.parse(JSON.stringify(stickerSources || [])),
         selectedStickerId,
@@ -2594,6 +3633,7 @@
       coverMosaicMaskSrc = editorSessionSnapshot.coverMosaicMaskSrc || "";
       coverBlurMaskSrc = editorSessionSnapshot.coverBlurMaskSrc || "";
       coverEditorUndoStack = Array.isArray(editorSessionSnapshot.coverEditorUndoStack) ? editorSessionSnapshot.coverEditorUndoStack : [];
+      coverEditorRedoStack = Array.isArray(editorSessionSnapshot.coverEditorRedoStack) ? editorSessionSnapshot.coverEditorRedoStack : [];
       coverStickers = cloneStickerList(editorSessionSnapshot.coverStickers);
       stickerSources = Array.isArray(editorSessionSnapshot.stickerSources) ? editorSessionSnapshot.stickerSources : [];
       selectedStickerId = editorSessionSnapshot.selectedStickerId || null;
@@ -2645,6 +3685,7 @@
     function collectState() {
       return {
         template: currentTemplate(),
+        theme: currentThemeId,
         recordTitle: editableText("recordTitle"),
 
         cvText: editableText("cvText"),
@@ -2666,6 +3707,7 @@
         coverMosaicMaskSrc,
         coverBlurMaskSrc,
         coverEditorUndoStack,
+        coverEditorRedoStack,
         coverStickers: cloneStickerList(coverStickers),
         stickerSources,
         coverFit: coverImage.style.objectFit || "contain",
@@ -2692,6 +3734,7 @@
     function applyState(state, persist = false) {
       if (!state || typeof state !== "object") return false;
       setTemplate(state.template === "compact" ? "compact" : "full", false);
+      applyCardTheme(state.theme || DEFAULT_THEME_ID, false);
       setEditableText("recordTitle", state.recordTitle || state.jpTitle || state.cnTitle || "");
       setEditableText("cvText", state.cvText || "");
       setEditableText("circleText", state.circleText || "");
@@ -2713,6 +3756,7 @@
       coverMosaicMaskSrc = state.coverMosaicMaskSrc || "";
       coverBlurMaskSrc = state.coverBlurMaskSrc || "";
       coverEditorUndoStack = Array.isArray(state.coverEditorUndoStack) ? state.coverEditorUndoStack : [];
+      coverEditorRedoStack = Array.isArray(state.coverEditorRedoStack) ? state.coverEditorRedoStack : [];
       coverStickers = cloneStickerList(state.coverStickers);
       stickerSources = Array.isArray(state.stickerSources) ? state.stickerSources : [];
       renderStickerPicker();
@@ -2743,7 +3787,7 @@
       } catch {
         state = null;
       }
-      applyState(state, false);
+      if (!applyState(state, false)) applyCardTheme(DEFAULT_THEME_ID, false);
     }
 
     function scheduleSave() {
@@ -2761,9 +3805,11 @@
         coverMosaicMaskSrc = "";
         coverBlurMaskSrc = "";
         coverEditorUndoStack = [];
+        coverEditorRedoStack = [];
         coverStickers = [];
         selectedStickerId = null;
         editorUndoStack = [];
+        editorRedoStack = [];
         coverImage.src = reader.result;
         coverImage.style.filter = "";
         coverBox.classList.add("has-image");
@@ -2860,6 +3906,7 @@
     });
 
     resetButton.addEventListener("click", () => {
+      if (!window.confirm(UI_RESET_CONFIRM)) return;
       card.querySelectorAll("[contenteditable='true']").forEach((node) => {
         if (node.classList.contains("tag")) return;
         node.textContent = "";
@@ -2874,7 +3921,9 @@
       coverMosaicMaskSrc = "";
       coverBlurMaskSrc = "";
       coverEditorUndoStack = [];
+      coverEditorRedoStack = [];
       editorUndoStack = [];
+      editorRedoStack = [];
       coverImage.style.filter = "";
       coverImage.style.objectFit = "contain";
       coverBox.classList.remove("has-image");
@@ -3028,13 +4077,31 @@
       return lines.length * lineHeight;
     }
 
+    function themeAlpha(key, alphaValue) {
+      const theme = currentCardTheme();
+      const hex = (theme[key] || "#000000").replace("#", "");
+      const full = hex.length === 3 ? hex.split("").map((ch) => ch + ch).join("") : hex;
+      const r = parseInt(full.slice(0, 2), 16) || 0;
+      const g = parseInt(full.slice(2, 4), 16) || 0;
+      const b = parseInt(full.slice(4, 6), 16) || 0;
+      return "rgba(" + r + "," + g + "," + b + "," + alphaValue + ")";
+    }
+
+    function themeGradient(ctx, x1, y1, x2, y2, first = "accent", second = "accentDeep") {
+      const theme = currentCardTheme();
+      const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+      grad.addColorStop(0, theme[first]);
+      grad.addColorStop(1, theme[second]);
+      return grad;
+    }
+
     function drawStickerLabel(ctx, text, x, y) {
       ctx.save();
       ctx.font = canvasFont('900', 24);
       const w = Math.ceil(ctx.measureText(text).width) + 44;
       const grad = ctx.createLinearGradient(x, y, x + w, y + 34);
-      grad.addColorStop(0, "#d95f8c");
-      grad.addColorStop(1, "#b84570");
+      grad.addColorStop(0, currentCardTheme().accent);
+      grad.addColorStop(1, currentCardTheme().accentDeep);
       fillRound(ctx, x, y, w, 34, 17, grad);
       ctx.fillStyle = "#fff";
       ctx.fillText(text, x + 22, y + 25);
@@ -3042,7 +4109,7 @@
     }
 
     function drawFieldRule(ctx, x, y, w) {
-      ctx.strokeStyle = "rgba(217,95,140,.32)";
+      ctx.strokeStyle = themeAlpha("accent", .32);
       ctx.setLineDash([6, 6]);
       ctx.beginPath();
       ctx.moveTo(x, y + 18);
@@ -3052,21 +4119,21 @@
     }
 
     function drawTitleLabel(ctx, label, value, x, y, w) {
-      ctx.fillStyle = "#d95f8c";
+      ctx.fillStyle = currentCardTheme().accent;
       ctx.font = canvasFont('800', 18);
       ctx.fillText(label, x, y - 3);
       drawFieldRule(ctx, x, y, w);
-      ctx.fillStyle = "#5d4051";
+      ctx.fillStyle = currentCardTheme().ink;
       ctx.font = canvasFont('900', 22);
       drawWrappedText(ctx, value, x, y + 40, w, 29, 3);
     }
 
     function drawLabel(ctx, label, value, x, y, w) {
-      ctx.fillStyle = "#d95f8c";
+      ctx.fillStyle = currentCardTheme().accent;
       ctx.font = canvasFont('800', 21);
       ctx.fillText(label, x, y - 3);
       drawFieldRule(ctx, x, y, w);
-      ctx.fillStyle = "#5d4051";
+      ctx.fillStyle = currentCardTheme().ink;
       ctx.font = canvasFont('900', 26);
       drawWrappedText(ctx, value, x, y + 48, w, 31, 1);
     }
@@ -3074,28 +4141,28 @@
     function drawCompactInfoField(ctx, label, value, x, top, w) {
       ctx.save();
       ctx.textAlign = "center";
-      ctx.fillStyle = "#d95f8c";
+      ctx.fillStyle = currentCardTheme().accent;
       ctx.font = canvasFont('800', 21);
       ctx.fillText(label, x + w / 2, top + 19);
       drawFieldRule(ctx, x, top + 11, w);
-      ctx.fillStyle = "#5d4051";
+      ctx.fillStyle = currentCardTheme().ink;
       ctx.font = canvasFont('900', 26);
       drawCenteredWrappedText(ctx, value, x, top + 61, w, 31, 1);
       ctx.restore();
     }
 
     function drawPreviewInfoField(ctx, label, value, x, top, w) {
-      ctx.fillStyle = "#d95f8c";
+      ctx.fillStyle = currentCardTheme().accent;
       ctx.font = canvasFont('800', 21);
       ctx.fillText(label, x, top + 19);
       drawFieldRule(ctx, x, top + 11, w);
-      ctx.fillStyle = "#5d4051";
+      ctx.fillStyle = currentCardTheme().ink;
       ctx.font = canvasFont('900', 26);
       drawWrappedText(ctx, value, x, top + 61, w, 31, 1);
     }
 
     function drawPreviewChoiceField(ctx, activeText, x, top, w) {
-      ctx.fillStyle = "#d95f8c";
+      ctx.fillStyle = currentCardTheme().accent;
       ctx.font = canvasFont('800', 21);
       ctx.fillText(CHOICE_LABEL, x, top + 19);
       drawFieldRule(ctx, x, top + 11, w);
@@ -3105,9 +4172,9 @@
         const bx = x + index * (bw + 12);
         const by = top + 44;
         const active = label === activeText;
-        fillRound(ctx, bx, by, bw, 34, 17, active ? "#d95f8c" : "rgba(255,255,255,.62)");
-        strokeRound(ctx, bx, by, bw, 34, 17, active ? "transparent" : "rgba(217,95,140,.26)", 1);
-        ctx.fillStyle = active ? "#fff" : "#9b7a8d";
+        fillRound(ctx, bx, by, bw, 34, 17, active ? currentCardTheme().accent : "rgba(255,255,255,.62)");
+        strokeRound(ctx, bx, by, bw, 34, 17, active ? "transparent" : themeAlpha("accent", .26), 1);
+        ctx.fillStyle = active ? "#fff" : currentCardTheme().muted;
         ctx.font = canvasFont('900', 17);
         ctx.textAlign = "center";
         ctx.fillText(label, bx + bw / 2, by + 23);
@@ -3117,11 +4184,11 @@
 
     function drawMetric(ctx, label, value, x, y, w, h, suffix = "", textOffsetX = 0) {
       fillRound(ctx, x, y, w, h, 18, "rgba(255,255,255,.66)");
-      strokeRound(ctx, x, y, w, h, 18, "rgba(135,185,170,.28)", 2);
-      ctx.fillStyle = "#5f9587";
+      strokeRound(ctx, x, y, w, h, 18, themeAlpha("mint", .28), 2);
+      ctx.fillStyle = currentCardTheme().mint;
       ctx.font = canvasFont('800', 18);
       ctx.fillText(label, x + 10 + textOffsetX, y + 24);
-      ctx.fillStyle = "#5d4051";
+      ctx.fillStyle = currentCardTheme().ink;
       ctx.font = canvasFont('900', 26);
       const text = value ? value + suffix : "";
       ctx.fillText(text, x + 10 + textOffsetX, y + 56);
@@ -3196,19 +4263,20 @@
     function drawPlayerDecoration(ctx) {
       const x = 58;
       const y = 648;
-      const iconColor = "rgba(184,69,112,.78)";
+      const theme = currentCardTheme();
+      const iconColor = themeAlpha("accentDeep", .78);
       const progress = clamp(Number(playerProgress) || 0, 0, 1);
       const elapsed = currentPlayerSeconds();
       const remaining = Math.max(0, playerTotalSeconds - elapsed);
       const leftTime = formatPlayerTime(elapsed);
       const rightTime = progress === 0 ? formatPlayerTime(playerTotalSeconds) : "-" + formatPlayerTime(remaining);
-      fillRound(ctx, x, y + 4, 484, 8, 4, "rgba(242,183,201,.34)");
-      fillRound(ctx, x, y + 4, 484 * progress, 8, 4, "rgba(217,95,140,.88)");
+      fillRound(ctx, x, y + 4, 484, 8, 4, themeAlpha("line", .34));
+      fillRound(ctx, x, y + 4, 484 * progress, 8, 4, themeAlpha("accent", .88));
       const dotX = x + (484 - 16) * progress;
       fillRound(ctx, dotX, y, 16, 16, 8, "#fff");
-      strokeRound(ctx, dotX, y, 16, 16, 8, "rgba(217,95,140,.7)", 3);
+      strokeRound(ctx, dotX, y, 16, 16, 8, themeAlpha("accent", .7), 3);
 
-      ctx.fillStyle = "rgba(93,64,81,.68)";
+      ctx.fillStyle = themeAlpha("ink", .68);
       ctx.font = canvasFont('800', 14);
       ctx.fillText(leftTime, x, y + 36);
       ctx.textAlign = "right";
@@ -3221,14 +4289,14 @@
       drawPlayerNext(ctx, x + 314, y + 54, iconColor);
 
       const grad = ctx.createLinearGradient(x + 210, y + 42, x + 274, y + 106);
-      grad.addColorStop(0, "#d95f8c");
-      grad.addColorStop(1, "#8f659f");
+      grad.addColorStop(0, theme.accent);
+      grad.addColorStop(1, theme.playDeep);
       fillRound(ctx, x + 210, y + 42, 64, 64, 32, grad);
       drawPlayerPlayState(ctx, x + 210, y + 42, playerPlaying);
     }
 
     function drawChoiceMetric(ctx, activeText, x, y, w, h) {
-      ctx.fillStyle = "#d95f8c";
+      ctx.fillStyle = currentCardTheme().accent;
       ctx.font = canvasFont('800', 21);
       ctx.fillText(CHOICE_LABEL, x, y - 3);
       drawFieldRule(ctx, x, y, w);
@@ -3237,9 +4305,9 @@
       labels.forEach((label, index) => {
         const bx = x + index * (bw + 12);
         const active = label === activeText;
-        fillRound(ctx, bx, y + 35, bw, 34, 17, active ? "#d95f8c" : "rgba(255,255,255,.62)");
-        strokeRound(ctx, bx, y + 35, bw, 34, 17, active ? "transparent" : "rgba(217,95,140,.26)", 1);
-        ctx.fillStyle = active ? "#fff" : "#9b7a8d";
+        fillRound(ctx, bx, y + 35, bw, 34, 17, active ? currentCardTheme().accent : "rgba(255,255,255,.62)");
+        strokeRound(ctx, bx, y + 35, bw, 34, 17, active ? "transparent" : themeAlpha("accent", .26), 1);
+        ctx.fillStyle = active ? "#fff" : currentCardTheme().muted;
         ctx.font = canvasFont('900', 17);
         ctx.textAlign = "center";
         ctx.fillText(label, bx + bw / 2, y + 58);
@@ -3248,14 +4316,14 @@
     }
 
     function drawStars(ctx, label, count, x, y) {
-      ctx.fillStyle = "#b84570";
+      ctx.fillStyle = currentCardTheme().accentDeep;
       ctx.font = canvasFont('900', 24);
       ctx.fillText(label, x, y + 27);
       for (let i = 0; i < 5; i += 1) {
         const sx = x + 92 + i * 44;
-        fillRound(ctx, sx, y, 34, 34, 17, i < count ? "#d95f8c" : "rgba(255,255,255,.7)");
-        strokeRound(ctx, sx, y, 34, 34, 17, "rgba(242,183,201,.32)", 2);
-        ctx.fillStyle = i < count ? "#fff" : "rgba(217,95,140,.32)";
+        fillRound(ctx, sx, y, 34, 34, 17, i < count ? currentCardTheme().accent : "rgba(255,255,255,.7)");
+        strokeRound(ctx, sx, y, 34, 34, 17, themeAlpha("line", .32), 2);
+        ctx.fillStyle = i < count ? "#fff" : themeAlpha("accent", .32);
         ctx.font = canvasFont('900', 24);
         ctx.textAlign = "center";
         ctx.fillText(STAR_CHAR, sx + 17, y + 26);
@@ -3264,10 +4332,10 @@
     }
 
     async function drawCover(ctx, x = 90, y = 110, w = 420, h = 315, r = 24, frame = true, fitMode = null) {
-      fillRound(ctx, x, y, w, h, r, "#ffe8f0");
+      fillRound(ctx, x, y, w, h, r, currentCardTheme().coverBg);
       if (frame) strokeRound(ctx, x, y, w, h, r, "#fff", 4);
       if (!coverImage.src || !coverBox.classList.contains("has-image")) {
-        ctx.fillStyle = "#b84570";
+        ctx.fillStyle = currentCardTheme().accentDeep;
         ctx.font = canvasFont('800', 24);
         ctx.textAlign = "center";
         ctx.fillText(COVER_UPLOAD_TEXT, x + w / 2, y + h / 2 - 10);
@@ -3371,10 +4439,11 @@
       canvas.height = 800;
       const ctx = canvas.getContext("2d");
 
+      const theme = currentCardTheme();
       const bg = ctx.createLinearGradient(0, 0, 600, 800);
-      bg.addColorStop(0, "#fff7f4");
-      bg.addColorStop(0.48, "#fffdf9");
-      bg.addColorStop(1, "#f2faf3");
+      bg.addColorStop(0, theme.bgStops[0]);
+      bg.addColorStop(0.48, theme.bgStops[1]);
+      bg.addColorStop(1, theme.bgStops[2]);
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, 600, 800);
       ctx.fillStyle = "rgba(255,255,255,.26)";
@@ -3383,7 +4452,7 @@
 
       await drawCover(ctx, 20, 20, 560, 420, 0, false, "contain");
 
-      ctx.fillStyle = "#5d4051";
+      ctx.fillStyle = theme.ink;
       ctx.font = canvasFont('900', 21);
       drawCenteredWrappedText(ctx, textOf('#recordTitle'), 20, 472, 560, 29, 3);
 
@@ -3410,22 +4479,23 @@
         canvas.height = 1440;
         const ctx = canvas.getContext("2d");
 
+        const theme = currentCardTheme();
         const bg = ctx.createLinearGradient(0, 0, 1080, 1440);
-        bg.addColorStop(0, "#fff7f4");
-        bg.addColorStop(0.48, "#fffdf9");
-        bg.addColorStop(1, "#f2faf3");
+        bg.addColorStop(0, theme.bgStops[0]);
+        bg.addColorStop(0.48, theme.bgStops[1]);
+        bg.addColorStop(1, theme.bgStops[2]);
         ctx.fillStyle = bg;
         ctx.fillRect(0, 0, 1080, 1440);
         ctx.fillStyle = "rgba(255,255,255,.36)";
         for (let x = 0; x <= 1080; x += 36) ctx.fillRect(x, 0, 1, 1440);
         for (let y = 0; y <= 1440; y += 36) ctx.fillRect(0, y, 1080, 1);
-        strokeRound(ctx, 26, 26, 1028, 1388, 30, "rgba(242,183,201,.78)", 3);
-        strokeRound(ctx, 54, 54, 972, 1332, 22, "rgba(135,185,170,.42)", 2, true);
+        strokeRound(ctx, 26, 26, 1028, 1388, 30, themeAlpha("line", .78), 3);
+        strokeRound(ctx, 54, 54, 972, 1332, 22, themeAlpha("dash", .42), 2, true);
 
         await drawCover(ctx);
 
-        fillRound(ctx, 548, 110, 442, 315, 26, "rgba(255,255,255,.58)");
-        strokeRound(ctx, 548, 110, 442, 315, 26, "rgba(242,183,201,.6)", 2);
+        fillRound(ctx, 548, 110, 442, 315, 26, theme.panelBg);
+        strokeRound(ctx, 548, 110, 442, 315, 26, themeAlpha("line", .6), 2);
         drawStickerLabel(ctx, LABEL_BASIC, 566, 89);
         drawPreviewInfoField(ctx, "CV", textOf('#cvText'), 572, 134, 177);
         drawPreviewInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 767, 134, 177);
@@ -3433,15 +4503,15 @@
         drawPreviewInfoField(ctx, LABEL_DURATION, textOf('#durationText'), 767, 222, 177);
         drawPreviewChoiceField(ctx, document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE, 572, 310, 372);
 
-        fillRound(ctx, 90, 470, 900, 112, 26, "rgba(255,255,255,.58)");
-        strokeRound(ctx, 90, 470, 900, 112, 26, "rgba(242,183,201,.54)", 2);
+        fillRound(ctx, 90, 470, 900, 112, 26, theme.panelBg);
+        strokeRound(ctx, 90, 470, 900, 112, 26, themeAlpha("line", .54), 2);
         drawStickerLabel(ctx, LABEL_TITLE, 108, 449);
-        ctx.fillStyle = "#5d4051";
+        ctx.fillStyle = currentCardTheme().ink;
         ctx.font = canvasFont('900', 26);
         drawWrappedText(ctx, textOf('#recordTitle'), 112, 522, 856, 33, 2);
 
-        fillRound(ctx, 90, 625, 900, 82, 26, "rgba(255,255,255,.58)");
-        strokeRound(ctx, 90, 625, 900, 82, 26, "rgba(242,183,201,.54)", 2);
+        fillRound(ctx, 90, 625, 900, 82, 26, theme.panelBg);
+        strokeRound(ctx, 90, 625, 900, 82, 26, themeAlpha("line", .54), 2);
         drawStickerLabel(ctx, LABEL_TAGS, 108, 604);
         const tagTexts = Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean);
         let tx = 112;
@@ -3450,23 +4520,23 @@
         tagTexts.forEach((tag) => {
           const tw = Math.max(70, ctx.measureText(tag).width + 24);
           if (tx + tw > 972) return;
-          fillRound(ctx, tx, ty, tw, 38, 19, "rgba(255,244,248,.82)");
-          strokeRound(ctx, tx, ty, tw, 38, 19, "rgba(217,95,140,.24)", 1);
-          ctx.fillStyle = "#b84570";
+          fillRound(ctx, tx, ty, tw, 38, 19, theme.chipBg);
+          strokeRound(ctx, tx, ty, tw, 38, 19, themeAlpha("accent", .24), 1);
+          ctx.fillStyle = currentCardTheme().accentDeep;
           ctx.fillText(tag, tx + 12, ty + 27);
           tx += tw + 9;
         });
 
-        fillRound(ctx, 90, 755, 430, 220, 26, "rgba(255,255,255,.58)");
-        strokeRound(ctx, 90, 755, 430, 220, 26, "rgba(242,183,201,.54)", 2);
+        fillRound(ctx, 90, 755, 430, 220, 26, theme.panelBg);
+        strokeRound(ctx, 90, 755, 430, 220, 26, themeAlpha("line", .54), 2);
         drawStickerLabel(ctx, LABEL_PURCHASE, 108, 738);
         drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 108, 797, 190, 64, "", exportTextOffsetX);
         drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 312, 797, 190, 64, "", exportTextOffsetX);
         drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 108, 880, 190, 64, "%off", exportTextOffsetX);
         drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 312, 880, 190, 64, "%off", exportTextOffsetX);
 
-        fillRound(ctx, 548, 755, 442, 220, 26, "rgba(255,255,255,.58)");
-        strokeRound(ctx, 548, 755, 442, 220, 26, "rgba(242,183,201,.54)", 2);
+        fillRound(ctx, 548, 755, 442, 220, 26, theme.panelBg);
+        strokeRound(ctx, 548, 755, 442, 220, 26, themeAlpha("line", .54), 2);
         drawStickerLabel(ctx, LABEL_RATING, 566, 738);
         const rows = Array.from(document.querySelectorAll(".rating-row"));
         drawStars(ctx, LABEL_OVERALL, ratingValue(rows[0]), 566, 794);
@@ -3474,10 +4544,10 @@
         drawStars(ctx, LABEL_STORY, ratingValue(rows[2]), 566, 878);
         drawStars(ctx, "SE", ratingValue(rows[3]), 566, 920);
 
-        fillRound(ctx, 90, 1024, 900, 328, 28, "rgba(255,255,255,.62)");
-        strokeRound(ctx, 90, 1024, 900, 328, 28, "rgba(217,95,140,.28)", 2);
+        fillRound(ctx, 90, 1024, 900, 328, 28, theme.reviewBg);
+        strokeRound(ctx, 90, 1024, 900, 328, 28, themeAlpha("accent", .28), 2);
         drawStickerLabel(ctx, LABEL_REVIEW, 108, 1007);
-        ctx.fillStyle = "#5d4051";
+        ctx.fillStyle = currentCardTheme().ink;
         ctx.font = canvasFont('400', 24);
         drawWrappedText(ctx, valueOf("#reviewText"), 112, 1080, 856, 31, 9);
 
@@ -3519,12 +4589,8 @@
     imageToolMosaic.addEventListener("click", () => setEditorTool("mosaic"));
     imageToolBlur.addEventListener("click", () => setEditorTool("blur"));
     imageToolErase.addEventListener("click", () => setEditorTool("erase"));
-    imageToolSticker.addEventListener("click", () => setEditorTool("sticker"));
-    imageUndoButton.addEventListener("click", () => {
-      restoreEditorSnapshot(editorUndoStack.pop());
-      saveEditorProject();
-      saveState();
-    });
+    imageUndoButton.addEventListener("click", undoEditorStep);
+    imageRedoButton.addEventListener("click", redoEditorStep);
     imageClearButton.addEventListener("click", () => {
       snapshotEditorMasks();
       clearEditorMasks();
@@ -3611,11 +4677,20 @@
       if (!editorDrawing && !editorStickerDrag) imageEditCanvas.style.cursor = editorTool === "sticker" ? "default" : "crosshair";
     });
 
+    stickerPrevPage.addEventListener("click", () => {
+      stickerPage -= 1;
+      renderStickerPicker();
+    });
+    stickerNextPage.addEventListener("click", () => {
+      stickerPage += 1;
+      renderStickerPicker();
+    });
+
     stickerList.addEventListener("click", (event) => {
       const button = event.target.closest(".sticker-option");
       if (!button) return;
       setEditorTool("sticker");
-      addSticker(button.dataset.stickerId);
+      void addSticker(button.dataset.stickerId);
     });
 
     stickerUploadInput.addEventListener("change", () => {
@@ -3625,9 +4700,10 @@
       reader.onload = () => {
         const source = { id: nextStickerId("uploaded-sticker"), type: "image", src: reader.result };
         stickerSources.push(source);
+        stickerPage = Math.max(0, Math.ceil(allStickerSources().length / STICKERS_PER_PAGE) - 1);
         renderStickerPicker();
         setEditorTool("sticker");
-        addSticker(source.id);
+        void addSticker(source.id);
         stickerUploadInput.value = "";
       };
       reader.readAsDataURL(file);
@@ -3688,6 +4764,16 @@
     templateButtons.forEach((button) => {
       button.addEventListener("click", () => setTemplate(button.dataset.template || "full"));
     });
+    themeButtons.forEach((button) => {
+      button.addEventListener("click", () => applyCardTheme(button.dataset.theme || DEFAULT_THEME_ID));
+    });
+    themeMoreButton?.addEventListener("click", () => {
+      themeExpanded = !themeExpanded;
+      updateThemeMoreButton();
+    });
+    menuTabs.forEach((button) => {
+      button.addEventListener("click", () => setActiveMenu(button.dataset.menu || "template"));
+    });
 
     downloadButton.addEventListener("click", downloadCard);
     document.addEventListener("input", scheduleSave);
@@ -3696,6 +4782,7 @@
     });
     syncPlayerUi(true);
     restoreState();
+    restoreActiveMenu();
     window.addEventListener("beforeunload", saveState);
     window.addEventListener("resize", fitStage);
     fitStage();
