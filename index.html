@@ -66,6 +66,14 @@
       min-height: 44px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
       justify-content: flex-end;
       gap: 8px;
       flex-wrap: nowrap;
@@ -89,10 +97,10 @@
     }
 
     .template-switch {
-      display: none;
+      display: flex;
       align-items: center;
       gap: 6px;
-      margin-right: auto;
+      margin-right: 0;
       padding: 4px;
       border: 1px solid rgba(217, 95, 140, 0.24);
       border-radius: 999px;
@@ -278,6 +286,9 @@
     }
 
     .cover-box.has-image .cover-placeholder { display: none; }
+    .cover-placeholder .compact-size { display: none; }
+    .card.compact .cover-placeholder .full-size { display: none; }
+    .card.compact .cover-placeholder .compact-size { display: inline; }
 
     .cover-tools {
       position: absolute;
@@ -765,47 +776,214 @@
 
 
     .card.compact {
-      width: 540px;
-      height: 720px;
+      width: 600px;
+      height: 800px;
       border-width: 0;
-      border-radius: 22px;
+      border-radius: 30px;
     }
 
-    .card.compact::before { inset: 13px; border-width: 2px; border-radius: 15px; }
-    .card.compact::after { inset: 27px; border-width: 1px; border-radius: 11px; }
-    .card.compact .cover-box { left: 46px; top: 43px; width: 210px; height: 158px; border-width: 2px; border-radius: 12px; }
-    .card.compact .cover-placeholder { font-size: 14px; }
-    .card.compact .cover-tools { left: 78px; top: 181px; width: 146px; gap: 3px; padding: 3px 4px; }
-    .card.compact .tiny-button { font-size: 8px; padding: 2px 4px; }
-    .card.compact .info-panel { left: 268px; top: 43px; width: 210px; height: 158px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 9px; padding: 24px 12px 7px; border-radius: 13px; border-width: 1px; }
+    .card.compact::before,
+    .card.compact::after { display: none; }
+    .card.compact .cover-box { left: 20px; top: 20px; width: 560px; height: 420px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+    .card.compact .cover-placeholder { font-size: 26px; background: rgba(255,232,240,.62); }
+    .card.compact .cover-box img { background: transparent; object-fit: contain; }
+    .card.compact .cover-tools { left: 150px; top: 398px; width: 300px; gap: 5px; padding: 5px 7px; }
+    .card.compact .tiny-button { font-size: 12px; padding: 3px 7px; }
+    .card.compact .title-panel { left: 20px; top: 450px; width: 560px; height: 88px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+    .card.compact .title-label,
     .card.compact .panel-title,
     .card.compact .section-label,
     .card.compact .price-label,
     .card.compact .rating-section-label,
-    .card.compact .review-label { top: -11px; left: 9px; padding: 4px 11px; font-size: 12px; }
-    .card.compact .field { grid-template-rows: 11px 7px 16px; height: 34px; }
-    .card.compact .field label { font-size: 11px; transform: translateY(-2px); }
-    .card.compact .field .editable,
-    .card.compact .field .soft-input { font-size: 13px; min-height: 16px; line-height: 1.08; }
-    .card.compact .cn-field { height: 43px; grid-template-rows: 11px 11px 17px; }
-    .card.compact .cn-field .choice-group { width: 130px; gap: 2px; }
-    .card.compact .choice-button { min-height: 17px; font-size: 8px; padding: 0 2px; }
-    .card.compact .title-panel { left: 46px; top: 224px; width: 432px; height: 62px; padding: 17px 11px 8px; border-radius: 13px; border-width: 1px; }
-    .card.compact .record-title { font-size: 14px; line-height: 1.3; }
+    .card.compact .review-label { display: none; }
+    .card.compact .record-title { font-size: 21px; line-height: 1.35; text-align: center; white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+    .card.compact .info-panel { left: 20px; top: 542px; width: 560px; height: 120px; grid-template-columns: repeat(3, 1fr); gap: 0; padding: 0; border: 0; border-radius: 0; background: transparent; }
+    .card.compact .info-panel .field { grid-template-rows: 24px 8px 34px; height: 76px; padding: 0 12px; }
+    .card.compact .info-panel .field::after { border-bottom-color: rgba(217, 95, 140, 0.28); }
+    .card.compact .info-panel .field label { font-size: 18px; transform: none; text-align: center; }
+    .card.compact .info-panel .field .editable { font-size: 22px; min-height: 28px; line-height: 1.1; text-align: center; }
+    .card.compact .info-panel .field:has(#rjText) { order: 1; }
+    .card.compact .info-panel .field:has(#cvText) { order: 2; }
+    .card.compact .info-panel .field:has(#circleText) { order: 3; }
+    .card.compact .info-panel .field:has(#durationText),
+    .card.compact .info-panel .cn-field { display: none; }
+    .card.compact .field-label-row { width: 100%; justify-content: center; }
+    .card.compact .info-panel .field:has(#rjText) .import-button {
+      position: absolute;
+      left: 50%;
+      top: 62px;
+      transform: translateX(-50%);
+      min-height: 24px;
+      padding: 0 11px;
+      font-size: 14px;
+      line-height: 23px;
+      white-space: nowrap;
+      box-shadow: 0 6px 13px rgba(184, 69, 112, 0.14);
+    }
     .card.compact .tags-panel,
+    .card.compact .price-panel,
+    .card.compact .ratings,
     .card.compact .review-panel { display: none; }
-    .card.compact .price-panel { left: 46px; top: 326px; width: 210px; height: 150px; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 20px 9px 8px; border-radius: 13px; border-width: 1px; }
-    .card.compact .metric { min-height: 42px; padding: 5px 6px; border-radius: 9px; border-width: 1px; gap: 2px; }
-    .card.compact .metric-label { font-size: 10px; }
-    .card.compact .metric-value,
-    .card.compact .metric input { font-size: 14px; }
-    .card.compact .metric-suffix { font-size: 12px; }
-    .card.compact .metric-entry input { flex-basis: 25px; max-width: 25px; }
-    .card.compact .ratings { left: 268px; top: 326px; width: 210px; height: 150px; gap: 6px; padding: 22px 12px 8px; border-radius: 13px; border-width: 1px; }
-    .card.compact .rating-row { grid-template-columns: 38px 1fr; gap: 4px; }
-    .card.compact .rating-label { font-size: 13px; }
-    .card.compact .stars { grid-template-columns: repeat(5, 17px); gap: 4px; }
-    .card.compact .star { width: 17px; height: 17px; font-size: 12px; line-height: 17px; box-shadow: inset 0 0 0 1px rgba(242, 183, 201, 0.32); }
+    .card.compact .player-deco { display: block; }
+
+    .player-deco { display: none; }
+
+    .player-deco {
+      position: absolute;
+      left: 58px;
+      top: 648px;
+      width: 484px;
+      height: 86px;
+      z-index: 2;
+      color: var(--ink);
+    }
+
+    .player-bar {
+      position: absolute;
+      left: 0;
+      top: 4px;
+      width: 484px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(242, 183, 201, 0.34);
+      overflow: hidden;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .player-bar-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, rgba(217, 95, 140, 0.88), rgba(245, 181, 202, 0.96));
+    }
+
+    .player-dot {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      background: #fff;
+      border: 3px solid rgba(217, 95, 140, 0.7);
+      box-shadow: 0 4px 10px rgba(184, 69, 112, 0.16);
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .player-dot:active { cursor: grabbing; }
+
+    .player-time {
+      position: absolute;
+      top: 22px;
+      color: rgba(93, 64, 81, 0.68);
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1;
+      min-width: 48px;
+      outline: none;
+    }
+
+    .player-time:focus {
+      color: var(--rose-deep);
+      text-shadow: 0 2px 10px rgba(217, 95, 140, 0.16);
+    }
+
+    .player-time.end { right: 0; }
+
+    .player-controls {
+      position: absolute;
+      left: 70px;
+      right: 70px;
+      top: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .player-icon {
+      position: relative;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 0;
+      color: rgba(184, 69, 112, 0.78);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .player-icon.prev,
+    .player-icon.next {
+      background-color: currentColor;
+      mask-position: center;
+      mask-repeat: no-repeat;
+      mask-size: 30px 30px;
+      -webkit-mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-size: 30px 30px;
+    }
+
+    .player-icon.prev {
+      mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='black'%3E%3Crect x='6' y='8' width='4' height='16' rx='2'/%3E%3Cpath d='M24 8.8c1.4-.9 3.2.1 3.2 1.8v10.8c0 1.7-1.8 2.7-3.2 1.8l-8.2-5.4c-1.2-.8-1.2-2.6 0-3.4L24 8.8Z'/%3E%3C/g%3E%3C/svg%3E");
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='black'%3E%3Crect x='6' y='8' width='4' height='16' rx='2'/%3E%3Cpath d='M24 8.8c1.4-.9 3.2.1 3.2 1.8v10.8c0 1.7-1.8 2.7-3.2 1.8l-8.2-5.4c-1.2-.8-1.2-2.6 0-3.4L24 8.8Z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .player-icon.next {
+      mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='black'%3E%3Crect x='22' y='8' width='4' height='16' rx='2'/%3E%3Cpath d='M8 8.8c-1.4-.9-3.2.1-3.2 1.8v10.8c0 1.7 1.8 2.7 3.2 1.8l8.2-5.4c1.2-.8 1.2-2.6 0-3.4L8 8.8Z'/%3E%3C/g%3E%3C/svg%3E");
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='black'%3E%3Crect x='22' y='8' width='4' height='16' rx='2'/%3E%3Cpath d='M8 8.8c-1.4-.9-3.2.1-3.2 1.8v10.8c0 1.7 1.8 2.7 3.2 1.8l8.2-5.4c1.2-.8 1.2-2.6 0-3.4L8 8.8Z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .player-icon.shuffle,
+    .player-icon.loop {
+      color: rgba(184, 69, 112, .78);
+      background-color: currentColor;
+      mask-position: center;
+      mask-repeat: no-repeat;
+      mask-size: 30px 30px;
+      -webkit-mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-size: 30px 30px;
+    }
+
+    .player-icon.shuffle {
+      mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='black' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9h4.8c4.5 0 6.1 14 11.2 14h4.5'/%3E%3Cpath d='M4 23h4.8c4.5 0 6.1-14 11.2-14h4.5'/%3E%3Cpath d='M22 5l5 4-5 4'/%3E%3Cpath d='M22 19l5 4-5 4'/%3E%3C/g%3E%3C/svg%3E");
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='black' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9h4.8c4.5 0 6.1 14 11.2 14h4.5'/%3E%3Cpath d='M4 23h4.8c4.5 0 6.1-14 11.2-14h4.5'/%3E%3Cpath d='M22 5l5 4-5 4'/%3E%3Cpath d='M22 19l5 4-5 4'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .player-icon.loop {
+      mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='black' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 11c2.2-3.2 5.8-5 9.8-4.4 3 .5 5.5 2.3 7 4.8'/%3E%3Cpath d='M24.8 6.2v5.2h-5.2'/%3E%3Cpath d='M24 21c-2.2 3.2-5.8 5-9.8 4.4-3-.5-5.5-2.3-7-4.8'/%3E%3Cpath d='M7.2 25.8v-5.2h5.2'/%3E%3C/g%3E%3C/svg%3E");
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='black' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 11c2.2-3.2 5.8-5 9.8-4.4 3 .5 5.5 2.3 7 4.8'/%3E%3Cpath d='M24.8 6.2v5.2h-5.2'/%3E%3Cpath d='M24 21c-2.2 3.2-5.8 5-9.8 4.4-3-.5-5.5-2.3-7-4.8'/%3E%3Cpath d='M7.2 25.8v-5.2h5.2'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .player-play {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      border: 0;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #d95f8c, #8f659f);
+      box-shadow: 0 10px 22px rgba(184, 69, 112, 0.24);
+      cursor: pointer;
+    }
+
+    .player-play::before {
+      content: "";
+      width: 30px;
+      height: 30px;
+      margin-left: -3px;
+      background: #fff;
+      mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M10 7.8c0-2.1 2.4-3.3 4.1-2.1l13 8.2c1.6 1 1.6 3.3 0 4.3l-13 8.2c-1.7 1.1-4.1-.1-4.1-2.1V7.8Z'/%3E%3C/svg%3E") center / contain no-repeat;
+      -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M10 7.8c0-2.1 2.4-3.3 4.1-2.1l13 8.2c1.6 1 1.6 3.3 0 4.3l-13 8.2c-1.7 1.1-4.1-.1-4.1-2.1V7.8Z'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
+
+    .player-play.is-playing::before {
+      margin-left: 0;
+      mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='black'%3E%3Crect x='8' y='6' width='6.8' height='20' rx='3.2'/%3E%3Crect x='17.2' y='6' width='6.8' height='20' rx='3.2'/%3E%3C/g%3E%3C/svg%3E");
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='black'%3E%3Crect x='8' y='6' width='6.8' height='20' rx='3.2'/%3E%3Crect x='17.2' y='6' width='6.8' height='20' rx='3.2'/%3E%3C/g%3E%3C/svg%3E");
+    }
 
     .mobile-focus-back {
       position: fixed;
@@ -820,6 +998,160 @@
       background: linear-gradient(135deg, #d95f8c, #b84570);
       box-shadow: 0 10px 24px rgba(184, 69, 112, 0.24);
       cursor: pointer;
+    }
+
+    .image-edit-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(74, 45, 61, 0.32);
+      backdrop-filter: blur(8px);
+    }
+
+    .image-edit-modal[hidden] { display: none; }
+
+    .image-edit-sheet {
+      width: min(100%, 980px);
+      max-height: 92vh;
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border: 2px solid rgba(242, 183, 201, 0.62);
+      border-radius: 24px;
+      background: rgba(255, 248, 246, 0.98);
+      box-shadow: var(--shadow);
+      overflow: auto;
+    }
+
+    .image-edit-title {
+      margin: 0;
+      color: var(--rose-deep);
+      font-size: 24px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .image-edit-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .image-tool-button {
+      min-height: 34px;
+      border: 1px solid rgba(217, 95, 140, 0.28);
+      border-radius: 999px;
+      padding: 0 12px;
+      color: var(--rose-deep);
+      background: rgba(255, 255, 255, 0.8);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .image-tool-button.active,
+    .image-tool-button.primary {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, #d95f8c, #b84570);
+    }
+
+    .brush-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .brush-control input { width: 128px; accent-color: var(--rose); }
+
+    .image-edit-workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 220px;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .image-edit-canvas-wrap {
+      width: 100%;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.56);
+      overflow: auto;
+    }
+
+    .sticker-panel {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+      min-height: 100%;
+      padding: 10px;
+      border: 2px solid rgba(242, 183, 201, 0.52);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.56);
+    }
+
+    .sticker-panel-title {
+      color: var(--rose-deep);
+      font-size: 16px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .sticker-upload-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      border: 1px solid rgba(217, 95, 140, 0.3);
+      border-radius: 999px;
+      color: var(--rose-deep);
+      background: rgba(255, 255, 255, 0.82);
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .sticker-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .sticker-option {
+      min-height: 58px;
+      border: 1px solid rgba(217, 95, 140, 0.28);
+      border-radius: 14px;
+      color: var(--rose-deep);
+      background: rgba(255, 247, 250, 0.9);
+      font-size: 24px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 7px 14px rgba(184, 69, 112, 0.08);
+    }
+
+    .sticker-option img {
+      max-width: 80%;
+      max-height: 46px;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    #imageEditCanvas {
+      max-width: 100%;
+      max-height: 62vh;
+      border-radius: 12px;
+      box-shadow: 0 10px 24px rgba(128, 76, 95, 0.14);
+      cursor: crosshair;
+      touch-action: none;
     }
 
     .export-modal {
@@ -926,6 +1258,9 @@
     .hidden { display: none !important; }
 
     @media (max-width: 780px) {
+      .image-edit-workspace { grid-template-columns: 1fr; }
+      .sticker-panel { max-height: 160px; overflow: auto; }
+      .sticker-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       .app {
         min-height: 100dvh;
         padding: 10px 8px 14px;
@@ -934,7 +1269,15 @@
       }
       .toolbar {
         width: 100%;
+        display: grid;
+        justify-items: center;
         justify-content: center;
+        gap: 8px;
+      }
+      .template-switch { margin-right: 0; }
+      .toolbar-actions {
+        justify-content: center;
+        flex-wrap: wrap;
       }
       .action-button { min-height: 38px; padding: 0 14px; }
       .stage {
@@ -1010,12 +1353,17 @@
   <main class="app">
     <h1 class="site-title">乙抓repo模板</h1>
     <div class="toolbar">
-      <div class="template-switch" aria-label="模板版本">
-        <button class="template-button active" data-template="full" type="button">完整版</button>
-        <button class="template-button" data-template="compact" type="button">无评价版</button>
+      <div class="template-switch" aria-label="template">
+        <button class="template-button active" data-template="full" type="button">&#23436;&#25972;&#29256;</button>
+        <button class="template-button" data-template="compact" type="button">&#31616;&#30053;&#29256;</button>
       </div>
-      <button class="action-button" id="resetButton" type="button">清空内容</button>
-      <button class="action-button primary" id="downloadButton" type="button">导出 PNG</button>
+      <div class="toolbar-actions">
+        <button class="action-button" id="resetButton" type="button">&#28165;&#31354;&#20869;&#23481;</button>
+        <button class="action-button" id="importDataButton" type="button">&#23548;&#20837;&#25968;&#25454;</button>
+        <button class="action-button" id="exportDataButton" type="button">&#23548;&#20986;&#25968;&#25454;</button>
+        <button class="action-button primary" id="downloadButton" type="button">&#23548;&#20986;&#22270;&#29255;</button>
+        <input class="hidden" id="importDataInput" type="file" accept="application/json,.json" />
+      </div>
     </div>
 
     <button class="mobile-focus-back hidden" id="mobileFocusBack" type="button"></button>
@@ -1026,12 +1374,12 @@
         <label class="cover-box" id="coverBox" aria-label="上传 BK 图片">
           <input class="hidden" id="coverInput" type="file" accept="image/*" />
           <img id="coverImage" alt="" />
-          <span class="cover-placeholder">点击上传 BK<br />420 × 315</span>
+          <span class="cover-placeholder">&#28857;&#20987;&#19978;&#20256; BK<br /><span class="full-size">420 &times; 315</span><span class="compact-size">560 &times; 420</span></span>
         </label>
         <div class="cover-tools">
           <button class="tiny-button" id="containButton" type="button">完整显示</button>
           <button class="tiny-button" id="coverButton" type="button">铺满裁切</button>
-          <button class="tiny-button" id="blurButton" type="button">安全模糊</button>
+          <button class="tiny-button" id="imageEditButton" type="button">&#32534;&#36753;&#22270;&#29255;</button>
         </div>
 
         <aside class="info-panel">
@@ -1113,6 +1461,20 @@
           <textarea class="soft-area" id="reviewText" aria-label="简介与短评"></textarea>
         </section>
 
+        <div class="player-deco">
+          <div class="player-bar" id="playerBar"><div class="player-bar-fill" id="playerBarFill"></div></div>
+          <div class="player-dot" id="playerDot"></div>
+          <div class="player-time" id="playerElapsed" contenteditable="true">00:00</div>
+          <div class="player-time end" id="playerRemaining" contenteditable="true">30:00</div>
+          <div class="player-controls">
+            <button class="player-icon shuffle" type="button" aria-label="shuffle"></button>
+            <button class="player-icon prev" type="button" aria-label="previous"></button>
+            <button class="player-play" id="playerPlay" type="button" aria-label="play"></button>
+            <button class="player-icon next" type="button" aria-label="next"></button>
+            <button class="player-icon loop" type="button" aria-label="loop"></button>
+          </div>
+        </div>
+
 
       </section>
     </div>
@@ -1138,6 +1500,35 @@
         </div>
       </div>
     </div>
+
+
+    <div class="image-edit-modal" id="imageEditModal" hidden>
+      <div class="image-edit-sheet">
+        <h2 class="image-edit-title">&#32534;&#36753;&#22270;&#29255;</h2>
+        <div class="image-edit-toolbar">
+          <button class="image-tool-button active" id="imageToolMosaic" type="button">&#39532;&#36187;&#20811;</button>
+          <button class="image-tool-button" id="imageToolBlur" type="button">&#27169;&#31946;</button>
+          <button class="image-tool-button" id="imageToolErase" type="button">&#27233;&#30382;&#25830;</button>
+          <button class="image-tool-button" id="imageToolSticker" type="button">&#28155;&#21152;&#36148;&#32440;</button>
+          <label class="brush-control">&#30011;&#31508; <input id="brushSize" type="range" min="12" max="120" value="42" /></label>
+          <button class="image-tool-button" id="imageUndoButton" type="button">&#25764;&#38144;</button>
+          <button class="image-tool-button" id="imageClearButton" type="button">&#28165;&#31354;</button>
+          <button class="image-tool-button primary" id="imageDoneButton" type="button">&#23436;&#25104;</button>
+          <button class="image-tool-button" id="imageCancelButton" type="button">&#21462;&#28040;</button>
+        </div>
+        <div class="image-edit-workspace">
+          <div class="image-edit-canvas-wrap">
+            <canvas id="imageEditCanvas"></canvas>
+          </div>
+          <aside class="sticker-panel" aria-label="sticker picker">
+            <div class="sticker-panel-title">&#36148;&#32440;</div>
+            <label class="sticker-upload-label" for="stickerUploadInput">&#19978;&#20256;&#36148;&#32440;</label>
+            <input class="hidden" id="stickerUploadInput" type="file" accept="image/*" />
+            <div class="sticker-list" id="stickerList"></div>
+          </aside>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -1152,6 +1543,9 @@
     const addTagButton = document.getElementById("addTagButton");
     const tags = document.getElementById("tags");
     const downloadButton = document.getElementById("downloadButton");
+    const importDataButton = document.getElementById("importDataButton");
+    const exportDataButton = document.getElementById("exportDataButton");
+    const importDataInput = document.getElementById("importDataInput");
     const importButton = document.getElementById("importButton");
     const resetButton = document.getElementById("resetButton");
     const templateButtons = Array.from(document.querySelectorAll(".template-button"));
@@ -1166,12 +1560,71 @@
     const reviewEditArea = document.getElementById("reviewEditArea");
     const reviewEditConfirm = document.getElementById("reviewEditConfirm");
     const reviewEditCancel = document.getElementById("reviewEditCancel");
+    const imageEditModal = document.getElementById("imageEditModal");
+    const imageEditCanvas = document.getElementById("imageEditCanvas");
+    const imageToolMosaic = document.getElementById("imageToolMosaic");
+    const imageToolBlur = document.getElementById("imageToolBlur");
+    const imageToolErase = document.getElementById("imageToolErase");
+    const imageToolSticker = document.getElementById("imageToolSticker");
+    const brushSize = document.getElementById("brushSize");
+    const imageUndoButton = document.getElementById("imageUndoButton");
+    const imageClearButton = document.getElementById("imageClearButton");
+    const imageDoneButton = document.getElementById("imageDoneButton");
+    const imageCancelButton = document.getElementById("imageCancelButton");
+    const stickerUploadInput = document.getElementById("stickerUploadInput");
+    const stickerList = document.getElementById("stickerList");
     const coverTools = document.querySelector(".cover-tools");
+    const playerBar = document.getElementById("playerBar");
+    const playerBarFill = document.getElementById("playerBarFill");
+    const playerDot = document.getElementById("playerDot");
+    const playerElapsed = document.getElementById("playerElapsed");
+    const playerRemaining = document.getElementById("playerRemaining");
+    const playerPlay = document.getElementById("playerPlay");
     const STORAGE_KEY = "otome-record-card-v1";
     const DLSITE_PROXY_URL = "https://dlsite-rj-import.shuiyingsheng.workers.dev/";
     let mobileFocusTarget = null;
     let lastExportUrl = "";
     let currentDiscountManual = false;
+    const PLAYER_BAR_WIDTH = 484;
+    const PLAYER_DOT_SIZE = 16;
+    const PLAYER_DEFAULT_TOTAL = 30 * 60;
+    let playerTotalSeconds = PLAYER_DEFAULT_TOTAL;
+    let playerProgress = 0;
+    let playerPlaying = false;
+    let coverOriginalSrc = "";
+    let coverEditedSrc = "";
+    let coverMosaicMaskSrc = "";
+    let coverBlurMaskSrc = "";
+    let coverEditorUndoStack = [];
+    let coverStickers = [];
+    let stickerSources = [];
+    const defaultStickerSources = [
+      { id: "default-heart-line", type: "text", text: String.fromCharCode(0x2661) },
+      { id: "default-heart-fill", type: "text", text: String.fromCharCode(0x2665) },
+      { id: "default-question", type: "text", text: "!?" },
+      { id: "default-shout", type: "text", text: "!!!" }
+    ];
+    const stickerImageCache = new Map();
+    let selectedStickerId = null;
+    let editorStickerDrag = null;
+    let editorTool = "mosaic";
+    let editorImage = null;
+    let editorSourceSrc = "";
+    let editorUndoStack = [];
+    let editorDrawing = false;
+    let editorLastPoint = null;
+    let editorSessionSnapshot = null;
+    const editCtx = imageEditCanvas.getContext("2d");
+    const editOriginalCanvas = document.createElement("canvas");
+    const editOriginalCtx = editOriginalCanvas.getContext("2d");
+    const editMosaicCanvas = document.createElement("canvas");
+    const editMosaicCtx = editMosaicCanvas.getContext("2d");
+    const editBlurCanvas = document.createElement("canvas");
+    const editBlurCtx = editBlurCanvas.getContext("2d");
+    const editMosaicMaskCanvas = document.createElement("canvas");
+    const editMosaicMaskCtx = editMosaicMaskCanvas.getContext("2d");
+    const editBlurMaskCanvas = document.createElement("canvas");
+    const editBlurMaskCtx = editBlurMaskCanvas.getContext("2d");
     const UI_BACK_FULL = String.fromCharCode(0x8fd4, 0x56de, 0x5168, 0x56fe);
     const UI_DOWNLOAD_IMAGE = String.fromCharCode(0x4e0b, 0x8f7d, 0x56fe, 0x7247);
     const UI_CLOSE = String.fromCharCode(0x5173, 0x95ed);
@@ -1184,6 +1637,7 @@
     const UI_REVIEW_EDIT_TITLE = String.fromCharCode(0x7f16, 0x8f91, 0x8bc4, 0x4ef7);
     const UI_REVIEW_CONFIRM = String.fromCharCode(0x786e, 0x5b9a);
     const UI_REVIEW_CANCEL = String.fromCharCode(0x53d6, 0x6d88);
+    const UI_IMPORT_DATA_FAILED = String.fromCharCode(0x5bfc, 0x5165, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x786e, 0x8ba4, 0x6587, 0x4ef6, 0x662f, 0x672c, 0x9879, 0x76ee, 0x5bfc, 0x51fa, 0x7684, 0x20, 0x4a, 0x53, 0x4f, 0x4e, 0x3002);
     mobileFocusBack.textContent = UI_BACK_FULL;
     modalDownloadButton.textContent = UI_DOWNLOAD_IMAGE;
     modalCloseButton.textContent = UI_CLOSE;
@@ -1198,7 +1652,7 @@
     }
 
     function templateSize() {
-      return currentTemplate() === "compact" ? { width: 540, height: 720 } : { width: 1080, height: 1440 };
+      return currentTemplate() === "compact" ? { width: 600, height: 800 } : { width: 1080, height: 1440 };
     }
 
     function isMobileView() {
@@ -1256,7 +1710,8 @@
       }
 
       stage.classList.remove("is-focused");
-      card.style.transform = "scale(" + fullScale + ")";
+      const centerX = Math.max(0, (availableWidth - size.width * fullScale) / 2);
+      card.style.transform = "translateX(" + Math.round(centerX) + "px) scale(" + fullScale + ")";
       stage.style.height = (size.height * fullScale + (isMobileView() ? 0 : 16)) + "px";
       stage.scrollLeft = 0;
       stage.scrollTop = 0;
@@ -1336,8 +1791,8 @@
     }
 
     function calculateDiscountPercent(original, current) {
-      const originalText = String(original || "").replace(/D+/g, "");
-      const currentText = String(current || "").replace(/D+/g, "");
+      const originalText = String(original || "").replace(/\D+/g, "");
+      const currentText = String(current || "").replace(/\D+/g, "");
       const originalNumber = Number(originalText);
       const currentNumber = Number(currentText);
       if (!originalNumber || currentText === "" || currentNumber > originalNumber) return "";
@@ -1345,10 +1800,99 @@
       return String(Math.min(100, Math.max(0, percent)));
     }
 
+    function calculateCurrentPriceFromDiscount(original, discount) {
+      const originalText = String(original || "").replace(/\D+/g, "");
+      const discountText = String(discount || "").replace(/\D+/g, "");
+      const originalNumber = Number(originalText);
+      const discountNumber = Number(discountText);
+      if (!originalNumber || discountText === "" || discountNumber > 100) return "";
+      const next = Math.round(originalNumber * (1 - discountNumber / 100));
+      return String(Math.min(originalNumber, Math.max(0, next)));
+    }
+
     function updateDiscount(force = false) {
       if (currentDiscountManual && !force) return;
       const next = calculateDiscountPercent(originalPrice.value, currentPrice.value);
       if (currentDiscount.value !== next) currentDiscount.value = next;
+    }
+
+    function updateCurrentPriceFromDiscount() {
+      const next = calculateCurrentPriceFromDiscount(originalPrice.value, currentDiscount.value);
+      if (next !== "" && currentPrice.value !== next) currentPrice.value = next;
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function parsePlayerTime(text) {
+      const clean = String(text || "").trim().replace(/^[-\u2013\u2014]+/, "");
+      if (!clean) return null;
+      const parts = clean.split(":").map((part) => part.trim()).filter(Boolean);
+      if (!parts.length || parts.length > 3) return null;
+      if (parts.some((part) => !/^\d+$/.test(part))) return null;
+      const nums = parts.map(Number);
+      if (nums.some((num) => !Number.isFinite(num))) return null;
+      if (nums.length === 1) return nums[0] * 60;
+      if (nums.length === 2) return nums[0] * 60 + nums[1];
+      return nums[0] * 3600 + nums[1] * 60 + nums[2];
+    }
+
+    function formatPlayerTime(totalSeconds) {
+      const seconds = Math.max(0, Math.round(totalSeconds || 0));
+      const minutes = Math.floor(seconds / 60);
+      const remain = seconds % 60;
+      return String(minutes).padStart(2, "0") + ":" + String(remain).padStart(2, "0");
+    }
+
+    function currentPlayerSeconds() {
+      return Math.round(playerTotalSeconds * playerProgress);
+    }
+
+    function syncPlayerUi(syncText = true) {
+      playerTotalSeconds = Math.max(1, Math.round(playerTotalSeconds || PLAYER_DEFAULT_TOTAL));
+      playerProgress = clamp(Number(playerProgress) || 0, 0, 1);
+      const elapsed = currentPlayerSeconds();
+      const remaining = Math.max(0, playerTotalSeconds - elapsed);
+      playerBarFill.style.width = (playerProgress * 100).toFixed(2) + "%";
+      playerDot.style.left = Math.round((PLAYER_BAR_WIDTH - PLAYER_DOT_SIZE) * playerProgress) + "px";
+      playerPlay.classList.toggle("is-playing", playerPlaying);
+      playerPlay.setAttribute("aria-label", playerPlaying ? "pause" : "play");
+      if (syncText) {
+        playerElapsed.textContent = formatPlayerTime(elapsed);
+        playerRemaining.textContent = playerProgress === 0 ? formatPlayerTime(playerTotalSeconds) : "-" + formatPlayerTime(remaining);
+      }
+    }
+
+    function setPlayerProgressFromClientX(clientX) {
+      const rect = playerBar.getBoundingClientRect();
+      playerProgress = clamp((clientX - rect.left) / rect.width, 0, 1);
+      syncPlayerUi(true);
+      saveState();
+    }
+
+    function commitPlayerTimeEdit(target) {
+      const parsed = parsePlayerTime(target.textContent);
+      const elapsed = currentPlayerSeconds();
+      if (parsed == null) {
+        syncPlayerUi(true);
+        return;
+      }
+      if (target === playerElapsed) {
+        playerTotalSeconds = Math.max(playerTotalSeconds, parsed, 1);
+        playerProgress = clamp(parsed / playerTotalSeconds, 0, 1);
+      } else {
+        const raw = String(target.textContent || "").trim();
+        if (/^[-\u2013\u2014]/.test(raw)) {
+          playerTotalSeconds = Math.max(1, elapsed + parsed);
+          playerProgress = clamp(elapsed / playerTotalSeconds, 0, 1);
+        } else {
+          playerTotalSeconds = Math.max(1, parsed);
+          playerProgress = clamp(elapsed / playerTotalSeconds, 0, 1);
+        }
+      }
+      syncPlayerUi(true);
+      saveState();
     }
 
     function normalizeWorkno(value) {
@@ -1577,6 +2121,508 @@
 
 
 
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+    }
+
+    function resizeEditorCanvases(width, height) {
+      [imageEditCanvas, editOriginalCanvas, editMosaicCanvas, editBlurCanvas, editMosaicMaskCanvas, editBlurMaskCanvas].forEach((canvas) => {
+        canvas.width = width;
+        canvas.height = height;
+      });
+    }
+
+    function clearEditorMasks() {
+      editMosaicMaskCtx.clearRect(0, 0, editMosaicMaskCanvas.width, editMosaicMaskCanvas.height);
+      editBlurMaskCtx.clearRect(0, 0, editBlurMaskCanvas.width, editBlurMaskCanvas.height);
+    }
+
+    function cloneSticker(sticker) {
+      return sticker ? { ...sticker } : sticker;
+    }
+
+    function cloneStickerList(list) {
+      return Array.isArray(list) ? list.map(cloneSticker).filter(Boolean) : [];
+    }
+
+    function allStickerSources() {
+      return defaultStickerSources.concat(stickerSources || []);
+    }
+
+    function stickerById(id) {
+      return allStickerSources().find((item) => item.id === id);
+    }
+
+    function nextStickerId(prefix = "sticker") {
+      return prefix + "-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
+    }
+
+    function clampSticker(sticker) {
+      if (!sticker || !imageEditCanvas.width || !imageEditCanvas.height) return;
+      const minSize = 36;
+      sticker.w = Math.max(minSize, Math.min(sticker.w || 100, imageEditCanvas.width));
+      sticker.h = Math.max(minSize, Math.min(sticker.h || 70, imageEditCanvas.height));
+      sticker.x = clamp(sticker.x || 0, 0, Math.max(0, imageEditCanvas.width - sticker.w));
+      sticker.y = clamp(sticker.y || 0, 0, Math.max(0, imageEditCanvas.height - sticker.h));
+    }
+
+    function renderStickerPicker() {
+      if (!stickerList) return;
+      stickerList.innerHTML = "";
+      allStickerSources().forEach((source) => {
+        const button = document.createElement("button");
+        button.className = "sticker-option";
+        button.type = "button";
+        button.dataset.stickerId = source.id;
+        if (source.type === "image") {
+          const img = document.createElement("img");
+          img.src = source.src;
+          img.alt = "";
+          button.appendChild(img);
+        } else {
+          button.textContent = source.text || "";
+        }
+        stickerList.appendChild(button);
+      });
+    }
+
+    function addSticker(sourceId) {
+      const source = stickerById(sourceId);
+      if (!source || !imageEditCanvas.width || !imageEditCanvas.height) return;
+      snapshotEditorMasks();
+      const w = Math.min(128, imageEditCanvas.width * 0.28);
+      const h = source.type === "image" ? w : Math.round(w * 0.64);
+      const sticker = {
+        id: nextStickerId(),
+        sourceId,
+        x: Math.round((imageEditCanvas.width - w) / 2),
+        y: Math.round((imageEditCanvas.height - h) / 2),
+        w: Math.round(w),
+        h: Math.round(h)
+      };
+      clampSticker(sticker);
+      coverStickers.push(sticker);
+      selectedStickerId = sticker.id;
+      renderImageEditor();
+      saveEditorProject();
+      saveState();
+    }
+
+    function snapshotEditorMasks() {
+      editorUndoStack.push({
+        mosaic: editMosaicMaskCtx.getImageData(0, 0, editMosaicMaskCanvas.width, editMosaicMaskCanvas.height),
+        blur: editBlurMaskCtx.getImageData(0, 0, editBlurMaskCanvas.width, editBlurMaskCanvas.height),
+        stickers: cloneStickerList(coverStickers)
+      });
+      if (editorUndoStack.length > 24) editorUndoStack.shift();
+    }
+
+    function restoreEditorSnapshot(snapshot) {
+      if (!snapshot) return;
+      editMosaicMaskCtx.putImageData(snapshot.mosaic, 0, 0);
+      editBlurMaskCtx.putImageData(snapshot.blur, 0, 0);
+      coverStickers = cloneStickerList(snapshot.stickers);
+      selectedStickerId = null;
+      renderImageEditor();
+    }
+
+    function maskSnapshotToDataUrls(snapshot) {
+      if (!snapshot || !editMosaicMaskCanvas.width || !editMosaicMaskCanvas.height) return null;
+      const mosaic = document.createElement("canvas");
+      const blur = document.createElement("canvas");
+      mosaic.width = blur.width = editMosaicMaskCanvas.width;
+      mosaic.height = blur.height = editMosaicMaskCanvas.height;
+      mosaic.getContext("2d").putImageData(snapshot.mosaic, 0, 0);
+      blur.getContext("2d").putImageData(snapshot.blur, 0, 0);
+      return { mosaic: mosaic.toDataURL("image/png"), blur: blur.toDataURL("image/png"), stickers: cloneStickerList(snapshot.stickers) };
+    }
+
+    async function dataUrlToImageData(src, width, height) {
+      if (!src) return null;
+      const img = await loadImage(src).catch(() => null);
+      if (!img) return null;
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+      return ctx.getImageData(0, 0, width, height);
+    }
+
+    async function restoreMaskCanvasFromSrc(ctx, src, width, height) {
+      ctx.clearRect(0, 0, width, height);
+      if (!src) return;
+      const img = await loadImage(src).catch(() => null);
+      if (img) ctx.drawImage(img, 0, 0, width, height);
+    }
+
+    async function restoreEditorUndoStack(width, height) {
+      const items = Array.isArray(coverEditorUndoStack) ? coverEditorUndoStack.slice(-12) : [];
+      const restored = [];
+      for (const item of items) {
+        const mosaic = await dataUrlToImageData(item?.mosaic, width, height);
+        const blur = await dataUrlToImageData(item?.blur, width, height);
+        if (mosaic && blur) restored.push({ mosaic, blur, stickers: cloneStickerList(item?.stickers) });
+      }
+      editorUndoStack = restored;
+    }
+
+    function saveEditorProject() {
+      if (!imageEditCanvas.width || !imageEditCanvas.height) return;
+      coverMosaicMaskSrc = editMosaicMaskCanvas.toDataURL("image/png");
+      coverBlurMaskSrc = editBlurMaskCanvas.toDataURL("image/png");
+      coverEditorUndoStack = editorUndoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-12);
+      coverStickers = cloneStickerList(coverStickers);
+    }
+
+    function buildEffectCanvases() {
+      const width = editOriginalCanvas.width;
+      const height = editOriginalCanvas.height;
+      editMosaicCtx.clearRect(0, 0, width, height);
+      const small = document.createElement("canvas");
+      const smallCtx = small.getContext("2d");
+      const block = 22;
+      small.width = Math.max(1, Math.round(width / block));
+      small.height = Math.max(1, Math.round(height / block));
+      smallCtx.drawImage(editOriginalCanvas, 0, 0, small.width, small.height);
+      editMosaicCtx.imageSmoothingEnabled = false;
+      editMosaicCtx.drawImage(small, 0, 0, small.width, small.height, 0, 0, width, height);
+      editMosaicCtx.imageSmoothingEnabled = true;
+
+      editBlurCtx.clearRect(0, 0, width, height);
+      editBlurCtx.save();
+      editBlurCtx.filter = "blur(16px)";
+      editBlurCtx.drawImage(editOriginalCanvas, 0, 0);
+      editBlurCtx.restore();
+    }
+
+    function drawMaskedEffect(targetCtx, effectCanvas, maskCanvas) {
+      const temp = document.createElement("canvas");
+      temp.width = effectCanvas.width;
+      temp.height = effectCanvas.height;
+      const tempCtx = temp.getContext("2d");
+      tempCtx.drawImage(effectCanvas, 0, 0);
+      tempCtx.globalCompositeOperation = "destination-in";
+      tempCtx.drawImage(maskCanvas, 0, 0);
+      tempCtx.globalCompositeOperation = "source-over";
+      targetCtx.drawImage(temp, 0, 0);
+    }
+
+    function drawRoundRectPath(ctx, x, y, w, h, r) {
+      const radius = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + w - radius, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+      ctx.lineTo(x + w, y + h - radius);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+      ctx.lineTo(x + radius, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function drawTextSticker(ctx, source, sticker) {
+      ctx.save();
+      drawRoundRectPath(ctx, sticker.x, sticker.y, sticker.w, sticker.h, Math.min(22, sticker.h / 2));
+      ctx.fillStyle = "rgba(255, 247, 250, 0.9)";
+      ctx.fill();
+      ctx.lineWidth = Math.max(2, sticker.w / 70);
+      ctx.strokeStyle = "rgba(217, 95, 140, 0.36)";
+      ctx.stroke();
+      ctx.fillStyle = "#d95f8c";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = canvasFont("900", Math.max(18, Math.round(sticker.h * 0.52)));
+      ctx.fillText(source.text || "", sticker.x + sticker.w / 2, sticker.y + sticker.h / 2 + 1);
+      ctx.restore();
+    }
+
+    function drawImageSticker(ctx, source, sticker) {
+      let img = stickerImageCache.get(source.id);
+      if (!img) {
+        img = new Image();
+        img.onload = () => renderImageEditor();
+        img.src = source.src;
+        stickerImageCache.set(source.id, img);
+      }
+      if (img.complete && img.naturalWidth) ctx.drawImage(img, sticker.x, sticker.y, sticker.w, sticker.h);
+    }
+
+    function drawStickerControls(ctx, sticker) {
+      const handle = Math.max(18, Math.round(Math.min(imageEditCanvas.width, imageEditCanvas.height) * 0.035));
+      ctx.save();
+      ctx.strokeStyle = "rgba(217, 95, 140, 0.88)";
+      ctx.lineWidth = Math.max(2, handle / 8);
+      ctx.setLineDash([8, 6]);
+      ctx.strokeRect(sticker.x, sticker.y, sticker.w, sticker.h);
+      ctx.setLineDash([]);
+      const points = [
+        [sticker.x, sticker.y],
+        [sticker.x + sticker.w, sticker.y],
+        [sticker.x, sticker.y + sticker.h],
+        [sticker.x + sticker.w, sticker.y + sticker.h]
+      ];
+      ctx.fillStyle = "#fff";
+      ctx.strokeStyle = "rgba(217, 95, 140, 0.8)";
+      points.forEach(([x, y]) => {
+        ctx.beginPath();
+        ctx.arc(x, y, handle / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      });
+      ctx.fillStyle = "#d95f8c";
+      ctx.beginPath();
+      ctx.arc(sticker.x + sticker.w, sticker.y, handle * 0.58, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = Math.max(2, handle / 9);
+      ctx.beginPath();
+      ctx.moveTo(sticker.x + sticker.w - handle * 0.22, sticker.y - handle * 0.22);
+      ctx.lineTo(sticker.x + sticker.w + handle * 0.22, sticker.y + handle * 0.22);
+      ctx.moveTo(sticker.x + sticker.w + handle * 0.22, sticker.y - handle * 0.22);
+      ctx.lineTo(sticker.x + sticker.w - handle * 0.22, sticker.y + handle * 0.22);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawEditorStickers(ctx, showControls = false) {
+      coverStickers.forEach((sticker) => {
+        const source = stickerById(sticker.sourceId);
+        if (!source) return;
+        clampSticker(sticker);
+        if (source.type === "image") drawImageSticker(ctx, source, sticker);
+        else drawTextSticker(ctx, source, sticker);
+      });
+      if (showControls && selectedStickerId) {
+        const selected = coverStickers.find((item) => item.id === selectedStickerId);
+        if (selected) drawStickerControls(ctx, selected);
+      }
+    }
+
+    function renderImageEditor(targetCanvas = imageEditCanvas, options = {}) {
+      if (!editorImage) return;
+      const ctx = targetCanvas.getContext("2d");
+      ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+      ctx.drawImage(editOriginalCanvas, 0, 0);
+      drawMaskedEffect(ctx, editMosaicCanvas, editMosaicMaskCanvas);
+      drawMaskedEffect(ctx, editBlurCanvas, editBlurMaskCanvas);
+      drawEditorStickers(ctx, options.controls !== false && targetCanvas === imageEditCanvas);
+    }
+
+    function editorPointFromEvent(event) {
+      const rect = imageEditCanvas.getBoundingClientRect();
+      return {
+        x: (event.clientX - rect.left) * (imageEditCanvas.width / rect.width),
+        y: (event.clientY - rect.top) * (imageEditCanvas.height / rect.height)
+      };
+    }
+
+    function stickerHandleSize() {
+      return Math.max(22, Math.round(Math.min(imageEditCanvas.width, imageEditCanvas.height) * 0.045));
+    }
+
+    function pointInCircle(point, x, y, radius) {
+      return Math.hypot(point.x - x, point.y - y) <= radius;
+    }
+
+    function hitTestSticker(point) {
+      const handle = stickerHandleSize();
+      for (let i = coverStickers.length - 1; i >= 0; i -= 1) {
+        const sticker = coverStickers[i];
+        const corners = [
+          { corner: "nw", x: sticker.x, y: sticker.y },
+          { corner: "ne", x: sticker.x + sticker.w, y: sticker.y },
+          { corner: "sw", x: sticker.x, y: sticker.y + sticker.h },
+          { corner: "se", x: sticker.x + sticker.w, y: sticker.y + sticker.h }
+        ];
+        if (pointInCircle(point, sticker.x + sticker.w, sticker.y, handle * 0.7)) return { sticker, action: "delete" };
+        const corner = corners.find((item) => pointInCircle(point, item.x, item.y, handle * 0.72));
+        if (corner) return { sticker, action: "resize", corner: corner.corner };
+        if (point.x >= sticker.x && point.x <= sticker.x + sticker.w && point.y >= sticker.y && point.y <= sticker.y + sticker.h) {
+          return { sticker, action: "move" };
+        }
+      }
+      return null;
+    }
+
+    function resizeStickerFromCorner(sticker, corner, point, start) {
+      const ratio = Math.max(0.1, start.w / Math.max(1, start.h));
+      let fixedX = start.x;
+      let fixedY = start.y;
+      let signX = 1;
+      let signY = 1;
+      if (corner === "nw") { fixedX = start.x + start.w; fixedY = start.y + start.h; signX = -1; signY = -1; }
+      if (corner === "ne") { fixedX = start.x; fixedY = start.y + start.h; signX = 1; signY = -1; }
+      if (corner === "sw") { fixedX = start.x + start.w; fixedY = start.y; signX = -1; signY = 1; }
+      const rawW = Math.abs(point.x - fixedX);
+      const rawH = Math.abs(point.y - fixedY);
+      let nextW = Math.max(36, Math.max(rawW, rawH * ratio));
+      let nextH = nextW / ratio;
+      nextW = Math.min(nextW, imageEditCanvas.width);
+      nextH = Math.min(nextH, imageEditCanvas.height);
+      let nextX = signX < 0 ? fixedX - nextW : fixedX;
+      let nextY = signY < 0 ? fixedY - nextH : fixedY;
+      sticker.w = nextW;
+      sticker.h = nextH;
+      sticker.x = nextX;
+      sticker.y = nextY;
+      clampSticker(sticker);
+    }
+
+    function moveSticker(sticker, point, start) {
+      sticker.x = start.x + (point.x - start.pointerX);
+      sticker.y = start.y + (point.y - start.pointerY);
+      clampSticker(sticker);
+    }
+
+    function resizeCursorForCorner(corner) {
+      return corner === "nw" || corner === "se" ? "nwse-resize" : "nesw-resize";
+    }
+
+    function cursorForEditorHit(hit) {
+      if (!hit) return editorTool === "sticker" ? "default" : "crosshair";
+      if (hit.action === "delete") return "pointer";
+      if (hit.action === "resize") return resizeCursorForCorner(hit.corner);
+      return "move";
+    }
+
+    function updateEditorCursor(event) {
+      if (!editorImage) {
+        imageEditCanvas.style.cursor = "default";
+        return;
+      }
+      if (editorStickerDrag) {
+        imageEditCanvas.style.cursor = editorStickerDrag.action === "resize" ? resizeCursorForCorner(editorStickerDrag.corner) : "move";
+        return;
+      }
+      if (editorDrawing) {
+        imageEditCanvas.style.cursor = editorTool === "erase" ? "cell" : "crosshair";
+        return;
+      }
+      const point = editorPointFromEvent(event);
+      imageEditCanvas.style.cursor = cursorForEditorHit(hitTestSticker(point));
+    }
+
+    function drawEditorStroke(from, to) {
+      const size = Number(brushSize.value) || 42;
+      const contexts = editorTool === "erase" ? [editMosaicMaskCtx, editBlurMaskCtx] : [editorTool === "blur" ? editBlurMaskCtx : editMosaicMaskCtx];
+      contexts.forEach((ctx) => {
+        ctx.save();
+        ctx.globalCompositeOperation = editorTool === "erase" ? "destination-out" : "source-over";
+        ctx.strokeStyle = "#fff";
+        ctx.fillStyle = "#fff";
+        ctx.lineWidth = size;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(to.x, to.y, size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+      renderImageEditor();
+    }
+
+    function setEditorTool(tool) {
+      editorTool = tool;
+      imageToolMosaic.classList.toggle("active", tool === "mosaic");
+      imageToolBlur.classList.toggle("active", tool === "blur");
+      imageToolErase.classList.toggle("active", tool === "erase");
+      imageToolSticker.classList.toggle("active", tool === "sticker");
+      imageEditCanvas.style.cursor = tool === "sticker" ? "default" : "crosshair";
+    }
+
+    async function openImageEditor() {
+      const src = coverOriginalSrc || coverImage.getAttribute("src") || coverEditedSrc || "";
+      if (!src) {
+        coverInput.click();
+        return;
+      }
+      editorSourceSrc = src;
+      editorSessionSnapshot = {
+        coverOriginalSrc,
+        coverEditedSrc,
+        coverMosaicMaskSrc,
+        coverBlurMaskSrc,
+        coverEditorUndoStack: JSON.parse(JSON.stringify(coverEditorUndoStack || [])),
+        coverStickers: cloneStickerList(coverStickers),
+        stickerSources: JSON.parse(JSON.stringify(stickerSources || [])),
+        selectedStickerId,
+        editorTool
+      };
+      editorImage = await loadImage(src);
+      const width = editorImage.naturalWidth || editorImage.width;
+      const height = editorImage.naturalHeight || editorImage.height;
+      resizeEditorCanvases(width, height);
+      editOriginalCtx.clearRect(0, 0, width, height);
+      editOriginalCtx.drawImage(editorImage, 0, 0, width, height);
+      buildEffectCanvases();
+      clearEditorMasks();
+      await restoreMaskCanvasFromSrc(editMosaicMaskCtx, coverMosaicMaskSrc, width, height);
+      await restoreMaskCanvasFromSrc(editBlurMaskCtx, coverBlurMaskSrc, width, height);
+      await restoreEditorUndoStack(width, height);
+      renderStickerPicker();
+      setEditorTool(editorTool || "mosaic");
+      renderImageEditor();
+      imageEditModal.hidden = false;
+    }
+
+    function updateEditedCoverFromEditor() {
+      if (!editorImage) return "";
+      const result = document.createElement("canvas");
+      result.width = imageEditCanvas.width;
+      result.height = imageEditCanvas.height;
+      renderImageEditor(result, { controls: false });
+      return result.toDataURL("image/png");
+    }
+
+    function restoreEditorSessionSnapshot() {
+      if (!editorSessionSnapshot) return;
+      coverOriginalSrc = editorSessionSnapshot.coverOriginalSrc || "";
+      coverEditedSrc = editorSessionSnapshot.coverEditedSrc || "";
+      coverMosaicMaskSrc = editorSessionSnapshot.coverMosaicMaskSrc || "";
+      coverBlurMaskSrc = editorSessionSnapshot.coverBlurMaskSrc || "";
+      coverEditorUndoStack = Array.isArray(editorSessionSnapshot.coverEditorUndoStack) ? editorSessionSnapshot.coverEditorUndoStack : [];
+      coverStickers = cloneStickerList(editorSessionSnapshot.coverStickers);
+      stickerSources = Array.isArray(editorSessionSnapshot.stickerSources) ? editorSessionSnapshot.stickerSources : [];
+      selectedStickerId = editorSessionSnapshot.selectedStickerId || null;
+      editorTool = editorSessionSnapshot.editorTool || "mosaic";
+    }
+
+    function closeImageEditor(apply) {
+      if (editorImage) {
+        if (apply) {
+          saveEditorProject();
+          coverOriginalSrc = editorSourceSrc;
+          coverEditedSrc = updateEditedCoverFromEditor();
+          coverImage.src = coverEditedSrc;
+          coverImage.style.filter = "";
+          coverBox.classList.add("has-image");
+          saveState();
+        } else {
+          restoreEditorSessionSnapshot();
+          saveState();
+        }
+      }
+      editorSessionSnapshot = null;
+      editorDrawing = false;
+      editorLastPoint = null;
+      editorStickerDrag = null;
+      selectedStickerId = null;
+      imageEditModal.hidden = true;
+    }
+
     function editableText(id) {
       return document.getElementById(id)?.textContent || "";
     }
@@ -1615,8 +2661,17 @@
         tags: Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean),
         reviewText: valueOf("#reviewText"),
         coverSrc: coverImage.getAttribute("src") || "",
+        coverOriginalSrc,
+        coverEditedSrc,
+        coverMosaicMaskSrc,
+        coverBlurMaskSrc,
+        coverEditorUndoStack,
+        coverStickers: cloneStickerList(coverStickers),
+        stickerSources,
         coverFit: coverImage.style.objectFit || "contain",
-        coverFilter: coverImage.style.filter || "",
+        playerTotalSeconds,
+        playerProgress,
+        playerPlaying,
       };
     }
 
@@ -1634,20 +2689,14 @@
       nextTags.forEach((text) => tags.insertBefore(createTag(text), addTagButton));
     }
 
-    function restoreState() {
-      let state;
-      try {
-        state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-      } catch {
-        state = null;
-      }
-      if (!state) return;
-      setTemplate("full", false);
+    function applyState(state, persist = false) {
+      if (!state || typeof state !== "object") return false;
+      setTemplate(state.template === "compact" ? "compact" : "full", false);
       setEditableText("recordTitle", state.recordTitle || state.jpTitle || state.cnTitle || "");
-      setEditableText("cvText", state.cvText);
-      setEditableText("circleText", state.circleText);
-      setEditableText("rjText", state.rjText);
-      setEditableText("durationText", state.durationText);
+      setEditableText("cvText", state.cvText || "");
+      setEditableText("circleText", state.circleText || "");
+      setEditableText("rjText", state.rjText || "");
+      setEditableText("durationText", state.durationText || "");
       originalPrice.value = state.originalPrice || "";
       currentPrice.value = state.currentPrice || state.paidPrice || "";
       currentDiscount.value = state.currentDiscount || "";
@@ -1659,13 +2708,42 @@
       document.querySelectorAll(".rating-row").forEach((row, index) => setRating(row, state.ratings?.[index] ?? 4));
       renderTags(state.tags);
       document.getElementById("reviewText").value = state.reviewText || "";
-      if (state.coverSrc) {
-        coverImage.src = state.coverSrc;
+      coverOriginalSrc = state.coverOriginalSrc || "";
+      coverEditedSrc = state.coverEditedSrc || "";
+      coverMosaicMaskSrc = state.coverMosaicMaskSrc || "";
+      coverBlurMaskSrc = state.coverBlurMaskSrc || "";
+      coverEditorUndoStack = Array.isArray(state.coverEditorUndoStack) ? state.coverEditorUndoStack : [];
+      coverStickers = cloneStickerList(state.coverStickers);
+      stickerSources = Array.isArray(state.stickerSources) ? state.stickerSources : [];
+      renderStickerPicker();
+      const coverSrc = state.coverSrc || coverEditedSrc || coverOriginalSrc || "";
+      if (coverSrc) {
+        coverImage.src = coverSrc;
         coverBox.classList.add("has-image");
+      } else {
+        coverImage.removeAttribute("src");
+        coverBox.classList.remove("has-image");
       }
       coverImage.style.objectFit = state.coverFit || "contain";
-      coverImage.style.filter = state.coverFilter || "";
+      coverImage.style.filter = "";
+      playerTotalSeconds = Number.isFinite(Number(state.playerTotalSeconds)) ? Number(state.playerTotalSeconds) : PLAYER_DEFAULT_TOTAL;
+      playerProgress = Number.isFinite(Number(state.playerProgress)) ? Number(state.playerProgress) : 0;
+      playerPlaying = Boolean(state.playerPlaying);
+      syncPlayerUi(true);
       updateDiscount();
+      fitStage();
+      if (persist) saveState();
+      return true;
+    }
+
+    function restoreState() {
+      let state;
+      try {
+        state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      } catch {
+        state = null;
+      }
+      applyState(state, false);
     }
 
     function scheduleSave() {
@@ -1678,7 +2756,16 @@
       if (!file) return;
       const reader = new FileReader();
       reader.onload = () => {
+        coverOriginalSrc = reader.result;
+        coverEditedSrc = "";
+        coverMosaicMaskSrc = "";
+        coverBlurMaskSrc = "";
+        coverEditorUndoStack = [];
+        coverStickers = [];
+        selectedStickerId = null;
+        editorUndoStack = [];
         coverImage.src = reader.result;
+        coverImage.style.filter = "";
         coverBox.classList.add("has-image");
         saveState();
       };
@@ -1697,10 +2784,9 @@
       saveState();
     });
 
-    document.getElementById("blurButton").addEventListener("click", (event) => {
+    document.getElementById("imageEditButton").addEventListener("click", (event) => {
       event.preventDefault();
-      coverImage.style.filter = coverImage.style.filter ? "" : "blur(12px)";
-      saveState();
+      openImageEditor();
     });
 
     document.querySelectorAll(".choice-button").forEach((button) => {
@@ -1711,17 +2797,27 @@
       });
     });
 
-    [originalPrice, currentPrice].forEach((input) => {
-      input.addEventListener("input", () => {
-        sanitizeNumericInput(input);
+    originalPrice.addEventListener("input", () => {
+      sanitizeNumericInput(originalPrice);
+      if (currentDiscountManual) {
+        updateCurrentPriceFromDiscount();
+      } else {
         updateDiscount();
-        scheduleSave();
-      });
+      }
+      scheduleSave();
+    });
+
+    currentPrice.addEventListener("input", () => {
+      sanitizeNumericInput(currentPrice);
+      currentDiscountManual = false;
+      updateDiscount(true);
+      scheduleSave();
     });
 
     currentDiscount.addEventListener("input", () => {
       sanitizeNumericInput(currentDiscount);
       currentDiscountManual = true;
+      updateCurrentPriceFromDiscount();
       scheduleSave();
     });
 
@@ -1773,11 +2869,21 @@
       });
       document.getElementById("reviewText").value = "";
       coverImage.removeAttribute("src");
+      coverOriginalSrc = "";
+      coverEditedSrc = "";
+      coverMosaicMaskSrc = "";
+      coverBlurMaskSrc = "";
+      coverEditorUndoStack = [];
+      editorUndoStack = [];
       coverImage.style.filter = "";
       coverImage.style.objectFit = "contain";
       coverBox.classList.remove("has-image");
       document.querySelectorAll(".choice-button").forEach((item, index) => item.classList.toggle("active", index === 0));
       currentDiscountManual = false;
+      playerTotalSeconds = PLAYER_DEFAULT_TOTAL;
+      playerProgress = 0;
+      playerPlaying = false;
+      syncPlayerUi(true);
       updateDiscount(true);
       saveState();
     });
@@ -1893,6 +2999,35 @@
       return lines.length * lineHeight;
     }
 
+    function drawCenteredWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3) {
+      const lines = [];
+      const sourceLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+      for (const sourceLine of sourceLines) {
+        if (lines.length >= maxLines) break;
+        if (!sourceLine) {
+          lines.push("");
+          continue;
+        }
+        let line = "";
+        for (const char of Array.from(sourceLine)) {
+          const test = line + char;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            lines.push(line);
+            line = char;
+            if (lines.length >= maxLines) break;
+          } else {
+            line = test;
+          }
+        }
+        if (line && lines.length < maxLines) lines.push(line);
+      }
+      ctx.save();
+      ctx.textAlign = "center";
+      lines.forEach((item, index) => ctx.fillText(item, x + maxWidth / 2, y + index * lineHeight));
+      ctx.restore();
+      return lines.length * lineHeight;
+    }
+
     function drawStickerLabel(ctx, text, x, y) {
       ctx.save();
       ctx.font = canvasFont('900', 24);
@@ -1934,6 +3069,19 @@
       ctx.fillStyle = "#5d4051";
       ctx.font = canvasFont('900', 26);
       drawWrappedText(ctx, value, x, y + 48, w, 31, 1);
+    }
+
+    function drawCompactInfoField(ctx, label, value, x, top, w) {
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#d95f8c";
+      ctx.font = canvasFont('800', 21);
+      ctx.fillText(label, x + w / 2, top + 19);
+      drawFieldRule(ctx, x, top + 11, w);
+      ctx.fillStyle = "#5d4051";
+      ctx.font = canvasFont('900', 26);
+      drawCenteredWrappedText(ctx, value, x, top + 61, w, 31, 1);
+      ctx.restore();
     }
 
     function drawPreviewInfoField(ctx, label, value, x, top, w) {
@@ -1979,6 +3127,106 @@
       ctx.fillText(text, x + 10 + textOffsetX, y + 56);
     }
 
+    function drawPlayerSvgPaths(ctx, x, y, size, color, paths) {
+      ctx.save();
+      ctx.translate(x, y);
+      const scale = size / 32;
+      ctx.scale(scale, scale);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.8;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      paths.forEach((path) => ctx.stroke(new Path2D(path)));
+      ctx.restore();
+    }
+
+    function drawPlayerSvgFill(ctx, x, y, size, color, paths) {
+      ctx.save();
+      ctx.translate(x, y);
+      const scale = size / 32;
+      ctx.scale(scale, scale);
+      ctx.fillStyle = color;
+      paths.forEach((path) => ctx.fill(new Path2D(path)));
+      ctx.restore();
+    }
+
+    function drawPlayerShuffle(ctx, x, y, color) {
+      drawPlayerSvgPaths(ctx, x, y, 32, color, [
+        "M4 9h4.8c4.5 0 6.1 14 11.2 14h4.5",
+        "M4 23h4.8c4.5 0 6.1-14 11.2-14h4.5",
+        "M22 5l5 4-5 4",
+        "M22 19l5 4-5 4"
+      ]);
+    }
+
+    function drawPlayerLoop(ctx, x, y, color) {
+      drawPlayerSvgPaths(ctx, x, y, 32, color, [
+        "M8 11c2.2-3.2 5.8-5 9.8-4.4 3 .5 5.5 2.3 7 4.8",
+        "M24.8 6.2v5.2h-5.2",
+        "M24 21c-2.2 3.2-5.8 5-9.8 4.4-3-.5-5.5-2.3-7-4.8",
+        "M7.2 25.8v-5.2h5.2"
+      ]);
+    }
+
+    function drawPlayerPrev(ctx, x, y, color) {
+      drawPlayerSvgFill(ctx, x, y, 32, color, [
+        "M6 8h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2Z",
+        "M25.5 8.8c1.4-.9 3.2.1 3.2 1.8v10.8c0 1.7-1.8 2.7-3.2 1.8l-8.2-5.4c-1.2-.8-1.2-2.6 0-3.4l8.2-5.6Z"
+      ]);
+    }
+
+    function drawPlayerNext(ctx, x, y, color) {
+      drawPlayerSvgFill(ctx, x, y, 32, color, [
+        "M22 8h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2Z",
+        "M6.5 8.8c-1.4-.9-3.2.1-3.2 1.8v10.8c0 1.7 1.8 2.7 3.2 1.8l8.2-5.4c1.2-.8 1.2-2.6 0-3.4L6.5 8.8Z"
+      ]);
+    }
+
+    function drawPlayerPlayState(ctx, x, y, playing) {
+      if (playing) {
+        fillRound(ctx, x + 18, y + 17, 8, 30, 4, "#fff");
+        fillRound(ctx, x + 38, y + 17, 8, 30, 4, "#fff");
+        return;
+      }
+      drawPlayerSvgFill(ctx, x + 12, y + 15, 34, "#fff", [
+        "M10 7.8c0-2.1 2.4-3.3 4.1-2.1l13 8.2c1.6 1 1.6 3.3 0 4.3l-13 8.2c-1.7 1.1-4.1-.1-4.1-2.1V7.8Z"
+      ]);
+    }
+
+    function drawPlayerDecoration(ctx) {
+      const x = 58;
+      const y = 648;
+      const iconColor = "rgba(184,69,112,.78)";
+      const progress = clamp(Number(playerProgress) || 0, 0, 1);
+      const elapsed = currentPlayerSeconds();
+      const remaining = Math.max(0, playerTotalSeconds - elapsed);
+      const leftTime = formatPlayerTime(elapsed);
+      const rightTime = progress === 0 ? formatPlayerTime(playerTotalSeconds) : "-" + formatPlayerTime(remaining);
+      fillRound(ctx, x, y + 4, 484, 8, 4, "rgba(242,183,201,.34)");
+      fillRound(ctx, x, y + 4, 484 * progress, 8, 4, "rgba(217,95,140,.88)");
+      const dotX = x + (484 - 16) * progress;
+      fillRound(ctx, dotX, y, 16, 16, 8, "#fff");
+      strokeRound(ctx, dotX, y, 16, 16, 8, "rgba(217,95,140,.7)", 3);
+
+      ctx.fillStyle = "rgba(93,64,81,.68)";
+      ctx.font = canvasFont('800', 14);
+      ctx.fillText(leftTime, x, y + 36);
+      ctx.textAlign = "right";
+      ctx.fillText(rightTime, x + 484, y + 36);
+      ctx.textAlign = "left";
+
+      drawPlayerShuffle(ctx, x + 66, y + 54, iconColor);
+      drawPlayerLoop(ctx, x + 396, y + 54, iconColor);
+      drawPlayerPrev(ctx, x + 146, y + 54, iconColor);
+      drawPlayerNext(ctx, x + 314, y + 54, iconColor);
+
+      const grad = ctx.createLinearGradient(x + 210, y + 42, x + 274, y + 106);
+      grad.addColorStop(0, "#d95f8c");
+      grad.addColorStop(1, "#8f659f");
+      fillRound(ctx, x + 210, y + 42, 64, 64, 32, grad);
+      drawPlayerPlayState(ctx, x + 210, y + 42, playerPlaying);
+    }
+
     function drawChoiceMetric(ctx, activeText, x, y, w, h) {
       ctx.fillStyle = "#d95f8c";
       ctx.font = canvasFont('800', 21);
@@ -2015,36 +3263,88 @@
       }
     }
 
-    async function drawCover(ctx) {
-      fillRound(ctx, 90, 110, 420, 315, 24, "#ffe8f0");
-      strokeRound(ctx, 90, 110, 420, 315, 24, "#fff", 4);
+    async function drawCover(ctx, x = 90, y = 110, w = 420, h = 315, r = 24, frame = true, fitMode = null) {
+      fillRound(ctx, x, y, w, h, r, "#ffe8f0");
+      if (frame) strokeRound(ctx, x, y, w, h, r, "#fff", 4);
       if (!coverImage.src || !coverBox.classList.contains("has-image")) {
         ctx.fillStyle = "#b84570";
         ctx.font = canvasFont('800', 24);
         ctx.textAlign = "center";
-        ctx.fillText(COVER_UPLOAD_TEXT, 300, 238);
-        ctx.font = canvasFont('800', 21);
-        ctx.fillText("420 " + MULTIPLY_CHAR + " 315", 300, 272);
+        ctx.fillText(COVER_UPLOAD_TEXT, x + w / 2, y + h / 2 - 10);
+        ctx.font = canvasFont('800', Math.max(18, Math.round(w / 20)));
+        ctx.fillText(w + " " + MULTIPLY_CHAR + " " + h, x + w / 2, y + h / 2 + 28);
         ctx.textAlign = "left";
         return;
       }
       if (!coverImage.complete) await coverImage.decode().catch(() => {});
       ctx.save();
-      roundRect(ctx, 90, 110, 420, 315, 24);
+      roundRect(ctx, x, y, w, h, r);
       ctx.clip();
-      const mode = coverImage.style.objectFit === "cover" ? "cover" : "contain";
+      const mode = fitMode || (coverImage.style.objectFit === "cover" ? "cover" : "contain");
       const iw = coverImage.naturalWidth || coverImage.width;
       const ih = coverImage.naturalHeight || coverImage.height;
-      const scale = mode === "cover" ? Math.max(420 / iw, 315 / ih) : Math.min(420 / iw, 315 / ih);
+      const scale = mode === "cover" ? Math.max(w / iw, h / ih) : Math.min(w / iw, h / ih);
       const dw = iw * scale;
       const dh = ih * scale;
-      const dx = 90 + (420 - dw) / 2;
-      const dy = 110 + (315 - dh) / 2;
+      const dx = x + (w - dw) / 2;
+      const dy = y + (h - dh) / 2;
       ctx.fillStyle = "rgba(255,255,255,.52)";
-      ctx.fillRect(90, 110, 420, 315);
-      if (coverImage.style.filter) ctx.filter = "blur(12px)";
+      ctx.fillRect(x, y, w, h);
       ctx.drawImage(coverImage, dx, dy, dw, dh);
       ctx.restore();
+    }
+
+    function dataFileName() {
+      const rj = editableText("rjText").trim().replace(/[^A-Za-z0-9_-]+/g, "");
+      const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      return (rj || "otome-record") + "-data-" + stamp + ".json";
+    }
+
+    function exportRecordData() {
+      commitActivePlayerTime();
+      const payload = {
+        app: "otome-record-card",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        data: collectState()
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = dataFileName();
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 500);
+    }
+
+    function normalizeImportedData(raw) {
+      if (!raw || typeof raw !== "object") return null;
+      if (raw.data && typeof raw.data === "object") return raw.data;
+      return raw;
+    }
+
+    function importRecordData(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = normalizeImportedData(JSON.parse(String(reader.result || "")));
+          if (!data) throw new Error("empty data");
+          if (!applyState(data, true)) throw new Error("invalid data");
+        } catch (error) {
+          console.error(error);
+          alert(UI_IMPORT_DATA_FAILED);
+        } finally {
+          importDataInput.value = "";
+        }
+      };
+      reader.onerror = () => {
+        alert(UI_IMPORT_DATA_FAILED);
+        importDataInput.value = "";
+      };
+      reader.readAsText(file, "utf-8");
     }
 
     function downloadBlob(blob) {
@@ -2059,65 +3359,44 @@
     }
 
 
+    function commitActivePlayerTime() {
+      if (document.activeElement === playerElapsed || document.activeElement === playerRemaining) {
+        commitPlayerTimeEdit(document.activeElement);
+      }
+    }
+
     async function downloadCompactCard() {
       const canvas = document.createElement("canvas");
-      canvas.width = 540;
-      canvas.height = 720;
+      canvas.width = 600;
+      canvas.height = 800;
       const ctx = canvas.getContext("2d");
-      ctx.save();
-      ctx.scale(0.5, 0.5);
 
-      const bg = ctx.createLinearGradient(0, 0, 1080, 1440);
+      const bg = ctx.createLinearGradient(0, 0, 600, 800);
       bg.addColorStop(0, "#fff7f4");
       bg.addColorStop(0.48, "#fffdf9");
       bg.addColorStop(1, "#f2faf3");
       ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, 1080, 1440);
-      ctx.fillStyle = "rgba(255,255,255,.36)";
-      for (let x = 0; x <= 1080; x += 36) ctx.fillRect(x, 0, 1, 1440);
-      for (let y = 0; y <= 1440; y += 36) ctx.fillRect(0, y, 1080, 1);
-      strokeRound(ctx, 26, 26, 1028, 1388, 30, "rgba(242,183,201,.78)", 3);
-      strokeRound(ctx, 54, 54, 972, 1332, 22, "rgba(135,185,170,.42)", 2, true);
+      ctx.fillRect(0, 0, 600, 800);
+      ctx.fillStyle = "rgba(255,255,255,.26)";
+      for (let x = 0; x <= 600; x += 36) ctx.fillRect(x, 0, 1, 800);
+      for (let y = 0; y <= 800; y += 36) ctx.fillRect(0, y, 600, 1);
 
-      await drawCover(ctx);
-      fillRound(ctx, 548, 110, 442, 315, 26, "rgba(255,255,255,.58)");
-      strokeRound(ctx, 548, 110, 442, 315, 26, "rgba(242,183,201,.6)", 2);
-      drawStickerLabel(ctx, LABEL_BASIC, 566, 89);
-      drawPreviewInfoField(ctx, "CV", textOf('#cvText'), 572, 134, 177);
-      drawPreviewInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 767, 134, 177);
-      drawPreviewInfoField(ctx, LABEL_RJ, textOf('#rjText'), 572, 222, 177);
-      drawPreviewInfoField(ctx, LABEL_DURATION, textOf('#durationText'), 767, 222, 177);
-      drawPreviewChoiceField(ctx, document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE, 572, 310, 372);
+      await drawCover(ctx, 20, 20, 560, 420, 0, false, "contain");
 
-      fillRound(ctx, 92, 448, 864, 124, 26, "rgba(255,255,255,.58)");
-      strokeRound(ctx, 92, 448, 864, 124, 26, "rgba(242,183,201,.54)", 2);
-      drawStickerLabel(ctx, LABEL_TITLE, 110, 427);
       ctx.fillStyle = "#5d4051";
-      ctx.font = canvasFont('900', 28);
-      drawWrappedText(ctx, textOf('#recordTitle'), 114, 503, 820, 34, 2);
+      ctx.font = canvasFont('900', 21);
+      drawCenteredWrappedText(ctx, textOf('#recordTitle'), 20, 472, 560, 29, 3);
 
-      fillRound(ctx, 92, 652, 420, 300, 26, "rgba(255,255,255,.58)");
-      strokeRound(ctx, 92, 652, 420, 300, 26, "rgba(242,183,201,.54)", 2);
-      drawStickerLabel(ctx, LABEL_PURCHASE, 110, 631);
-      drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 110, 704, 184, 74);
-      drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 310, 704, 184, 74);
-      drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 110, 812, 184, 74, "%off");
-      drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 310, 812, 184, 74, "%off");
+      drawCompactInfoField(ctx, LABEL_RJ, textOf('#rjText'), 32, 556, 162.67);
+      drawCompactInfoField(ctx, "CV", textOf('#cvText'), 218.67, 556, 162.66);
+      drawCompactInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 405.33, 556, 162.67);
 
-      fillRound(ctx, 536, 652, 420, 300, 26, "rgba(255,255,255,.58)");
-      strokeRound(ctx, 536, 652, 420, 300, 26, "rgba(242,183,201,.54)", 2);
-      drawStickerLabel(ctx, LABEL_RATING, 554, 631);
-      const rows = Array.from(document.querySelectorAll(".rating-row"));
-      drawStars(ctx, LABEL_OVERALL, ratingValue(rows[0]), 554, 713);
-      drawStars(ctx, "CV", ratingValue(rows[1]), 554, 767);
-      drawStars(ctx, LABEL_STORY, ratingValue(rows[2]), 554, 821);
-      drawStars(ctx, "SE", ratingValue(rows[3]), 554, 875);
-
-      ctx.restore();
+      drawPlayerDecoration(ctx);
       handleExportBlob(await canvasToBlob(canvas));
     }
 
     async function downloadCard() {
+      commitActivePlayerTime();
       downloadButton.disabled = true;
       try {
         await ensureCanvasFontReady();
@@ -2237,10 +3516,158 @@
     reviewEditModal.addEventListener("click", (event) => {
       if (event.target === reviewEditModal) closeReviewEditor(false);
     });
+    imageToolMosaic.addEventListener("click", () => setEditorTool("mosaic"));
+    imageToolBlur.addEventListener("click", () => setEditorTool("blur"));
+    imageToolErase.addEventListener("click", () => setEditorTool("erase"));
+    imageToolSticker.addEventListener("click", () => setEditorTool("sticker"));
+    imageUndoButton.addEventListener("click", () => {
+      restoreEditorSnapshot(editorUndoStack.pop());
+      saveEditorProject();
+      saveState();
+    });
+    imageClearButton.addEventListener("click", () => {
+      snapshotEditorMasks();
+      clearEditorMasks();
+      coverStickers = [];
+      selectedStickerId = null;
+      renderImageEditor();
+      saveEditorProject();
+      saveState();
+    });
+    imageDoneButton.addEventListener("click", () => closeImageEditor(true));
+    imageCancelButton.addEventListener("click", () => closeImageEditor(false));
+    imageEditModal.addEventListener("click", (event) => {
+      if (event.target === imageEditModal) closeImageEditor(false);
+    });
+    imageEditCanvas.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      if (!editorImage) return;
+      imageEditCanvas.setPointerCapture?.(event.pointerId);
+      const point = editorPointFromEvent(event);
+      const hit = hitTestSticker(point);
+      imageEditCanvas.style.cursor = cursorForEditorHit(hit);
+      if (hit) {
+        snapshotEditorMasks();
+        selectedStickerId = hit.sticker.id;
+        if (hit.action === "delete") {
+          coverStickers = coverStickers.filter((item) => item.id !== hit.sticker.id);
+          selectedStickerId = null;
+          renderImageEditor();
+          saveEditorProject();
+          saveState();
+          return;
+        }
+        editorStickerDrag = {
+          action: hit.action,
+          corner: hit.corner,
+          id: hit.sticker.id,
+          start: { ...hit.sticker, pointerX: point.x, pointerY: point.y }
+        };
+        renderImageEditor();
+        return;
+      }
+      selectedStickerId = null;
+      if (editorTool === "sticker") {
+        renderImageEditor();
+        return;
+      }
+      snapshotEditorMasks();
+      editorDrawing = true;
+      editorLastPoint = point;
+      drawEditorStroke(editorLastPoint, editorLastPoint);
+    });
+    imageEditCanvas.addEventListener("pointermove", (event) => {
+      if (!editorDrawing && !editorStickerDrag) {
+        updateEditorCursor(event);
+        return;
+      }
+      event.preventDefault();
+      const point = editorPointFromEvent(event);
+      if (editorStickerDrag) {
+        const sticker = coverStickers.find((item) => item.id === editorStickerDrag.id);
+        if (!sticker) return;
+        if (editorStickerDrag.action === "resize") resizeStickerFromCorner(sticker, editorStickerDrag.corner, point, editorStickerDrag.start);
+        else moveSticker(sticker, point, editorStickerDrag.start);
+        renderImageEditor();
+        return;
+      }
+      if (!editorLastPoint) return;
+      drawEditorStroke(editorLastPoint, point);
+      editorLastPoint = point;
+    });
+    ["pointerup", "pointercancel", "pointerleave"].forEach((name) => {
+      imageEditCanvas.addEventListener(name, () => {
+        if (editorDrawing || editorStickerDrag) {
+          saveEditorProject();
+          saveState();
+        }
+        editorDrawing = false;
+        editorLastPoint = null;
+        editorStickerDrag = null;
+        imageEditCanvas.style.cursor = editorTool === "sticker" ? "default" : "crosshair";
+      });
+    });
+    imageEditCanvas.addEventListener("pointerleave", () => {
+      if (!editorDrawing && !editorStickerDrag) imageEditCanvas.style.cursor = editorTool === "sticker" ? "default" : "crosshair";
+    });
+
+    stickerList.addEventListener("click", (event) => {
+      const button = event.target.closest(".sticker-option");
+      if (!button) return;
+      setEditorTool("sticker");
+      addSticker(button.dataset.stickerId);
+    });
+
+    stickerUploadInput.addEventListener("change", () => {
+      const file = stickerUploadInput.files && stickerUploadInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const source = { id: nextStickerId("uploaded-sticker"), type: "image", src: reader.result };
+        stickerSources.push(source);
+        renderStickerPicker();
+        setEditorTool("sticker");
+        addSticker(source.id);
+        stickerUploadInput.value = "";
+      };
+      reader.readAsDataURL(file);
+    });
+
     modalCloseButton.addEventListener("click", () => { exportModal.hidden = true; revokeLastExportUrl(); });
     exportModal.addEventListener("click", (event) => {
       if (event.target === exportModal) { exportModal.hidden = true; revokeLastExportUrl(); }
     });
+    playerPlay.addEventListener("click", () => {
+      playerPlaying = !playerPlaying;
+      syncPlayerUi(false);
+      saveState();
+    });
+
+    [playerElapsed, playerRemaining].forEach((node) => {
+      node.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          node.blur();
+        }
+      });
+      node.addEventListener("blur", () => commitPlayerTimeEdit(node));
+    });
+
+    [playerBar, playerDot].forEach((node) => {
+      node.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        setPlayerProgressFromClientX(event.clientX);
+        const move = (moveEvent) => setPlayerProgressFromClientX(moveEvent.clientX);
+        const up = () => {
+          window.removeEventListener("pointermove", move);
+          window.removeEventListener("pointerup", up);
+          saveState();
+        };
+        window.addEventListener("pointermove", move);
+        window.addEventListener("pointerup", up, { once: true });
+      });
+    });
+
     importButton.addEventListener("click", importProductInfo);
 
     modalDownloadButton.addEventListener("click", () => {
@@ -2254,6 +3681,10 @@
       }
     });
 
+    importDataButton.addEventListener("click", () => importDataInput.click());
+    exportDataButton.addEventListener("click", exportRecordData);
+    importDataInput.addEventListener("change", () => importRecordData(importDataInput.files?.[0]));
+
     templateButtons.forEach((button) => {
       button.addEventListener("click", () => setTemplate(button.dataset.template || "full"));
     });
@@ -2263,7 +3694,9 @@
     document.addEventListener("click", (event) => {
       if (event.target.closest(".star, .choice-button")) scheduleSave();
     });
+    syncPlayerUi(true);
     restoreState();
+    window.addEventListener("beforeunload", saveState);
     window.addEventListener("resize", fitStage);
     fitStage();
     updateDiscount();
