@@ -55,8 +55,9 @@
       width: min(100%, 1080px);
       display: grid;
       justify-items: center;
-      gap: 7px;
-      padding: 8px 0 2px;
+      gap: 6px;
+      padding: 0 0 2px;
+      margin-top: -8px;
     }
 
     .site-title-row {
@@ -81,17 +82,23 @@
 
     .site-title {
       margin: 0;
-      color: var(--rose-deep);
+      color: #dc4f8b;
       font-size: 48px;
       font-weight: 900;
       line-height: 1.05;
       text-align: center;
       letter-spacing: 0;
       white-space: nowrap;
-      -webkit-text-stroke: 1.2px rgba(255, 255, 255, 0.92);
       text-shadow:
-        0 2px 0 rgba(255, 255, 255, 0.76),
-        0 4px 8px rgba(93, 64, 81, 0.28);
+        0 1.5px 0 rgba(255, 255, 255, 0.95),
+        1.5px 0 0 rgba(255, 255, 255, 0.95),
+        0 -1.5px 0 rgba(255, 255, 255, 0.95),
+        -1.5px 0 0 rgba(255, 255, 255, 0.95),
+        1.2px 1.2px 0 rgba(255, 255, 255, 0.9),
+        -1.2px 1.2px 0 rgba(255, 255, 255, 0.9),
+        1.2px -1.2px 0 rgba(255, 255, 255, 0.9),
+        -1.2px -1.2px 0 rgba(255, 255, 255, 0.9),
+        0 7px 14px rgba(255, 154, 198, 0.42);
     }
 
     .site-subtitle-wrap {
@@ -491,11 +498,13 @@
     }
 
     .theme-bar {
-      display: flex;
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(8, 118px);
       align-items: center;
       justify-content: center;
       gap: 10px;
-      min-height: 46px;
+      min-height: 86px;
     }
 
     .theme-button {
@@ -528,18 +537,39 @@
     .theme-button .c3 { color: var(--theme-c3); }
     .theme-button .c4 { color: var(--theme-c4); }
 
-    .theme-more-button {
-      width: 36px;
-      height: 36px;
+    .theme-pager {
+      grid-column: 1 / -1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 30px;
+    }
+
+    .theme-page-button {
+      width: 32px;
+      height: 30px;
       border: 1px solid rgba(217, 95, 140, 0.28);
       border-radius: 999px;
       color: var(--rose-deep);
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.82);
       cursor: pointer;
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1;
     }
 
-    .theme-bar.is-collapsed .theme-button:nth-of-type(n+5) {
-      display: none;
+    .theme-page-button:disabled {
+      opacity: 0.38;
+      cursor: default;
+    }
+
+    .theme-page-text {
+      min-width: 42px;
+      text-align: center;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 900;
     }
 
     .stage {
@@ -549,22 +579,22 @@
     }
 
     .card {
-      --card-ink: #5d4051;
-      --card-muted: #9b7a8d;
-      --card-accent: #d95f8c;
-      --card-accent-deep: #b84570;
-      --card-line: #f2b7c9;
-      --card-line-soft: rgba(242, 183, 201, 0.54);
-      --card-dash: rgba(135, 185, 170, 0.42);
-      --card-mint: #87b9aa;
-      --card-mint-soft: rgba(135, 185, 170, 0.28);
-      --card-chip-bg: rgba(255, 244, 248, 0.82);
-      --card-panel-bg: rgba(255, 255, 255, 0.58);
+      --card-ink: #684957;
+      --card-muted: #9b6f7d;
+      --card-accent: #f4abb9;
+      --card-accent-deep: #b84f78;
+      --card-line: #fec9d4;
+      --card-line-soft: rgba(254, 201, 212, 0.56);
+      --card-dash: rgba(155, 196, 178, 0.62);
+      --card-mint: #9bc4b2;
+      --card-mint-soft: rgba(155, 196, 178, 0.34);
+      --card-chip-bg: rgba(255, 229, 217, 0.78);
+      --card-panel-bg: rgba(255, 255, 255, 0.62);
       --card-review-bg: rgba(255, 255, 255, 0.62);
-      --card-cover-bg: #ffe8f0;
-      --card-bg-a: #fff7f4;
+      --card-cover-bg: #ffe5d9;
+      --card-bg-a: #fff8f4;
       --card-bg-b: #fffdf9;
-      --card-bg-c: #f2faf3;
+      --card-bg-c: #f5f8f4;
       position: relative;
       width: 1080px;
       height: 1440px;
@@ -590,12 +620,164 @@
       --card-mint: #b0ddfe;
       --card-mint-soft: rgba(176, 221, 254, 0.42);
       --card-chip-bg: rgba(255, 229, 249, 0.78);
-      --card-panel-bg: rgba(255, 255, 255, 0.62);
-      --card-review-bg: rgba(255, 255, 255, 0.64);
+      --card-panel-bg: #ffffff;
+      --card-review-bg: #ffffff;
       --card-cover-bg: #ffe5f9;
       --card-bg-a: #fff7fb;
       --card-bg-b: #fffdfd;
       --card-bg-c: #f4fbff;
+    }
+
+    .card[data-theme="dirty-berry-coffee"] {
+      --card-ink: #6d6975;
+      --card-muted: #8a7380;
+      --card-accent: #e59a9b;
+      --card-accent-deep: #6d6975;
+      --card-line: #ffb4a1;
+      --card-line-soft: rgba(255, 180, 161, 0.5);
+      --card-dash: rgba(109, 105, 117, 0.38);
+      --card-mint: #6d6975;
+      --card-mint-soft: rgba(255, 204, 178, 0.42);
+      --card-chip-bg: rgba(255, 235, 225, 0.78);
+      --card-panel-bg: rgba(255, 255, 255, 0.6);
+      --card-review-bg: rgba(255, 255, 255, 0.6);
+      --card-cover-bg: #ffe0d2;
+      --card-bg-a: #fff7f1;
+      --card-bg-b: #fffdf9;
+      --card-bg-c: #f7f2ee;
+    }
+
+    .card[data-theme="afternoon-jewel"] {
+      --card-ink: #4f3d3b;
+      --card-muted: #8d6f61;
+      --card-accent: #b92c2c;
+      --card-accent-deep: #6c1a21;
+      --card-line: #d1bf9a;
+      --card-line-soft: rgba(209, 191, 154, 0.64);
+      --card-dash: rgba(229, 224, 205, 0.78);
+      --card-mint: #cea257;
+      --card-mint-soft: rgba(206, 162, 87, 0.28);
+      --card-chip-bg: rgba(229, 224, 205, 0.7);
+      --card-panel-bg: rgba(255, 255, 255, 0.62);
+      --card-review-bg: rgba(255, 255, 255, 0.62);
+      --card-cover-bg: #e5e0cd;
+      --card-bg-a: #fffdf7;
+      --card-bg-b: #f7f1e4;
+      --card-bg-c: #fbf9f0;
+    }
+
+    .card[data-theme="mint-bubble"] {
+      --card-ink: #3f6870;
+      --card-muted: #6a8f92;
+      --card-accent: #8ed6de;
+      --card-accent-deep: #4ca8b8;
+      --card-line: #8ed6de;
+      --card-line-soft: rgba(142, 214, 222, 0.66);
+      --card-dash: rgba(188, 241, 224, 0.82);
+      --card-mint: #65bdb5;
+      --card-mint-soft: rgba(188, 241, 224, 0.46);
+      --card-chip-bg: rgba(215, 250, 223, 0.78);
+      --card-panel-bg: rgba(255, 255, 255, 0.64);
+      --card-review-bg: rgba(255, 255, 255, 0.64);
+      --card-cover-bg: #d7fadf;
+      --card-bg-a: #f4fffb;
+      --card-bg-b: #efffe0;
+      --card-bg-c: #edfaff;
+    }
+
+    .card[data-theme="glass-glimmer"] {
+      --card-ink: #41586e;
+      --card-muted: #6f8496;
+      --card-accent: #5ebfe0;
+      --card-accent-deep: #0097d0;
+      --card-line: #a4cdd1;
+      --card-line-soft: rgba(164, 205, 209, 0.68);
+      --card-dash: rgba(166, 183, 221, 0.62);
+      --card-mint: #4daec1;
+      --card-mint-soft: rgba(164, 205, 209, 0.42);
+      --card-chip-bg: rgba(203, 219, 225, 0.76);
+      --card-panel-bg: rgba(255, 255, 255, 0.66);
+      --card-review-bg: rgba(255, 255, 255, 0.66);
+      --card-cover-bg: #cbdbe1;
+      --card-bg-a: #f6fcff;
+      --card-bg-b: #eef9fb;
+      --card-bg-c: #f6f8ff;
+    }
+
+    .card[data-theme="madder-melt"] {
+      --card-ink: #5f6058;
+      --card-muted: #7d8276;
+      --card-accent: #e4a273;
+      --card-accent-deep: #c08a5c;
+      --card-line: #96b9b9;
+      --card-line-soft: rgba(150, 185, 185, 0.68);
+      --card-dash: rgba(179, 190, 175, 0.72);
+      --card-mint: #789f9f;
+      --card-mint-soft: rgba(150, 185, 185, 0.38);
+      --card-chip-bg: rgba(221, 223, 219, 0.76);
+      --card-panel-bg: rgba(255, 255, 255, 0.64);
+      --card-review-bg: rgba(255, 255, 255, 0.64);
+      --card-cover-bg: #dddfdb;
+      --card-bg-a: #fffaf4;
+      --card-bg-b: #f7f7f0;
+      --card-bg-c: #eef7f6;
+    }
+
+    .card[data-theme="ultramarine-sleep"] {
+      --card-ink: #17345a;
+      --card-muted: #5e6f82;
+      --card-accent: #5990c0;
+      --card-accent-deep: #102a6b;
+      --card-line: #5990c0;
+      --card-line-soft: rgba(89, 144, 192, 0.56);
+      --card-dash: rgba(0, 81, 133, 0.34);
+      --card-mint: #005185;
+      --card-mint-soft: rgba(89, 144, 192, 0.34);
+      --card-chip-bg: rgba(252, 221, 189, 0.5);
+      --card-panel-bg: rgba(255, 255, 255, 0.68);
+      --card-review-bg: rgba(255, 255, 255, 0.68);
+      --card-cover-bg: #fcddbd;
+      --card-bg-a: #fff9ef;
+      --card-bg-b: #f6fbff;
+      --card-bg-c: #eef6fb;
+    }
+
+    .card[data-theme="apricot-souffle"] {
+      --card-ink: #704c48;
+      --card-muted: #a46f62;
+      --card-accent: #ffad76;
+      --card-accent-deep: #e87955;
+      --card-line: #ffbd8a;
+      --card-line-soft: rgba(255, 189, 138, 0.64);
+      --card-dash: rgba(255, 221, 143, 0.78);
+      --card-mint: #e7a04f;
+      --card-mint-soft: rgba(255, 193, 133, 0.36);
+      --card-chip-bg: rgba(255, 238, 224, 0.78);
+      --card-panel-bg: rgba(255, 255, 255, 0.64);
+      --card-review-bg: rgba(255, 255, 255, 0.64);
+      --card-cover-bg: #feece0;
+      --card-bg-a: #fff8ef;
+      --card-bg-b: #fffdf8;
+      --card-bg-c: #fff5e7;
+    }
+
+    .card[data-theme="moon-shards"] {
+      --card-ink: #51475f;
+      --card-muted: #7e7192;
+      --card-accent: #edaef2;
+      --card-accent-deep: #7b5293;
+      --card-line: #bbedef;
+      --card-line-soft: rgba(187, 237, 239, 0.66);
+      --card-dash: rgba(241, 215, 127, 0.64);
+      --card-mint: #bbedef;
+      --card-mint-soft: rgba(187, 237, 239, 0.4);
+      --card-chip-bg: rgba(251, 227, 246, 0.78);
+      --card-panel-bg: #ffffff;
+      --card-review-bg: #ffffff;
+      --card-cover-bg: #fbe3f6;
+      --card-bg-a: #fff8fd;
+      --card-bg-b: #f6fbff;
+      --card-bg-c: #fbf7ec;
     }
 
     .card::before {
@@ -1881,8 +2063,9 @@
     .card .info-panel,
     .card .price-panel,
     .card .ratings,
-    .card .tags-panel { border-color: var(--card-line-soft); background: var(--card-panel-bg); }
-    .card .review-panel { border-color: color-mix(in srgb, var(--card-accent) 28%, transparent); background: var(--card-review-bg); }
+    .card .tags-panel,
+    .card .title-panel { border-color: var(--card-line-soft); background: var(--card-panel-bg); }
+    .card .review-panel { border-color: var(--card-line-soft); background: var(--card-review-bg); }
     .card .panel-title,
     .card .price-label,
     .card .rating-section-label,
@@ -1930,6 +2113,11 @@
 
     .card[data-theme="sakura-ice"] .metric-label {
       color: var(--card-mint);
+    }
+
+    .card[data-theme="sakura-ice"] .star.active {
+      background: linear-gradient(135deg, #b7b6ff, #8f78df);
+      box-shadow: inset 0 -3px 0 rgba(90, 73, 160, 0.16), 0 5px 10px rgba(143, 120, 223, 0.2);
     }
 
     .card.compact[data-theme="sakura-ice"] .player-bar-fill {
@@ -1983,31 +2171,43 @@
       .sticker-panel { grid-template-rows: 34px 116px 28px; max-height: 220px; overflow: auto; }
       .sticker-list { grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: repeat(2, 54px); min-height: 116px; }
       .app {
+        width: 100%;
+        max-width: 100vw;
         min-height: 100dvh;
         padding: 10px 8px 14px;
         gap: 10px;
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: visible;
       }
       .site-header {
-        gap: 5px;
-        padding: 4px 0 0;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        gap: 4px;
+        padding: 6px 0 0;
+        margin-top: -4px;
       }
       .site-title-row {
         width: 100%;
-        gap: 8px;
+        min-width: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        gap: 6px;
+        overflow: hidden;
       }
       .title-side-ornament {
-        width: min(25vw, 96px);
-        height: 20px;
-        flex-basis: 96px;
+        width: 100%;
+        min-width: 0;
+        height: 16px;
+        flex-basis: auto;
       }
       .site-title {
-        font-size: 32px;
-        -webkit-text-stroke-width: 0.8px;
+        font-size: clamp(24px, 7.2vw, 29px);
+        min-width: 0;
       }
       .site-subtitle-wrap {
         min-height: 28px;
-        padding: 0 24px;
+        padding: 0 18px;
       }
       .site-subtitle-wrap::before,
       .site-subtitle-wrap::after {
@@ -2018,40 +2218,67 @@
       .site-subtitle-wrap::before { left: 5px; }
       .site-subtitle-wrap::after { right: 5px; }
       .site-subtitle {
-        min-height: 28px;
-        padding: 0 20px;
-        font-size: 12px;
-        letter-spacing: 0.5px;
+        min-height: 26px;
+        padding: 0 16px;
+        font-size: 11px;
+        letter-spacing: 0.2px;
       }
       .menu-toolbar {
         width: 100%;
+        max-width: calc(100vw - 16px);
+        min-width: 0;
         display: grid;
         justify-items: stretch;
         justify-content: stretch;
         gap: 8px;
       }
       .menu-primary-row {
+        width: 100%;
+        min-width: 0;
         grid-template-columns: 1fr;
         gap: 8px;
+        padding: 8px 8px;
+      }
+      .menu-secondary-row {
+        width: 100%;
+        min-width: 0;
+        padding: 12px 8px;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .menu-panel {
+        min-width: 0;
+        max-width: 100%;
       }
       .menu-tabs {
         order: 2;
+        width: 100%;
         max-width: 100%;
-        overflow-x: auto;
+        overflow: visible;
         scrollbar-width: none;
         justify-content: center;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        justify-self: center;
       }
       .menu-tabs::-webkit-scrollbar { display: none; }
       .menu-tab {
+        min-width: 0;
         min-height: 32px;
-        padding: 0 10px;
-        font-size: 15px;
+        padding: 0 6px;
+        font-size: 14px;
+        gap: 5px;
+      }
+      .menu-tab .menu-icon {
+        width: 17px;
+        height: 17px;
+        flex: 0 0 17px;
       }
       .template-switch { margin-right: 0; }
       .action-button { min-height: 38px; padding: 0 14px; }
       .toolbar-actions {
         order: 1;
-        width: min(100%, 360px);
+        width: 100%;
         justify-self: center;
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2065,32 +2292,54 @@
       #importDataInput { order: 5; }
       .toolbar-actions .action-button {
         width: 100%;
+        min-width: 0;
         min-height: 34px;
-        padding: 0 8px;
-        font-size: 15px;
+        padding: 0 6px;
+        font-size: 14px;
         letter-spacing: 0;
+        gap: 5px;
         box-shadow: 0 5px 12px rgba(184, 69, 112, 0.1);
+      }
+      .toolbar-actions .menu-icon {
+        width: 17px;
+        height: 17px;
+        flex: 0 0 17px;
       }
       .theme-bar {
         width: 100%;
-        min-height: 44px;
+        min-height: 90px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
-        flex-wrap: nowrap;
+        justify-content: center;
+        justify-items: stretch;
       }
       .theme-button {
-        width: 124px;
-        height: 34px;
+        width: 100%;
+        min-width: 0;
+        height: 32px;
         border-radius: 999px;
         flex: 0 0 auto;
-        font-size: 20px;
+        padding: 0 4px;
+        font-size: 16px;
       }
-      .theme-more-button {
-        width: 28px;
-        height: 28px;
-        flex: 0 0 auto;
+      .theme-pager {
+        grid-column: 1 / -1;
+        min-height: 30px;
+      }
+      .theme-page-button {
+        width: 34px;
+        height: 30px;
+        font-size: 15px;
+      }
+      .theme-page-text {
+        min-width: 38px;
+        font-size: 13px;
       }
       .stage {
         width: 100%;
+        max-width: 100%;
+        min-width: 0;
         overflow: hidden;
         padding: 0;
         border-radius: 18px;
@@ -2192,7 +2441,7 @@
           </g>
         </svg>
       </div>
-      <div class="site-subtitle-wrap"><div class="site-subtitle">&#20057;&#22899;&#21521;&#12489;&#12521;&#12510;CD&#12539;&#38899;&#22768;&#20316;&#21697;&#35352;&#37682;</div></div>
+      <div class="site-subtitle-wrap"><div class="site-subtitle">&#20057;&#22899;&#21521;&#12369;&#12489;&#12521;&#12510;CD&#12539;&#12508;&#12452;&#12473;&#20316;&#21697;&#12524;&#12499;&#12517;&#12540;&#12486;&#12531;&#12503;&#12524;&#12540;&#12488;</div></div>
     </header>
     <div class="menu-toolbar">
       <div class="menu-primary-row">
@@ -2217,10 +2466,22 @@
           <button class="template-button active" data-template="full" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7L6.8 19l1-5.8-4.2-4.1 5.8-.8L12 3Z"/></svg><span>&#23436;&#25972;&#29256;</span></button>
           <button class="template-button" data-template="compact" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12"/><path d="M8 12h12"/><path d="M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span>&#31616;&#30053;&#29256;</span></button>
         </div>
-        <div class="menu-panel theme-bar is-collapsed" id="themeBar" data-menu-panel="theme" hidden>
-          <button class="theme-button active" data-theme="berry-mint" type="button" aria-label="berry mint" style="--theme-c1:#d95f8c;--theme-c2:#f2b7c9;--theme-c3:#87b9aa;--theme-c4:#b84570"><span class="theme-dot"></span><span class="c1">&#x8393;</span><span class="c2">&#x7c89;</span><span class="c3">&#x8584;</span><span class="c4">&#x8377;</span></button>
+        <div class="menu-panel theme-bar" id="themeBar" data-menu-panel="theme" hidden>
+          <button class="theme-button active" data-theme="matcha-berry-cheese" type="button" aria-label="matcha berry cheese" style="--theme-c1:#9bc4b2;--theme-c2:#ffe5d9;--theme-c3:#fec9d4;--theme-c4:#b84f78"><span class="theme-dot"></span><span class="c1">&#x62b9;</span><span class="c2">&#x8336;</span><span class="c3">&#x8393;</span><span class="c4">&#x916a;</span></button>
           <button class="theme-button" data-theme="sakura-ice" type="button" aria-label="sakura ice" style="--theme-c1:#ff9ac6;--theme-c2:#ffbdd6;--theme-c3:#b7b6ff;--theme-c4:#b0ddfe"><span class="theme-dot"></span><span class="c1">&#x6a31;</span><span class="c2">&#x82b1;</span><span class="c3">&#x661f;</span><span class="c4">&#x51b0;</span></button>
-          <button class="theme-more-button hidden" id="themeMoreButton" type="button" aria-label="more themes">&#9662;</button>
+          <button class="theme-button" data-theme="dirty-berry-coffee" type="button" aria-label="dirty berry coffee" style="--theme-c1:#ffccb2;--theme-c2:#ffb4a1;--theme-c3:#e59a9b;--theme-c4:#6d6975"><span class="theme-dot"></span><span class="c1">&#x810f;</span><span class="c2">&#x810f;</span><span class="c3">&#x8393;</span><span class="c4">&#x5496;</span></button>
+          <button class="theme-button" data-theme="afternoon-jewel" type="button" aria-label="afternoon jewel" style="--theme-c1:#6c1a21;--theme-c2:#b92c2c;--theme-c3:#cea257;--theme-c4:#d1bf9a"><span class="theme-dot"></span><span class="c1">&#x5348;</span><span class="c2">&#x540e;</span><span class="c3">&#x5b9d;</span><span class="c4">&#x77f3;</span></button>
+          <button class="theme-button" data-theme="moon-shards" type="button" aria-label="moon shards" style="--theme-c1:#7b5293;--theme-c2:#f1d77f;--theme-c3:#bbedef;--theme-c4:#fbe3f6"><span class="theme-dot"></span><span class="c1">&#x6708;</span><span class="c2">&#x5149;</span><span class="c3">&#x788e;</span><span class="c4">&#x7247;</span></button>
+          <button class="theme-button" data-theme="mint-bubble" type="button" aria-label="mint bubble" style="--theme-c1:#8ed6de;--theme-c2:#bcf1e0;--theme-c3:#d7fadf;--theme-c4:#8ed6de"><span class="theme-dot"></span><span class="c1">&#x8584;</span><span class="c2">&#x8377;</span><span class="c3">&#x6c14;</span><span class="c4">&#x6ce1;</span></button>
+          <button class="theme-button" data-theme="glass-glimmer" type="button" aria-label="glass glimmer" style="--theme-c1:#0097d0;--theme-c2:#5ebfe0;--theme-c3:#a4cdd1;--theme-c4:#cbdbe1"><span class="theme-dot"></span><span class="c1">&#x73bb;</span><span class="c2">&#x7483;</span><span class="c3">&#x5fae;</span><span class="c4">&#x5149;</span></button>
+          <button class="theme-button" data-theme="madder-melt" type="button" aria-label="madder melt" style="--theme-c1:#96b9b9;--theme-c2:#e4a273;--theme-c3:#c3a77f;--theme-c4:#dddfdb"><span class="theme-dot"></span><span class="c1">&#x6eb6;</span><span class="c2">&#x4e8e;</span><span class="c3">&#x831c;</span><span class="c4">&#x8272;</span></button>
+          <button class="theme-button" data-theme="ultramarine-sleep" type="button" aria-label="ultramarine sleep" style="--theme-c1:#102a6b;--theme-c2:#005185;--theme-c3:#5990c0;--theme-c4:#caa275"><span class="theme-dot"></span><span class="c1">&#x7fa4;</span><span class="c2">&#x9752;</span><span class="c3">&#x6c89;</span><span class="c4">&#x7720;</span></button>
+          <button class="theme-button" data-theme="apricot-souffle" type="button" aria-label="apricot souffle" style="--theme-c1:#ffc185;--theme-c2:#ffdd8f;--theme-c3:#ffad76;--theme-c4:#ff9b82"><span class="theme-dot"></span><span class="c1">&#x674f;</span><span class="c2">&#x6843;</span><span class="c3">&#x8212;</span><span class="c4">&#x8299;</span></button>
+          <div class="theme-pager hidden" id="themePager" aria-label="theme pages">
+            <button class="theme-page-button" id="themePrevButton" type="button" aria-label="previous page">&#8249;</button>
+            <span class="theme-page-text" id="themePageText">1 / 1</span>
+            <button class="theme-page-button" id="themeNextButton" type="button" aria-label="next page">&#8250;</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2419,7 +2680,10 @@
     const templateButtons = Array.from(document.querySelectorAll(".template-button"));
     const themeBar = document.getElementById("themeBar");
     const themeButtons = Array.from(document.querySelectorAll(".theme-button"));
-    const themeMoreButton = document.getElementById("themeMoreButton");
+    const themePager = document.getElementById("themePager");
+    const themePrevButton = document.getElementById("themePrevButton");
+    const themeNextButton = document.getElementById("themeNextButton");
+    const themePageText = document.getElementById("themePageText");
     const mobileFocusBack = document.getElementById("mobileFocusBack");
     const exportModal = document.getElementById("exportModal");
     const exportPreviewImage = document.getElementById("exportPreviewImage");
@@ -2457,23 +2721,23 @@
     const STORAGE_KEY = "otome-record-card-v1";
     const MENU_STORAGE_KEY = "otome-record-card-active-menu";
     const DLSITE_PROXY_URL = "https://dlsite-rj-import.shuiyingsheng.workers.dev/";
-    const DEFAULT_THEME_ID = "berry-mint";
+    const DEFAULT_THEME_ID = "matcha-berry-cheese";
     const CARD_THEMES = {
-      "berry-mint": {
-        id: "berry-mint",
-        accent: "#d95f8c",
-        accentDeep: "#b84570",
-        line: "#f2b7c9",
-        dash: "#87b9aa",
-        mint: "#87b9aa",
-        ink: "#5d4051",
-        muted: "#9b7a8d",
-        coverBg: "#ffe8f0",
-        chipBg: "rgba(255,244,248,.82)",
-        panelBg: "rgba(255,255,255,.58)",
+      "matcha-berry-cheese": {
+        id: "matcha-berry-cheese",
+        accent: "#f4abb9",
+        accentDeep: "#b84f78",
+        line: "#fec9d4",
+        dash: "#9bc4b2",
+        mint: "#9bc4b2",
+        ink: "#684957",
+        muted: "#9b6f7d",
+        coverBg: "#ffe5d9",
+        chipBg: "rgba(255,229,217,.78)",
+        panelBg: "rgba(255,255,255,.62)",
         reviewBg: "rgba(255,255,255,.62)",
-        bgStops: ["#fff7f4", "#fffdf9", "#f2faf3"],
-        playDeep: "#8f659f"
+        bgStops: ["#fff8f4", "#fffdf9", "#f5f8f4"],
+        playDeep: "#b84f78"
       },
       "sakura-ice": {
         id: "sakura-ice",
@@ -2486,14 +2750,149 @@
         muted: "#91758a",
         coverBg: "#ffe5f9",
         chipBg: "rgba(255,229,249,.78)",
-        panelBg: "rgba(255,255,255,.62)",
-        reviewBg: "rgba(255,255,255,.64)",
+        panelBg: "#ffffff",
+        reviewBg: "#ffffff",
         bgStops: ["#fff7fb", "#fffdfd", "#f4fbff"],
-        playDeep: "#8f78df"
+        playDeep: "#8f78df",
+        starFill: "#8f78df"
+      },
+      "dirty-berry-coffee": {
+        id: "dirty-berry-coffee",
+        accent: "#e59a9b",
+        accentDeep: "#6d6975",
+        line: "#ffb4a1",
+        dash: "#6d6975",
+        mint: "#6d6975",
+        ink: "#6d6975",
+        muted: "#8a7380",
+        coverBg: "#ffe0d2",
+        chipBg: "rgba(255,235,225,.78)",
+        panelBg: "rgba(255,255,255,.6)",
+        reviewBg: "rgba(255,255,255,.6)",
+        bgStops: ["#fff7f1", "#fffdf9", "#f7f2ee"],
+        playDeep: "#6d6975"
+      },
+      "afternoon-jewel": {
+        id: "afternoon-jewel",
+        accent: "#b92c2c",
+        accentDeep: "#6c1a21",
+        line: "#d1bf9a",
+        dash: "#e5e0cd",
+        mint: "#cea257",
+        ink: "#4f3d3b",
+        muted: "#8d6f61",
+        coverBg: "#e5e0cd",
+        chipBg: "rgba(229,224,205,.7)",
+        panelBg: "rgba(255,255,255,.62)",
+        reviewBg: "rgba(255,255,255,.62)",
+        bgStops: ["#fffdf7", "#f7f1e4", "#fbf9f0"],
+        playDeep: "#6c1a21"
+      },
+      "moon-shards": {
+        id: "moon-shards",
+        accent: "#edaef2",
+        accentDeep: "#7b5293",
+        line: "#bbedef",
+        dash: "#f1d77f",
+        mint: "#bbedef",
+        ink: "#51475f",
+        muted: "#7e7192",
+        coverBg: "#fbe3f6",
+        chipBg: "rgba(251,227,246,.78)",
+        panelBg: "#ffffff",
+        reviewBg: "#ffffff",
+        bgStops: ["#fff8fd", "#f6fbff", "#fbf7ec"],
+        playDeep: "#7b5293",
+        starFill: "#7b5293"
+      },
+      "mint-bubble": {
+        id: "mint-bubble",
+        accent: "#8ed6de",
+        accentDeep: "#4ca8b8",
+        line: "#8ed6de",
+        dash: "#bcf1e0",
+        mint: "#65bdb5",
+        ink: "#3f6870",
+        muted: "#6a8f92",
+        coverBg: "#d7fadf",
+        chipBg: "rgba(215,250,223,.78)",
+        panelBg: "rgba(255,255,255,.64)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#f4fffb", "#efffe0", "#edfaff"],
+        playDeep: "#4ca8b8",
+        starFill: "#4ca8b8"
+      },
+      "glass-glimmer": {
+        id: "glass-glimmer",
+        accent: "#5ebfe0",
+        accentDeep: "#0097d0",
+        line: "#a4cdd1",
+        dash: "#a6b7dd",
+        mint: "#4daec1",
+        ink: "#41586e",
+        muted: "#6f8496",
+        coverBg: "#cbdbe1",
+        chipBg: "rgba(203,219,225,.76)",
+        panelBg: "rgba(255,255,255,.66)",
+        reviewBg: "rgba(255,255,255,.66)",
+        bgStops: ["#f6fcff", "#eef9fb", "#f6f8ff"],
+        playDeep: "#0097d0",
+        starFill: "#0097d0"
+      },
+      "madder-melt": {
+        id: "madder-melt",
+        accent: "#e4a273",
+        accentDeep: "#c08a5c",
+        line: "#96b9b9",
+        dash: "#b3beaf",
+        mint: "#789f9f",
+        ink: "#5f6058",
+        muted: "#7d8276",
+        coverBg: "#dddfdb",
+        chipBg: "rgba(221,223,219,.76)",
+        panelBg: "rgba(255,255,255,.64)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#fffaf4", "#f7f7f0", "#eef7f6"],
+        playDeep: "#c08a5c",
+        starFill: "#c08a5c"
+      },
+      "ultramarine-sleep": {
+        id: "ultramarine-sleep",
+        accent: "#5990c0",
+        accentDeep: "#102a6b",
+        line: "#5990c0",
+        dash: "#005185",
+        mint: "#005185",
+        ink: "#17345a",
+        muted: "#5e6f82",
+        coverBg: "#fcddbd",
+        chipBg: "rgba(252,221,189,.5)",
+        panelBg: "rgba(255,255,255,.68)",
+        reviewBg: "rgba(255,255,255,.68)",
+        bgStops: ["#fff9ef", "#f6fbff", "#eef6fb"],
+        playDeep: "#102a6b",
+        starFill: "#102a6b"
+      },
+      "apricot-souffle": {
+        id: "apricot-souffle",
+        accent: "#ffad76",
+        accentDeep: "#e87955",
+        line: "#ffbd8a",
+        dash: "#ffdd8f",
+        mint: "#e7a04f",
+        ink: "#704c48",
+        muted: "#a46f62",
+        coverBg: "#feece0",
+        chipBg: "rgba(255,238,224,.78)",
+        panelBg: "rgba(255,255,255,.64)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#fff8ef", "#fffdf8", "#fff5e7"],
+        playDeep: "#e87955",
+        starFill: "#e87955"
       }
     };
     let currentThemeId = DEFAULT_THEME_ID;
-    let themeExpanded = false;
+    let themePageIndex = 0;
     let mobileFocusTarget = null;
     let lastExportUrl = "";
     let currentDiscountManual = false;
@@ -2613,24 +3012,61 @@
       return currentTemplate() === "compact" ? { width: 600, height: 800 } : { width: 1080, height: 1440 };
     }
 
+    function normalizeThemeId(themeId) {
+      const legacyThemes = {
+        "berry-mint": "matcha-berry-cheese",
+        "mango-berry-tea": "afternoon-jewel"
+      };
+      return legacyThemes[themeId] || themeId;
+    }
+
     function currentCardTheme() {
       return CARD_THEMES[currentThemeId] || CARD_THEMES[DEFAULT_THEME_ID];
     }
 
-    function updateThemeMoreButton() {
-      const needsFold = themeButtons.length > 4;
-      if (!themeMoreButton || !themeBar) return;
-      themeMoreButton.classList.toggle("hidden", !needsFold);
-      themeBar.classList.toggle("is-collapsed", needsFold && !themeExpanded);
-      themeMoreButton.textContent = themeExpanded ? String.fromCharCode(0x25b4) : String.fromCharCode(0x25be);
+    function themePageSize() {
+      return isMobileView() ? 6 : 8;
+    }
+
+    function themePageCount() {
+      return Math.max(1, Math.ceil(themeButtons.length / themePageSize()));
+    }
+
+    function setThemePage(index) {
+      const count = themePageCount();
+      themePageIndex = Math.max(0, Math.min(count - 1, index));
+      updateThemePager();
+    }
+
+    function ensureThemePageForTheme(themeId) {
+      const index = themeButtons.findIndex((button) => button.dataset.theme === themeId);
+      if (index >= 0) themePageIndex = Math.floor(index / themePageSize());
+    }
+
+    function updateThemePager() {
+      if (!themePager || !themeBar) return;
+      const pageSize = themePageSize();
+      const count = themePageCount();
+      themePageIndex = Math.max(0, Math.min(count - 1, themePageIndex));
+      const start = themePageIndex * pageSize;
+      const end = start + pageSize;
+      themeButtons.forEach((button, index) => {
+        button.classList.toggle("hidden", index < start || index >= end);
+      });
+      themePager.classList.toggle("hidden", count <= 1);
+      if (themePageText) themePageText.textContent = (themePageIndex + 1) + " / " + count;
+      if (themePrevButton) themePrevButton.disabled = themePageIndex <= 0;
+      if (themeNextButton) themeNextButton.disabled = themePageIndex >= count - 1;
     }
 
     function applyCardTheme(themeId, persist = true) {
-      const nextId = CARD_THEMES[themeId] ? themeId : DEFAULT_THEME_ID;
+      const normalizedThemeId = normalizeThemeId(themeId);
+      const nextId = CARD_THEMES[normalizedThemeId] ? normalizedThemeId : DEFAULT_THEME_ID;
       currentThemeId = nextId;
       card.dataset.theme = nextId;
       themeButtons.forEach((button) => button.classList.toggle("active", button.dataset.theme === nextId));
-      updateThemeMoreButton();
+      ensureThemePageForTheme(nextId);
+      updateThemePager();
       if (persist) saveState();
     }
 
@@ -4321,7 +4757,7 @@
       ctx.fillText(label, x, y + 27);
       for (let i = 0; i < 5; i += 1) {
         const sx = x + 92 + i * 44;
-        fillRound(ctx, sx, y, 34, 34, 17, i < count ? currentCardTheme().accent : "rgba(255,255,255,.7)");
+        fillRound(ctx, sx, y, 34, 34, 17, i < count ? (currentCardTheme().starFill || currentCardTheme().accent) : "rgba(255,255,255,.7)");
         strokeRound(ctx, sx, y, 34, 34, 17, themeAlpha("line", .32), 2);
         ctx.fillStyle = i < count ? "#fff" : themeAlpha("accent", .32);
         ctx.font = canvasFont('900', 24);
@@ -4545,7 +4981,7 @@
         drawStars(ctx, "SE", ratingValue(rows[3]), 566, 920);
 
         fillRound(ctx, 90, 1024, 900, 328, 28, theme.reviewBg);
-        strokeRound(ctx, 90, 1024, 900, 328, 28, themeAlpha("accent", .28), 2);
+        strokeRound(ctx, 90, 1024, 900, 328, 28, themeAlpha("line", .54), 2);
         drawStickerLabel(ctx, LABEL_REVIEW, 108, 1007);
         ctx.fillStyle = currentCardTheme().ink;
         ctx.font = canvasFont('400', 24);
@@ -4767,10 +5203,8 @@
     themeButtons.forEach((button) => {
       button.addEventListener("click", () => applyCardTheme(button.dataset.theme || DEFAULT_THEME_ID));
     });
-    themeMoreButton?.addEventListener("click", () => {
-      themeExpanded = !themeExpanded;
-      updateThemeMoreButton();
-    });
+    themePrevButton?.addEventListener("click", () => setThemePage(themePageIndex - 1));
+    themeNextButton?.addEventListener("click", () => setThemePage(themePageIndex + 1));
     menuTabs.forEach((button) => {
       button.addEventListener("click", () => setActiveMenu(button.dataset.menu || "template"));
     });
@@ -4784,7 +5218,10 @@
     restoreState();
     restoreActiveMenu();
     window.addEventListener("beforeunload", saveState);
-    window.addEventListener("resize", fitStage);
+    window.addEventListener("resize", () => {
+      fitStage();
+      updateThemePager();
+    });
     fitStage();
     updateDiscount();
   </script>
