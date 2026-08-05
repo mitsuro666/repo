@@ -240,6 +240,13 @@
       text-align: center;
     }
 
+    .image-tool-page {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+
     .image-tool-page .image-edit-modal {
       position: static;
       inset: auto;
@@ -249,6 +256,10 @@
       padding: 0;
       background: transparent;
       backdrop-filter: none;
+    }
+
+    .image-tool-page .image-edit-close {
+      display: none;
     }
 
     .image-tool-page .image-edit-sheet {
@@ -1035,7 +1046,7 @@
       color: var(--ink);
       font-size: 26px;
       font-weight: 900;
-      line-height: 1.3;
+      line-height: 1.28;
       outline: 0;
     }
 
@@ -1225,10 +1236,28 @@
       pointer-events: none;
     }
 
+    .info-panel .field:has(#cvText),
+    .info-panel .field:has(#circleText) {
+      height: 93px;
+      grid-template-rows: 22px 14px 58px;
+      transform: translateY(-4px);
+    }
+
+    .info-panel .field:has(#rjText),
+    .info-panel .field:has(#durationText) {
+      transform: translateY(8px);
+    }
+
     .cn-field {
       grid-column: 1 / -1;
-      height: 86px;
-      grid-template-rows: 22px 22px 34px;
+      height: 38px;
+      grid-template-rows: 38px;
+      margin-top: 10px;
+    }
+
+    .cn-field label,
+    .cn-field::after {
+      display: none;
     }
 
     .field-label-row {
@@ -1270,6 +1299,48 @@
       cursor: default;
     }
 
+    .import-help-button {
+      width: 22px;
+      height: 22px;
+      border: 1px solid rgba(217, 95, 140, 0.38);
+      border-radius: 999px;
+      color: var(--rose-deep);
+      background: rgba(255, 255, 255, 0.86);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 5px 12px rgba(217, 95, 140, 0.12);
+    }
+
+    .import-help-button:focus-visible {
+      outline: 2px solid rgba(217, 95, 140, 0.42);
+      outline-offset: 2px;
+    }
+
+    .import-help-popover {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 10000;
+      width: max-content;
+      padding: 14px 16px;
+      border: 1px solid rgba(217, 95, 140, 0.28);
+      border-radius: 16px;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 16px 34px rgba(126, 75, 94, 0.16);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.65;
+      white-space: pre-line;
+      max-width: calc(100vw - 48px);
+    }
+
+    .import-help-popover[hidden] {
+      display: none;
+    }
+
     .info-panel .field label {
       transform: translateY(-3px);
     }
@@ -1287,6 +1358,17 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    #circleText {
+      min-height: 58px;
+      white-space: normal;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow-wrap: anywhere;
     }
 
     .price-panel {
@@ -1330,6 +1412,19 @@
       white-space: nowrap;
     }
 
+    .metric-entry.high-discount input,
+    .metric-entry.high-discount .metric-suffix {
+      color: #d7192f;
+    }
+
+
+    .card .metric-entry.high-discount #currentDiscount,
+    .card .metric-entry.high-discount #currentDiscount + .metric-suffix,
+    .card .metric-entry.high-discount #lowestPrice,
+    .card .metric-entry.high-discount #lowestPrice + .metric-suffix {
+      color: #d7192f !important;
+    }
+
     .metric-label {
       color: #5f9587;
       font-size: 18px;
@@ -1357,8 +1452,9 @@
 
     .cn-field .choice-group {
       grid-column: 1;
-      grid-row: 3;
-      width: 260px;
+      grid-row: 1;
+      width: 314px;
+      align-self: end;
     }
 
     .choice-button {
@@ -1596,7 +1692,8 @@
     .card.compact .info-panel .field::after { border-bottom-color: rgba(217, 95, 140, 0.28); }
     .card.compact .info-panel .field label { font-size: 18px; transform: none; text-align: center; }
     .card.compact .info-panel .field .editable { font-size: 22px; min-height: 28px; line-height: 1.1; text-align: center; }
-    .card.compact .info-panel .field:has(#rjText) { order: 1; }
+    .card.compact #circleText { min-height: 28px; white-space: nowrap; display: block; -webkit-line-clamp: initial; overflow: hidden; text-overflow: ellipsis; }
+    .card.compact .info-panel .field:has(#rjText) { order: 1; transform: none; }
     .card.compact .info-panel .field:has(#cvText) { order: 2; }
     .card.compact .info-panel .field:has(#circleText) { order: 3; }
     .card.compact .info-panel .field:has(#durationText),
@@ -1808,6 +1905,7 @@
     .image-edit-modal[hidden] { display: none; }
 
     .image-edit-sheet {
+      position: relative;
       width: min(100%, 980px);
       max-height: 92vh;
       display: grid;
@@ -1817,7 +1915,32 @@
       border-radius: 24px;
       background: rgba(255, 248, 246, 0.98);
       box-shadow: var(--shadow);
-      overflow: auto;
+      overflow: visible;
+    }
+
+    .image-edit-close {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      z-index: 8;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(217, 95, 140, 0.28);
+      border-radius: 999px;
+      color: var(--rose-deep);
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 8px 20px rgba(184, 69, 112, 0.14);
+      cursor: pointer;
+    }
+
+    .image-edit-close span {
+      display: block;
+      transform: translate(1px, -1px);
     }
 
     .image-edit-title {
@@ -1829,11 +1952,36 @@
     }
 
     .image-edit-toolbar {
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
-      justify-content: center;
       gap: 8px;
-      flex-wrap: wrap;
+      padding-right: 0;
+    }
+
+    .image-edit-modal:not(.standalone-editor) .image-edit-toolbar {
+      grid-template-columns: minmax(0, 1fr) 220px;
+    }
+
+    .image-edit-modal:not(.standalone-editor) .image-tool-row {
+      justify-self: center;
+    }
+
+    .image-edit-modal:not(.standalone-editor) .image-action-row {
+      width: 220px;
+      justify-self: end;
+      justify-content: flex-end;
+    }
+
+    .image-edit-modal.standalone-editor .image-action-row {
+      width: max-content;
+      justify-self: end;
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+    }
+
+    .image-edit-modal:not(.standalone-editor) #imageCancelButton {
+      display: none;
     }
 
     .image-tool-row,
@@ -1931,6 +2079,16 @@
 
     .icon-erase::before,
     .icon-erase::after { display: none; }
+
+    .icon-select::before {
+      width: 27px;
+      height: 27px;
+      background: currentColor;
+      -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="black" d="M7 3.5c-.8-.4-1.7.2-1.7 1.1v21.8c0 .9 1.1 1.4 1.8.8l5.5-4.7 3.3 6.2c.4.8 1.4 1.1 2.2.7l3.4-1.8c.8-.4 1.1-1.4.7-2.2l-3.2-6h7.3c1 0 1.5-1.2.8-1.9L7 3.5z"/></svg>') center / contain no-repeat;
+      mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="black" d="M7 3.5c-.8-.4-1.7.2-1.7 1.1v21.8c0 .9 1.1 1.4 1.8.8l5.5-4.7 3.3 6.2c.4.8 1.4 1.1 2.2.7l3.4-1.8c.8-.4 1.1-1.4.7-2.2l-3.2-6h7.3c1 0 1.5-1.2.8-1.9L7 3.5z"/></svg>') center / contain no-repeat;
+    }
+
+    .icon-select::after { display: none; }
 
     .eraser-image-active { display: none; }
     .image-tool-button.active .eraser-image-default { display: none; }
@@ -2546,22 +2704,76 @@
     }
 
     @media (max-width: 780px) {
+      .image-edit-modal {
+        place-items: start center;
+        padding: 10px 8px calc(96px + env(safe-area-inset-bottom));
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .image-edit-sheet {
+        width: min(100%, 420px);
+        max-height: none;
+        gap: 10px;
+        padding: 14px 10px 16px;
+        overflow: visible;
+      }
       .image-edit-toolbar {
         display: grid;
-        gap: 10px;
+        grid-template-columns: 1fr;
+        gap: 8px;
         justify-items: center;
+        padding: 4px 0 0;
+      }
+      .image-edit-modal:not(.standalone-editor) .image-edit-toolbar {
+        grid-template-columns: 1fr;
       }
       .image-tool-row {
         display: grid;
-        grid-template-columns: repeat(5, 38px) minmax(104px, 1fr);
-        width: min(100%, 420px);
-        gap: 7px;
+        grid-template-columns: repeat(6, 34px) minmax(72px, 1fr);
+        width: 100%;
+        gap: 6px;
+        align-items: center;
+      }
+      .image-icon-button {
+        width: 34px;
+        height: 34px;
+        min-height: 34px;
+      }
+      .tool-image {
+        width: 27px;
+        height: 27px;
       }
       .image-action-row {
-        width: min(100%, 320px);
+        width: min(100%, 260px);
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
+        justify-self: center;
+      }
+      .image-edit-modal:not(.standalone-editor) .image-action-row {
+        width: min(100%, 260px);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        justify-self: center;
+        justify-content: center;
+      }
+      .image-edit-modal.standalone-editor .image-action-row {
+        width: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        justify-self: stretch;
+        justify-content: flex-end;
+        gap: 6px;
+      }
+      .image-edit-modal.standalone-editor .image-action-row .image-tool-button {
+        padding: 0 8px;
+        white-space: nowrap;
+      }
+      .image-edit-close {
+        top: -9px;
+        right: -9px;
+        width: 26px;
+        height: 26px;
+        font-size: 18px;
       }
       .image-action-row .image-tool-button { padding: 0 10px; }
       .brush-control {
@@ -3083,6 +3295,7 @@
             <div class="field-label-row">
               <label>RJ号</label>
               <button class="import-button" id="importButton" type="button"></button>
+              <button class="import-help-button" id="importHelpButton" type="button" aria-label="&#23548;&#20837;&#20449;&#24687;&#35828;&#26126;" aria-expanded="false" aria-controls="importHelpPopover">i</button>
             </div>
             <div class="editable" id="rjText" contenteditable="true" aria-label="RJ号"></div>
           </div>
@@ -3091,12 +3304,11 @@
             <div class="editable" id="durationText" contenteditable="true" aria-label="时长"></div>
           </div>
           <div class="field cn-field">
-            <label>中文</label>
             <div class="choice-group" id="cnChoices" aria-label="&#20013;&#25991;">
-              <button class="choice-button active" type="button">字幕</button>
-              <button class="choice-button" type="button">台本</button>
+              <button class="choice-button active" type="button">&#23383;&#24149;</button>
               <button class="choice-button" type="button">&#35270;&#39057;</button>
-              <button class="choice-button" type="button">无中文</button>
+              <button class="choice-button" type="button">&#21488;&#26412;</button>
+              <button class="choice-button" type="button">&#26080;&#20013;&#25991;</button>
             </div>
           </div>
         </aside>
@@ -3137,9 +3349,7 @@
         <section class="tags-panel">
           <div class="section-label">关键词</div>
           <div class="tags" id="tags">
-            <span class="tag-chip"><span class="tag" contenteditable="true">年下</span><button class="tag-remove" type="button" aria-label="删除关键词">×</button></span>
-            <span class="tag-chip"><span class="tag" contenteditable="true">纯爱</span><button class="tag-remove" type="button" aria-label="删除关键词">×</button></span>
-            <span class="tag-chip"><span class="tag" contenteditable="true">嫉妒</span><button class="tag-remove" type="button" aria-label="删除关键词">×</button></span>
+
             <button class="add-tag" id="addTagButton" type="button" aria-label="添加关键词">+</button>
           </div>
         </section>
@@ -3180,6 +3390,8 @@
       </div>
     </section>
 
+    <div class="import-help-popover" id="importHelpPopover" hidden></div>
+
 <div class="export-modal" id="exportModal" hidden>
       <div class="export-sheet">
         <img class="export-preview-image" id="exportPreviewImage" alt="" />
@@ -3205,11 +3417,13 @@
 
     <div class="image-edit-modal" id="imageEditModal" hidden>
       <div class="image-edit-sheet">
+        <button class="image-edit-close" id="imageEditCloseButton" type="button" aria-label="close"><span aria-hidden="true">&times;</span></button>
         <div class="image-edit-toolbar">
           <div class="image-tool-row">
             <button class="image-tool-button image-icon-button icon-mosaic active" id="imageToolMosaic" type="button" aria-label="mosaic"><span>&#39532;&#36187;&#20811;</span></button>
             <button class="image-tool-button image-icon-button icon-blur" id="imageToolBlur" type="button" aria-label="blur"><span>&#27169;&#31946;</span></button>
             <button class="image-tool-button image-icon-button icon-erase" id="imageToolErase" type="button" aria-label="erase"><span>&#27233;&#30382;&#25830;</span><img class="tool-image eraser-image eraser-image-default" src="tool-icons/eraser1.png" alt="" /><img class="tool-image eraser-image eraser-image-active" src="tool-icons/eraser2.png" alt="" /></button>
+            <button class="image-tool-button image-icon-button icon-select" id="imageToolSelect" type="button" aria-label="select sticker"><span>&#36873;&#25321;</span></button>
             <button class="image-tool-button image-icon-button icon-undo" id="imageUndoButton" type="button" aria-label="undo"><span>&#25764;&#38144;</span></button>
             <button class="image-tool-button image-icon-button icon-redo" id="imageRedoButton" type="button" aria-label="redo"><span>&#37325;&#20570;</span></button>
             <label class="brush-control"><span>&#30011;&#31508;</span> <input id="brushSize" type="range" min="12" max="120" value="42" /></label>
@@ -3298,16 +3512,20 @@
     const reviewEditConfirm = document.getElementById("reviewEditConfirm");
     const reviewEditCancel = document.getElementById("reviewEditCancel");
     const imageEditModal = document.getElementById("imageEditModal");
+    const imageEditCloseButton = document.getElementById("imageEditCloseButton");
     const imageEditCanvas = document.getElementById("imageEditCanvas");
     const imageToolMosaic = document.getElementById("imageToolMosaic");
     const imageToolBlur = document.getElementById("imageToolBlur");
     const imageToolErase = document.getElementById("imageToolErase");
+    const imageToolSelect = document.getElementById("imageToolSelect");
     const brushSize = document.getElementById("brushSize");
     const imageUndoButton = document.getElementById("imageUndoButton");
     const imageRedoButton = document.getElementById("imageRedoButton");
     const imageClearButton = document.getElementById("imageClearButton");
     const imageDoneButton = document.getElementById("imageDoneButton");
     const imageCancelButton = document.getElementById("imageCancelButton");
+    const imageToolRow = document.querySelector(".image-tool-row");
+    const imageActionRow = document.querySelector(".image-action-row");
     const stickerUploadInput = document.getElementById("stickerUploadInput");
     const stickerList = document.getElementById("stickerList");
     const stickerPrevPage = document.getElementById("stickerPrevPage");
@@ -3321,6 +3539,8 @@
     const playerElapsed = document.getElementById("playerElapsed");
     const playerRemaining = document.getElementById("playerRemaining");
     const playerPlay = document.getElementById("playerPlay");
+    const importHelpButton = document.getElementById("importHelpButton");
+    const importHelpPopover = document.getElementById("importHelpPopover");
     const STORAGE_KEY = "otome-record-card-v1";
     const MENU_STORAGE_KEY = "otome-record-card-active-menu";
     const MAIN_PAGE_STORAGE_KEY = "otome-record-card-main-page";
@@ -3588,6 +3808,20 @@
     const UI_CLOSE = String.fromCharCode(0x5173, 0x95ed);
     const UI_LONG_PRESS_SAVE = String.fromCharCode(0x53ef, 0x4ee5, 0x957f, 0x6309, 0x56fe, 0x7247, 0x4fdd, 0x5b58, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x70b9, 0x51fb, 0x4e0b, 0x8f7d, 0x3002);
     const UI_IMPORT_INFO = String.fromCharCode(0x5bfc, 0x5165, 0x4fe1, 0x606f);
+    const UI_IMPORT_HELP = [
+      String.fromCharCode(0x5bfc, 0x5165, 0x4fe1, 0x606f, 0x4f1a, 0x5c1d, 0x8bd5, 0x586b, 0x5165, 0xff1a),
+      "BK",
+      String.fromCharCode(0x6807, 0x9898),
+      "CV",
+      String.fromCharCode(0x793e, 0x56e2),
+      String.fromCharCode(0x73b0, 0x4ef7),
+      String.fromCharCode(0x5173, 0x952e, 0x8bcd),
+      String.fromCharCode(0x4e2d, 0x6587, 0x7248, 0x672c),
+      "",
+      "BK " + String.fromCharCode(0x5efa, 0x8bae, 0x4f7f, 0x7528, 0x3010, 0x7f16, 0x8f91, 0x3011, 0x529f, 0x80fd, 0x624b, 0x52a8, 0x5904, 0x7406, 0x5230, 0x9002, 0x5408, 0x20, 0x53, 0x4e, 0x53, 0x20, 0x5c55, 0x793a, 0x3002),
+      String.fromCharCode(0x5173, 0x952e, 0x8bcd, 0x53ea, 0x5c55, 0x793a, 0x20, 0x53, 0x46, 0x57, 0x20, 0x5173, 0x952e, 0x8bcd, 0x3002),
+      String.fromCharCode(0x6709, 0x4e2d, 0x6587, 0x7248, 0x672c, 0x65f6, 0xff0c, 0x9ed8, 0x8ba4, 0x9009, 0x4e2d, 0x3010, 0x5b57, 0x5e55, 0x3011, 0x72b6, 0x6001, 0x3002)
+    ].join("\n");
     const UI_IMPORT_LOADING = String.fromCharCode(0x8bfb, 0x53d6, 0x4e2d);
     const UI_IMPORT_DONE = String.fromCharCode(0x5df2, 0x5bfc, 0x5165);
     const UI_IMPORT_NEED_RJ = String.fromCharCode(0x8bf7, 0x5148, 0x586b, 0x5199, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x3002);
@@ -3604,6 +3838,8 @@
     modalCloseButton.textContent = UI_CLOSE;
     exportHint.textContent = UI_LONG_PRESS_SAVE;
     importButton.textContent = UI_IMPORT_INFO;
+    importHelpButton.title = UI_IMPORT_HELP;
+    if (importHelpPopover) importHelpPopover.textContent = UI_IMPORT_HELP;
     reviewEditTitle.textContent = UI_REVIEW_EDIT_TITLE;
     reviewEditConfirm.textContent = UI_REVIEW_CONFIRM;
     reviewEditCancel.textContent = UI_REVIEW_CANCEL;
@@ -3909,15 +4145,30 @@
       return String(Math.min(originalNumber, Math.max(0, next)));
     }
 
+    function isHighDiscountValue(value) {
+      const text = String(value || "").replace(/\D+/g, "");
+      return text !== "" && Number(text) >= 80;
+    }
+
+    function syncDiscountColor() {
+      currentDiscount.closest(".metric-entry")?.classList.toggle("high-discount", isHighDiscountValue(currentDiscount.value));
+      lowestPrice.closest(".metric-entry")?.classList.toggle("high-discount", isHighDiscountValue(lowestPrice.value));
+    }
+
     function updateDiscount(force = false) {
-      if (currentDiscountManual && !force) return;
+      if (currentDiscountManual && !force) {
+        syncDiscountColor();
+        return;
+      }
       const next = calculateDiscountPercent(originalPrice.value, currentPrice.value);
       if (currentDiscount.value !== next) currentDiscount.value = next;
+      syncDiscountColor();
     }
 
     function updateCurrentPriceFromDiscount() {
       const next = calculateCurrentPriceFromDiscount(originalPrice.value, currentDiscount.value);
       if (next !== "" && currentPrice.value !== next) currentPrice.value = next;
+      syncDiscountColor();
     }
 
     function clamp(value, min, max) {
@@ -4089,6 +4340,400 @@
       );
     }
 
+    const DLSITE_GENRE_KEYWORDS = {
+      "1": "\u5b66\u6821",
+      "2": "\u804c\u573a",
+      "3": "\u6237\u5916",
+      "4": "\u751c\u871c",
+      "5": "\u641e\u7b11",
+      "6": "\u80cc\u5fb7",
+      "7": "\u559c\u5267",
+      "8": "\u65e5\u5e38",
+      "13": "\u6e29\u99a8",
+      "14": "\u604b\u4eba",
+      "15": "\u4e25\u8083",
+      "16": "\u5947\u5e7b",
+      "17": "\u5386\u53f2",
+      "19": "\u6050\u6016",
+      "22": "\u60ac\u7591",
+      "24": "\u66b4\u529b",
+      "26": "\u7075\u5f02",
+      "27": "Teen's Love",
+      "28": "\u5e74\u9f84\u5dee",
+      "29": "\u9b54\u6cd5",
+      "31": "\u540c\u5c45",
+      "32": "\u7eaf\u7231",
+      "33": "\u803d\u7f8e",
+      "46": "\u540e\u5bab",
+      "48": "NTR",
+      "51": "\u840c\u7cfb",
+      "53": "\u5168\u5e74\u9f84",
+      "55": "\u611f\u52a8",
+      "56": "\u6cbb\u6108",
+      "57": "\u6e05\u6de1",
+      "58": "HE",
+      "59": "\u50b2\u5a07",
+      "60": "\u5973\u6027\u89c6\u89d2",
+      "61": "\u81f4\u90c1",
+      "64": "\u7656\u597d",
+      "74": "\u5236\u670d",
+      "81": "\u519b\u88c5",
+      "82": "\u5185\u8863",
+      "85": "\u54e5\u7279\u841d\u8389",
+      "86": "Cosplay",
+      "91": "\u548c\u670d",
+      "96": "\u4fee\u5973",
+      "105": "\u897f\u88c5",
+      "116": "\u591a\u4eba",
+      "120": "\u9aa8\u79d1",
+      "151": "\u76d1\u7981",
+      "152": "\u6311\u9017",
+      "153": "\u6320\u75d2",
+      "157": "\u50ac\u7720",
+      "166": "\u77ed\u53d1",
+      "167": "\u957f\u53d1",
+      "170": "\u91d1\u53d1",
+      "171": "\u9ed1\u53d1",
+      "173": "\u9a6c\u5c3e",
+      "174": "\u53cc\u9a6c\u5c3e",
+      "175": "\u732b\u8033",
+      "176": "\u517d\u8033",
+      "177": "\u9ad8\u4e2a\u5b50",
+      "178": "\u7ea4\u7ec6",
+      "179": "\u4e30\u6ee1",
+      "181": "\u808c\u8089",
+      "196": "\u65b9\u8a00",
+      "198": "\u9762\u65e0\u8868\u60c5",
+      "205": "\u75af\u72c2",
+      "209": "\u5e74\u4e0a",
+      "210": "\u5c11\u5e74",
+      "211": "\u6b63\u592a",
+      "218": "\u719f\u5973",
+      "219": "\u4eba\u59bb",
+      "220": "\u59d0\u59d0\u7cfb",
+      "221": "\u5df2\u5a5a",
+      "222": "\u9752\u6885\u7af9\u9a6c",
+      "223": "\u53cc\u80de\u80ce",
+      "227": "\u6559\u5e08",
+      "230": "\u4e0a\u73ed\u65cf",
+      "231": "\u7537\u516c\u5173",
+      "233": "\u6218\u58eb",
+      "234": "\u5973\u738b/\u516c\u4e3b",
+      "235": "\u7cbe\u7075/\u5996\u7cbe",
+      "237": "\u5929\u4f7f/\u6076\u9b54",
+      "239": "\u5e7d\u7075",
+      "241": "\u9b54\u6cd5\u5e08/\u9b54\u5973",
+      "242": "\u5927\u5c0f\u59d0",
+      "243": "\u5996\u602a",
+      "245": "\u6027\u8f6c",
+      "246": "\u5929\u7136",
+      "248": "\u77e5\u6027\u6d3e",
+      "249": "\u62df\u4eba\u5316",
+      "251": "\u517d\u5316",
+      "254": "\u673a\u5668\u4eba/\u4eff\u751f\u4eba",
+      "255": "\u773c\u955c",
+      "260": "\u9970\u54c1",
+      "270": "\u4e0b\u514b\u4e0a",
+      "272": "\u9ed1\u9053",
+      "274": "\u54e5\u54e5",
+      "275": "\u5f1f\u5f1f",
+      "279": "\u5e74\u4e0b\u653b",
+      "281": "\u540c\u5b66/\u540c\u4e8b",
+      "283": "\u4ffa\u69d8\u653b",
+      "284": "\u8b66\u5bdf",
+      "285": "\u524d\u8f88/\u540e\u8f88",
+      "287": "\u5e9f\u67f4\u653b",
+      "288": "\u4e3b\u4ece",
+      "290": "\u51b7\u6de1\u653b",
+      "293": "\u6267\u4e8b",
+      "296": "\u7cfb\u5217\u4f5c\u54c1",
+      "298": "\u63a8\u7406/\u60ac\u7591",
+      "302": "NTR",
+      "303": "\u4f2a\u5a18",
+      "304": "\u5927\u53d4",
+      "314": "\u50ac\u7720\u97f3\u58f0",
+      "316": "\u75c5\u5a07",
+      "317": "\u4eba\u5916\u5a18/\u9b54\u7269\u5a18",
+      "318": "\u793e\u957f",
+      "319": "\u533b\u751f",
+      "325": "\u6076\u5815",
+      "326": "\u6d17\u8111",
+      "399": "\u9752\u5e74",
+      "400": "\u5b66\u751f",
+      "401": "\u4f53\u529b\u52b3\u52a8\u7cfb",
+      "405": "\u683c\u6597\u5bb6",
+      "409": "\u827a\u4eba/\u5076\u50cf/\u6a21\u7279",
+      "411": "\u8fd0\u52a8\u5458",
+      "412": "\u5916\u56fd\u4eba",
+      "413": "\u82b1\u82b1\u516c\u5b50",
+      "414": "\u50f5\u5c38",
+      "419": "\u4e0d\u826f",
+      "420": "\u9006\u540e\u5bab",
+      "422": "\u9738\u9053\u7cfb",
+      "423": "\u53d4\u7236/\u4e49\u7236",
+      "424": "\u4e0a\u53f8",
+      "427": "\u738b\u5b50\u7cfb",
+      "437": "\u521d\u4f53\u9a8c",
+      "438": "\u540c\u5c45\u604b\u7231",
+      "440": "\u51fa\u8f68",
+      "442": "\u638f\u8033",
+      "443": "\u9644\u8eab",
+      "462": "\u5f02\u6027\u604b\u76f4\u7537",
+      "463": "\u53cc\u6027\u604b",
+      "478": "\u77ed\u53d1",
+      "486": "\u5be1\u5987",
+      "491": "\u5973\u6027\u5411",
+      "493": "ABO/Omegaverse",
+      "494": "\u6d6a\u6f2b/\u7231\u60c5",
+      "496": "\u53cc\u8033\u5f55\u97f3/\u5047\u4eba\u5934\u9ea6",
+      "497": "ASMR",
+      "498": "DLsite\u7ffb\u8bd1\u4f5c\u54c1",
+      "502": "\u7537\u4e3b\u4eba\u516c",
+      "503": "\u8033\u8bed",
+      "506": "\u9b45\u9b54",
+      "519": "\u5f02\u4e16\u754c\u8f6c\u751f",
+      "520": "\u6076\u5f79\u5343\u91d1",
+      "521": "\u6267\u7740\u653b",
+      "529": "\u4e3b\u52a8NTR",
+      "530": "\u9006NTR",
+      "535": "Dom/Sub Universe",
+      "536": "\u5973\u6027\u4e3b\u5bfc",
+      "537": "\u7537\u6027\u80f8\u808c",
+      "539": "\u4f53\u683c\u5dee",
+      "540": "\u5a74\u513fPlay",
+      "541": "\u517d\u4eba"
+};
+
+    const DLSITE_GENRE_NAME_KEYWORDS = {
+      "\u5b66\u6821/\u5b66\u5712": "\u5b66\u6821",
+      "\u30aa\u30d5\u30a3\u30b9/\u8077\u5834": "\u804c\u573a",
+      "\u5c4b\u5916": "\u6237\u5916",
+      "\u30e9\u30d6\u30e9\u30d6/\u3042\u307e\u3042\u307e": "\u751c\u871c",
+      "\u30ae\u30e3\u30b0": "\u641e\u7b11",
+      "\u9000\u5ec3/\u80cc\u5fb3/\u30a4\u30f3\u30e2\u30e9\u30eb": "\u80cc\u5fb7",
+      "\u30b3\u30e1\u30c7\u30a3": "\u559c\u5267",
+      "\u65e5\u5e38/\u751f\u6d3b": "\u65e5\u5e38",
+      "\u307b\u306e\u307c\u306e": "\u6e29\u99a8",
+      "\u604b\u4eba\u540c\u58eb": "\u604b\u4eba",
+      "\u30b7\u30ea\u30a2\u30b9": "\u4e25\u8083",
+      "\u30d5\u30a1\u30f3\u30bf\u30b8\u30fc": "\u5947\u5e7b",
+      "\u6b74\u53f2/\u6642\u4ee3\u7269": "\u5386\u53f2",
+      "\u30db\u30e9\u30fc": "\u6050\u6016",
+      "\u30b5\u30b9\u30da\u30f3\u30b9": "\u60ac\u7591",
+      "\u30d0\u30a4\u30aa\u30ec\u30f3\u30b9": "\u66b4\u529b",
+      "\u30aa\u30ab\u30eb\u30c8": "\u7075\u5f02",
+      "\u30c6\u30a3\u30fc\u30f3\u30ba\u30e9\u30d6": "Teen's Love",
+      "\u6b73\u306e\u5dee": "\u5e74\u9f84\u5dee",
+      "\u9b54\u6cd5": "\u9b54\u6cd5",
+      "\u540c\u5c45": "\u540c\u5c45",
+      "\u7d14\u611b": "\u7eaf\u7231",
+      "\u803d\u7f8e": "\u803d\u7f8e",
+      "\u30cf\u30fc\u30ec\u30e0": "\u540e\u5bab",
+      "\u5bdd\u53d6\u3089\u308c": "NTR",
+      "\u840c\u3048": "\u840c\u7cfb",
+      "\u5065\u5168": "\u5168\u5e74\u9f84",
+      "\u611f\u52d5": "\u611f\u52a8",
+      "\u7652\u3057": "\u6cbb\u6108",
+      "\u6de1\u767d/\u3042\u3063\u3055\u308a": "\u6e05\u6de1",
+      "\u30aa\u30fc\u30eb\u30cf\u30c3\u30d4\u30fc": "HE",
+      "\u30c4\u30f3\u30c7\u30ec": "\u50b2\u5a07",
+      "\u5973\u6027\u8996\u70b9": "\u5973\u6027\u89c6\u89d2",
+      "\u9b31": "\u81f4\u90c1",
+      "\u30d5\u30a7\u30c1": "\u7656\u597d",
+      "\u5236\u670d": "\u5236\u670d",
+      "\u8ecd\u670d": "\u519b\u88c5",
+      "\u30b4\u30b9\u30ed\u30ea": "\u54e5\u7279\u841d\u8389",
+      "\u30b3\u30b9\u30d7\u30ec": "Cosplay",
+      "\u7740\u7269/\u548c\u670d": "\u548c\u670d",
+      "\u30b7\u30b9\u30bf\u30fc": "\u4fee\u5973",
+      "\u30b9\u30fc\u30c4": "\u897f\u88c5",
+      "\u76e3\u7981": "\u76d1\u7981",
+      "\u304f\u3059\u3050\u308a": "\u6320\u75d2",
+      "\u50ac\u7720": "\u50ac\u7720",
+      "\u30b7\u30e7\u30fc\u30c8\u30ab\u30c3\u30c8": "\u77ed\u53d1",
+      "\u30ed\u30f3\u30b0\u30d8\u30a2": "\u957f\u53d1",
+      "\u91d1\u9aea": "\u91d1\u53d1",
+      "\u9ed2\u9aea": "\u9ed1\u53d1",
+      "\u30dd\u30cb\u30fc\u30c6\u30fc\u30eb": "\u9a6c\u5c3e",
+      "\u30c4\u30a4\u30f3\u30c6\u30fc\u30eb": "\u53cc\u9a6c\u5c3e",
+      "\u30cd\u30b3\u30df\u30df": "\u732b\u8033",
+      "\u7363\u8033": "\u517d\u8033",
+      "\u9577\u8eab": "\u9ad8\u4e2a\u5b50",
+      "\u30b9\u30ec\u30f3\u30c0\u30fc": "\u7ea4\u7ec6",
+      "\u30e0\u30c1\u30e0\u30c1": "\u4e30\u6ee1",
+      "\u7b4b\u8089": "\u808c\u8089",
+      "\u65b9\u8a00": "\u65b9\u8a00",
+      "\u7121\u8868\u60c5": "\u9762\u65e0\u8868\u60c5",
+      "\u72c2\u6c17": "\u75af\u72c2",
+      "\u5e74\u4e0a": "\u5e74\u4e0a",
+      "\u719f\u5973": "\u719f\u5973",
+      "\u4eba\u59bb": "\u4eba\u59bb",
+      "\u304a\u59c9\u3055\u3093": "\u59d0\u59d0\u7cfb",
+      "\u65e2\u5a5a\u8005": "\u5df2\u5a5a",
+      "\u5e7c\u306a\u3058\u307f": "\u9752\u6885\u7af9\u9a6c",
+      "\u53cc\u5b50": "\u53cc\u80de\u80ce",
+      "\u6559\u5e2b": "\u6559\u5e08",
+      "\u30b5\u30e9\u30ea\u30fc\u30de\u30f3": "\u4e0a\u73ed\u65cf",
+      "\u30db\u30b9\u30c8": "\u7537\u516c\u5173",
+      "\u6226\u58eb": "\u6218\u58eb",
+      "\u5973\u738b\u69d8/\u304a\u59eb\u69d8": "\u5973\u738b/\u516c\u4e3b",
+      "\u30a8\u30eb\u30d5/\u5996\u7cbe": "\u7cbe\u7075/\u5996\u7cbe",
+      "\u5929\u4f7f/\u60aa\u9b54": "\u5929\u4f7f/\u6076\u9b54",
+      "\u5e7d\u970a": "\u5e7d\u7075",
+      "\u9b54\u6cd5\u4f7f\u3044/\u9b54\u5973": "\u9b54\u6cd5\u5e08/\u9b54\u5973",
+      "\u304a\u5b22\u69d8": "\u5927\u5c0f\u59d0",
+      "\u5996\u602a": "\u5996\u602a",
+      "\u6027\u8ee2\u63db(TS)": "\u6027\u8f6c",
+      "\u5929\u7136": "\u5929\u7136",
+      "\u30a4\u30f3\u30c6\u30ea": "\u77e5\u6027\u6d3e",
+      "\u64ec\u4eba\u5316": "\u62df\u4eba\u5316",
+      "\u3051\u3082\u306e/\u7363\u5316": "\u517d\u5316",
+      "\u30ed\u30dc\u30c3\u30c8/\u30a2\u30f3\u30c9\u30ed\u30a4\u30c9": "\u673a\u5668\u4eba/\u4eff\u751f\u4eba",
+      "\u30e1\u30ac\u30cd": "\u773c\u955c",
+      "\u30d4\u30a2\u30b9/\u88c5\u98fe\u54c1": "\u9970\u54c1",
+      "\u4e0b\u514b\u4e0a": "\u4e0b\u514b\u4e0a",
+      "\u30e4\u30af\u30b6/\u88cf\u793e\u4f1a": "\u9ed1\u9053",
+      "\u5144": "\u54e5\u54e5",
+      "\u5f1f": "\u5f1f\u5f1f",
+      "\u5e74\u4e0b\u653b\u3081": "\u5e74\u4e0b\u653b",
+      "\u540c\u7d1a\u751f/\u540c\u50da": "\u540c\u5b66/\u540c\u4e8b",
+      "\u4ffa\u69d8\u653b\u3081": "\u4ffa\u69d8\u653b",
+      "\u8b66\u5bdf/\u5211\u4e8b": "\u8b66\u5bdf",
+      "\u5148\u8f29/\u5f8c\u8f29": "\u524d\u8f88/\u540e\u8f88",
+      "\u30d8\u30bf\u30ec\u653b\u3081": "\u5e9f\u67f4\u653b",
+      "\u4e3b\u5f93": "\u4e3b\u4ece",
+      "\u30af\u30fc\u30eb\u653b\u3081": "\u51b7\u6de1\u653b",
+      "\u57f7\u4e8b": "\u6267\u4e8b",
+      "\u30b7\u30ea\u30fc\u30ba\u3082\u306e": "\u7cfb\u5217\u4f5c\u54c1",
+      "\u30df\u30b9\u30c6\u30ea\u30fc": "\u63a8\u7406/\u60ac\u7591",
+      "\u5bdd\u53d6\u308a": "NTR",
+      "\u7537\u306e\u5a18": "\u4f2a\u5a18",
+      "\u304a\u3084\u3058": "\u5927\u53d4",
+      "\u50ac\u7720\u97f3\u58f0": "\u50ac\u7720\u97f3\u58f0",
+      "\u30e4\u30f3\u30c7\u30ec": "\u75c5\u5a07",
+      "\u4eba\u5916\u5a18/\u30e2\u30f3\u30b9\u30bf\u30fc\u5a18": "\u4eba\u5916\u5a18/\u9b54\u7269\u5a18",
+      "\u793e\u9577": "\u793e\u957f",
+      "\u533b\u8005": "\u533b\u751f",
+      "\u60aa\u5815\u3061": "\u6076\u5815",
+      "\u6d17\u8133": "\u6d17\u8111",
+      "\u9752\u5e74": "\u9752\u5e74",
+      "\u5b66\u751f": "\u5b66\u751f",
+      "\u30ac\u30c6\u30f3\u7cfb": "\u4f53\u529b\u52b3\u52a8\u7cfb",
+      "\u30ec\u30b9\u30e9\u30fc/\u683c\u95d8\u5bb6": "\u683c\u6597\u5bb6",
+      "\u82b8\u80fd\u4eba/\u30a2\u30a4\u30c9\u30eb/\u30e2\u30c7\u30eb": "\u827a\u4eba/\u5076\u50cf/\u6a21\u7279",
+      "\u4f53\u80b2\u4f1a\u7cfb/\u30b9\u30dd\u30fc\u30c4\u9078\u624b": "\u8fd0\u52a8\u5458",
+      "\u5916\u56fd\u4eba": "\u5916\u56fd\u4eba",
+      "\u30e4\u30ea\u30c1\u30f3/\u30d7\u30ec\u30a4\u30dc\u30fc\u30a4": "\u82b1\u82b1\u516c\u5b50",
+      "\u30be\u30f3\u30d3": "\u50f5\u5c38",
+      "\u4e0d\u826f/\u30e4\u30f3\u30ad\u30fc": "\u4e0d\u826f",
+      "\u9006\u30cf\u30fc\u30ec\u30e0": "\u9006\u540e\u5bab",
+      "\u4ffa\u69d8": "\u9738\u9053\u7cfb",
+      "\u53d4\u7236/\u7fa9\u7236": "\u53d4\u7236/\u4e49\u7236",
+      "\u4e0a\u53f8": "\u4e0a\u53f8",
+      "\u738b\u5b50\u69d8/\u738b\u5b50\u7cfb": "\u738b\u5b50\u7cfb",
+      "\u540c\u68f2": "\u540c\u5c45\u604b\u7231",
+      "\u6d6e\u6c17": "\u51fa\u8f68",
+      "\u8033\u304b\u304d": "\u638f\u8033",
+      "\u6191\u4f9d": "\u9644\u8eab",
+      "\u30ce\u30f3\u30b1": "\u5f02\u6027\u604b\u76f4\u7537",
+      "\u30d0\u30a4": "\u53cc\u6027\u604b",
+      "\u77ed\u9aea": "\u77ed\u53d1",
+      "\u672a\u4ea1\u4eba": "\u5be1\u5987",
+      "\u5973\u6027\u5411\u3051": "\u5973\u6027\u5411",
+      "\u30aa\u30e1\u30ac\u30d0\u30fc\u30b9": "ABO/Omegaverse",
+      "\u30ed\u30de\u30f3\u30b9": "\u6d6a\u6f2b/\u7231\u60c5",
+      "\u30d0\u30a4\u30ce\u30fc\u30e9\u30eb/\u30c0\u30df\u30d8": "\u53cc\u8033\u5f55\u97f3/\u5047\u4eba\u5934\u9ea6",
+      "ASMR": "ASMR",
+      "DLsite\u7ffb\u8a33\u4f5c\u54c1": "DLsite\u7ffb\u8bd1\u4f5c\u54c1",
+      "\u7537\u4e3b\u4eba\u516c": "\u7537\u4e3b\u4eba\u516c",
+      "\u3055\u3055\u3084\u304d": "\u8033\u8bed",
+      "\u30b5\u30ad\u30e5\u30d0\u30b9/\u6deb\u9b54": "\u9b45\u9b54",
+      "\u7570\u4e16\u754c\u8ee2\u751f": "\u5f02\u4e16\u754c\u8f6c\u751f",
+      "\u60aa\u5f79\u4ee4\u5b22": "\u6076\u5f79\u5343\u91d1",
+      "\u57f7\u7740\u653b\u3081": "\u6267\u7740\u653b",
+      "\u5bdd\u53d6\u3089\u305b": "\u4e3b\u52a8NTR",
+      "\u9006NTR": "\u9006NTR",
+      "Dom/Sub\u30e6\u30cb\u30d0\u30fc\u30b9": "Dom/Sub Universe",
+      "\u5973\u6027\u512a\u4f4d": "\u5973\u6027\u4e3b\u5bfc",
+      "\u96c4\u3063\u3071\u3044": "\u7537\u6027\u80f8\u808c",
+      "\u4f53\u683c\u5dee": "\u4f53\u683c\u5dee",
+      "\u7363\u4eba": "\u517d\u4eba",
+      "\u4e0b\u7740": "\u5185\u8863",
+      "\u8907\u6570\u30d7\u30ec\u30a4/\u4e71\u4ea4": "\u591a\u4eba",
+      "\u8fd1\u89aa\u76f8\u59e6": "\u9aa8\u79d1",
+      "\u7126\u3089\u3057": "\u6311\u9017",
+      "\u5c11\u5e74": "\u5c11\u5e74",
+      "\u30b7\u30e7\u30bf": "\u6b63\u592a",
+      "\u521d\u4f53\u9a13": "\u521d\u4f53\u9a8c",
+      "\u8d64\u3061\u3083\u3093\u30d7\u30ec\u30a4": "\u5a74\u513fPlay"
+};
+
+    function normalizeGenreId(value) {
+      const text = firstText(value).replace(/[^0-9]/g, "");
+      return text ? String(Number(text)) : "";
+    }
+
+    function collectGenreEntries(source, depth = 0, inGenre = false, out = []) {
+      if (!source || depth > 6) return out;
+      if (Array.isArray(source)) {
+        source.forEach((item) => collectGenreEntries(item, depth + 1, inGenre, out));
+        return out;
+      }
+      if (typeof source !== "object") {
+        if (inGenre) out.push({ id: "", name: String(source).trim() });
+        return out;
+      }
+      if (inGenre) {
+        const id = normalizeGenreId(source.id ?? source.genre_id ?? source.genreId ?? source.code ?? source.search_val ?? source.value);
+        const name = firstText(source.name, source.genre_name, source.genreName, source.label, source.text, source.value);
+        if (id || name) out.push({ id, name });
+      }
+      for (const [key, value] of Object.entries(source)) {
+        const nextInGenre = inGenre || /genre|genres|category|categories|tag|tags/i.test(key);
+        if (inGenre && /^\d+$/.test(key)) {
+          const name = typeof value === "string" ? value : firstText(value?.name, value?.genre_name, value?.genreName, value?.label, value?.text);
+          out.push({ id: key, name });
+        }
+        collectGenreEntries(value, depth + 1, nextInGenre, out);
+      }
+      return out;
+    }
+
+    function importedGenreKeywords(product) {
+      const seen = new Set();
+      const result = [];
+      collectGenreEntries(product).forEach((entry) => {
+        if (result.length >= 8) return;
+        const id = normalizeGenreId(entry.id);
+        const keyword = (id && DLSITE_GENRE_KEYWORDS[id]) || DLSITE_GENRE_NAME_KEYWORDS[firstText(entry.name)];
+        if (!keyword || seen.has(keyword)) return;
+        seen.add(keyword);
+        result.push(keyword);
+      });
+      return result;
+    }
+
+    function hasChineseVersionInfo(source, depth = 0) {
+      if (!source || depth > 5) return false;
+      const chinesePattern = /(\u4e2d\u56fd\u8a9e|\u4e2d\u56fd\u8bed|\u4e2d\u6587|\u7c21\u4f53|\u7b80\u4f53|\u7e41\u4f53|\u7e41\u9ad4|chinese|zh[-_ ]?(cn|tw|hans|hant)?)/i;
+      if (Array.isArray(source)) return source.some((item) => hasChineseVersionInfo(item, depth + 1));
+      if (typeof source === "object") {
+        for (const [key, value] of Object.entries(source)) {
+          if (chinesePattern.test(String(key)) && value !== false && value !== null && value !== "") return true;
+          if (hasChineseVersionInfo(value, depth + 1)) return true;
+        }
+        return false;
+      }
+      return chinesePattern.test(String(source));
+    }
+
+    function setChineseChoice(hasChinese) {
+      const targetText = hasChinese ? String.fromCharCode(0x5b57, 0x5e55) : String.fromCharCode(0x65e0, 0x4e2d, 0x6587);
+      document.querySelectorAll(".choice-button").forEach((item) => {
+        item.classList.toggle("active", item.textContent.trim() === targetText);
+      });
+    }
+
     function parseDlsiteProduct(raw) {
       let product = Array.isArray(raw) ? raw[0] : raw;
       if (product?.work && typeof product.work === "object") product = product.work;
@@ -4104,7 +4749,9 @@
         cv: firstText(findVoiceText(creators), findVoiceText(product), creatorText(creators, "voice_by"), product.voice_by, product.voice),
         circle: firstText(product.maker_name, product.circle, product.maker?.name, product.brand?.name),
         originalPrice: numericText(product.official_price, product.price, product.price_str, product.work_price),
-        coverUrl: productImageMainUrl(product)
+        coverUrl: productImageMainUrl(product),
+        hasChineseVersion: hasChineseVersionInfo(product),
+        keywords: importedGenreKeywords(product)
       };
     }
 
@@ -4121,6 +4768,16 @@
       return url.toString();
     }
 
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 12000) {
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, { ...options, signal: controller.signal });
+      } finally {
+        window.clearTimeout(timer);
+      }
+    }
+
     async function fetchProductJson(workno) {
       const directUrl = "https://www.dlsite.com/maniax/api/=/product.json?workno=" + encodeURIComponent(workno);
       const attempts = [directUrl];
@@ -4129,7 +4786,7 @@
       let lastError;
       for (const url of attempts) {
         try {
-          const response = await fetch(url, { mode: "cors", credentials: "omit" });
+          const response = await fetchWithTimeout(url, { mode: "cors", credentials: "omit" }, 12000);
           if (!response.ok) throw new Error("HTTP " + response.status);
           return await response.json();
         } catch (error) {
@@ -4145,6 +4802,8 @@
       if (product.cv) setEditableText("cvText", product.cv);
       if (product.circle) setEditableText("circleText", product.circle);
       if (product.originalPrice) originalPrice.value = product.originalPrice;
+      setChineseChoice(Boolean(product.hasChineseVersion));
+      if (Array.isArray(product.keywords)) renderTags(product.keywords.slice(0, 8));
       updateDiscount();
       saveState();
     }
@@ -4161,11 +4820,11 @@
     async function importCoverFromUrl(url) {
       const normalizedUrl = normalizeImageUrl(url);
       if (!normalizedUrl) return false;
-      const response = await fetch(normalizedUrl, { mode: "cors", credentials: "omit" });
+      const response = await fetchWithTimeout(normalizedUrl, { mode: "cors", credentials: "omit" }, isMobileView() ? 10000 : 15000);
       if (!response.ok) throw new Error("HTTP " + response.status);
       const blob = await response.blob();
       if (!blob.type || !blob.type.startsWith("image/")) throw new Error("Not an image response");
-      setCoverFromDataUrl(await blobToDataUrl(blob));
+      await setCoverFromDataUrl(await blobToDataUrl(blob));
       return true;
     }
 
@@ -4175,6 +4834,7 @@
         editableText("cvText").trim() ||
         editableText("circleText").trim() ||
         originalPrice.value.trim() ||
+        Array.from(tags.querySelectorAll(".tag")).some((tag) => tag.textContent.trim()) ||
         coverOriginalSrc ||
         coverEditedSrc ||
         coverImage.getAttribute("src")
@@ -4291,6 +4951,68 @@
       });
     }
 
+    async function rasterizeImageToPngDataUrl(src) {
+      if (!src) return "";
+      const image = await loadImage(src);
+      const width = image.naturalWidth || image.width || 1;
+      const height = image.naturalHeight || image.height || 1;
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(image, 0, 0, width, height);
+      return canvas.toDataURL("image/png");
+    }
+
+    const scriptLoadCache = new Map();
+
+    function loadScriptOnce(src) {
+      if (scriptLoadCache.has(src)) return scriptLoadCache.get(src);
+      const promise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("script load failed: " + src));
+        document.head.appendChild(script);
+      });
+      scriptLoadCache.set(src, promise);
+      return promise;
+    }
+
+    async function loadEmbeddedStampDataUrl(src) {
+      if (!src || String(src).startsWith("data:")) return "";
+      if (!String(src).startsWith("stamp/")) return "";
+      if (!window.STAMP_DATA_URLS) window.STAMP_DATA_URLS = {};
+      if (window.STAMP_DATA_URLS[src]) return window.STAMP_DATA_URLS[src];
+      const fileName = src.split("/").pop() || "";
+      const baseName = fileName.replace(/\.[^.]+$/, "");
+      if (!baseName) return "";
+      try {
+        await loadScriptOnce("stamp-data/" + baseName + ".js");
+      } catch (error) {
+        return "";
+      }
+      return window.STAMP_DATA_URLS[src] || "";
+    }
+
+    async function localizeImageToPngDataUrl(src) {
+      if (!src) return "";
+      if (String(src).startsWith("data:image/png")) return src;
+      if (String(src).startsWith("data:")) return rasterizeImageToPngDataUrl(src);
+      try {
+        const response = await fetchWithTimeout(src, { mode: "cors", credentials: "omit" }, isMobileView() ? 10000 : 15000);
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const blob = await response.blob();
+        if (!blob.type || !blob.type.startsWith("image/")) throw new Error("Not an image response");
+        return rasterizeImageToPngDataUrl(await blobToDataUrl(blob));
+      } catch (error) {
+        const embedded = await loadEmbeddedStampDataUrl(src);
+        if (embedded) return embedded;
+        console.warn("Sticker fetch failed, fallback to image rasterize", src, error);
+        return rasterizeImageToPngDataUrl(src);
+      }
+    }
+
     function resizeEditorCanvases(width, height) {
       [imageEditCanvas, editOriginalCanvas, editMosaicCanvas, editBlurCanvas, editMosaicMaskCanvas, editBlurMaskCanvas].forEach((canvas) => {
         canvas.width = width;
@@ -4358,13 +5080,38 @@
       if (stickerNextPage) stickerNextPage.disabled = stickerPage >= pageCount - 1;
     }
 
-    async function stickerNaturalSize(source) {
-      if (!source || source.type !== "image") return { width: 128, height: 82 };
+    async function ensureStickerImage(source, forceLocal = false) {
+      if (!source || source.type !== "image") return null;
       let img = stickerImageCache.get(source.id);
-      if (!img || !img.naturalWidth) {
+      if (!forceLocal && img && img.complete && img.naturalWidth) return img;
+      const src = source.localSrc || source.src;
+      try {
+        const localSrc = source.localSrc || await localizeImageToPngDataUrl(src);
+        source.localSrc = localSrc;
+        img = await loadImage(localSrc);
+        stickerImageCache.set(source.id, img);
+        return img;
+      } catch (error) {
+        if (forceLocal) {
+          console.warn("Sticker localize failed, fallback to original source for export", source.id, error);
+          img = stickerImageCache.get(source.id) || await loadImage(source.src).catch(() => null);
+          if (img && img.complete && img.naturalWidth) {
+            stickerImageCache.set(source.id, img);
+            return img;
+          }
+          stickerImageCache.delete(source.id);
+          return null;
+        }
+        console.warn("Sticker localize failed, fallback to original source", source.id, error);
         img = await loadImage(source.src).catch(() => null);
         if (img) stickerImageCache.set(source.id, img);
+        return img;
       }
+    }
+
+    async function stickerNaturalSize(source) {
+      if (!source || source.type !== "image") return { width: 128, height: 82 };
+      const img = await ensureStickerImage(source);
       return img && img.naturalWidth ? { width: img.naturalWidth, height: img.naturalHeight } : { width: 128, height: 128 };
     }
 
@@ -4372,7 +5119,7 @@
       const source = stickerById(sourceId);
       if (!source || !imageEditCanvas.width || !imageEditCanvas.height) return;
       snapshotEditorMasks();
-      const natural = await stickerNaturalSize(source);
+      const natural = await stickerNaturalSize(source).catch(() => ({ width: 128, height: 128 }));
       const ratio = Math.max(0.1, natural.width / Math.max(1, natural.height));
       const maxW = imageEditCanvas.width * 0.3;
       const maxH = imageEditCanvas.height * 0.3;
@@ -4503,6 +5250,82 @@
       if (imageEditorMode === "standalone") syncStandaloneFromEditorGlobals();
     }
 
+    function boxBlurPass(src, dst, width, height, radius, horizontal) {
+      const span = radius * 2 + 1;
+      if (horizontal) {
+        for (let y = 0; y < height; y++) {
+          const row = y * width;
+          let r = 0, g = 0, b = 0, a = 0;
+          for (let x = -radius; x <= radius; x++) {
+            const index = (row + clamp(x, 0, width - 1)) * 4;
+            r += src[index]; g += src[index + 1]; b += src[index + 2]; a += src[index + 3];
+          }
+          for (let x = 0; x < width; x++) {
+            const out = (row + x) * 4;
+            dst[out] = r / span;
+            dst[out + 1] = g / span;
+            dst[out + 2] = b / span;
+            dst[out + 3] = a / span;
+            const remove = (row + clamp(x - radius, 0, width - 1)) * 4;
+            const add = (row + clamp(x + radius + 1, 0, width - 1)) * 4;
+            r += src[add] - src[remove];
+            g += src[add + 1] - src[remove + 1];
+            b += src[add + 2] - src[remove + 2];
+            a += src[add + 3] - src[remove + 3];
+          }
+        }
+        return;
+      }
+      for (let x = 0; x < width; x++) {
+        let r = 0, g = 0, b = 0, a = 0;
+        for (let y = -radius; y <= radius; y++) {
+          const index = (clamp(y, 0, height - 1) * width + x) * 4;
+          r += src[index]; g += src[index + 1]; b += src[index + 2]; a += src[index + 3];
+        }
+        for (let y = 0; y < height; y++) {
+          const out = (y * width + x) * 4;
+          dst[out] = r / span;
+          dst[out + 1] = g / span;
+          dst[out + 2] = b / span;
+          dst[out + 3] = a / span;
+          const remove = (clamp(y - radius, 0, height - 1) * width + x) * 4;
+          const add = (clamp(y + radius + 1, 0, height - 1) * width + x) * 4;
+          r += src[add] - src[remove];
+          g += src[add + 1] - src[remove + 1];
+          b += src[add + 2] - src[remove + 2];
+          a += src[add + 3] - src[remove + 3];
+        }
+      }
+    }
+
+    function buildBlurEffectCanvas(width, height) {
+      editBlurCtx.clearRect(0, 0, width, height);
+      try {
+        const source = editOriginalCtx.getImageData(0, 0, width, height);
+        let current = new Uint8ClampedArray(source.data);
+        let temp = new Uint8ClampedArray(source.data.length);
+        const radius = Math.max(8, Math.round(Math.min(width, height) / 38));
+        for (let pass = 0; pass < 2; pass++) {
+          boxBlurPass(current, temp, width, height, radius, true);
+          boxBlurPass(temp, current, width, height, radius, false);
+        }
+        const output = editBlurCtx.createImageData(width, height);
+        output.data.set(current);
+        editBlurCtx.putImageData(output, 0, 0);
+      } catch (error) {
+        console.warn("fallback blur used", error);
+        const blurSmall = document.createElement("canvas");
+        const blurSmallCtx = blurSmall.getContext("2d");
+        const blurScale = 12;
+        blurSmall.width = Math.max(1, Math.round(width / blurScale));
+        blurSmall.height = Math.max(1, Math.round(height / blurScale));
+        blurSmallCtx.imageSmoothingEnabled = true;
+        blurSmallCtx.drawImage(editOriginalCanvas, 0, 0, blurSmall.width, blurSmall.height);
+        editBlurCtx.imageSmoothingEnabled = true;
+        editBlurCtx.drawImage(blurSmall, 0, 0, blurSmall.width, blurSmall.height, 0, 0, width, height);
+      }
+    }
+
     function buildEffectCanvases() {
       const width = editOriginalCanvas.width;
       const height = editOriginalCanvas.height;
@@ -4517,18 +5340,7 @@
       editMosaicCtx.drawImage(small, 0, 0, small.width, small.height, 0, 0, width, height);
       editMosaicCtx.imageSmoothingEnabled = true;
 
-      editBlurCtx.clearRect(0, 0, width, height);
-      const blurSmall = document.createElement("canvas");
-      const blurSmallCtx = blurSmall.getContext("2d");
-      const blurScale = 12;
-      blurSmall.width = Math.max(1, Math.round(width / blurScale));
-      blurSmall.height = Math.max(1, Math.round(height / blurScale));
-      blurSmallCtx.imageSmoothingEnabled = true;
-      blurSmallCtx.imageSmoothingQuality = "high";
-      blurSmallCtx.drawImage(editOriginalCanvas, 0, 0, blurSmall.width, blurSmall.height);
-      editBlurCtx.imageSmoothingEnabled = true;
-      editBlurCtx.imageSmoothingQuality = "high";
-      editBlurCtx.drawImage(blurSmall, 0, 0, blurSmall.width, blurSmall.height, 0, 0, width, height);
+      buildBlurEffectCanvas(width, height);
     }
 
     function drawMaskedEffect(targetCtx, effectCanvas, maskCanvas) {
@@ -4574,15 +5386,13 @@
       ctx.restore();
     }
 
-    function drawImageSticker(ctx, source, sticker) {
-      let img = stickerImageCache.get(source.id);
-      if (!img) {
-        img = new Image();
-        img.onload = () => renderImageEditor();
-        img.src = source.src;
-        stickerImageCache.set(source.id, img);
+    function drawImageSticker(ctx, source, sticker, exportOnly = false) {
+      const img = stickerImageCache.get(source.id);
+      if (img && img.complete && img.naturalWidth) {
+        ctx.drawImage(img, sticker.x, sticker.y, sticker.w, sticker.h);
+        return;
       }
-      if (img.complete && img.naturalWidth) ctx.drawImage(img, sticker.x, sticker.y, sticker.w, sticker.h);
+      if (!exportOnly) void ensureStickerImage(source).then(() => renderImageEditor());
     }
 
     function drawStickerControls(ctx, sticker) {
@@ -4622,12 +5432,12 @@
       ctx.restore();
     }
 
-    function drawEditorStickers(ctx, showControls = false) {
+    function drawEditorStickers(ctx, showControls = false, exportOnly = false) {
       coverStickers.forEach((sticker) => {
         const source = stickerById(sticker.sourceId);
         if (!source) return;
         clampSticker(sticker);
-        if (source.type === "image") drawImageSticker(ctx, source, sticker);
+        if (source.type === "image") drawImageSticker(ctx, source, sticker, exportOnly);
         else drawTextSticker(ctx, source, sticker);
       });
       if (showControls && selectedStickerId) {
@@ -4643,7 +5453,7 @@
       ctx.drawImage(editOriginalCanvas, 0, 0);
       drawMaskedEffect(ctx, editMosaicCanvas, editMosaicMaskCanvas);
       drawMaskedEffect(ctx, editBlurCanvas, editBlurMaskCanvas);
-      drawEditorStickers(ctx, options.controls !== false && targetCanvas === imageEditCanvas);
+      drawEditorStickers(ctx, options.controls !== false && targetCanvas === imageEditCanvas, options.controls === false);
     }
 
     function requestEditorRender() {
@@ -4799,6 +5609,7 @@
       imageToolMosaic.classList.toggle("active", tool === "mosaic");
       imageToolBlur.classList.toggle("active", tool === "blur");
       imageToolErase.classList.toggle("active", tool === "erase");
+      imageToolSelect?.classList.toggle("active", tool === "sticker");
       imageEditCanvas.style.cursor = tool === "sticker" ? "default" : editorBrushCursor();
     }
 
@@ -4866,12 +5677,21 @@
       renderStickerPicker();
     }
 
+    function layoutTemplateImageEditorActions() {
+      if (isMobileView()) {
+        imageActionRow?.append(imageClearButton, imageDoneButton);
+      } else {
+        imageToolRow?.append(imageClearButton);
+        imageActionRow?.append(imageDoneButton);
+      }
+    }
+
     function placeImageEditorForTemplate() {
       document.querySelector(".app")?.appendChild(imageEditModal);
       imageEditModal.classList.remove("standalone-editor");
       imageDoneButton.textContent = String.fromCharCode(0x5b8c, 0x6210);
       imageCancelButton.textContent = UI_REVIEW_CANCEL;
-      imageClearButton.parentElement?.append(imageClearButton, imageDoneButton, imageCancelButton);
+      layoutTemplateImageEditorActions();
     }
 
     function placeImageEditorForStandalone() {
@@ -4883,9 +5703,10 @@
     }
 
     async function loadEditorFromCurrentGlobals(src) {
-      editorSourceSrc = src;
+      const localSrc = await localizeImageToPngDataUrl(src);
+      editorSourceSrc = localSrc;
       editorSessionSnapshot = editorGlobals();
-      editorImage = await loadImage(src);
+      editorImage = await loadImage(localSrc);
       const sourceWidth = editorImage.naturalWidth || editorImage.width;
       const sourceHeight = editorImage.naturalHeight || editorImage.height;
       const maxStandaloneSide = imageEditorMode === "standalone" && isMobileView() ? 1800 : Infinity;
@@ -4905,6 +5726,7 @@
       renderImageEditor();
       if (imageToolEmpty) imageToolEmpty.hidden = true;
       if (imageEditCanvas) imageEditCanvas.hidden = false;
+      mobileFocusBack?.classList.add("hidden");
       imageEditModal.hidden = false;
     }
 
@@ -5000,6 +5822,7 @@
       }
       imageDoneButton.disabled = true;
       try {
+        await ensureUsedStickerImages();
         const canvas = document.createElement("canvas");
         canvas.width = imageEditCanvas.width;
         canvas.height = imageEditCanvas.height;
@@ -5022,8 +5845,16 @@
       }
     }
 
-    function updateEditedCoverFromEditor() {
+    async function ensureUsedStickerImages() {
+      const sources = coverStickers
+        .map((sticker) => stickerById(sticker.sourceId))
+        .filter((source) => source && source.type === "image");
+      await Promise.all(sources.map((source) => ensureStickerImage(source, true)));
+    }
+
+    async function updateEditedCoverFromEditor() {
       if (!editorImage) return "";
+      await ensureUsedStickerImages();
       const result = document.createElement("canvas");
       result.width = imageEditCanvas.width;
       result.height = imageEditCanvas.height;
@@ -5045,7 +5876,7 @@
       editorTool = editorSessionSnapshot.editorTool || "mosaic";
     }
 
-    function closeImageEditor(apply) {
+    async function closeImageEditor(apply) {
       if (imageEditorMode === "standalone") {
         if (editorImage) {
           if (apply) {
@@ -5067,35 +5898,64 @@
         if (imageToolEmpty) imageToolEmpty.hidden = false;
         return;
       }
-      if (editorImage) {
-        if (apply) {
-          saveEditorProject();
-          coverOriginalSrc = editorSourceSrc;
-          coverEditedSrc = updateEditedCoverFromEditor();
-          coverImage.src = coverEditedSrc;
-          coverImage.style.filter = "";
-          coverBox.classList.add("has-image");
-          saveState();
-        } else {
-          restoreEditorSessionSnapshot();
-          saveState();
+      let shouldClose = true;
+      try {
+        if (editorImage) {
+          if (apply) {
+            const nextEditedSrc = await updateEditedCoverFromEditor();
+            if (!nextEditedSrc) throw new Error("Edited cover is empty");
+            coverOriginalSrc = editorSourceSrc;
+            coverEditedSrc = nextEditedSrc;
+            coverImage.removeAttribute("src");
+            coverImage.setAttribute("src", coverEditedSrc);
+            coverImage.src = coverEditedSrc;
+            coverImage.style.filter = "";
+            coverBox.classList.add("has-image");
+            try {
+              saveEditorProject();
+              saveState();
+            } catch (saveError) {
+              console.warn("Image editor state save skipped after applying result", saveError);
+            }
+            requestAnimationFrame(() => fitStage());
+          } else {
+            restoreEditorSessionSnapshot();
+            saveState();
+          }
+        }
+      } catch (error) {
+        console.error("Image editor close failed", error);
+        shouldClose = !apply;
+        const detail = error && (error.name || error.message) ? "\n" + [error.name, error.message].filter(Boolean).join(": ") : "";
+        alert(String.fromCharCode(0x56fe, 0x7247, 0x2044, 0x7f16, 0x8f91, 0x7ed3, 0x679c, 0x5e94, 0x7528, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x518d, 0x8bd5, 0x4e00, 0x6b21, 0x3002) + detail);
+      } finally {
+        if (shouldClose) {
+          editorSessionSnapshot = null;
+          editorDrawing = false;
+          editorLastPoint = null;
+          editorStickerDrag = null;
+          selectedStickerId = null;
+          imageEditModal.hidden = true;
+          if (imageEditorMode === "template") requestAnimationFrame(() => fitStage());
         }
       }
-      editorSessionSnapshot = null;
-      editorDrawing = false;
-      editorLastPoint = null;
-      editorStickerDrag = null;
-      selectedStickerId = null;
-      imageEditModal.hidden = true;
     }
 
     function editableText(id) {
       return document.getElementById(id)?.textContent || "";
     }
 
+    function syncCircleTextLayout() {
+      const node = document.getElementById("circleText");
+      if (!node) return;
+      const length = Array.from(node.textContent.trim()).length;
+      node.classList.toggle("is-long-text", length > 14);
+    }
+
     function setEditableText(id, value) {
       const node = document.getElementById(id);
       if (node) node.textContent = value || "";
+      if (id === "circleText") syncCircleTextLayout();
     }
 
     function currentRatings() {
@@ -5161,7 +6021,7 @@
     }
 
     function renderTags(savedTags) {
-      const nextTags = savedTags && savedTags.length ? savedTags : [String.fromCharCode(0x5e74, 0x4e0b), String.fromCharCode(0x7eaf, 0x7231), String.fromCharCode(0x5ac9, 0x5992)];
+      const nextTags = Array.isArray(savedTags) ? savedTags.filter(Boolean).slice(0, 8) : [];
       tags.querySelectorAll(".tag-chip").forEach((chip) => chip.remove());
       nextTags.forEach((text) => tags.insertBefore(createTag(text), addTagButton));
     }
@@ -5260,10 +6120,11 @@
       saveState();
     }
 
-    function setCoverFromDataUrl(dataUrl) {
+    async function setCoverFromDataUrl(dataUrl) {
+      const pngDataUrl = await rasterizeImageToPngDataUrl(dataUrl);
       resetCoverImageState();
-      coverOriginalSrc = dataUrl;
-      coverImage.src = dataUrl;
+      coverOriginalSrc = pngDataUrl;
+      coverImage.src = pngDataUrl;
       coverImage.style.filter = "";
       coverBox.classList.add("has-image");
       saveState();
@@ -5273,9 +6134,15 @@
       const file = coverInput.files && coverInput.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = () => {
-        setCoverFromDataUrl(reader.result);
-        coverInput.value = "";
+      reader.onload = async () => {
+        try {
+          await setCoverFromDataUrl(reader.result);
+        } catch (error) {
+          console.error("Cover image normalize failed", error);
+          alert("????????????????");
+        } finally {
+          coverInput.value = "";
+        }
       };
       reader.readAsDataURL(file);
     });
@@ -5331,11 +6198,13 @@
       sanitizeNumericInput(currentDiscount);
       currentDiscountManual = true;
       updateCurrentPriceFromDiscount();
+      syncDiscountColor();
       scheduleSave();
     });
 
     lowestPrice.addEventListener("input", () => {
       sanitizeNumericInput(lowestPrice);
+      syncDiscountColor();
       scheduleSave();
     });
 
@@ -5383,6 +6252,7 @@
       });
       document.getElementById("reviewText").value = "";
       resetCoverImageState();
+      renderTags([]);
       document.querySelectorAll(".choice-button").forEach((item, index) => item.classList.toggle("active", index === 0));
       currentDiscountManual = false;
       playerTotalSeconds = PLAYER_DEFAULT_TOTAL;
@@ -5505,6 +6375,18 @@
       return lines.length * lineHeight;
     }
 
+    function drawFixedCharWrappedText(ctx, text, x, y, charsPerLine = 7, lineHeight = 31, maxLines = 2) {
+      const chars = Array.from(String(text || ""));
+      const lines = [];
+      for (let index = 0; index < maxLines && index * charsPerLine < chars.length; index += 1) {
+        let line = chars.slice(index * charsPerLine, (index + 1) * charsPerLine).join("");
+        if (index === maxLines - 1 && chars.length > (index + 1) * charsPerLine) line = chars.slice(index * charsPerLine, index * charsPerLine + Math.max(1, charsPerLine - 1)).join("") + "?";
+        lines.push(line);
+      }
+      lines.forEach((item, index) => ctx.fillText(item, x, y + index * lineHeight));
+      return lines.length * lineHeight;
+    }
+
     function drawCenteredWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3) {
       const lines = [];
       const sourceLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
@@ -5595,7 +6477,7 @@
       drawWrappedText(ctx, value, x, y + 48, w, 31, 1);
     }
 
-    function drawCompactInfoField(ctx, label, value, x, top, w) {
+    function drawCompactInfoField(ctx, label, value, x, top, w, options = {}) {
       ctx.save();
       ctx.textAlign = "center";
       ctx.fillStyle = currentCardTheme().accent;
@@ -5608,26 +6490,23 @@
       ctx.restore();
     }
 
-    function drawPreviewInfoField(ctx, label, value, x, top, w) {
+    function drawPreviewInfoField(ctx, label, value, x, top, w, options = {}) {
       ctx.fillStyle = currentCardTheme().accent;
       ctx.font = canvasFont('800', 21);
       ctx.fillText(label, x, top + 19);
       drawFieldRule(ctx, x, top + 11, w);
       ctx.fillStyle = currentCardTheme().ink;
       ctx.font = canvasFont('900', 26);
-      drawWrappedText(ctx, value, x, top + 61, w, 31, 1);
+      if (options.twoLine) drawFixedCharWrappedText(ctx, value, x, top + 61, 7, 31, 2);
+      else drawWrappedText(ctx, value, x, top + 61, w, 31, 1);
     }
 
     function drawPreviewChoiceField(ctx, activeText, x, top, w) {
-      ctx.fillStyle = currentCardTheme().accent;
-      ctx.font = canvasFont('800', 21);
-      ctx.fillText(CHOICE_LABEL, x, top + 19);
-      drawFieldRule(ctx, x, top + 11, w);
-      const labels = [CHOICE_SUBTITLE, CHOICE_SCRIPT, CHOICE_VIDEO, CHOICE_NONE];
+      const labels = [CHOICE_SUBTITLE, CHOICE_VIDEO, CHOICE_SCRIPT, CHOICE_NONE];
       const bw = 74;
       labels.forEach((label, index) => {
         const bx = x + index * (bw + 12);
-        const by = top + 44;
+        const by = top;
         const active = label === activeText;
         fillRound(ctx, bx, by, bw, 34, 17, active ? currentCardTheme().accent : "rgba(255,255,255,.62)");
         strokeRound(ctx, bx, by, bw, 34, 17, active ? "transparent" : themeAlpha("accent", .26), 1);
@@ -5639,13 +6518,13 @@
       });
     }
 
-    function drawMetric(ctx, label, value, x, y, w, h, suffix = "", textOffsetX = 0) {
+    function drawMetric(ctx, label, value, x, y, w, h, suffix = "", textOffsetX = 0, options = {}) {
       fillRound(ctx, x, y, w, h, 18, "rgba(255,255,255,.66)");
       strokeRound(ctx, x, y, w, h, 18, themeAlpha("mint", .28), 2);
       ctx.fillStyle = currentCardTheme().mint;
       ctx.font = canvasFont('800', 18);
       ctx.fillText(label, x + 10 + textOffsetX, y + 24);
-      ctx.fillStyle = currentCardTheme().ink;
+      ctx.fillStyle = options.highDiscount ? "#d7192f" : currentCardTheme().ink;
       ctx.font = canvasFont('900', 26);
       const text = value ? value + suffix : "";
       ctx.fillText(text, x + 10 + textOffsetX, y + 56);
@@ -5757,7 +6636,7 @@
       ctx.font = canvasFont('800', 21);
       ctx.fillText(CHOICE_LABEL, x, y - 3);
       drawFieldRule(ctx, x, y, w);
-      const labels = [CHOICE_SUBTITLE, CHOICE_SCRIPT, CHOICE_VIDEO, CHOICE_NONE];
+      const labels = [CHOICE_SUBTITLE, CHOICE_VIDEO, CHOICE_SCRIPT, CHOICE_NONE];
       const bw = 74;
       labels.forEach((label, index) => {
         const bx = x + index * (bw + 12);
@@ -5915,7 +6794,7 @@
 
       drawCompactInfoField(ctx, LABEL_RJ, textOf('#rjText'), 32, 556, 162.67);
       drawCompactInfoField(ctx, "CV", textOf('#cvText'), 218.67, 556, 162.66);
-      drawCompactInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 405.33, 556, 162.67);
+      drawCompactInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 405.33, 556, 162.67, { longText: true });
 
       drawPlayerDecoration(ctx);
       handleExportBlob(await canvasToBlob(canvas), templateExportFileName("compact"));
@@ -5951,14 +6830,14 @@
 
         await drawCover(ctx);
 
-        fillRound(ctx, 548, 110, 442, 315, 26, theme.panelBg);
-        strokeRound(ctx, 548, 110, 442, 315, 26, themeAlpha("line", .6), 2);
-        drawStickerLabel(ctx, LABEL_BASIC, 566, 89);
-        drawPreviewInfoField(ctx, "CV", textOf('#cvText'), 572, 134, 177);
-        drawPreviewInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 767, 134, 177);
-        drawPreviewInfoField(ctx, LABEL_RJ, textOf('#rjText'), 572, 222, 177);
-        drawPreviewInfoField(ctx, LABEL_DURATION, textOf('#durationText'), 767, 222, 177);
-        drawPreviewChoiceField(ctx, document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE, 572, 310, 372);
+        fillRound(ctx, 536, 94, 456, 315, 26, theme.panelBg);
+        strokeRound(ctx, 536, 94, 456, 315, 26, themeAlpha("line", .6), 2);
+        drawStickerLabel(ctx, LABEL_BASIC, 554, 73);
+        drawPreviewInfoField(ctx, "CV", textOf('#cvText'), 560, 143, 195);
+        drawPreviewInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 773, 143, 195, { twoLine: true });
+        drawPreviewInfoField(ctx, LABEL_RJ, textOf('#rjText'), 560, 256, 195);
+        drawPreviewInfoField(ctx, LABEL_DURATION, textOf('#durationText'), 773, 256, 195);
+        drawPreviewChoiceField(ctx, document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE, 560, 356, 372);
 
         fillRound(ctx, 90, 470, 900, 112, 26, theme.panelBg);
         strokeRound(ctx, 90, 470, 900, 112, 26, themeAlpha("line", .54), 2);
@@ -5975,7 +6854,8 @@
         const ty = 655;
         ctx.font = canvasFont('900', 21);
         tagTexts.forEach((tag) => {
-          const tw = Math.max(70, ctx.measureText(tag).width + 24);
+          const minTagWidth = /^[A-Za-z0-9]+$/.test(tag) && Array.from(tag).length <= 3 ? 56 : 70;
+          const tw = Math.max(minTagWidth, ctx.measureText(tag).width + 24);
           if (tx + tw > 972) return;
           fillRound(ctx, tx, ty, tw, 38, 19, theme.chipBg);
           strokeRound(ctx, tx, ty, tw, 38, 19, themeAlpha("accent", .24), 1);
@@ -5989,8 +6869,8 @@
         drawStickerLabel(ctx, LABEL_PURCHASE, 108, 738);
         drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 108, 797, 190, 64, "", exportTextOffsetX);
         drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 312, 797, 190, 64, "", exportTextOffsetX);
-        drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 108, 880, 190, 64, "%off", exportTextOffsetX);
-        drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 312, 880, 190, 64, "%off", exportTextOffsetX);
+        drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 108, 880, 190, 64, "%off", exportTextOffsetX, { highDiscount: isHighDiscountValue(valueOf("#currentDiscount")) });
+        drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 312, 880, 190, 64, "%off", exportTextOffsetX, { highDiscount: isHighDiscountValue(valueOf("#lowestPrice")) });
 
         fillRound(ctx, 548, 755, 442, 220, 26, theme.panelBg);
         strokeRound(ctx, 548, 755, 442, 220, 26, themeAlpha("line", .54), 2);
@@ -6046,6 +6926,7 @@
     imageToolMosaic.addEventListener("click", () => setEditorTool("mosaic"));
     imageToolBlur.addEventListener("click", () => setEditorTool("blur"));
     imageToolErase.addEventListener("click", () => setEditorTool("erase"));
+    imageToolSelect.addEventListener("click", () => setEditorTool("sticker"));
     imageUndoButton.addEventListener("click", undoEditorStep);
     imageRedoButton.addEventListener("click", redoEditorStep);
     imageClearButton.addEventListener("click", () => {
@@ -6061,6 +6942,7 @@
       if (imageEditorMode === "standalone") void exportStandaloneImageFromEditor();
       else closeImageEditor(true);
     });
+    imageEditCloseButton.addEventListener("click", () => closeImageEditor(false));
     imageCancelButton.addEventListener("click", () => {
       if (imageEditorMode === "standalone") removeStandaloneImage();
       else closeImageEditor(false);
@@ -6160,14 +7042,21 @@
       const file = stickerUploadInput.files && stickerUploadInput.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = () => {
-        const source = { id: nextStickerId("uploaded-sticker"), type: "image", src: reader.result };
-        stickerSources.push(source);
-        stickerPage = Math.max(0, Math.ceil(allStickerSources().length / STICKERS_PER_PAGE) - 1);
-        renderStickerPicker();
-        setEditorTool("sticker");
-        void addSticker(source.id);
-        stickerUploadInput.value = "";
+      reader.onload = async () => {
+        try {
+          const localSrc = await rasterizeImageToPngDataUrl(reader.result);
+          const source = { id: nextStickerId("uploaded-sticker"), type: "image", src: localSrc, localSrc };
+          stickerSources.push(source);
+          stickerPage = Math.max(0, Math.ceil(allStickerSources().length / STICKERS_PER_PAGE) - 1);
+          renderStickerPicker();
+          setEditorTool("sticker");
+          void addSticker(source.id);
+        } catch (error) {
+          console.error("Sticker upload normalize failed", error);
+          alert("????????????????");
+        } finally {
+          stickerUploadInput.value = "";
+        }
       };
       reader.readAsDataURL(file);
     });
@@ -6207,7 +7096,37 @@
       });
     });
 
+    function closeImportHelp() {
+      if (!importHelpPopover) return;
+      importHelpPopover.hidden = true;
+      importHelpButton.setAttribute("aria-expanded", "false");
+    }
+
+    function positionImportHelp() {
+      if (!importHelpPopover) return;
+      const rect = importHelpButton.getBoundingClientRect();
+      importHelpPopover.style.width = "max-content";
+      const width = importHelpPopover.offsetWidth;
+      importHelpPopover.style.left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12)) + "px";
+      importHelpPopover.style.top = Math.max(12, rect.bottom + 8) + "px";
+    }
+
     importButton.addEventListener("click", importProductInfo);
+    importHelpButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (!importHelpPopover) return;
+      const nextOpen = importHelpPopover.hidden;
+      importHelpPopover.hidden = !nextOpen;
+      importHelpButton.setAttribute("aria-expanded", String(nextOpen));
+      if (nextOpen) positionImportHelp();
+    });
+    window.addEventListener("resize", () => { if (importHelpPopover && !importHelpPopover.hidden) positionImportHelp(); });
+    window.addEventListener("scroll", () => { if (importHelpPopover && !importHelpPopover.hidden) positionImportHelp(); }, true);
+    document.addEventListener("click", (event) => {
+      if (!importHelpPopover || importHelpPopover.hidden) return;
+      if (importHelpPopover.contains(event.target) || importHelpButton.contains(event.target)) return;
+      closeImportHelp();
+    });
 
     modalDownloadButton.addEventListener("click", () => {
       if (lastExportUrl) {
@@ -6250,18 +7169,24 @@
       const file = standaloneImageInput.files && standaloneImageInput.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = () => {
-        standaloneOriginalSrc = reader.result;
-        standaloneEditedSrc = "";
-        standaloneMosaicMaskSrc = "";
-        standaloneBlurMaskSrc = "";
-        standaloneEditorUndoStack = [];
-        standaloneEditorRedoStack = [];
-        standaloneStickers = [];
-        standaloneStickerSources = [];
-        standaloneImageInput.value = "";
-        saveState();
-        void openStandaloneImageEditor(standaloneOriginalSrc);
+      reader.onload = async () => {
+        try {
+          standaloneOriginalSrc = await rasterizeImageToPngDataUrl(reader.result);
+          standaloneEditedSrc = "";
+          standaloneMosaicMaskSrc = "";
+          standaloneBlurMaskSrc = "";
+          standaloneEditorUndoStack = [];
+          standaloneEditorRedoStack = [];
+          standaloneStickers = [];
+          standaloneStickerSources = [];
+          saveState();
+          void openStandaloneImageEditor(standaloneOriginalSrc);
+        } catch (error) {
+          console.error("Standalone image normalize failed", error);
+          alert("????????????????");
+        } finally {
+          standaloneImageInput.value = "";
+        }
       };
       reader.readAsDataURL(file);
     });
@@ -6282,7 +7207,10 @@
     });
 
     downloadButton.addEventListener("click", downloadCard);
-    document.addEventListener("input", scheduleSave);
+    document.addEventListener("input", (event) => {
+      if (event.target && event.target.id === "circleText") syncCircleTextLayout();
+      scheduleSave();
+    });
     document.addEventListener("click", (event) => {
       if (event.target.closest(".star, .choice-button")) scheduleSave();
     });
@@ -6295,9 +7223,11 @@
       setMainPage(localStorage.getItem(MAIN_PAGE_STORAGE_KEY) || "template", false);
       fitStage();
       updateThemePager();
+      if (!imageEditModal.hidden && imageEditorMode === "template") layoutTemplateImageEditorActions();
     });
     fitStage();
     updateDiscount();
+    syncDiscountColor();
   </script>
 </body>
 </html>
