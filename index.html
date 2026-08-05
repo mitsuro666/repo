@@ -51,6 +51,16 @@
       gap: 12px;
     }
 
+    .app-sidebar,
+    .app-workspace,
+    .workspace-content {
+      display: contents;
+    }
+
+    .workspace-title {
+      display: none;
+    }
+
     .site-header {
       width: min(100%, 1080px);
       display: grid;
@@ -154,6 +164,150 @@
       font-weight: 900;
       letter-spacing: 1px;
       white-space: nowrap;
+    }
+
+    .main-nav {
+      position: fixed;
+      left: 18px;
+      top: 148px;
+      z-index: 30;
+      width: 148px;
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid rgba(217, 95, 140, 0.18);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.62);
+      box-shadow: 0 12px 28px rgba(184, 69, 112, 0.1);
+      backdrop-filter: blur(12px);
+    }
+
+    .main-nav-button {
+      min-height: 42px;
+      border: 1px solid transparent;
+      border-radius: 16px;
+      color: var(--ink);
+      background: transparent;
+      font-weight: 900;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+      padding: 0 12px;
+      white-space: nowrap;
+    }
+
+    .main-nav-button.active {
+      color: var(--rose-deep);
+      border-color: rgba(217, 95, 140, 0.22);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 8px 18px rgba(184, 69, 112, 0.1);
+    }
+
+    .app-page,
+    .stage,
+    .menu-toolbar {
+      width: min(100%, 1080px);
+    }
+
+    .app-page[hidden],
+    .stage[hidden],
+    .menu-toolbar[hidden],
+    .image-tool-page .image-edit-modal[hidden],
+    .mobile-data-dropdown[hidden] {
+      display: none !important;
+    }
+
+    .mobile-data-menu {
+      display: none;
+    }
+
+    .utility-page {
+      display: grid;
+      gap: 16px;
+      padding: 18px;
+      border: 1px solid rgba(217, 95, 140, 0.18);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.36);
+    }
+
+    .utility-page-title {
+      margin: 0;
+      color: var(--rose-deep);
+      font-size: 28px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .image-tool-page .image-edit-modal {
+      position: static;
+      inset: auto;
+      z-index: auto;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      background: transparent;
+      backdrop-filter: none;
+    }
+
+    .image-tool-page .image-edit-sheet {
+      max-height: none;
+      width: min(100%, 980px);
+    }
+
+    .image-tool-empty {
+      min-height: 380px;
+      display: grid;
+      place-items: center;
+      gap: 14px;
+      padding: 36px;
+      border: 2px dashed rgba(217, 95, 140, 0.22);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.52);
+      color: var(--ink);
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .image-tool-note {
+      max-width: 520px;
+      color: rgba(95, 76, 88, 0.68);
+      font-size: 13px;
+      line-height: 1.7;
+      font-weight: 800;
+    }
+
+    .image-tool-empty[hidden] {
+      display: none !important;
+    }
+
+    .image-edit-canvas-wrap .image-tool-empty {
+      width: 100%;
+      min-height: min(52vh, 520px);
+    }
+
+    .collection-placeholder-page {
+      min-height: 520px;
+      display: grid;
+      align-content: start;
+      gap: 14px;
+    }
+
+    .collection-card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .collection-card {
+      min-height: 130px;
+      padding: 18px;
+      border: 1px solid rgba(217, 95, 140, 0.18);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.62);
+      color: var(--ink);
+      font-weight: 900;
     }
 
     .menu-toolbar {
@@ -478,10 +632,12 @@
     }
 
     .template-button {
-      min-height: 36px;
+      width: 118px;
+      min-height: 38px;
+      height: 38px;
       border: 1px solid rgba(217, 95, 140, 0.24);
       border-radius: 999px;
-      padding: 0 16px;
+      padding: 0 12px;
       color: var(--rose-deep);
       background: rgba(255, 255, 255, 0.72);
       cursor: pointer;
@@ -489,6 +645,8 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
+      font-size: 18px;
+      font-weight: 900;
     }
 
     .template-button.active {
@@ -520,7 +678,7 @@
       align-items: center;
       justify-content: center;
       gap: 1px;
-      font-size: 21px;
+      font-size: 18px;
       font-weight: 900;
       line-height: 1;
     }
@@ -1193,7 +1351,7 @@
 
     .choice-group {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 4px;
     }
 
@@ -2141,6 +2299,252 @@
       color: #fff;
     }
 
+
+    @media (min-width: 781px) {
+      .app {
+        min-height: 100vh;
+        padding: 0;
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: 0;
+        justify-items: stretch;
+        align-items: stretch;
+      }
+
+      .app-sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        display: grid;
+        grid-template-rows: auto auto;
+        align-content: start;
+        gap: 18px;
+        padding: 28px 14px;
+        border-right: 1px solid rgba(217, 95, 140, 0.18);
+        background: linear-gradient(180deg, rgba(255,255,255,0.68), rgba(255,246,248,0.48));
+        box-shadow: 18px 0 40px rgba(184, 69, 112, 0.06);
+        backdrop-filter: blur(14px);
+        z-index: 20;
+      }
+
+      .app-sidebar .site-header {
+        width: 100%;
+        display: grid;
+        justify-items: start;
+        gap: 2px;
+        padding: 0 18px 18px;
+        margin: 0;
+      }
+
+      .app-sidebar .site-title-row {
+        width: 100%;
+        display: block;
+      }
+
+      .app-sidebar .title-side-ornament,
+      .app-sidebar .site-subtitle-wrap::before,
+      .app-sidebar .site-subtitle-wrap::after {
+        display: none;
+      }
+
+      .app-sidebar .site-title {
+        font-size: 28px;
+        line-height: 1.05;
+        color: #cf4f81;
+        text-align: left;
+        white-space: normal;
+        text-shadow: 0 2px 0 rgba(255,255,255,.9), 0 8px 18px rgba(255,154,198,.28);
+      }
+
+      .app-sidebar .site-subtitle-wrap {
+        min-height: auto;
+        padding: 0;
+      }
+
+      .app-sidebar .site-subtitle {
+        min-height: auto;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        color: rgba(217,95,140,.78);
+        font-size: 10px;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+      }
+
+      .main-nav {
+        position: static;
+        width: 100%;
+        display: grid;
+        gap: 8px;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+        align-content: start;
+      }
+
+      .sidebar-section-label {
+        padding: 10px 14px 2px;
+        color: rgba(93, 64, 81, 0.58);
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .sidebar-divider {
+        height: 1px;
+        margin: 8px 12px 2px;
+        background: rgba(217, 95, 140, 0.14);
+      }
+
+      .main-nav-button {
+        position: relative;
+        min-height: 44px;
+        border-radius: 14px;
+        padding: 0 14px;
+        color: var(--ink);
+        justify-content: flex-start;
+        width: 100%;
+        max-width: 100%;
+        transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+      }
+
+      .main-nav-button::before {
+        content: "";
+        position: absolute;
+        left: -14px;
+        top: 10px;
+        bottom: 10px;
+        width: 4px;
+        border-radius: 999px;
+        background: transparent;
+      }
+
+      .main-nav-button.active {
+        color: var(--rose-deep);
+        border-color: transparent;
+        background: rgba(255, 241, 246, 0.82);
+        box-shadow: 0 12px 24px rgba(184, 69, 112, 0.08);
+      }
+
+      .main-nav-button.active::before {
+        background: linear-gradient(180deg, #d95f8c, #b84570);
+      }
+
+      .app-workspace {
+        min-width: 0;
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      .menu-toolbar {
+        width: 100%;
+        display: grid;
+        gap: 0;
+        border-bottom: 1px solid rgba(217, 95, 140, 0.16);
+        background: rgba(255, 255, 255, 0.62);
+        backdrop-filter: blur(14px);
+      }
+
+      .menu-primary-row {
+        min-height: 76px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        padding: 12px 26px;
+        border: 0;
+        border-radius: 0;
+        border-bottom: 1px solid rgba(217, 95, 140, 0.12);
+        background: transparent;
+      }
+
+      .workspace-title {
+        display: none;
+        margin: 0;
+        color: var(--ink);
+        font-size: 24px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .menu-tabs {
+        justify-content: flex-start;
+        gap: 8px;
+        padding-left: 0;
+        border-left: 0;
+      }
+
+      .toolbar-actions {
+        justify-content: flex-end;
+      }
+
+      .action-button,
+      .menu-tab {
+        min-height: 40px;
+      }
+
+      .menu-secondary-row {
+        height: 54px;
+        min-height: 54px;
+        display: grid;
+        align-items: center;
+        justify-content: start;
+        padding: 6px 18px;
+        border: 0;
+        border-radius: 0;
+        background: rgba(255, 250, 252, 0.52);
+      }
+
+      .menu-panel {
+        height: 38px;
+        min-height: 38px;
+        align-items: center;
+      }
+
+      .workspace-content {
+        min-width: 0;
+        display: grid;
+        justify-items: start;
+        align-content: start;
+        padding: 28px 12px 56px;
+        overflow: auto;
+      }
+
+      .stage,
+      .app-page {
+        width: 100%;
+        max-width: none;
+      }
+
+      .stage {
+        display: grid;
+        justify-items: start;
+        padding: 0;
+      }
+
+
+      .theme-bar {
+        height: 38px;
+        min-height: 38px;
+        grid-template-columns: repeat(10, 118px);
+        justify-content: start;
+        align-content: center;
+        gap: 8px;
+      }
+
+      .theme-bar .theme-pager {
+        display: none !important;
+      }
+
+      .utility-page {
+        max-width: 1100px;
+        width: 100%;
+      }
+    }
+
     @media (max-width: 780px) {
       .image-edit-toolbar {
         display: grid;
@@ -2174,10 +2578,64 @@
         width: 100%;
         max-width: 100vw;
         min-height: 100dvh;
-        padding: 10px 8px 14px;
+        padding: 10px 8px 82px;
         gap: 10px;
         overflow-x: hidden;
         overflow-y: visible;
+      }
+      .main-nav {
+        left: 0;
+        right: 0;
+        top: auto;
+        bottom: 0;
+        transform: none;
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        padding: 9px 10px max(9px, env(safe-area-inset-bottom));
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 -10px 28px rgba(184, 69, 112, 0.1);
+        z-index: 90;
+      }
+      .main-nav-button {
+        min-width: 0;
+        min-height: 42px;
+        justify-content: center;
+        padding: 0 6px;
+        border-radius: 999px;
+        font-size: 13px;
+        gap: 4px;
+        border: 1px solid transparent;
+        background: transparent;
+        box-shadow: none;
+      }
+      .main-nav .sidebar-section-label,
+      .main-nav .sidebar-divider {
+        display: none !important;
+      }
+      .main-nav-button.active {
+        color: var(--rose-deep);
+        border-color: rgba(217, 95, 140, 0.22);
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 8px 18px rgba(184, 69, 112, 0.12);
+      }
+      .main-nav-button::before {
+        display: none;
+      }
+      .main-nav-button .menu-icon {
+        width: 17px;
+        height: 17px;
+        flex: 0 0 17px;
+      }
+      .mobile-focus-back {
+        right: 14px;
+        bottom: calc(94px + env(safe-area-inset-bottom));
+        z-index: 95;
       }
       .site-header {
         width: 100%;
@@ -2223,28 +2681,110 @@
         font-size: 11px;
         letter-spacing: 0.2px;
       }
-      .menu-toolbar {
+      .menu-toolbar,
+      .app-page {
         width: 100%;
         max-width: calc(100vw - 16px);
         min-width: 0;
+      }
+      .menu-toolbar {
         display: grid;
         justify-items: stretch;
         justify-content: stretch;
-        gap: 8px;
+        gap: 0;
       }
+      .utility-page {
+        padding: 12px 8px;
+        border-radius: 20px;
+      }
+      .collection-card-grid { grid-template-columns: 1fr; }
       .menu-primary-row {
         width: 100%;
         min-width: 0;
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
-        padding: 8px 8px;
+        padding: 8px 10px 0;
+        border: 0;
+        background: transparent;
+      }
+
+      .mobile-data-menu {
+        position: relative;
+        display: block;
+        order: 1;
+        min-width: 0;
+      }
+
+      .mobile-data-button {
+        width: 100%;
+        min-height: 40px;
+        border: 1px solid rgba(217, 95, 140, 0.24);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--ink);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        font-size: 14px;
+        font-weight: 900;
+        box-shadow: 0 6px 14px rgba(184, 69, 112, 0.1);
+      }
+
+      .mobile-data-button .menu-icon {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 18px;
+      }
+
+      .mobile-data-button .chevron {
+        width: 15px;
+        height: 15px;
+        flex-basis: 15px;
+      }
+
+      .mobile-data-dropdown {
+        position: absolute;
+        left: 0;
+        top: calc(100% + 7px);
+        z-index: 60;
+        width: max(160px, 100%);
+        display: grid;
+        gap: 6px;
+        padding: 8px;
+        border: 1px solid rgba(217, 95, 140, 0.22);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 12px 24px rgba(184, 69, 112, 0.14);
+      }
+
+      .mobile-data-option {
+        min-height: 36px;
+        border: 0;
+        border-radius: 12px;
+        background: rgba(255, 244, 248, 0.78);
+        color: var(--rose-deep);
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 0 12px;
+        font-size: 14px;
+        font-weight: 900;
       }
       .menu-secondary-row {
-        width: 100%;
+        width: calc(100% - 20px);
         min-width: 0;
-        padding: 12px 8px;
+        min-height: 0;
+        margin: -1px 10px 0;
+        padding: 12px 10px 14px;
         justify-content: center;
         overflow: hidden;
+        border: 1px solid rgba(217, 95, 140, 0.16);
+        border-top: 0;
+        border-radius: 0 0 18px 18px;
+        background: rgba(255, 255, 255, 0.82);
       }
       .menu-panel {
         min-width: 0;
@@ -2252,14 +2792,22 @@
       }
       .menu-tabs {
         order: 2;
+        grid-column: 1 / -1;
         width: 100%;
         max-width: 100%;
+        min-height: 48px;
         overflow: visible;
         scrollbar-width: none;
         justify-content: center;
+        align-items: center;
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         justify-self: center;
+        margin-top: 8px;
+        padding: 7px 10px;
+        border: 1px solid rgba(217, 95, 140, 0.16);
+        border-radius: 18px 18px 0 0;
+        background: rgba(255, 255, 255, 0.82);
       }
       .menu-tabs::-webkit-scrollbar { display: none; }
       .menu-tab {
@@ -2275,25 +2823,22 @@
         flex: 0 0 17px;
       }
       .template-switch { margin-right: 0; }
-      .action-button { min-height: 38px; padding: 0 14px; }
+      .action-button { min-height: 40px; padding: 0 12px; }
       .toolbar-actions {
         order: 1;
         width: 100%;
-        justify-self: center;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        justify-content: center;
-        gap: 8px 10px;
+        justify-self: stretch;
+        display: contents;
       }
-      #importDataButton { order: 1; }
-      #exportDataButton { order: 2; }
-      #resetButton { order: 3; }
-      #downloadButton { order: 4; }
+      #importDataButton,
+      #exportDataButton { display: none !important; }
+      #resetButton { order: 1; }
+      #downloadButton { order: 1; }
       #importDataInput { order: 5; }
       .toolbar-actions .action-button {
         width: 100%;
         min-width: 0;
-        min-height: 34px;
+        min-height: 40px;
         padding: 0 6px;
         font-size: 14px;
         letter-spacing: 0;
@@ -2409,6 +2954,7 @@
 </head>
 <body>
   <main class="app">
+    <aside class="app-sidebar">
     <header class="site-header">
       <div class="site-title-row">
         <svg class="title-side-ornament" viewBox="0 0 250 26" aria-hidden="true">
@@ -2425,7 +2971,7 @@
             <path d="M125 5c2.3 4 4 5.7 7.8 8-3.8 2.3-5.5 4-7.8 8-2.3-4-4-5.7-7.8-8 3.8-2.3 5.5-4 7.8-8Z" opacity=".72"/>
           </g>
         </svg>
-        <h1 class="site-title">&#20057;&#25235;&#35760;&#24405;&#27169;&#26495;</h1>
+        <h1 class="site-title">&#20057;&#25235;&#35760;&#24405;</h1>
         <svg class="title-side-ornament is-right" viewBox="0 0 250 26" aria-hidden="true">
           <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
             <path d="M2 13h48M198 13h50" opacity=".52"/>
@@ -2441,16 +2987,38 @@
           </g>
         </svg>
       </div>
-      <div class="site-subtitle-wrap"><div class="site-subtitle">&#20057;&#22899;&#21521;&#12369;&#12489;&#12521;&#12510;CD&#12539;&#12508;&#12452;&#12473;&#20316;&#21697;&#12524;&#12499;&#12517;&#12540;&#12486;&#12531;&#12503;&#12524;&#12540;&#12488;</div></div>
+      <div class="site-subtitle-wrap"><div class="site-subtitle">OTOME VOICE LOG</div></div>
     </header>
-    <div class="menu-toolbar">
+
+    <nav class="main-nav" aria-label="main navigation">
+      <div class="sidebar-section-label">&#21046;&#20316;</div>
+      <button class="main-nav-button active" data-page="template" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16"/><path d="M9 9v11"/></svg><span>&#27169;&#26495;&#32534;&#36753;</span></button>
+      <button class="main-nav-button" data-page="image-tool" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span>&#20462;&#22270;&#24037;&#20855;</span></button>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-label">&#31649;&#29702;</div>
+      <button class="main-nav-button" data-page="collection" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12.6 12 20l-7.5-7.4a5 5 0 0 1 7.1-7.1l.4.4.4-.4a5 5 0 0 1 7.1 7.1Z"/></svg><span>&#25105;&#30340;&#25910;&#34255;</span></button>
+    </nav>
+    </aside>
+    <section class="app-workspace">
+    <div class="menu-toolbar" id="templateToolbar">
       <div class="menu-primary-row">
-        <nav class="menu-tabs" aria-label="toolbar menu">
-          <button class="menu-tab" data-menu="collection" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12.6 12 20l-7.5-7.4a5 5 0 0 1 7.1-7.1l.4.4.4-.4a5 5 0 0 1 7.1 7.1Z"/></svg><span>&#25105;&#30340;&#25910;&#34255;</span></button>
+        <h2 class="workspace-title" id="workspaceTitle">&#27169;&#26495;&#32534;&#36753;</h2>
+        <div class="mobile-data-menu" data-template-tool>
+          <button class="mobile-data-button" id="mobileDataMenuButton" type="button" aria-expanded="false">
+            <svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5"/><path d="M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg>
+            <span>&#25968;&#25454;</span>
+            <svg class="menu-icon chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="mobile-data-dropdown" id="mobileDataDropdown" hidden>
+            <button class="mobile-data-option" id="mobileImportDataButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg><span>&#23548;&#20837;&#25968;&#25454;</span></button>
+            <button class="mobile-data-option" id="mobileExportDataButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span>&#23548;&#20986;&#25968;&#25454;</span></button>
+          </div>
+        </div>
+        <nav class="menu-tabs" data-template-tool aria-label="toolbar menu">
           <button class="menu-tab active" data-menu="template" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16"/><path d="M9 9v11"/></svg><span>&#27169;&#26495;&#26679;&#24335;</span></button>
           <button class="menu-tab" data-menu="theme" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 0 0 0 16h1.3a1.7 1.7 0 0 0 1.2-2.9 1.7 1.7 0 0 1 1.2-2.9H17a3 3 0 0 0 3-3C20 7.3 16.4 4 12 4Z"/><circle cx="8.3" cy="10" r=".7"/><circle cx="11" cy="7.7" r=".7"/><circle cx="14" cy="8" r=".7"/></svg><span>&#27169;&#26495;&#33394;&#21345;</span></button>
         </nav>
-        <div class="toolbar-actions">
+        <div class="toolbar-actions" data-template-tool>
           <button class="action-button" id="resetButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6.5 6l1 14h9l1-14"/><path d="M10 11v5"/><path d="M14 11v5"/></svg><span>&#28165;&#31354;&#20869;&#23481;</span></button>
           <button class="action-button" id="importDataButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg><span>&#23548;&#20837;&#25968;&#25454;</span></button>
           <button class="action-button" id="exportDataButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span>&#23548;&#20986;&#25968;&#25454;</span></button>
@@ -2458,10 +3026,7 @@
           <input class="hidden" id="importDataInput" type="file" accept="application/json,.json" />
         </div>
       </div>
-      <div class="menu-secondary-row">
-        <div class="menu-panel" data-menu-panel="collection" hidden>
-          <span class="menu-placeholder"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12.6 12 20l-7.5-7.4a5 5 0 0 1 7.1-7.1l.4.4.4-.4a5 5 0 0 1 7.1 7.1Z"/></svg><span>&#25910;&#34255;&#21151;&#33021;&#20934;&#22791;&#20013;</span></span>
-        </div>
+      <div class="menu-secondary-row" data-template-tool>
         <div class="menu-panel template-switch" data-menu-panel="template" aria-label="template">
           <button class="template-button active" data-template="full" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7L6.8 19l1-5.8-4.2-4.1 5.8-.8L12 3Z"/></svg><span>&#23436;&#25972;&#29256;</span></button>
           <button class="template-button" data-template="compact" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12"/><path d="M8 12h12"/><path d="M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span>&#31616;&#30053;&#29256;</span></button>
@@ -2486,6 +3051,7 @@
       </div>
     </div>
 
+    <div class="workspace-content">
     <button class="mobile-focus-back hidden" id="mobileFocusBack" type="button"></button>
 
     <div class="stage" id="stage">
@@ -2499,7 +3065,8 @@
         <div class="cover-tools">
           <button class="tiny-button" id="containButton" type="button">完整显示</button>
           <button class="tiny-button" id="coverButton" type="button">铺满裁切</button>
-          <button class="tiny-button" id="imageEditButton" type="button">&#32534;&#36753;&#22270;&#29255;</button>
+          <button class="tiny-button" id="imageEditButton" type="button">&#32534;&#36753;</button>
+          <button class="tiny-button" id="removeCoverButton" type="button">&#31227;&#38500;</button>
         </div>
 
         <aside class="info-panel">
@@ -2525,9 +3092,10 @@
           </div>
           <div class="field cn-field">
             <label>中文</label>
-            <div class="choice-group" id="cnChoices" aria-label="中文">
+            <div class="choice-group" id="cnChoices" aria-label="&#20013;&#25991;">
               <button class="choice-button active" type="button">字幕</button>
               <button class="choice-button" type="button">台本</button>
+              <button class="choice-button" type="button">&#35270;&#39057;</button>
               <button class="choice-button" type="button">无中文</button>
             </div>
           </div>
@@ -2599,7 +3167,20 @@
       </section>
     </div>
 
-    <div class="export-modal" id="exportModal" hidden>
+        <section class="app-page utility-page image-tool-page" id="imageToolPage" hidden>
+      <input class="hidden" id="standaloneImageInput" type="file" accept="image/*" />
+    </section>
+
+    <section class="app-page utility-page collection-placeholder-page" id="collectionPage" hidden>
+      <h2 class="utility-page-title">&#25105;&#30340;&#25910;&#34255;</h2>
+      <div class="collection-card-grid">
+        <div class="collection-card">&#25910;&#34255;&#21015;&#34920;<br /><span class="menu-placeholder">1.0 &#20043;&#21518;&#21487;&#20197;&#22312;&#36825;&#37324;&#26597;&#30475;&#24050;&#20445;&#23384;&#30340; repo</span></div>
+        <div class="collection-card">&#26368;&#36817;&#32534;&#36753;<br /><span class="menu-placeholder">&#39044;&#30041;&#37325;&#26032;&#25171;&#24320;&#32534;&#36753;&#30340;&#20837;&#21475;</span></div>
+        <div class="collection-card">&#25628;&#32034;&#21644;&#26631;&#31614;<br /><span class="menu-placeholder">&#21518;&#32493;&#21487;&#20197;&#25353; CV / &#31038;&#22242; / RJ &#26597;&#25214;</span></div>
+      </div>
+    </section>
+
+<div class="export-modal" id="exportModal" hidden>
       <div class="export-sheet">
         <img class="export-preview-image" id="exportPreviewImage" alt="" />
         <p class="export-hint" id="exportHint"></p>
@@ -2641,6 +3222,11 @@
         </div>
         <div class="image-edit-workspace">
           <div class="image-edit-canvas-wrap">
+            <div class="image-tool-empty" id="imageToolEmpty" hidden>
+              <div>&#19978;&#20256;&#19968;&#24352;&#22270;&#29255;&#65292;&#21333;&#29420;&#20570;&#27169;&#31946;&#12289;&#39532;&#36187;&#20811;&#21644;&#36148;&#32440;&#22788;&#29702;</div>
+              <div class="image-tool-note">&#25512;&#33616;&#29992;&#20110;&#20057;&#25235; BK / &#25509;&#36817;&#26041;&#24418;&#30340;&#23553;&#38754;&#22270;&#29255;&#12290;&#20854;&#20182;&#27604;&#20363;&#20063;&#21487;&#22788;&#29702;&#65292;&#20294;&#25163;&#26426;&#31471;&#32534;&#36753;&#21306;&#22495;&#21487;&#33021;&#36739;&#23567;&#12290;</div>
+              <button class="action-button primary" id="standaloneImageUploadButton" type="button">&#19978;&#20256;&#22270;&#29255;</button>
+            </div>
             <canvas id="imageEditCanvas"></canvas>
           </div>
           <aside class="sticker-panel" aria-label="sticker picker">
@@ -2656,9 +3242,25 @@
         </div>
       </div>
     </div>
+    </div>
+    </section>
   </main>
 
   <script>
+    const mainNavButtons = Array.from(document.querySelectorAll(".main-nav-button"));
+    const templateToolbar = document.getElementById("templateToolbar");
+    const workspaceTitle = document.getElementById("workspaceTitle");
+    const templateToolBlocks = Array.from(document.querySelectorAll("[data-template-tool]"));
+    const mobileDataMenuButton = document.getElementById("mobileDataMenuButton");
+    const mobileDataDropdown = document.getElementById("mobileDataDropdown");
+    const mobileImportDataButton = document.getElementById("mobileImportDataButton");
+    const mobileExportDataButton = document.getElementById("mobileExportDataButton");
+    const stage = document.getElementById("stage");
+    const imageToolPage = document.getElementById("imageToolPage");
+    const collectionPage = document.getElementById("collectionPage");
+    const standaloneImageInput = document.getElementById("standaloneImageInput");
+    const standaloneImageUploadButton = document.getElementById("standaloneImageUploadButton");
+    const imageToolEmpty = document.getElementById("imageToolEmpty");
     const menuTabs = Array.from(document.querySelectorAll(".menu-tab"));
     const menuPanels = Array.from(document.querySelectorAll("[data-menu-panel]"));
     const card = document.getElementById("recordCard");
@@ -2712,6 +3314,7 @@
     const stickerNextPage = document.getElementById("stickerNextPage");
     const stickerPageText = document.getElementById("stickerPageText");
     const coverTools = document.querySelector(".cover-tools");
+    const removeCoverButton = document.getElementById("removeCoverButton");
     const playerBar = document.getElementById("playerBar");
     const playerBarFill = document.getElementById("playerBarFill");
     const playerDot = document.getElementById("playerDot");
@@ -2720,6 +3323,7 @@
     const playerPlay = document.getElementById("playerPlay");
     const STORAGE_KEY = "otome-record-card-v1";
     const MENU_STORAGE_KEY = "otome-record-card-active-menu";
+    const MAIN_PAGE_STORAGE_KEY = "otome-record-card-main-page";
     const DLSITE_PROXY_URL = "https://dlsite-rj-import.shuiyingsheng.workers.dev/";
     const DEFAULT_THEME_ID = "matcha-berry-cheese";
     const CARD_THEMES = {
@@ -2895,6 +3499,7 @@
     let themePageIndex = 0;
     let mobileFocusTarget = null;
     let lastExportUrl = "";
+    let lastExportFileName = "record-card.png";
     let currentDiscountManual = false;
     const PLAYER_BAR_WIDTH = 484;
     const PLAYER_DOT_SIZE = 16;
@@ -2910,6 +3515,16 @@
     let coverEditorRedoStack = [];
     let coverStickers = [];
     let stickerSources = [];
+    let imageEditorMode = "template";
+    let templateEditorGlobalsBackup = null;
+    let standaloneOriginalSrc = "";
+    let standaloneEditedSrc = "";
+    let standaloneMosaicMaskSrc = "";
+    let standaloneBlurMaskSrc = "";
+    let standaloneEditorUndoStack = [];
+    let standaloneEditorRedoStack = [];
+    let standaloneStickers = [];
+    let standaloneStickerSources = [];
     const defaultStickerSources = [
       { id: "stamp-heart-3d-png", type: "image", src: "stamp/heart_3d.png" },
       { id: "stamp-heart-cloud-png", type: "image", src: "stamp/heart_cloud.png" },
@@ -2955,6 +3570,7 @@
     let editorDrawing = false;
     let editorLastPoint = null;
     let editorSessionSnapshot = null;
+    let editorRenderFrame = 0;
     const editCtx = imageEditCanvas.getContext("2d");
     const editOriginalCanvas = document.createElement("canvas");
     const editOriginalCtx = editOriginalCanvas.getContext("2d");
@@ -2967,7 +3583,8 @@
     const editBlurMaskCanvas = document.createElement("canvas");
     const editBlurMaskCtx = editBlurMaskCanvas.getContext("2d");
     const UI_BACK_FULL = String.fromCharCode(0x8fd4, 0x56de, 0x5168, 0x56fe);
-    const UI_DOWNLOAD_IMAGE = String.fromCharCode(0x4e0b, 0x8f7d, 0x56fe, 0x7247);
+    const UI_DOWNLOAD_IMAGE = String.fromCharCode(0x5bfc, 0x51fa, 0x56fe, 0x7247);
+    const UI_REMOVE_IMAGE = String.fromCharCode(0x79fb, 0x9664, 0x56fe, 0x7247);
     const UI_CLOSE = String.fromCharCode(0x5173, 0x95ed);
     const UI_LONG_PRESS_SAVE = String.fromCharCode(0x53ef, 0x4ee5, 0x957f, 0x6309, 0x56fe, 0x7247, 0x4fdd, 0x5b58, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x70b9, 0x51fb, 0x4e0b, 0x8f7d, 0x3002);
     const UI_IMPORT_INFO = String.fromCharCode(0x5bfc, 0x5165, 0x4fe1, 0x606f);
@@ -2975,6 +3592,8 @@
     const UI_IMPORT_DONE = String.fromCharCode(0x5df2, 0x5bfc, 0x5165);
     const UI_IMPORT_NEED_RJ = String.fromCharCode(0x8bf7, 0x5148, 0x586b, 0x5199, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x3002);
     const UI_IMPORT_FAILED = String.fromCharCode(0x6ca1, 0x6709, 0x8bfb, 0x53d6, 0x5230, 0x8d44, 0x6599, 0xff0c, 0x53ef, 0x80fd, 0x662f, 0x20, 0x44, 0x4c, 0x73, 0x69, 0x74, 0x65, 0x20, 0x6682, 0x65f6, 0x4e0d, 0x5141, 0x8bb8, 0x8de8, 0x57df, 0x8bfb, 0x53d6, 0x3002, 0x53ef, 0x4ee5, 0x5148, 0x624b, 0x52a8, 0x586b, 0x5199, 0x3002);
+    const UI_IMPORT_COVER_FAILED = "BK " + String.fromCharCode(0x81ea, 0x52a8, 0x5bfc, 0x5165, 0x5931, 0x8d25, 0xff0c, 0x53ef, 0x4ee5, 0x624b, 0x52a8, 0x4e0a, 0x4f20, 0x3002);
+    const UI_IMPORT_OVERWRITE_CONFIRM = String.fromCharCode(0x5df2, 0x586b, 0x5199, 0x90e8, 0x5206, 0x4fe1, 0x606f, 0xff0c, 0x662f, 0x5426, 0x8986, 0x76d6, 0xff1f);
     const UI_REVIEW_EDIT_TITLE = String.fromCharCode(0x7f16, 0x8f91, 0x8bc4, 0x4ef7);
     const UI_REVIEW_CONFIRM = String.fromCharCode(0x786e, 0x5b9a);
     const UI_REVIEW_CANCEL = String.fromCharCode(0x53d6, 0x6d88);
@@ -2994,7 +3613,7 @@
     }
 
     function setActiveMenu(menuName, persist = true) {
-      const allowedMenus = new Set(["collection", "template", "theme"]);
+      const allowedMenus = new Set(["template", "theme"]);
       const nextMenu = allowedMenus.has(menuName) ? menuName : "template";
       menuTabs.forEach((button) => button.classList.toggle("active", button.dataset.menu === nextMenu));
       menuPanels.forEach((panel) => {
@@ -3006,6 +3625,36 @@
 
     function restoreActiveMenu() {
       setActiveMenu(localStorage.getItem(MENU_STORAGE_KEY) || "template", false);
+    }
+
+
+    const PAGE_TITLES = {
+      template: String.fromCharCode(0x6a21, 0x677f, 0x7f16, 0x8f91),
+      "image-tool": String.fromCharCode(0x4fee, 0x56fe, 0x5de5, 0x5177),
+      collection: String.fromCharCode(0x6211, 0x7684, 0x6536, 0x85cf)
+    };
+
+    function setMainPage(pageName, persist = true) {
+      const allowedPages = new Set(["template", "image-tool", "collection"]);
+      const nextPage = allowedPages.has(pageName) ? pageName : "template";
+      mainNavButtons.forEach((button) => button.classList.toggle("active", button.dataset.page === nextPage));
+      if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES[nextPage] || PAGE_TITLES.template;
+      if (templateToolbar) templateToolbar.hidden = nextPage !== "template";
+      templateToolBlocks.forEach((block) => { block.hidden = nextPage !== "template"; });
+      if (stage) stage.hidden = nextPage !== "template";
+      if (imageToolPage) imageToolPage.hidden = nextPage !== "image-tool";
+      if (collectionPage) collectionPage.hidden = nextPage !== "collection";
+      if (nextPage === "image-tool") {
+        prepareStandaloneImageTool();
+      } else {
+        leaveStandaloneImageTool();
+      }
+      if (persist) localStorage.setItem(MAIN_PAGE_STORAGE_KEY, nextPage);
+      fitStage();
+    }
+
+    function restoreMainPage() {
+      setMainPage(localStorage.getItem(MAIN_PAGE_STORAGE_KEY) || "template", false);
     }
 
     function templateSize() {
@@ -3025,7 +3674,7 @@
     }
 
     function themePageSize() {
-      return isMobileView() ? 6 : 8;
+      return isMobileView() ? 6 : Math.max(1, themeButtons.length);
     }
 
     function themePageCount() {
@@ -3096,7 +3745,7 @@
     }
 
     function fitStage() {
-      const stage = document.getElementById("stage");
+      if (!stage || stage.hidden) return;
       const size = templateSize();
       const toolbarHeight = document.querySelector(".menu-toolbar")?.offsetHeight || 0;
       const themeBarHeight = 0;
@@ -3173,6 +3822,39 @@
       lastExportUrl = "";
     }
 
+    function safeFilePart(value, fallback = "otome") {
+      const clean = String(value || "")
+        .trim()
+        .replace(/s+/g, "-")
+        .replace(/[^a-zA-Z0-9_-]+/g, "")
+        .replace(/^-+|-+$/g, "");
+      return clean || fallback;
+    }
+
+    function currentRjFilePart() {
+      const raw = editableText("rjText");
+      const clean = String(raw || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+      if (!clean) return "otome";
+      return clean.startsWith("RJ") ? clean : "RJ" + clean;
+    }
+
+    function templateExportFileName(template = currentTemplate()) {
+      return [
+        safeFilePart(currentRjFilePart()),
+        "repo",
+        safeFilePart(template),
+        safeFilePart(currentThemeId, DEFAULT_THEME_ID)
+      ].join("_") + ".png";
+    }
+
+    function standaloneExportFileName() {
+      const now = new Date();
+      const y = String(now.getFullYear());
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return "image_" + y + m + d + ".png";
+    }
+
     function canvasToBlob(canvas) {
       return new Promise((resolve, reject) => {
         canvas.toBlob((blob) => {
@@ -3182,18 +3864,19 @@
       });
     }
 
-    function showExportPreview(blob) {
+    function showExportPreview(blob, fileName = "record-card.png") {
       revokeLastExportUrl();
+      lastExportFileName = fileName;
       lastExportUrl = URL.createObjectURL(blob);
       exportPreviewImage.src = lastExportUrl;
       exportModal.hidden = false;
     }
 
-    function handleExportBlob(blob) {
+    function handleExportBlob(blob, fileName = "record-card.png") {
       if (isMobileView()) {
-        showExportPreview(blob);
+        showExportPreview(blob, fileName);
       } else {
-        downloadBlob(blob);
+        downloadBlob(blob, fileName);
       }
     }
 
@@ -3388,11 +4071,31 @@
       return text;
     }
 
+    function normalizeImageUrl(...values) {
+      const text = firstText(...values);
+      if (!text) return "";
+      if (text.startsWith("//")) return "https:" + text;
+      return text;
+    }
+
+    function productImageMainUrl(product) {
+      return normalizeImageUrl(
+        product?.image_main?.url,
+        product?.image_main,
+        product?.work?.image_main?.url,
+        product?.work?.image_main,
+        product?.images?.main?.url,
+        product?.image?.main?.url
+      );
+    }
+
     function parseDlsiteProduct(raw) {
       let product = Array.isArray(raw) ? raw[0] : raw;
-      if (product && typeof product === "object" && !product.work_name && !product.title) {
-        const firstKey = Object.keys(product)[0];
-        if (firstKey && product[firstKey] && typeof product[firstKey] === "object") product = product[firstKey];
+      if (product?.work && typeof product.work === "object") product = product.work;
+      else if (product?.product && typeof product.product === "object") product = product.product;
+      else if (product && typeof product === "object" && !product.work_name && !product.title) {
+        const firstKey = Object.keys(product).find((key) => product[key] && typeof product[key] === "object");
+        if (firstKey) product = product[firstKey];
       }
       if (!product || typeof product !== "object") return null;
       const creators = product.creators || product.creaters || product.maker || {};
@@ -3400,7 +4103,8 @@
         title: firstText(product.work_name, product.title, product.name, product.work?.work_name),
         cv: firstText(findVoiceText(creators), findVoiceText(product), creatorText(creators, "voice_by"), product.voice_by, product.voice),
         circle: firstText(product.maker_name, product.circle, product.maker?.name, product.brand?.name),
-        originalPrice: numericText(product.official_price, product.price, product.price_str, product.work_price)
+        originalPrice: numericText(product.official_price, product.price, product.price_str, product.work_price),
+        coverUrl: productImageMainUrl(product)
       };
     }
 
@@ -3445,12 +4149,45 @@
       saveState();
     }
 
+    function blobToDataUrl(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error || new Error("FileReader failed"));
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function importCoverFromUrl(url) {
+      const normalizedUrl = normalizeImageUrl(url);
+      if (!normalizedUrl) return false;
+      const response = await fetch(normalizedUrl, { mode: "cors", credentials: "omit" });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const blob = await response.blob();
+      if (!blob.type || !blob.type.startsWith("image/")) throw new Error("Not an image response");
+      setCoverFromDataUrl(await blobToDataUrl(blob));
+      return true;
+    }
+
+    function hasImportOverwriteTarget() {
+      return Boolean(
+        editableText("recordTitle").trim() ||
+        editableText("cvText").trim() ||
+        editableText("circleText").trim() ||
+        originalPrice.value.trim() ||
+        coverOriginalSrc ||
+        coverEditedSrc ||
+        coverImage.getAttribute("src")
+      );
+    }
+
     async function importProductInfo() {
       const workno = normalizeWorkno(editableText("rjText"));
       if (!workno) {
         alert(UI_IMPORT_NEED_RJ);
         return;
       }
+      if (hasImportOverwriteTarget() && !window.confirm(UI_IMPORT_OVERWRITE_CONFIRM)) return;
       importButton.disabled = true;
       importButton.textContent = UI_IMPORT_LOADING;
       try {
@@ -3459,6 +4196,14 @@
           throw new Error("empty product");
         }
         applyImportedProduct(product);
+        if (product.coverUrl) {
+          try {
+            await importCoverFromUrl(product.coverUrl);
+          } catch (coverError) {
+            console.warn("cover import failed", coverError);
+            alert(UI_IMPORT_COVER_FAILED);
+          }
+        }
         importButton.textContent = UI_IMPORT_DONE;
         window.setTimeout(() => { importButton.textContent = UI_IMPORT_INFO; }, 1200);
       } catch (error) {
@@ -3674,6 +4419,7 @@
       if (!snapshot) return;
       editMosaicMaskCtx.putImageData(snapshot.mosaic, 0, 0);
       editBlurMaskCtx.putImageData(snapshot.blur, 0, 0);
+      resetEditorMaskCompositeModes();
       coverStickers = cloneStickerList(snapshot.stickers);
       selectedStickerId = null;
       renderImageEditor();
@@ -3754,6 +4500,7 @@
       coverEditorUndoStack = editorUndoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-12);
       coverEditorRedoStack = editorRedoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-12);
       coverStickers = cloneStickerList(coverStickers);
+      if (imageEditorMode === "standalone") syncStandaloneFromEditorGlobals();
     }
 
     function buildEffectCanvases() {
@@ -3771,10 +4518,17 @@
       editMosaicCtx.imageSmoothingEnabled = true;
 
       editBlurCtx.clearRect(0, 0, width, height);
-      editBlurCtx.save();
-      editBlurCtx.filter = "blur(16px)";
-      editBlurCtx.drawImage(editOriginalCanvas, 0, 0);
-      editBlurCtx.restore();
+      const blurSmall = document.createElement("canvas");
+      const blurSmallCtx = blurSmall.getContext("2d");
+      const blurScale = 12;
+      blurSmall.width = Math.max(1, Math.round(width / blurScale));
+      blurSmall.height = Math.max(1, Math.round(height / blurScale));
+      blurSmallCtx.imageSmoothingEnabled = true;
+      blurSmallCtx.imageSmoothingQuality = "high";
+      blurSmallCtx.drawImage(editOriginalCanvas, 0, 0, blurSmall.width, blurSmall.height);
+      editBlurCtx.imageSmoothingEnabled = true;
+      editBlurCtx.imageSmoothingQuality = "high";
+      editBlurCtx.drawImage(blurSmall, 0, 0, blurSmall.width, blurSmall.height, 0, 0, width, height);
     }
 
     function drawMaskedEffect(targetCtx, effectCanvas, maskCanvas) {
@@ -3892,6 +4646,14 @@
       drawEditorStickers(ctx, options.controls !== false && targetCanvas === imageEditCanvas);
     }
 
+    function requestEditorRender() {
+      if (editorRenderFrame) return;
+      editorRenderFrame = requestAnimationFrame(() => {
+        editorRenderFrame = 0;
+        renderImageEditor();
+      });
+    }
+
     function editorPointFromEvent(event) {
       const rect = imageEditCanvas.getBoundingClientRect();
       return {
@@ -3962,8 +4724,13 @@
       return corner === "nw" || corner === "se" ? "nwse-resize" : "nesw-resize";
     }
 
+    function editorBrushCursor() {
+      return editorTool === "erase" ? "cell" : "crosshair";
+    }
+
     function cursorForEditorHit(hit) {
-      if (!hit) return editorTool === "sticker" ? "default" : "crosshair";
+      if (editorTool !== "sticker") return editorBrushCursor();
+      if (!hit) return "default";
       if (hit.action === "delete") return "pointer";
       if (hit.action === "resize") return resizeCursorForCorner(hit.corner);
       return "move";
@@ -3979,52 +4746,64 @@
         return;
       }
       if (editorDrawing) {
-        imageEditCanvas.style.cursor = editorTool === "erase" ? "cell" : "crosshair";
+        imageEditCanvas.style.cursor = editorBrushCursor();
         return;
       }
       const point = editorPointFromEvent(event);
-      imageEditCanvas.style.cursor = cursorForEditorHit(hitTestSticker(point));
+      imageEditCanvas.style.cursor = cursorForEditorHit(editorTool === "sticker" ? hitTestSticker(point) : null);
+    }
+
+    function resetEditorMaskCompositeModes() {
+      editMosaicMaskCtx.globalCompositeOperation = "source-over";
+      editBlurMaskCtx.globalCompositeOperation = "source-over";
+    }
+
+    function paintEditorMaskStroke(ctx, from, to, size, operation) {
+      ctx.save();
+      ctx.globalCompositeOperation = operation;
+      ctx.strokeStyle = "#fff";
+      ctx.fillStyle = "#fff";
+      ctx.lineWidth = size;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(to.x, to.y, size / 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
 
     function drawEditorStroke(from, to) {
       const size = Number(brushSize.value) || 42;
-      const contexts = editorTool === "erase" ? [editMosaicMaskCtx, editBlurMaskCtx] : [editorTool === "blur" ? editBlurMaskCtx : editMosaicMaskCtx];
-      contexts.forEach((ctx) => {
-        ctx.save();
-        ctx.globalCompositeOperation = editorTool === "erase" ? "destination-out" : "source-over";
-        ctx.strokeStyle = "#fff";
-        ctx.fillStyle = "#fff";
-        ctx.lineWidth = size;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.beginPath();
-        ctx.moveTo(from.x, from.y);
-        ctx.lineTo(to.x, to.y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(to.x, to.y, size / 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      });
-      renderImageEditor();
+      resetEditorMaskCompositeModes();
+      if (editorTool === "erase") {
+        paintEditorMaskStroke(editMosaicMaskCtx, from, to, size, "destination-out");
+        paintEditorMaskStroke(editBlurMaskCtx, from, to, size, "destination-out");
+      } else if (editorTool === "blur") {
+        paintEditorMaskStroke(editBlurMaskCtx, from, to, size, "source-over");
+        paintEditorMaskStroke(editMosaicMaskCtx, from, to, size, "destination-out");
+      } else {
+        paintEditorMaskStroke(editMosaicMaskCtx, from, to, size, "source-over");
+        paintEditorMaskStroke(editBlurMaskCtx, from, to, size, "destination-out");
+      }
+      resetEditorMaskCompositeModes();
+      requestEditorRender();
     }
 
     function setEditorTool(tool) {
+      resetEditorMaskCompositeModes();
       editorTool = tool;
       imageToolMosaic.classList.toggle("active", tool === "mosaic");
       imageToolBlur.classList.toggle("active", tool === "blur");
       imageToolErase.classList.toggle("active", tool === "erase");
-      imageEditCanvas.style.cursor = tool === "sticker" ? "default" : "crosshair";
+      imageEditCanvas.style.cursor = tool === "sticker" ? "default" : editorBrushCursor();
     }
 
-    async function openImageEditor() {
-      const src = coverOriginalSrc || coverImage.getAttribute("src") || coverEditedSrc || "";
-      if (!src) {
-        coverInput.click();
-        return;
-      }
-      editorSourceSrc = src;
-      editorSessionSnapshot = {
+    function editorGlobals() {
+      return {
         coverOriginalSrc,
         coverEditedSrc,
         coverMosaicMaskSrc,
@@ -4034,11 +4813,85 @@
         coverStickers: cloneStickerList(coverStickers),
         stickerSources: JSON.parse(JSON.stringify(stickerSources || [])),
         selectedStickerId,
+        editorTool,
+        coverSrc: coverImage.getAttribute("src") || "",
+        coverFit: coverImage.style.objectFit || "contain"
+      };
+    }
+
+    function applyEditorGlobals(state) {
+      const next = state || {};
+      coverOriginalSrc = next.coverOriginalSrc || "";
+      coverEditedSrc = next.coverEditedSrc || "";
+      coverMosaicMaskSrc = next.coverMosaicMaskSrc || "";
+      coverBlurMaskSrc = next.coverBlurMaskSrc || "";
+      coverEditorUndoStack = Array.isArray(next.coverEditorUndoStack) ? next.coverEditorUndoStack : [];
+      coverEditorRedoStack = Array.isArray(next.coverEditorRedoStack) ? next.coverEditorRedoStack : [];
+      coverStickers = cloneStickerList(next.coverStickers);
+      stickerSources = Array.isArray(next.stickerSources) ? next.stickerSources : [];
+      selectedStickerId = next.selectedStickerId || null;
+      editorTool = next.editorTool || "mosaic";
+    }
+
+    function standaloneEditorGlobals(src) {
+      return {
+        coverOriginalSrc: standaloneOriginalSrc || src || "",
+        coverEditedSrc: standaloneEditedSrc || "",
+        coverMosaicMaskSrc: standaloneMosaicMaskSrc || "",
+        coverBlurMaskSrc: standaloneBlurMaskSrc || "",
+        coverEditorUndoStack: standaloneEditorUndoStack,
+        coverEditorRedoStack: standaloneEditorRedoStack,
+        coverStickers: cloneStickerList(standaloneStickers),
+        stickerSources: JSON.parse(JSON.stringify(standaloneStickerSources || [])),
+        selectedStickerId,
         editorTool
       };
+    }
+
+    function syncStandaloneFromEditorGlobals() {
+      standaloneOriginalSrc = coverOriginalSrc || editorSourceSrc || standaloneOriginalSrc || "";
+      standaloneEditedSrc = coverEditedSrc || standaloneEditedSrc || "";
+      standaloneMosaicMaskSrc = coverMosaicMaskSrc || "";
+      standaloneBlurMaskSrc = coverBlurMaskSrc || "";
+      standaloneEditorUndoStack = JSON.parse(JSON.stringify(coverEditorUndoStack || []));
+      standaloneEditorRedoStack = JSON.parse(JSON.stringify(coverEditorRedoStack || []));
+      standaloneStickers = cloneStickerList(coverStickers);
+      standaloneStickerSources = JSON.parse(JSON.stringify(stickerSources || []));
+    }
+
+    function restoreTemplateEditorGlobals() {
+      if (!templateEditorGlobalsBackup) return;
+      applyEditorGlobals(templateEditorGlobalsBackup);
+      templateEditorGlobalsBackup = null;
+      renderStickerPicker();
+    }
+
+    function placeImageEditorForTemplate() {
+      document.querySelector(".app")?.appendChild(imageEditModal);
+      imageEditModal.classList.remove("standalone-editor");
+      imageDoneButton.textContent = String.fromCharCode(0x5b8c, 0x6210);
+      imageCancelButton.textContent = UI_REVIEW_CANCEL;
+      imageClearButton.parentElement?.append(imageClearButton, imageDoneButton, imageCancelButton);
+    }
+
+    function placeImageEditorForStandalone() {
+      imageToolPage?.appendChild(imageEditModal);
+      imageEditModal.classList.add("standalone-editor");
+      imageDoneButton.textContent = UI_DOWNLOAD_IMAGE;
+      imageCancelButton.textContent = UI_REMOVE_IMAGE;
+      imageClearButton.parentElement?.append(imageClearButton, imageCancelButton, imageDoneButton);
+    }
+
+    async function loadEditorFromCurrentGlobals(src) {
+      editorSourceSrc = src;
+      editorSessionSnapshot = editorGlobals();
       editorImage = await loadImage(src);
-      const width = editorImage.naturalWidth || editorImage.width;
-      const height = editorImage.naturalHeight || editorImage.height;
+      const sourceWidth = editorImage.naturalWidth || editorImage.width;
+      const sourceHeight = editorImage.naturalHeight || editorImage.height;
+      const maxStandaloneSide = imageEditorMode === "standalone" && isMobileView() ? 1800 : Infinity;
+      const editorScale = Math.min(1, maxStandaloneSide / Math.max(sourceWidth, sourceHeight));
+      const width = Math.max(1, Math.round(sourceWidth * editorScale));
+      const height = Math.max(1, Math.round(sourceHeight * editorScale));
       resizeEditorCanvases(width, height);
       editOriginalCtx.clearRect(0, 0, width, height);
       editOriginalCtx.drawImage(editorImage, 0, 0, width, height);
@@ -4050,7 +4903,123 @@
       renderStickerPicker();
       setEditorTool(editorTool || "mosaic");
       renderImageEditor();
+      if (imageToolEmpty) imageToolEmpty.hidden = true;
+      if (imageEditCanvas) imageEditCanvas.hidden = false;
       imageEditModal.hidden = false;
+    }
+
+    async function openImageEditor() {
+      if (imageEditorMode === "standalone") leaveStandaloneImageTool();
+      imageEditorMode = "template";
+      placeImageEditorForTemplate();
+      const src = coverOriginalSrc || coverImage.getAttribute("src") || coverEditedSrc || "";
+      if (!src) {
+        coverInput.click();
+        return;
+      }
+      await loadEditorFromCurrentGlobals(src);
+    }
+
+    async function openStandaloneImageEditor(src) {
+      const nextSrc = src || standaloneOriginalSrc || standaloneEditedSrc || "";
+      if (!nextSrc) {
+        standaloneImageInput?.click();
+        return;
+      }
+      if (imageEditorMode !== "standalone") templateEditorGlobalsBackup = editorGlobals();
+      imageEditorMode = "standalone";
+      placeImageEditorForStandalone();
+      applyEditorGlobals(standaloneEditorGlobals(nextSrc));
+      await loadEditorFromCurrentGlobals(nextSrc);
+    }
+
+    function prepareStandaloneImageTool() {
+      if (standaloneOriginalSrc || standaloneEditedSrc) {
+        void openStandaloneImageEditor();
+        return;
+      }
+      if (imageEditorMode !== "standalone") templateEditorGlobalsBackup = editorGlobals();
+      imageEditorMode = "standalone";
+      placeImageEditorForStandalone();
+      editorImage = null;
+      editorSessionSnapshot = null;
+      if (imageEditCanvas) imageEditCanvas.hidden = true;
+      if (imageToolEmpty) imageToolEmpty.hidden = false;
+      imageEditModal.hidden = false;
+    }
+
+    function removeStandaloneImage() {
+      standaloneOriginalSrc = "";
+      standaloneEditedSrc = "";
+      standaloneMosaicMaskSrc = "";
+      standaloneBlurMaskSrc = "";
+      standaloneEditorUndoStack = [];
+      standaloneEditorRedoStack = [];
+      standaloneStickers = [];
+      editorImage = null;
+      editorSourceSrc = "";
+      editorSessionSnapshot = null;
+      editorDrawing = false;
+      editorLastPoint = null;
+      editorStickerDrag = null;
+      selectedStickerId = null;
+      applyEditorGlobals(standaloneEditorGlobals(""));
+      if (imageEditCanvas) {
+        imageEditCanvas.hidden = true;
+        imageEditCanvas.width = 0;
+        imageEditCanvas.height = 0;
+      }
+      if (imageToolEmpty) imageToolEmpty.hidden = false;
+      imageEditModal.hidden = false;
+      renderStickerPicker();
+      saveState();
+    }
+
+    function leaveStandaloneImageTool() {
+      if (imageEditorMode !== "standalone") return;
+      if (!imageEditModal.hidden && editorImage) {
+        saveEditorProject();
+        syncStandaloneFromEditorGlobals();
+      }
+      imageEditModal.hidden = true;
+      editorSessionSnapshot = null;
+      editorDrawing = false;
+      editorLastPoint = null;
+      editorStickerDrag = null;
+      selectedStickerId = null;
+      imageEditorMode = "template";
+      restoreTemplateEditorGlobals();
+      placeImageEditorForTemplate();
+    }
+
+    async function exportStandaloneImageFromEditor() {
+      if (imageEditorMode !== "standalone") return;
+      if (!editorImage || !imageEditCanvas.width || !imageEditCanvas.height) {
+        alert(String.fromCharCode(0x8bf7, 0x5148, 0x4e0a, 0x4f20, 0x56fe, 0x7247, 0x3002));
+        return;
+      }
+      imageDoneButton.disabled = true;
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = imageEditCanvas.width;
+        canvas.height = imageEditCanvas.height;
+        renderImageEditor(canvas, { controls: false });
+        const blob = await canvasToBlob(canvas);
+        handleExportBlob(blob, standaloneExportFileName());
+        standaloneOriginalSrc = editorSourceSrc || standaloneOriginalSrc;
+        try {
+          saveEditorProject();
+          standaloneEditedSrc = canvas.toDataURL("image/png");
+          saveState();
+        } catch (saveError) {
+          console.warn("Standalone image state save failed after export", saveError);
+        }
+      } catch (error) {
+        console.error(error);
+        alert(String.fromCharCode(0x5bfc, 0x51fa, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x6362, 0x4e00, 0x5f20, 0x56fe, 0x7247, 0x6216, 0x91cd, 0x65b0, 0x4e0a, 0x4f20, 0x540e, 0x518d, 0x8bd5, 0x3002));
+      } finally {
+        imageDoneButton.disabled = false;
+      }
     }
 
     function updateEditedCoverFromEditor() {
@@ -4077,6 +5046,27 @@
     }
 
     function closeImageEditor(apply) {
+      if (imageEditorMode === "standalone") {
+        if (editorImage) {
+          if (apply) {
+            void exportStandaloneImageFromEditor();
+            return;
+          }
+          restoreEditorSessionSnapshot();
+          syncStandaloneFromEditorGlobals();
+        }
+        imageEditModal.hidden = true;
+        editorSessionSnapshot = null;
+        editorDrawing = false;
+        editorLastPoint = null;
+        editorStickerDrag = null;
+        selectedStickerId = null;
+        imageEditorMode = "template";
+        restoreTemplateEditorGlobals();
+        placeImageEditorForTemplate();
+        if (imageToolEmpty) imageToolEmpty.hidden = false;
+        return;
+      }
       if (editorImage) {
         if (apply) {
           saveEditorProject();
@@ -4119,6 +5109,7 @@
     }
 
     function collectState() {
+      const templateEditorState = templateEditorGlobalsBackup || editorGlobals();
       return {
         template: currentTemplate(),
         theme: currentThemeId,
@@ -4137,16 +5128,24 @@
         ratings: currentRatings(),
         tags: Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean),
         reviewText: valueOf("#reviewText"),
-        coverSrc: coverImage.getAttribute("src") || "",
-        coverOriginalSrc,
-        coverEditedSrc,
-        coverMosaicMaskSrc,
-        coverBlurMaskSrc,
-        coverEditorUndoStack,
-        coverEditorRedoStack,
-        coverStickers: cloneStickerList(coverStickers),
-        stickerSources,
-        coverFit: coverImage.style.objectFit || "contain",
+        coverSrc: templateEditorState.coverSrc || coverImage.getAttribute("src") || "",
+        coverOriginalSrc: templateEditorState.coverOriginalSrc || "",
+        coverEditedSrc: templateEditorState.coverEditedSrc || "",
+        coverMosaicMaskSrc: templateEditorState.coverMosaicMaskSrc || "",
+        coverBlurMaskSrc: templateEditorState.coverBlurMaskSrc || "",
+        coverEditorUndoStack: templateEditorState.coverEditorUndoStack || [],
+        coverEditorRedoStack: templateEditorState.coverEditorRedoStack || [],
+        coverStickers: cloneStickerList(templateEditorState.coverStickers),
+        stickerSources: templateEditorState.stickerSources || [],
+        coverFit: templateEditorState.coverFit || coverImage.style.objectFit || "contain",
+        standaloneOriginalSrc,
+        standaloneEditedSrc,
+        standaloneMosaicMaskSrc,
+        standaloneBlurMaskSrc,
+        standaloneEditorUndoStack,
+        standaloneEditorRedoStack,
+        standaloneStickers: cloneStickerList(standaloneStickers),
+        standaloneStickerSources,
         playerTotalSeconds,
         playerProgress,
         playerPlaying,
@@ -4195,6 +5194,14 @@
       coverEditorRedoStack = Array.isArray(state.coverEditorRedoStack) ? state.coverEditorRedoStack : [];
       coverStickers = cloneStickerList(state.coverStickers);
       stickerSources = Array.isArray(state.stickerSources) ? state.stickerSources : [];
+      standaloneOriginalSrc = state.standaloneOriginalSrc || "";
+      standaloneEditedSrc = state.standaloneEditedSrc || "";
+      standaloneMosaicMaskSrc = state.standaloneMosaicMaskSrc || "";
+      standaloneBlurMaskSrc = state.standaloneBlurMaskSrc || "";
+      standaloneEditorUndoStack = Array.isArray(state.standaloneEditorUndoStack) ? state.standaloneEditorUndoStack : [];
+      standaloneEditorRedoStack = Array.isArray(state.standaloneEditorRedoStack) ? state.standaloneEditorRedoStack : [];
+      standaloneStickers = cloneStickerList(state.standaloneStickers);
+      standaloneStickerSources = Array.isArray(state.standaloneStickerSources) ? state.standaloneStickerSources : [];
       renderStickerPicker();
       const coverSrc = state.coverSrc || coverEditedSrc || coverOriginalSrc || "";
       if (coverSrc) {
@@ -4231,25 +5238,44 @@
       scheduleSave.timer = window.setTimeout(saveState, 80);
     }
 
+    function resetCoverImageState() {
+      coverImage.removeAttribute("src");
+      coverOriginalSrc = "";
+      coverEditedSrc = "";
+      coverMosaicMaskSrc = "";
+      coverBlurMaskSrc = "";
+      coverEditorUndoStack = [];
+      coverEditorRedoStack = [];
+      coverStickers = [];
+      selectedStickerId = null;
+      editorUndoStack = [];
+      editorRedoStack = [];
+      coverImage.style.filter = "";
+      coverImage.style.objectFit = "contain";
+      coverBox.classList.remove("has-image");
+    }
+
+    function removeCoverImage() {
+      resetCoverImageState();
+      saveState();
+    }
+
+    function setCoverFromDataUrl(dataUrl) {
+      resetCoverImageState();
+      coverOriginalSrc = dataUrl;
+      coverImage.src = dataUrl;
+      coverImage.style.filter = "";
+      coverBox.classList.add("has-image");
+      saveState();
+    }
+
     coverInput.addEventListener("change", () => {
       const file = coverInput.files && coverInput.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = () => {
-        coverOriginalSrc = reader.result;
-        coverEditedSrc = "";
-        coverMosaicMaskSrc = "";
-        coverBlurMaskSrc = "";
-        coverEditorUndoStack = [];
-        coverEditorRedoStack = [];
-        coverStickers = [];
-        selectedStickerId = null;
-        editorUndoStack = [];
-        editorRedoStack = [];
-        coverImage.src = reader.result;
-        coverImage.style.filter = "";
-        coverBox.classList.add("has-image");
-        saveState();
+        setCoverFromDataUrl(reader.result);
+        coverInput.value = "";
       };
       reader.readAsDataURL(file);
     });
@@ -4269,6 +5295,11 @@
     document.getElementById("imageEditButton").addEventListener("click", (event) => {
       event.preventDefault();
       openImageEditor();
+    });
+
+    removeCoverButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      removeCoverImage();
     });
 
     document.querySelectorAll(".choice-button").forEach((button) => {
@@ -4351,18 +5382,7 @@
         node.value = "";
       });
       document.getElementById("reviewText").value = "";
-      coverImage.removeAttribute("src");
-      coverOriginalSrc = "";
-      coverEditedSrc = "";
-      coverMosaicMaskSrc = "";
-      coverBlurMaskSrc = "";
-      coverEditorUndoStack = [];
-      coverEditorRedoStack = [];
-      editorUndoStack = [];
-      editorRedoStack = [];
-      coverImage.style.filter = "";
-      coverImage.style.objectFit = "contain";
-      coverBox.classList.remove("has-image");
+      resetCoverImageState();
       document.querySelectorAll(".choice-button").forEach((item, index) => item.classList.toggle("active", index === 0));
       currentDiscountManual = false;
       playerTotalSeconds = PLAYER_DEFAULT_TOTAL;
@@ -4440,6 +5460,7 @@
     const CHOICE_LABEL = String.fromCharCode(0x4e2d, 0x6587);
     const CHOICE_SUBTITLE = String.fromCharCode(0x5b57, 0x5e55);
     const CHOICE_SCRIPT = String.fromCharCode(0x53f0, 0x672c);
+    const CHOICE_VIDEO = String.fromCharCode(0x89c6, 0x9891);
     const CHOICE_NONE = String.fromCharCode(0x65e0, 0x4e2d, 0x6587);
     const COVER_UPLOAD_TEXT = String.fromCharCode(0x70b9, 0x51fb, 0x4e0a, 0x4f20, 0x20, 0x42, 0x4b);
     const LABEL_BASIC = String.fromCharCode(0x57fa, 0x672c, 0x4fe1, 0x606f);
@@ -4602,7 +5623,7 @@
       ctx.font = canvasFont('800', 21);
       ctx.fillText(CHOICE_LABEL, x, top + 19);
       drawFieldRule(ctx, x, top + 11, w);
-      const labels = [CHOICE_SUBTITLE, CHOICE_SCRIPT, CHOICE_NONE];
+      const labels = [CHOICE_SUBTITLE, CHOICE_SCRIPT, CHOICE_VIDEO, CHOICE_NONE];
       const bw = 74;
       labels.forEach((label, index) => {
         const bx = x + index * (bw + 12);
@@ -4736,7 +5757,7 @@
       ctx.font = canvasFont('800', 21);
       ctx.fillText(CHOICE_LABEL, x, y - 3);
       drawFieldRule(ctx, x, y, w);
-      const labels = [CHOICE_SUBTITLE, CHOICE_SCRIPT, CHOICE_NONE];
+      const labels = [CHOICE_SUBTITLE, CHOICE_SCRIPT, CHOICE_VIDEO, CHOICE_NONE];
       const bw = 74;
       labels.forEach((label, index) => {
         const bx = x + index * (bw + 12);
@@ -4851,10 +5872,10 @@
       reader.readAsText(file, "utf-8");
     }
 
-    function downloadBlob(blob) {
+    function downloadBlob(blob, fileName = "record-card.png") {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.download = "record-card.png";
+      link.download = fileName;
       link.href = url;
       document.body.appendChild(link);
       link.click();
@@ -4897,7 +5918,7 @@
       drawCompactInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 405.33, 556, 162.67);
 
       drawPlayerDecoration(ctx);
-      handleExportBlob(await canvasToBlob(canvas));
+      handleExportBlob(await canvasToBlob(canvas), templateExportFileName("compact"));
     }
 
     async function downloadCard() {
@@ -4987,7 +6008,7 @@
         ctx.font = canvasFont('400', 24);
         drawWrappedText(ctx, valueOf("#reviewText"), 112, 1080, 856, 31, 9);
 
-        handleExportBlob(await canvasToBlob(canvas));
+        handleExportBlob(await canvasToBlob(canvas), templateExportFileName("full"));
       } catch (error) {
         console.error(error);
         alert("导出失败：请告诉我你看到这条弹窗，我再继续修。");
@@ -5036,17 +6057,23 @@
       saveEditorProject();
       saveState();
     });
-    imageDoneButton.addEventListener("click", () => closeImageEditor(true));
-    imageCancelButton.addEventListener("click", () => closeImageEditor(false));
+    imageDoneButton.addEventListener("click", () => {
+      if (imageEditorMode === "standalone") void exportStandaloneImageFromEditor();
+      else closeImageEditor(true);
+    });
+    imageCancelButton.addEventListener("click", () => {
+      if (imageEditorMode === "standalone") removeStandaloneImage();
+      else closeImageEditor(false);
+    });
     imageEditModal.addEventListener("click", (event) => {
-      if (event.target === imageEditModal) closeImageEditor(false);
+      if (event.target === imageEditModal && imageEditorMode !== "standalone") closeImageEditor(false);
     });
     imageEditCanvas.addEventListener("pointerdown", (event) => {
       event.preventDefault();
       if (!editorImage) return;
       imageEditCanvas.setPointerCapture?.(event.pointerId);
       const point = editorPointFromEvent(event);
-      const hit = hitTestSticker(point);
+      const hit = editorTool === "sticker" ? hitTestSticker(point) : null;
       imageEditCanvas.style.cursor = cursorForEditorHit(hit);
       if (hit) {
         snapshotEditorMasks();
@@ -5090,7 +6117,7 @@
         if (!sticker) return;
         if (editorStickerDrag.action === "resize") resizeStickerFromCorner(sticker, editorStickerDrag.corner, point, editorStickerDrag.start);
         else moveSticker(sticker, point, editorStickerDrag.start);
-        renderImageEditor();
+        requestEditorRender();
         return;
       }
       if (!editorLastPoint) return;
@@ -5106,11 +6133,11 @@
         editorDrawing = false;
         editorLastPoint = null;
         editorStickerDrag = null;
-        imageEditCanvas.style.cursor = editorTool === "sticker" ? "default" : "crosshair";
+        imageEditCanvas.style.cursor = editorTool === "sticker" ? "default" : editorBrushCursor();
       });
     });
     imageEditCanvas.addEventListener("pointerleave", () => {
-      if (!editorDrawing && !editorStickerDrag) imageEditCanvas.style.cursor = editorTool === "sticker" ? "default" : "crosshair";
+      if (!editorDrawing && !editorStickerDrag) imageEditCanvas.style.cursor = editorTool === "sticker" ? "default" : editorBrushCursor();
     });
 
     stickerPrevPage.addEventListener("click", () => {
@@ -5185,7 +6212,7 @@
     modalDownloadButton.addEventListener("click", () => {
       if (lastExportUrl) {
         const link = document.createElement("a");
-        link.download = "record-card.png";
+        link.download = lastExportFileName || "record-card.png";
         link.href = lastExportUrl;
         document.body.appendChild(link);
         link.click();
@@ -5195,7 +6222,52 @@
 
     importDataButton.addEventListener("click", () => importDataInput.click());
     exportDataButton.addEventListener("click", exportRecordData);
+    mobileDataMenuButton?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const nextHidden = !mobileDataDropdown?.hidden ? true : false;
+      if (mobileDataDropdown) mobileDataDropdown.hidden = nextHidden;
+      mobileDataMenuButton.setAttribute("aria-expanded", String(!nextHidden));
+    });
+    mobileImportDataButton?.addEventListener("click", () => {
+      if (mobileDataDropdown) mobileDataDropdown.hidden = true;
+      mobileDataMenuButton?.setAttribute("aria-expanded", "false");
+      importDataInput.click();
+    });
+    mobileExportDataButton?.addEventListener("click", () => {
+      if (mobileDataDropdown) mobileDataDropdown.hidden = true;
+      mobileDataMenuButton?.setAttribute("aria-expanded", "false");
+      exportRecordData();
+    });
+    document.addEventListener("click", (event) => {
+      if (!mobileDataDropdown || mobileDataDropdown.hidden) return;
+      if (event.target.closest(".mobile-data-menu")) return;
+      mobileDataDropdown.hidden = true;
+      mobileDataMenuButton?.setAttribute("aria-expanded", "false");
+    });
     importDataInput.addEventListener("change", () => importRecordData(importDataInput.files?.[0]));
+    standaloneImageUploadButton?.addEventListener("click", () => standaloneImageInput?.click());
+    standaloneImageInput?.addEventListener("change", () => {
+      const file = standaloneImageInput.files && standaloneImageInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        standaloneOriginalSrc = reader.result;
+        standaloneEditedSrc = "";
+        standaloneMosaicMaskSrc = "";
+        standaloneBlurMaskSrc = "";
+        standaloneEditorUndoStack = [];
+        standaloneEditorRedoStack = [];
+        standaloneStickers = [];
+        standaloneStickerSources = [];
+        standaloneImageInput.value = "";
+        saveState();
+        void openStandaloneImageEditor(standaloneOriginalSrc);
+      };
+      reader.readAsDataURL(file);
+    });
+    mainNavButtons.forEach((button) => {
+      button.addEventListener("click", () => setMainPage(button.dataset.page || "template"));
+    });
 
     templateButtons.forEach((button) => {
       button.addEventListener("click", () => setTemplate(button.dataset.template || "full"));
@@ -5217,8 +6289,10 @@
     syncPlayerUi(true);
     restoreState();
     restoreActiveMenu();
+    restoreMainPage();
     window.addEventListener("beforeunload", saveState);
     window.addEventListener("resize", () => {
+      setMainPage(localStorage.getItem(MAIN_PAGE_STORAGE_KEY) || "template", false);
       fitStage();
       updateThemePager();
     });
