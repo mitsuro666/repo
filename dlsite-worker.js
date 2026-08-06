@@ -33,12 +33,15 @@ export default {
     }
 
     const url = new URL(request.url);
-    const workno = normalizeWorkno(url.searchParams.get("workno") || url.searchParams.get("rj"));
+    const useTranslatable = url.searchParams.get("endpoint") === "translatable";
+    const workno = normalizeWorkno(url.searchParams.get("workno") || url.searchParams.get("keyword") || url.searchParams.get("rj"));
     if (!workno) {
       return jsonResponse({ error: "missing_workno" }, 400);
     }
 
-    const dlsiteUrl = "https://www.dlsite.com/maniax/api/=/product.json?workno=" + encodeURIComponent(workno);
+    const dlsiteUrl = useTranslatable
+      ? "https://www.dlsite.com/maniax/api/=/translatableProducts.json?keyword=" + encodeURIComponent(workno)
+      : "https://www.dlsite.com/maniax/api/=/product.json?workno=" + encodeURIComponent(workno);
     const upstream = await fetch(dlsiteUrl, {
       headers: {
         "Accept": "application/json,text/plain,*/*",
