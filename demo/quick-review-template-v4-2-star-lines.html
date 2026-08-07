@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>乙抓记录｜速评版 v4.2 Demo</title>
+<style>
+:root{
+  --ink:#684957;
+  --muted:#9b6f7d;
+  --accent:#f4abb9;
+  --accent-deep:#b84f78;
+  --line:#fec9d4;
+  --dash:#9bc4b2;
+  --mint:#9bc4b2;
+  --shadow:0 18px 45px rgba(123,68,91,.18);
+  --card-shadow:0 7px 17px rgba(104,73,87,.085);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  color:var(--ink);
+  font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",Arial,sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%,rgba(255,238,220,.95),transparent 30%),
+    radial-gradient(circle at 88% 18%,rgba(214,235,229,.9),transparent 28%),
+    linear-gradient(135deg,#fff1f5 0%,#f8fbf4 48%,#fff8ed 100%);
+}
+button,input,textarea{font:inherit}
+.demo-shell{
+  min-height:100vh;
+  padding:28px 18px 56px;
+  display:grid;
+  justify-items:center;
+  gap:18px;
+}
+.demo-head{
+  width:min(100%,1080px);
+}
+.demo-head h1{
+  margin:0;
+  font-size:24px;
+  color:var(--accent-deep);
+}
+.demo-head p{
+  margin:5px 0 0;
+  color:var(--muted);
+  font-size:13px;
+}
+.preview-wrap{
+  width:min(100%,1080px);
+  display:grid;
+  justify-items:center;
+}
+.scaler{
+  width:1080px;
+  height:1440px;
+  transform-origin:top left;
+}
+
+/* ===== 模板本体 ===== */
+.quick-card{
+  position:relative;
+  width:1080px;
+  height:1440px;
+  overflow:hidden;
+  border-radius:44px;
+  box-shadow:var(--shadow);
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.34) 1px,transparent 1px) 0 0/36px 36px,
+    linear-gradient(rgba(255,255,255,.30) 1px,transparent 1px) 0 0/36px 36px,
+    linear-gradient(145deg,#fff8f4 0%,#fffdf9 48%,#f5f8f4 100%);
+}
+.quick-card::before{
+  content:"";
+  position:absolute;
+  inset:16px;
+  border:3px solid color-mix(in srgb,var(--line) 78%,transparent);
+  border-radius:30px;
+  pointer-events:none;
+}
+.quick-card::after{
+  content:"";
+  position:absolute;
+  inset:30px;
+  border:2px dashed color-mix(in srgb,var(--dash) 62%,transparent);
+  border-radius:22px;
+  pointer-events:none;
+}
+.quick-grid{
+  position:absolute;
+  inset:48px 54px 54px;
+  z-index:1;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-rows:repeat(6,minmax(0,1fr));
+  gap:14px 18px;
+}
+
+/* ===== 单条速评卡 ===== */
+.quick-item{
+  position:relative;
+  min-width:0;
+  min-height:0;
+  padding:19px 15px 18px;
+  border:1px solid color-mix(in srgb,var(--line) 50%,transparent);
+  border-radius:23px;
+  background:linear-gradient(145deg,rgba(255,255,255,.90),rgba(255,253,250,.79));
+  box-shadow:var(--card-shadow);
+}
+
+/* 上下装饰线｜方案 B 修正版：
+   左粉虚线 + 中央实心五角星 + 右绿虚线
+   不再使用散点伪元素，避免缩放/定位时出现乱点 */
+.quick-item::before,
+.quick-item::after{
+  content:"";
+  position:absolute;
+  left:23px;
+  right:23px;
+  height:1px;
+  pointer-events:none;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb,var(--accent) 40%,transparent) 0 4px,
+      transparent 4px 9px
+    ) left center / calc(50% - 18px) 1px no-repeat,
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb,var(--mint) 45%,transparent) 0 4px,
+      transparent 4px 9px
+    ) right center / calc(50% - 18px) 1px no-repeat;
+}
+.quick-item::before{top:11px}
+.quick-item::after{bottom:10px}
+
+/* CSS 实心五角星 */
+.quick-deco-top,
+.quick-deco-bottom{
+  position:absolute;
+  z-index:2;
+  left:50%;
+  width:15px;
+  height:15px;
+  transform:translateX(-50%);
+  clip-path:polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 93%,
+    50% 72%,
+    21% 93%,
+    32% 57%,
+    2% 35%,
+    39% 35%
+  );
+  pointer-events:none;
+}
+.quick-deco-top{
+  top:3.5px;
+  background:color-mix(in srgb,var(--accent) 68%,white);
+}
+.quick-deco-bottom{
+  bottom:2.5px;
+  background:color-mix(in srgb,var(--mint) 68%,white);
+}
+
+.quick-body{
+  height:100%;
+  display:grid;
+  grid-template-columns:194px minmax(0,1fr);
+  gap:16px;
+  align-items:center;
+}
+
+/* ===== BK：4:3，放大 ===== */
+.quick-cover{
+  position:relative;
+  width:194px;
+  aspect-ratio:4/3;
+  overflow:hidden;
+  border-radius:17px;
+  cursor:pointer;
+  background:color-mix(in srgb,#ffe5d9 55%,white);
+  border:2px dashed color-mix(in srgb,var(--accent) 42%,transparent);
+  user-select:none;
+}
+.quick-cover.has-image{
+  border:3px solid rgba(255,255,255,.98);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb,var(--line) 82%,transparent),
+    0 8px 16px rgba(104,73,87,.13);
+}
+.quick-file{display:none}
+.quick-cover img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:none;
+}
+.quick-cover.has-image img{display:block}
+.quick-cover-placeholder{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:10px;
+  text-align:center;
+  color:var(--muted);
+  font-size:15px;
+  line-height:1.4;
+  font-weight:900;
+}
+.quick-cover.has-image .quick-cover-placeholder{display:none}
+
+/* PC：有图后仅 hover 显示工具条
+   手机：点击已有 BK 后切换 .tools-open */
+.quick-cover-toolbar{
+  position:absolute;
+  left:7px;
+  right:7px;
+  top:7px;
+  z-index:5;
+  display:flex;
+  gap:4px;
+  padding:5px;
+  border-radius:11px;
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(7px);
+  box-shadow:0 4px 10px rgba(104,73,87,.13);
+  opacity:0;
+  transform:translateY(-3px);
+  pointer-events:none;
+  transition:opacity .14s ease,transform .14s ease;
+}
+.quick-cover-tool{
+  flex:1 1 0;
+  min-width:0;
+  height:23px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(217,95,140,.17);
+  border-radius:999px;
+  color:var(--accent-deep);
+  background:rgba(255,255,255,.93);
+  font-size:10px;
+  font-weight:900;
+  white-space:nowrap;
+}
+@media (hover:hover) and (pointer:fine){
+  .quick-cover.has-image:hover .quick-cover-toolbar{
+    opacity:1;
+    transform:translateY(0);
+    pointer-events:auto;
+  }
+}
+
+/* RJ + 手机替换按钮 */
+.quick-cover-bottom{
+  position:absolute;
+  left:7px;
+  right:7px;
+  bottom:7px;
+  z-index:4;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:5px;
+  pointer-events:none;
+}
+.quick-upload-mini{
+  display:none;
+  height:24px;
+  padding:0 8px;
+  border:0;
+  border-radius:8px;
+  color:var(--accent-deep);
+  background:rgba(255,255,255,.86);
+  box-shadow:0 2px 8px rgba(104,73,87,.10);
+  font-size:10px;
+  font-weight:900;
+  pointer-events:auto;
+}
+.quick-rj{
+  /* 默认容纳 RJ + 8 位数字；内容更长时由 JS 自动扩展 */
+  width:calc(10ch + 14px);
+  min-width:calc(10ch + 14px);
+  max-width:154px;
+  height:24px;
+  border:0;
+  outline:0;
+  border-radius:8px;
+  padding:0 7px;
+  color:var(--accent-deep);
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(4px);
+  box-shadow:0 2px 8px rgba(104,73,87,.10);
+  text-align:left;
+  font-size:10.5px;
+  font-weight:800;
+  pointer-events:auto;
+}
+.quick-rj::placeholder{
+  color:color-mix(in srgb,var(--muted) 62%,transparent);
+}
+.quick-card.hide-rj .quick-rj{display:none}
+
+/* ===== 右侧：CV 横排 + 虚线 + Repo ===== */
+.quick-content{
+  min-width:0;
+  display:grid;
+  grid-template-rows:34px 1px 1fr;
+  gap:9px;
+  align-content:center;
+}
+.quick-cv-row{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.quick-cv-label{
+  flex:0 0 auto;
+  color:var(--accent);
+  font-size:18px;
+  line-height:1;
+  font-weight:900;
+}
+.quick-cv{
+  flex:1 1 auto;
+  min-width:0;
+  border:0;
+  outline:0;
+  padding:0;
+  color:var(--ink);
+  background:transparent;
+  font-size:18px;
+  line-height:1.1;
+  font-weight:900;
+}
+.quick-cv::placeholder{
+  color:color-mix(in srgb,var(--muted) 48%,transparent);
+}
+.quick-cv-divider{
+  border-top:1px dashed color-mix(in srgb,var(--accent) 33%,transparent);
+}
+
+/* Repo 区保持此前风格 */
+.quick-review-wrap{
+  position:relative;
+  min-height:0;
+  padding:9px 7px 6px 18px;
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb,var(--accent) 15%,transparent) 0 3px,
+      transparent 3px 100%);
+}
+.quick-review-wrap::before{
+  content:"♡";
+  position:absolute;
+  left:0;
+  top:8px;
+  color:color-mix(in srgb,var(--accent-deep) 48%,transparent);
+  font-size:13px;
+  font-weight:900;
+}
+.quick-review-wrap::after{
+  content:none;
+}
+.quick-review{
+  position:relative;
+  z-index:1;
+  width:100%;
+  height:77px;
+  resize:none;
+  overflow:hidden;
+  border:0;
+  outline:0;
+  padding:0 1px 5px 0;
+  color:var(--ink);
+  background:transparent;
+  font-size:14.5px;
+  line-height:1.5;
+  font-weight:700;
+}
+.quick-review::placeholder{
+  color:color-mix(in srgb,var(--muted) 48%,transparent);
+}
+
+.quick-watermark{
+  position:absolute;
+  z-index:2;
+  right:54px;
+  bottom:32px;
+  color:color-mix(in srgb,var(--ink) 9%,transparent);
+  font-size:12px;
+  letter-spacing:.14em;
+  font-weight:800;
+  pointer-events:none;
+}
+
+/* ===== 模板外：严格三个按钮 ===== */
+.quick-tools{
+  width:min(100%,1080px);
+  display:grid;
+  grid-template-columns:repeat(3,max-content);
+  justify-content:center;
+  gap:10px;
+  padding:12px 14px;
+  border:1px solid rgba(217,95,140,.18);
+  border-radius:18px;
+  background:rgba(255,255,255,.72);
+  box-shadow:0 10px 24px rgba(184,69,112,.10);
+  backdrop-filter:blur(12px);
+}
+.tool-btn{
+  min-height:38px;
+  border:1px solid rgba(217,95,140,.28);
+  border-radius:999px;
+  padding:0 16px;
+  color:var(--accent-deep);
+  background:rgba(255,255,255,.94);
+  cursor:pointer;
+  font-weight:900;
+  white-space:nowrap;
+}
+.tool-btn.primary{
+  color:#fff;
+  border-color:transparent;
+  background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+}
+
+/* ===== 手机交互视觉 ===== */
+@media (hover:none), (pointer:coarse), (max-width:780px){
+  .quick-cover.has-image.tools-open .quick-cover-toolbar{
+    opacity:1;
+    transform:translateY(0);
+    pointer-events:auto;
+  }
+  .quick-cover.has-image .quick-upload-mini{
+    display:inline-grid;
+    place-items:center;
+  }
+  .quick-tools{
+    width:100%;
+    max-width:calc(100vw - 16px);
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:6px;
+    padding:9px 8px;
+  }
+  .tool-btn{
+    min-width:0;
+    padding:0 5px;
+    font-size:12px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="demo-shell">
+  <div class="demo-head">
+    <h1>速评版 v4.2</h1>
+    <p>2列 × 6行 · 4:3 BK · 五角星装饰线修正版 · RJ悬浮 · PC hover / 手机点击工具条</p>
+  </div>
+
+  <div class="preview-wrap" id="previewWrap">
+    <div class="scaler" id="scaler">
+      <section class="quick-card" id="quickCard">
+        <div class="quick-grid" id="quickGrid"></div>
+        <div class="quick-watermark">乙抓记录 · QUICK VOICE NOTES</div>
+      </section>
+    </div>
+  </div>
+
+  <div class="quick-tools">
+    <button class="tool-btn" id="toggleRj" aria-pressed="true">☑ 显示RJ号</button>
+    <button class="tool-btn primary" id="importBk">按RJ号一键导入BK</button>
+    <button class="tool-btn" id="clearRepo">只清空Repo</button>
+  </div>
+</div>
+
+<script>
+const grid=document.getElementById("quickGrid");
+const quickCard=document.getElementById("quickCard");
+const isCoarse=()=>window.matchMedia("(hover:none), (pointer:coarse), (max-width:780px)").matches;
+
+const demoRows=[
+["一条ひらめ","RJ01152097","青梅竹马感特别自然，前半纯情得可爱，后半反差也很香。"],
+["猿飛総司","RJ01490772","低音太舒服了，贴耳说话的时候真的很容易一下子沉进去。"],
+["テトラポット登","RJ01318251","剧情不复杂但氛围特别稳，很适合想放空脑子的时候听。"],
+["冬ノ熊肉","RJ01284510","情绪递进做得很好，越听越觉得这个人怎么这么会哄。"],
+["茶介","RJ01094281","声音质感很有记忆点，一句话总结就是：越听越上头。"],
+["佐和真中","RJ01505266","节奏舒服，互动感强，听完会有种真的约会了一晚的错觉。"],
+["土門熱","RJ00984122","前面很克制，后面突然爆发，反差型选手狠狠加分。"],
+["河村眞人","RJ01390744","一句一句都很耐听，属于不会特别炸但会反复回去听的类型。"],
+["久喜大","RJ01468102","整体比预期甜很多，角色意外地有点笨拙，反而很可爱。"],
+["四ツ谷サイダー","RJ01206273","设定很有趣，台词也有不少让人想截图记下来的地方。"],
+["皇帝","RJ01509127","氛围和声线都很漂亮，耳机听尤其舒服，适合深夜。"],
+["刺草ネトル","RJ01180248","短小但完成度很高，属于听完会立刻想找同系列下一张。"]
+];
+
+function demoCover(index){
+  const palettes=[
+    ["#f3c8d5","#694b61"],["#d3d9ef","#5c6283"],["#eed5d0","#9d6770"],
+    ["#cbd8e6","#526577"],["#f4dbc5","#8a6952"],["#d8d5e9","#5e5677"],
+    ["#e3d4ef","#725e8d"],["#ead5c5","#806552"],["#ccd9d7","#4f6d69"],
+    ["#f0cfd9","#7b5568"],["#d7d9ef","#5b5f88"],["#efd8c9","#8c6755"]
+  ];
+  const [a,b]=palettes[index%palettes.length];
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 420">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${a}"/><stop offset="1" stop-color="#fffafc"/></linearGradient></defs>
+    <rect width="560" height="420" rx="26" fill="url(#g)"/>
+    <circle cx="430" cy="90" r="88" fill="${b}" opacity=".12"/>
+    <circle cx="120" cy="330" r="105" fill="${b}" opacity=".08"/>
+    <path d="M215 395c8-107 35-192 121-198 85-5 131 65 113 144-13 62-54 98-120 100-53 1-94-17-114-46z" fill="${b}" opacity=".82"/>
+    <circle cx="334" cy="160" r="69" fill="#f6dfd5"/>
+    <path d="M271 162c14-82 117-85 131-5-30-34-92-36-131 5z" fill="${b}"/>
+    <text x="34" y="54" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="${b}">OTOME VOICE</text>
+    <text x="35" y="84" font-family="Arial,sans-serif" font-size="15" fill="${b}" opacity=".66">${String(index+1).padStart(2,"0")}</text>
+  </svg>`;
+  return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+}
+
+function openFile(fileInput){
+  fileInput.click();
+}
+function setCover(cover,img,src){
+  img.src=src;
+  cover.classList.add("has-image");
+}
+function removeCover(cover,img){
+  img.removeAttribute("src");
+  cover.classList.remove("has-image","tools-open");
+}
+
+function fitRjWidth(input){
+  /* RJ + 8 位数字为默认宽度，超长才继续扩展 */
+  const chars=Math.max(10, Math.min(15, (input.value || input.placeholder || "").length));
+  input.style.width=`calc(${chars}ch + 14px)`;
+}
+
+for(let i=0;i<12;i++){
+  const item=document.createElement("article");
+  item.className="quick-item";
+  item.innerHTML=`
+    <span class="quick-deco-top"></span>
+    <span class="quick-deco-bottom"></span>
+    <div class="quick-body">
+      <div class="quick-cover">
+        <input class="quick-file" type="file" accept="image/*">
+        <img alt="">
+        <span class="quick-cover-placeholder">点击上传 BK</span>
+
+        <div class="quick-cover-toolbar">
+          <button type="button" class="quick-cover-tool" data-action="fit">完整</button>
+          <button type="button" class="quick-cover-tool" data-action="crop">裁切</button>
+          <button type="button" class="quick-cover-tool" data-action="edit">编辑</button>
+          <button type="button" class="quick-cover-tool" data-action="remove">移除</button>
+        </div>
+
+        <div class="quick-cover-bottom">
+          <button type="button" class="quick-upload-mini">上传</button>
+          <input class="quick-rj" value="${demoRows[i][1]}" placeholder="RJ00000000">
+        </div>
+      </div>
+
+      <div class="quick-content">
+        <div class="quick-cv-row">
+          <span class="quick-cv-label">CV</span>
+          <input class="quick-cv" value="${demoRows[i][0]}" placeholder="填写声优">
+        </div>
+        <div class="quick-cv-divider"></div>
+        <div class="quick-review-wrap">
+          <textarea class="quick-review" maxlength="78" placeholder="一句话 Repo，建议 2~3 行">${demoRows[i][2]}</textarea>
+        </div>
+      </div>
+    </div>
+  `;
+  grid.append(item);
+
+  const cover=item.querySelector(".quick-cover");
+  const file=item.querySelector(".quick-file");
+  const img=item.querySelector("img");
+  const toolbar=item.querySelector(".quick-cover-toolbar");
+  const uploadMini=item.querySelector(".quick-upload-mini");
+  const rj=item.querySelector(".quick-rj");
+
+  fitRjWidth(rj);
+  rj.addEventListener("input",()=>fitRjWidth(rj));
+
+  setCover(cover,img,demoCover(i));
+
+  file.addEventListener("change",()=>{
+    const f=file.files&&file.files[0];
+    file.value="";
+    if(!f)return;
+    const reader=new FileReader();
+    reader.onload=()=>setCover(cover,img,reader.result);
+    reader.readAsDataURL(f);
+  });
+
+  cover.addEventListener("click",(e)=>{
+    if(e.target.closest(".quick-cover-toolbar,.quick-upload-mini,.quick-rj"))return;
+
+    if(isCoarse()){
+      if(!cover.classList.contains("has-image")){
+        openFile(file);
+      }else{
+        cover.classList.toggle("tools-open");
+      }
+    }else{
+      openFile(file);
+    }
+  });
+
+  uploadMini.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    openFile(file);
+  });
+
+  toolbar.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    const btn=e.target.closest("[data-action]");
+    if(!btn)return;
+    const action=btn.dataset.action;
+    if(action==="remove"){
+      removeCover(cover,img);
+      return;
+    }
+    // Demo 中其它三个按钮只呈现交互反馈，不实现真实修图
+    btn.textContent = action==="fit" ? "✓完整" : action==="crop" ? "✓裁切" : "✓编辑";
+    setTimeout(()=>{
+      btn.textContent = action==="fit" ? "完整" : action==="crop" ? "裁切" : "编辑";
+    },650);
+  });
+
+  rj.addEventListener("click",e=>e.stopPropagation());
+}
+
+/* 外部三个按钮 */
+let showRj=true;
+const toggleRj=document.getElementById("toggleRj");
+toggleRj.addEventListener("click",()=>{
+  showRj=!showRj;
+  quickCard.classList.toggle("hide-rj",!showRj);
+  toggleRj.textContent=(showRj?"☑":"☐")+" 显示RJ号";
+  toggleRj.setAttribute("aria-pressed",String(showRj));
+});
+
+document.getElementById("importBk").addEventListener("click",()=>{
+  // Demo：扫描每格 RJ，没有图片的格子用占位封面模拟自动导入。
+  let imported=0;
+  [...document.querySelectorAll(".quick-item")].forEach((item,i)=>{
+    const rj=item.querySelector(".quick-rj").value.trim();
+    const cover=item.querySelector(".quick-cover");
+    const img=item.querySelector("img");
+    if(rj && !cover.classList.contains("has-image")){
+      setCover(cover,img,demoCover(i));
+      imported++;
+    }
+  });
+  const btn=document.getElementById("importBk");
+  const old=btn.textContent;
+  btn.textContent= imported ? `已导入 ${imported} 张` : "已有BK，无需导入";
+  setTimeout(()=>btn.textContent=old,900);
+});
+
+document.getElementById("clearRepo").addEventListener("click",()=>{
+  document.querySelectorAll(".quick-review").forEach(x=>x.value="");
+});
+
+/* 预览缩放 */
+function fitPreview(){
+  const wrap=document.getElementById("previewWrap");
+  const scaler=document.getElementById("scaler");
+  const available=Math.min(1080,wrap.clientWidth);
+  const scale=available/1080;
+  scaler.style.transform=`scale(${scale})`;
+  wrap.style.height=(1440*scale)+"px";
+}
+fitPreview();
+window.addEventListener("resize",fitPreview);
+</script>
+</body>
+</html>

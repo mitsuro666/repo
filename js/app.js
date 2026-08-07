@@ -86,6 +86,55 @@
     const playerPlay = document.getElementById("playerPlay");
     const importHelpButton = document.getElementById("importHelpButton");
     const importHelpPopover = document.getElementById("importHelpPopover");
+    const grid9Card = document.getElementById("grid9Card");
+    const grid9TitleText = document.getElementById("grid9TitleText");
+    const grid9SubtitleText = document.getElementById("grid9SubtitleText");
+    const grid9TitlePlaceholder = document.querySelector(".grid9-title-placeholder");
+
+    function focusGrid9Field(node) {
+      node.focus();
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      range.collapse(true);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    grid9TitlePlaceholder.addEventListener("click", () => focusGrid9Field(grid9TitleText));
+
+    function updateGrid9EmptyClass() {
+      grid9TitleText.classList.toggle("is-empty", grid9TitleText.textContent.trim() === "");
+      grid9SubtitleText.classList.toggle("is-empty", grid9SubtitleText.textContent.trim() === "");
+    }
+    updateGrid9EmptyClass();
+    [grid9TitleText, grid9SubtitleText].forEach((node) => {
+      node.addEventListener("blur", updateGrid9EmptyClass);
+    });
+    const grid9ShowNumbers = document.getElementById("grid9ShowNumbers");
+    const grid9ShowRj = document.getElementById("grid9ShowRj");
+    const grid9Cells = document.getElementById("grid9Cells");
+    const grid9ExternalTools = document.getElementById("grid9ExternalTools");
+    const grid9ImportAllButton = document.getElementById("grid9ImportAllButton");
+    const grid9PresetButton = document.getElementById("grid9PresetButton");
+    const grid9PresetMenu = document.getElementById("grid9PresetMenu");
+    let grid9CellEditors = [];
+    let activeGrid9Index = -1;
+    const quickCard = document.getElementById("quickCard");
+    const quickCells = document.getElementById("quickCells");
+    const quickExternalTools = document.getElementById("quickExternalTools");
+    const quickShowRjButton = document.getElementById("quickShowRjButton");
+    const quickImportAllButton = document.getElementById("quickImportAllButton");
+    const quickClearRepoButton = document.getElementById("quickClearRepoButton");
+    let quickCellEditors = [];
+    let activeQuickIndex = -1;
+    let quickShowRj = true;
+    const trioCard = document.getElementById("trioCard");
+    const trioCells = document.getElementById("trioCells");
+    const trioExternalTools = document.getElementById("trioExternalTools");
+    const trioImportAllButton = document.getElementById("trioImportAllButton");
+    const trioClearRepoButton = document.getElementById("trioClearRepoButton");
+    let trioCellEditors = [];
+    let activeTrioIndex = -1;
     const STORAGE_KEY = "otome-record-card-v1";
     const MENU_STORAGE_KEY = "otome-record-card-active-menu";
     const MAIN_PAGE_STORAGE_KEY = "otome-record-card-main-page";
@@ -378,6 +427,8 @@
     const UI_REVIEW_CANCEL = String.fromCharCode(0x53d6, 0x6d88);
     const UI_IMPORT_DATA_FAILED = String.fromCharCode(0x5bfc, 0x5165, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x786e, 0x8ba4, 0x6587, 0x4ef6, 0x662f, 0x672c, 0x9879, 0x76ee, 0x5bfc, 0x51fa, 0x7684, 0x20, 0x4a, 0x53, 0x4f, 0x4e, 0x3002);
     const UI_RESET_CONFIRM = String.fromCharCode(0x786e, 0x5b9a, 0x8981, 0x6e05, 0x7a7a, 0x5f53, 0x524d, 0x586b, 0x5199, 0x7684, 0x5168, 0x90e8, 0x5185, 0x5bb9, 0x5417, 0xff1f, 0x8fd9, 0x4e2a, 0x64cd, 0x4f5c, 0x4e0d, 0x80fd, 0x64a4, 0x9500, 0x3002);
+    const UI_STORAGE_FULL = String.fromCharCode(0x672c, 0x5730, 0x5b58, 0x50a8, 0x7a7a, 0x95f4, 0x4e0d, 0x8db3, 0xff0c, 0x5185, 0x5bb9, 0x53ef, 0x80fd, 0x65e0, 0x6cd5, 0x5b8c, 0x6574, 0x4fdd, 0x5b58, 0xff0c, 0x8bf7, 0x5c1d, 0x8bd5, 0x538b, 0x7f29, 0x56fe, 0x7247, 0x6216, 0x5bfc, 0x51fa, 0x5907, 0x4efd, 0x3002);
+    let storageFullWarned = false;
     mobileFocusBack.textContent = UI_BACK_FULL;
     modalDownloadButton.textContent = UI_DOWNLOAD_IMAGE;
     modalCloseButton.textContent = UI_CLOSE;
@@ -390,6 +441,9 @@
     reviewEditCancel.textContent = UI_REVIEW_CANCEL;
 
     function currentTemplate() {
+      if (card.classList.contains("grid9")) return "grid9";
+      if (card.classList.contains("quick")) return "quick";
+      if (card.classList.contains("trio")) return "trio";
       return card.classList.contains("compact") ? "compact" : "full";
     }
 
@@ -416,6 +470,24 @@
       collection: String.fromCharCode(0x6211, 0x7684, 0x6536, 0x85cf)
     };
 
+    function syncTemplatePages(nextPage) {
+      const page = nextPage || "template";
+      const templatePage = page === "template";
+      const grid9Active = templatePage && currentTemplate() === "grid9";
+      const quickActive = templatePage && currentTemplate() === "quick";
+      const trioActive = templatePage && currentTemplate() === "trio";
+      if (stage) stage.hidden = !templatePage;
+      if (card) card.hidden = !templatePage || grid9Active || quickActive || trioActive;
+      if (grid9Card) grid9Card.hidden = !grid9Active;
+      if (grid9ExternalTools) grid9ExternalTools.hidden = !grid9Active;
+      if (quickCard) quickCard.hidden = !quickActive;
+      if (quickExternalTools) quickExternalTools.hidden = !quickActive;
+      if (trioCard) trioCard.hidden = !trioActive;
+      if (trioExternalTools) trioExternalTools.hidden = !trioActive;
+      if (imageToolPage) imageToolPage.hidden = page !== "image-tool";
+      if (collectionPage) collectionPage.hidden = page !== "collection";
+    }
+
     function setMainPage(pageName, persist = true) {
       const allowedPages = new Set(["template", "image-tool", "collection"]);
       const nextPage = allowedPages.has(pageName) ? pageName : "template";
@@ -423,9 +495,7 @@
       if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES[nextPage] || PAGE_TITLES.template;
       if (templateToolbar) templateToolbar.hidden = nextPage !== "template";
       templateToolBlocks.forEach((block) => { block.hidden = nextPage !== "template"; });
-      if (stage) stage.hidden = nextPage !== "template";
-      if (imageToolPage) imageToolPage.hidden = nextPage !== "image-tool";
-      if (collectionPage) collectionPage.hidden = nextPage !== "collection";
+      syncTemplatePages(nextPage);
       if (nextPage === "image-tool") {
         prepareStandaloneImageTool();
       } else {
@@ -440,7 +510,8 @@
     }
 
     function templateSize() {
-      return currentTemplate() === "compact" ? { width: 600, height: 800 } : { width: 1080, height: 1440 };
+      if (currentTemplate() === "compact") return { width: 600, height: 800 };
+      return { width: 1080, height: 1440 };
     }
 
     function normalizeThemeId(themeId) {
@@ -532,6 +603,9 @@
       const nextId = CARD_THEMES[normalizedThemeId] ? normalizedThemeId : DEFAULT_THEME_ID;
       currentThemeId = nextId;
       card.dataset.theme = nextId;
+      if (grid9Card) grid9Card.dataset.theme = nextId;
+      if (quickCard) quickCard.dataset.theme = nextId;
+      if (trioCard) trioCard.dataset.theme = nextId;
       themeButtons.forEach((button) => button.classList.toggle("active", button.dataset.theme === nextId));
       ensureThemePageForTheme(nextId);
       updateThemePager();
@@ -563,9 +637,17 @@
       return fullScale;
     }
 
+    function activeCardElement() {
+      if (currentTemplate() === "grid9") return grid9Card;
+      if (currentTemplate() === "quick") return quickCard;
+      if (currentTemplate() === "trio") return trioCard;
+      return card;
+    }
+
     function fitStage() {
       if (!stage || stage.hidden) return;
       const size = templateSize();
+      const activeCard = activeCardElement();
       const toolbarHeight = document.querySelector(".menu-toolbar")?.offsetHeight || 0;
       const themeBarHeight = 0;
       const availableWidth = Math.max(1, stage.clientWidth - 16);
@@ -574,9 +656,9 @@
         : Number.POSITIVE_INFINITY;
       const fullScale = Math.min(1, availableWidth / size.width, availableHeight / size.height);
 
-      stage.classList.toggle("is-focused", isMobileView() && Boolean(mobileFocusTarget) && currentTemplate() === "full");
+      stage.classList.toggle("is-focused", isMobileView() && Boolean(mobileFocusTarget) && currentTemplate() !== "compact");
 
-      if (isMobileView() && mobileFocusTarget && currentTemplate() === "full") {
+      if (isMobileView() && mobileFocusTarget && currentTemplate() !== "compact") {
         const rect = focusRectFor(mobileFocusTarget);
         const isTagsFocus = mobileFocusTarget.classList.contains("tags-panel");
         const focusScale = isTagsFocus
@@ -587,7 +669,7 @@
         const horizontalPad = preferLeft ? 18 : (availableWidth - rect.width * scale) / 2;
         const tx = Math.round(horizontalPad - rect.left * scale);
         const ty = Math.round((availableHeight - rect.height * scale) / 2 - rect.top * scale);
-        card.style.transform = "translate(" + tx + "px, " + ty + "px) scale(" + scale + ")";
+        activeCard.style.transform = "translate(" + tx + "px, " + ty + "px) scale(" + scale + ")";
         stage.style.height = availableHeight + "px";
         mobileFocusBack.classList.remove("hidden");
         return;
@@ -595,7 +677,7 @@
 
       stage.classList.remove("is-focused");
       const centerX = Math.max(0, (availableWidth - size.width * fullScale) / 2);
-      card.style.transform = "translateX(" + Math.round(centerX) + "px) scale(" + fullScale + ")";
+      activeCard.style.transform = "translateX(" + Math.round(centerX) + "px) scale(" + fullScale + ")";
       stage.style.height = (size.height * fullScale + (isMobileView() ? 0 : 16)) + "px";
       stage.scrollLeft = 0;
       stage.scrollTop = 0;
@@ -608,7 +690,7 @@
     }
 
     function focusMobileArea(area) {
-      if (!isMobileView() || currentTemplate() !== "full") return;
+      if (!isMobileView() || currentTemplate() === "compact") return;
       mobileFocusTarget = area;
       fitStage();
     }
@@ -629,8 +711,16 @@
     }
 
     function setTemplate(template, persist = true) {
-      card.classList.toggle("compact", template === "compact");
-      templateButtons.forEach((button) => button.classList.toggle("active", button.dataset.template === template));
+      const nextTemplate = template === "grid9" ? "grid9" : (template === "quick" ? "quick" : (template === "trio" ? "trio" : (template === "compact" ? "compact" : "full")));
+      card.classList.toggle("compact", nextTemplate === "compact");
+      card.classList.toggle("grid9", nextTemplate === "grid9");
+      card.classList.toggle("quick", nextTemplate === "quick");
+      card.classList.toggle("trio", nextTemplate === "trio");
+      templateButtons.forEach((button) => button.classList.toggle("active", button.dataset.template === nextTemplate));
+      mobileFocusTarget = null;
+      mobileFocusBack?.classList.add("hidden");
+      if (stage) stage.classList.remove("is-focused");
+      syncTemplatePages();
       fitStage();
       if (persist) saveState();
     }
@@ -1547,18 +1637,17 @@
       const wrap = row.querySelector(".stars");
       for (let index = 1; index <= 5; index += 1) {
         const star = document.createElement("button");
-        star.className = "star";
+        star.className = `star${index <= value ? " active" : ""}`;
         star.type = "button";
         star.textContent = "★";
         star.setAttribute("aria-label", `${index} 星`);
-        star.addEventListener("click", (event) => {
-          const rect = event.currentTarget.getBoundingClientRect();
-          const isHalf = event.clientX - rect.left < rect.width / 2;
-          setRating(row, isHalf ? index - 0.5 : index);
+        star.addEventListener("click", () => {
+          wrap.querySelectorAll(".star").forEach((item, itemIndex) => {
+            item.classList.toggle("active", itemIndex < index);
+          });
         });
         wrap.appendChild(star);
       }
-      setRating(row, value);
     }
 
     document.querySelectorAll(".rating-row").forEach((row) => makeStars(row));
@@ -1588,6 +1677,17 @@
       const target = event.target;
       if (target instanceof HTMLElement && target.isContentEditable) {
         normalizeEditableNode(target);
+        const isEmpty = target.textContent.trim() === "";
+        target.classList.toggle("is-empty", isEmpty);
+        if (isEmpty) {
+          target.textContent = "";
+          const range = document.createRange();
+          range.selectNodeContents(target);
+          range.collapse(true);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
       }
     });
 
@@ -2442,6 +2542,78 @@
       await loadEditorFromCurrentGlobals(src);
     }
 
+    function grid9EditorGlobals(index) {
+      const cell = grid9CellEditors[index];
+      const src = cell ? (cell.querySelector(".grid9-cover-image").getAttribute("src") || "") : "";
+      return {
+        coverOriginalSrc: src || "",
+        coverEditedSrc: "",
+        coverMosaicMaskSrc: "",
+        coverBlurMaskSrc: "",
+        coverEditorUndoStack: [],
+        coverEditorRedoStack: [],
+        coverStickers: [],
+        stickerSources: JSON.parse(JSON.stringify(stickerSources || [])),
+        selectedStickerId: null,
+        editorTool: "mosaic",
+        coverSrc: src,
+        coverFit: "cover"
+      };
+    }
+
+    async function openGrid9ImageEditor(index) {
+      const cell = grid9CellEditors[index];
+      if (!cell) return;
+      const src = cell.querySelector(".grid9-cover-image").getAttribute("src") || "";
+      if (!src) {
+        cell.querySelector(".grid9-cover-input")?.click();
+        return;
+      }
+      if (imageEditorMode === "standalone") leaveStandaloneImageTool();
+      if (imageEditorMode !== "grid9") templateEditorGlobalsBackup = editorGlobals();
+      imageEditorMode = "grid9";
+      activeGrid9Index = index;
+      placeImageEditorForTemplate();
+      applyEditorGlobals(grid9EditorGlobals(index));
+      await loadEditorFromCurrentGlobals(src);
+    }
+
+    function quickEditorGlobals(index) {
+      const cell = quickCellEditors[index];
+      const src = cell ? (cell.querySelector(".quick-cover img").getAttribute("src") || "") : "";
+      return {
+        coverOriginalSrc: src || "",
+        coverEditedSrc: "",
+        coverMosaicMaskSrc: "",
+        coverBlurMaskSrc: "",
+        coverEditorUndoStack: [],
+        coverEditorRedoStack: [],
+        coverStickers: [],
+        stickerSources: JSON.parse(JSON.stringify(stickerSources || [])),
+        selectedStickerId: null,
+        editorTool: "mosaic",
+        coverSrc: src,
+        coverFit: "cover"
+      };
+    }
+
+    async function openQuickImageEditor(index) {
+      const cell = quickCellEditors[index];
+      if (!cell) return;
+      const src = cell.querySelector(".quick-cover img").getAttribute("src") || "";
+      if (!src) {
+        cell.querySelector(".quick-file")?.click();
+        return;
+      }
+      if (imageEditorMode === "standalone") leaveStandaloneImageTool();
+      if (imageEditorMode !== "quick") templateEditorGlobalsBackup = editorGlobals();
+      imageEditorMode = "quick";
+      activeQuickIndex = index;
+      placeImageEditorForTemplate();
+      applyEditorGlobals(quickEditorGlobals(index));
+      await loadEditorFromCurrentGlobals(src);
+    }
+
     async function openStandaloneImageEditor(src) {
       const nextSrc = src || standaloneOriginalSrc || standaloneEditedSrc || "";
       if (!nextSrc) {
@@ -2598,6 +2770,111 @@
         if (imageToolEmpty) imageToolEmpty.hidden = false;
         return;
       }
+      if (imageEditorMode === "grid9") {
+        let shouldClose = true;
+        try {
+          if (editorImage) {
+            if (apply) {
+              const nextEditedSrc = await updateEditedCoverFromEditor();
+              if (!nextEditedSrc) throw new Error("Edited cover is empty");
+              applyGrid9Cover(activeGrid9Index, await grid9CoverStorageDataUrl(nextEditedSrc));
+              saveState();
+              requestAnimationFrame(() => fitStage());
+            } else {
+              restoreEditorSessionSnapshot();
+            }
+          }
+        } catch (error) {
+          console.error("Grid9 image editor close failed", error);
+          shouldClose = !apply;
+          const detail = error && (error.name || error.message) ? "\n" + [error.name, error.message].filter(Boolean).join(": ") : "";
+          alert(String.fromCharCode(0x56fe, 0x7247, 0x2044, 0x7f16, 0x8f91, 0x7ed3, 0x679c, 0x5e94, 0x7528, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x518d, 0x8bd5, 0x4e00, 0x6b21, 0x3002) + detail);
+        } finally {
+          if (shouldClose) {
+            editorSessionSnapshot = null;
+            editorDrawing = false;
+            editorLastPoint = null;
+            editorStickerDrag = null;
+            selectedStickerId = null;
+            imageEditModal.hidden = true;
+            imageEditorMode = "template";
+            restoreTemplateEditorGlobals();
+            placeImageEditorForTemplate();
+            requestAnimationFrame(() => fitStage());
+          }
+        }
+        return;
+      }
+      if (imageEditorMode === "quick") {
+        let shouldClose = true;
+        try {
+          if (editorImage) {
+            if (apply) {
+              const nextEditedSrc = await updateEditedCoverFromEditor();
+              if (!nextEditedSrc) throw new Error("Edited cover is empty");
+              applyQuickCover(activeQuickIndex, await grid9CoverStorageDataUrl(nextEditedSrc));
+              saveState();
+              requestAnimationFrame(() => fitStage());
+            } else {
+              restoreEditorSessionSnapshot();
+            }
+          }
+        } catch (error) {
+          console.error("Quick image editor close failed", error);
+          shouldClose = !apply;
+          const detail = error && (error.name || error.message) ? "\n" + [error.name, error.message].filter(Boolean).join(": ") : "";
+          alert(String.fromCharCode(0x56fe, 0x7247, 0x2044, 0x7f16, 0x8f91, 0x7ed3, 0x679c, 0x5e94, 0x7528, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x518d, 0x8bd5, 0x4e00, 0x6b21, 0x3002) + detail);
+        } finally {
+          if (shouldClose) {
+            editorSessionSnapshot = null;
+            editorDrawing = false;
+            editorLastPoint = null;
+            editorStickerDrag = null;
+            selectedStickerId = null;
+            imageEditModal.hidden = true;
+            imageEditorMode = "template";
+            restoreTemplateEditorGlobals();
+            placeImageEditorForTemplate();
+            requestAnimationFrame(() => fitStage());
+          }
+        }
+        return;
+      }
+      if (imageEditorMode === "trio") {
+        let shouldClose = true;
+        try {
+          if (editorImage) {
+            if (apply) {
+              const nextEditedSrc = await updateEditedCoverFromEditor();
+              if (!nextEditedSrc) throw new Error("Edited cover is empty");
+              applyTrioCover(activeTrioIndex, await grid9CoverStorageDataUrl(nextEditedSrc));
+              saveState();
+              requestAnimationFrame(() => fitStage());
+            } else {
+              restoreEditorSessionSnapshot();
+            }
+          }
+        } catch (error) {
+          console.error("Trio image editor close failed", error);
+          shouldClose = !apply;
+          const detail = error && (error.name || error.message) ? "\n" + [error.name, error.message].filter(Boolean).join(": ") : "";
+          alert(String.fromCharCode(0x56fe, 0x7247, 0x2044, 0x7f16, 0x8f91, 0x7ed3, 0x679c, 0x5e94, 0x7528, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x518d, 0x8bd5, 0x4e00, 0x6b21, 0x3002) + detail);
+        } finally {
+          if (shouldClose) {
+            editorSessionSnapshot = null;
+            editorDrawing = false;
+            editorLastPoint = null;
+            editorStickerDrag = null;
+            selectedStickerId = null;
+            imageEditModal.hidden = true;
+            imageEditorMode = "template";
+            restoreTemplateEditorGlobals();
+            placeImageEditorForTemplate();
+            requestAnimationFrame(() => fitStage());
+          }
+        }
+        return;
+      }
       let shouldClose = true;
       try {
         if (editorImage) {
@@ -2663,13 +2940,9 @@
     }
 
     function setRating(row, value) {
-      const numeric = Math.max(0, Math.min(5, Number(value) || 0));
       row.querySelectorAll(".star").forEach((star, index) => {
-        const position = index + 1;
-        star.classList.toggle("active", numeric >= position);
-        star.classList.toggle("half", numeric > index && numeric < position);
+        star.classList.toggle("active", index < value);
       });
-      updateRatingValues();
     }
 
     function collectState() {
@@ -2710,6 +2983,9 @@
         standaloneEditorRedoStack,
         standaloneStickers: cloneStickerList(standaloneStickers),
         standaloneStickerSources,
+        grid9: collectGrid9State(),
+        quick: collectQuickState(),
+        trio: collectTrioState(),
         playerTotalSeconds,
         playerProgress,
         playerPlaying,
@@ -2721,6 +2997,10 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
       } catch (error) {
         console.warn("save failed", error);
+        if (!storageFullWarned && error && (error.name === "QuotaExceededError" || /quota/i.test(String((error && error.message) || error)))) {
+          storageFullWarned = true;
+          alert(UI_STORAGE_FULL);
+        }
       }
     }
 
@@ -2732,7 +3012,7 @@
 
     function applyState(state, persist = false) {
       if (!state || typeof state !== "object") return false;
-      setTemplate(state.template === "compact" ? "compact" : "full", false);
+      setTemplate(state.template || "full", false);
       applyCardTheme(state.theme || DEFAULT_THEME_ID, false);
       setEditableText("recordTitle", state.recordTitle || state.jpTitle || state.cnTitle || "");
       setEditableText("cvText", state.cvText || "");
@@ -2777,6 +3057,9 @@
       }
       coverImage.style.objectFit = state.coverFit || "contain";
       coverImage.style.filter = "";
+      if (state.grid9 && typeof state.grid9 === "object") applyGrid9State(state.grid9);
+      if (state.quick && typeof state.quick === "object") applyQuickState(state.quick);
+      if (state.trio && typeof state.trio === "object") applyTrioState(state.trio);
       playerTotalSeconds = Number.isFinite(Number(state.playerTotalSeconds)) ? Number(state.playerTotalSeconds) : PLAYER_DEFAULT_TOTAL;
       playerProgress = Number.isFinite(Number(state.playerProgress)) ? Number(state.playerProgress) : 0;
       playerPlaying = Boolean(state.playerPlaying);
@@ -2947,6 +3230,18 @@
 
     resetButton.addEventListener("click", () => {
       if (!window.confirm(UI_RESET_CONFIRM)) return;
+      if (currentTemplate() === "quick") {
+        resetQuickState();
+        return;
+      }
+      if (currentTemplate() === "trio") {
+        resetTrioState();
+        return;
+      }
+      if (currentTemplate() === "grid9") {
+        resetGrid9State();
+        return;
+      }
       card.querySelectorAll("[contenteditable='true']").forEach((node) => {
         if (node.classList.contains("tag")) return;
         node.textContent = "";
@@ -2997,23 +3292,9 @@
     }
 
     function ratingValue(row) {
-      let value = 0;
-      row.querySelectorAll(".star").forEach((star, index) => {
-        if (star.classList.contains("active")) value = Math.max(value, index + 1);
-        else if (star.classList.contains("half")) value = Math.max(value, index + 0.5);
-      });
-      return value;
+      return row.querySelectorAll(".star.active").length;
     }
 
-    function updateRatingValues() {
-      document.querySelectorAll(".rating-row").forEach((row) => {
-        const node = row.querySelector(".rating-value");
-        if (!node) return;
-        const value = ratingValue(row);
-        node.textContent = value ? String(value) : "";
-        node.setAttribute("aria-label", value ? String(value) + " 星" : "");
-      });
-    }
 
     function roundRect(ctx, x, y, w, h, r) {
       const radius = Math.min(r, w / 2, h / 2);
@@ -3243,29 +3524,15 @@
     }
 
     function drawMetric(ctx, label, value, x, y, w, h, suffix = "", textOffsetX = 0, options = {}) {
-      const theme = currentCardTheme();
-      const hero = Boolean(options.hero);
-      const secondary = Boolean(options.secondary);
-      const compact = Boolean(options.compact);
-      if (hero) {
-        const grad = ctx.createLinearGradient(x, y, x + w, y + h);
-        grad.addColorStop(0, "rgba(255,255,255,.88)");
-        grad.addColorStop(1, themeAlpha("line", .46));
-        fillRound(ctx, x, y, w, h, 18, grad);
-        strokeRound(ctx, x, y, w, h, 18, themeAlpha("accentDeep", .36), 2);
-      } else {
-        fillRound(ctx, x, y, w, h, 18, "rgba(255,255,255,.66)");
-        strokeRound(ctx, x, y, w, h, 18, themeAlpha("mint", .28), 2);
-      }
-      const labelY = hero ? 24 : (compact ? 25 : 24);
-      const valueY = hero ? 62 : (compact ? 52 : 56);
-      ctx.fillStyle = hero ? theme.accentDeep : (secondary ? theme.muted : theme.mint);
-      ctx.font = canvasFont('800', compact ? 16 : 18);
-      ctx.fillText(label, x + 10 + textOffsetX, y + labelY);
-      ctx.fillStyle = options.highDiscount ? "#d7192f" : (hero ? theme.accentDeep : (secondary ? theme.muted : theme.ink));
-      ctx.font = canvasFont('900', hero ? 36 : 24);
+      fillRound(ctx, x, y, w, h, 18, "rgba(255,255,255,.66)");
+      strokeRound(ctx, x, y, w, h, 18, themeAlpha("mint", .28), 2);
+      ctx.fillStyle = currentCardTheme().mint;
+      ctx.font = canvasFont('800', 18);
+      ctx.fillText(label, x + 10 + textOffsetX, y + 24);
+      ctx.fillStyle = options.highDiscount ? "#d7192f" : currentCardTheme().ink;
+      ctx.font = canvasFont('900', 26);
       const text = value ? value + suffix : "";
-      ctx.fillText(text, x + 10 + textOffsetX, y + valueY);
+      ctx.fillText(text, x + 10 + textOffsetX, y + 56);
     }
 
     function drawPlayerSvgPaths(ctx, x, y, size, color, paths) {
@@ -3389,43 +3656,33 @@
       });
     }
 
-    function drawStars(ctx, label, count, x, y, valueText = "") {
-      const theme = currentCardTheme();
-      const fill = theme.starFill || theme.accent;
-      ctx.fillStyle = theme.accentDeep;
+    function drawStars(ctx, label, count, x, y) {
+      ctx.fillStyle = currentCardTheme().accentDeep;
       ctx.font = canvasFont('900', 24);
       ctx.fillText(label, x, y + 27);
       for (let i = 0; i < 5; i += 1) {
-        const sx = x + 68 + i * 44;
-        const remaining = count - i;
-        const isActive = remaining >= 1;
-        const isHalf = remaining > 0 && remaining < 1;
-        fillRound(ctx, sx, y, 36, 36, 18, isActive ? fill : "rgba(255,255,255,.7)");
-        strokeRound(ctx, sx, y, 36, 36, 18, themeAlpha("line", .32), 2);
-        ctx.fillStyle = isActive ? "#fff" : themeAlpha("accent", .32);
+        const sx = x + 92 + i * 48;
+        fillRound(ctx, sx, y, 34, 34, 17, i < count ? (currentCardTheme().starFill || currentCardTheme().accent) : "rgba(255,255,255,.7)");
+        strokeRound(ctx, sx, y, 34, 34, 17, themeAlpha("line", .32), 2);
+        ctx.fillStyle = i < count ? "#fff" : themeAlpha("accent", .32);
         ctx.font = canvasFont('900', 24);
         ctx.textAlign = "center";
-        ctx.fillText(STAR_CHAR, sx + 18, y + 27);
-        if (isHalf) {
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(sx, y, 18, 36);
-          ctx.clip();
-          fillRound(ctx, sx, y, 36, 36, 18, fill);
-          ctx.fillStyle = "#fff";
-          ctx.fillText(STAR_CHAR, sx + 18, y + 27);
-          ctx.restore();
-        }
+        ctx.fillText(STAR_CHAR, sx + 17, y + 26);
         ctx.textAlign = "left";
-      }
-      if (valueText) {
-        ctx.fillStyle = theme.accentDeep;
-        ctx.font = canvasFont('900', 21);
-        ctx.fillText(valueText, x + 290, y + 30);
       }
     }
 
-    async function drawCover(ctx, x = 90, y = 110, w = 420, h = 315, r = 24, frame = true, fitMode = null) {
+    async function drawCover(ctx, x = 90, y = 110, w = 420, h = 315, r = 24, frame = true, fitMode = null, shadow = frame) {
+      if (shadow) {
+        ctx.save();
+        ctx.shadowColor = "rgba(128, 76, 95, 0.16)";
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetY = 14;
+        roundRect(ctx, x, y, w, h, r);
+        ctx.fillStyle = currentCardTheme().coverBg;
+        ctx.fill();
+        ctx.restore();
+      }
       fillRound(ctx, x, y, w, h, r, currentCardTheme().coverBg);
       if (frame) strokeRound(ctx, x, y, w, h, r, "#fff", 4);
       if (!coverImage.src || !coverBox.classList.contains("has-image")) {
@@ -3454,6 +3711,7 @@
       ctx.fillRect(x, y, w, h);
       ctx.drawImage(coverImage, dx, dy, dw, dh);
       ctx.restore();
+      if (frame) strokeRound(ctx, x, y, w, h, r, "#fff", 4);
     }
 
     function dataFileName() {
@@ -3562,6 +3820,18 @@
       commitActivePlayerTime();
       downloadButton.disabled = true;
       try {
+        if (currentTemplate() === "grid9") {
+          await downloadGrid9Card();
+          return;
+        }
+        if (currentTemplate() === "quick") {
+          await downloadQuickCard();
+          return;
+        }
+        if (currentTemplate() === "trio") {
+          await downloadTrioCard();
+          return;
+        }
         await ensureCanvasFontReady();
         if (currentTemplate() === "compact") {
           await downloadCompactCard();
@@ -3609,35 +3879,34 @@
         drawStickerLabel(ctx, LABEL_TAGS, 80, 571);
         const tagTexts = Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean);
         let tx = 84;
-        const ty = 622;
+        const ty = 628;
         ctx.font = canvasFont('900', 21);
         tagTexts.forEach((tag) => {
-          const minTagWidth = /^[A-Za-z0-9]+$/.test(tag) && Array.from(tag).length <= 3 ? 56 : 70;
-          const tw = Math.max(minTagWidth, ctx.measureText(tag).width + 24);
-          if (tx + tw > 996) return;
-          fillRound(ctx, tx, ty, tw, 38, 19, theme.chipBg);
-          strokeRound(ctx, tx, ty, tw, 38, 19, themeAlpha("accent", .24), 1);
-          ctx.fillStyle = currentCardTheme().accentDeep;
-          ctx.fillText(tag, tx + 12, ty + 27);
+          const tw = ctx.measureText(tag).width + 26;
+          if (tx + tw > 984) return;
+          fillRound(ctx, tx, ty, tw, 39, 20, theme.chipBg);
+          strokeRound(ctx, tx, ty, tw, 39, 20, themeAlpha("accent", .24), 1);
+          ctx.fillStyle = currentThemeId === "matcha-berry-cheese" ? theme.ink : theme.accentDeep;
+          ctx.fillText(tag, tx + 13, ty + 27);
           tx += tw + 9;
         });
 
-        fillRound(ctx, 62, 737, 546, 220, 26, theme.panelBg);
-        strokeRound(ctx, 62, 737, 546, 220, 26, themeAlpha("line", .54), 2);
+        fillRound(ctx, 62, 737, 468, 220, 26, theme.panelBg);
+        strokeRound(ctx, 62, 737, 468, 220, 26, themeAlpha("line", .54), 2);
         drawStickerLabel(ctx, LABEL_PURCHASE, 80, 720);
-        drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 80, 771, 250, 96, "", exportTextOffsetX, { hero: true });
-        drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 340, 771, 250, 96, "", exportTextOffsetX, { secondary: true });
-        drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 80, 877, 250, 60, "%off", exportTextOffsetX, { compact: true, highDiscount: isHighDiscountValue(valueOf("#currentDiscount")) });
-        drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 340, 877, 250, 60, "%off", exportTextOffsetX, { compact: true, highDiscount: isHighDiscountValue(valueOf("#lowestPrice")) });
+        drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 80, 779, 210, 64, "", exportTextOffsetX);
+        drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 302, 779, 210, 64, "", exportTextOffsetX);
+        drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 80, 862, 210, 64, "%off", exportTextOffsetX, { highDiscount: isHighDiscountValue(valueOf("#currentDiscount")) });
+        drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 302, 862, 210, 64, "%off", exportTextOffsetX, { highDiscount: isHighDiscountValue(valueOf("#lowestPrice")) });
 
-        fillRound(ctx, 624, 737, 390, 220, 26, theme.panelBg);
-        strokeRound(ctx, 624, 737, 390, 220, 26, themeAlpha("line", .54), 2);
-        drawStickerLabel(ctx, LABEL_RATING, 642, 720);
+        fillRound(ctx, 546, 737, 468, 220, 26, theme.panelBg);
+        strokeRound(ctx, 546, 737, 468, 220, 26, themeAlpha("line", .54), 2);
+        drawStickerLabel(ctx, LABEL_RATING, 564, 720);
         const rows = Array.from(document.querySelectorAll(".rating-row"));
-        drawStars(ctx, LABEL_OVERALL, ratingValue(rows[0]), 642, 770, String(ratingValue(rows[0]) || ""));
-        drawStars(ctx, "CV", ratingValue(rows[1]), 642, 814);
-        drawStars(ctx, LABEL_STORY, ratingValue(rows[2]), 642, 858);
-        drawStars(ctx, "SE", ratingValue(rows[3]), 642, 902);
+        drawStars(ctx, LABEL_OVERALL, ratingValue(rows[0]), 564, 776);
+        drawStars(ctx, "CV", ratingValue(rows[1]), 564, 818);
+        drawStars(ctx, LABEL_STORY, ratingValue(rows[2]), 564, 860);
+        drawStars(ctx, "SE", ratingValue(rows[3]), 564, 902);
 
         fillRound(ctx, 62, 997, 952, 382, 28, theme.reviewBg);
         strokeRound(ctx, 62, 997, 952, 382, 28, themeAlpha("line", .54), 2);
@@ -3653,6 +3922,1323 @@
       } finally {
         downloadButton.disabled = false;
       }
+    }
+
+    const UI_GRID9_UPLOAD = String.fromCharCode(0x70b9, 0x51fb, 0x4e0a, 0x4f20, 0x20, 0x42, 0x4b);
+    const UI_GRID9_TAG_PLACEHOLDER = String.fromCharCode(0x77ed, 0x6807, 0x9898);
+    const UI_GRID9_REVIEW_PLACEHOLDER = String.fromCharCode(0x77ed, 0x8bc4, 0xff0c, 0x6700, 0x591a, 0x4e09, 0x884c);
+    const UI_GRID9_RJ_PLACEHOLDER = String.fromCharCode(0x52, 0x4a, 0x53f7);
+    const UI_GRID9_UPLOAD_FAILED = String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x9009, 0x62e9, 0x56fe, 0x7247, 0x3002);
+    const UI_GRID9_WATERMARK = String.fromCharCode(0x4e59, 0x6293, 0x8bb0, 0x5f55, 0xb7, 0x20, 0x4f, 0x54, 0x4f, 0x4d, 0x45, 0x20, 0x56, 0x4f, 0x49, 0x43, 0x45, 0x20, 0x4c, 0x4f, 0x47);
+    const UI_GRID9_IMPORTED = String.fromCharCode(0x5df2, 0x5bfc, 0x5165);
+    const UI_GRID9_FAILED = String.fromCharCode(0x5931, 0x8d25);
+    const UI_GRID9_SKIPPED = String.fromCharCode(0x8df3, 0x8fc7);
+    const UI_GRID9_EMPTY = String.fromCharCode(0x672a, 0x586b);
+    const UI_GRID9_NOTHING = String.fromCharCode(0x6ca1, 0x6709, 0x53ef, 0x5bfc, 0x5165, 0x7684, 0x683c, 0x5b50, 0x3002);
+    const UI_GRID9_CONTAIN = String.fromCharCode(0x5b8c, 0x6574, 0x663e, 0x793a);
+    const UI_GRID9_COVER = String.fromCharCode(0x88c1, 0x5207);
+    const UI_GRID9_EDIT = String.fromCharCode(0x7f16, 0x8f91);
+    const UI_GRID9_REMOVE = String.fromCharCode(0x79fb, 0x9664);
+    const UI_GRID9_IMPORTING = String.fromCharCode(0x6b63, 0x5728, 0x5bfc, 0x5165, 0x4fe1, 0x606f);
+    const UI_GRID9_KICKER = "VOICE LOG \u2726 NOTE";
+    const UI_GRID9_SPARKLES = "\u2726 \u00b7 \u2661 \u00b7 \u2726";
+    const UI_GRID9_IMPORT_DONE_TITLE = String.fromCharCode(0x5df2, 0x6839, 0x636e, 0x52, 0x4a, 0x53f7, 0x5bfc, 0x5165, 0x4fe1, 0x606f);
+    const UI_GRID9_NO_COVER = String.fromCharCode(0x6ca1, 0x6709, 0x62ff, 0x5230, 0x5c01, 0x9762);
+    const UI_GRID9_NO_DATA = String.fromCharCode(0x6ca1, 0x6709, 0x8bfb, 0x53d6, 0x5230, 0x8d44, 0x6599);
+    const UI_GRID9_UNKNOWN = String.fromCharCode(0x672a, 0x77e5, 0x539f, 0x56e0);
+    const grid9ImportModal = document.getElementById("grid9ImportModal");
+    const grid9ImportTitle = document.getElementById("grid9ImportTitle");
+    const grid9ImportBody = document.getElementById("grid9ImportBody");
+    const grid9ImportDoneButton = document.getElementById("grid9ImportDoneButton");
+    const GRID9_PRESET_SUMMARY = [
+      String.fromCharCode(0x6700, 0x559c, 0x6b22),
+      String.fromCharCode(0x6700, 0x60ca, 0x559c),
+      String.fromCharCode(0x6700, 0x50ac, 0x7720),
+      String.fromCharCode(0x6700, 0x9002, 0x5408, 0x7761, 0x524d),
+      String.fromCharCode(0x6700, 0x60f3, 0x4e8c, 0x5237),
+      String.fromCharCode(0x6700, 0x4e0a, 0x5934),
+      String.fromCharCode(0x6700, 0x4f1a, 0x64a9),
+      String.fromCharCode(0x6700, 0x6233, 0x58, 0x50),
+      String.fromCharCode(0x6700, 0x60f3, 0x5b89, 0x5229)
+    ];
+    const GRID9_PRESET_VOICE = [
+      String.fromCharCode(0x6700, 0x559c, 0x6b22),
+      String.fromCharCode(0x6700, 0x6e29, 0x67d4),
+      String.fromCharCode(0x6700, 0x50ac, 0x7720),
+      String.fromCharCode(0x6700, 0x53cd, 0x5dee),
+      String.fromCharCode(0x6700, 0x8010, 0x542c),
+      String.fromCharCode(0x6700, 0x4e0a, 0x5934),
+      String.fromCharCode(0x6700, 0x4f1a, 0x64a9),
+      String.fromCharCode(0x6700, 0x6709, 0x8bb0, 0x5fc6, 0x70b9),
+      String.fromCharCode(0x6700, 0x63a8, 0x8350)
+    ];
+
+    function buildGrid9Cells() {
+      grid9CellEditors = [];
+      for (let index = 0; index < 9; index += 1) {
+        const cell = document.createElement("article");
+        cell.className = "grid9-cell";
+        cell.dataset.grid9Index = String(index);
+
+        const tagInput = document.createElement("input");
+        tagInput.className = "grid9-tag-input";
+        tagInput.type = "text";
+        tagInput.maxLength = 8;
+        tagInput.placeholder = UI_GRID9_TAG_PLACEHOLDER;
+
+        const box = document.createElement("label");
+        box.className = "grid9-cover-box";
+        const input = document.createElement("input");
+        input.className = "grid9-cover-input";
+        input.type = "file";
+        input.accept = "image/*";
+        const img = document.createElement("img");
+        img.className = "grid9-cover-image";
+        img.alt = "";
+        const placeholder = document.createElement("span");
+        placeholder.className = "grid9-cover-placeholder";
+        placeholder.textContent = UI_GRID9_UPLOAD;
+        const number = document.createElement("span");
+        number.className = "grid9-number";
+        number.textContent = String(index + 1);
+        const rjInput = document.createElement("input");
+        rjInput.className = "grid9-cell-rj-input";
+        rjInput.type = "text";
+        rjInput.maxLength = 12;
+        rjInput.placeholder = UI_GRID9_RJ_PLACEHOLDER;
+        rjInput.addEventListener("pointerdown", (event) => event.stopPropagation());
+        rjInput.addEventListener("input", () => fitGrid9RjWidth(rjInput));
+        fitGrid9RjWidth(rjInput);
+        const tools = document.createElement("div");
+        tools.className = "grid9-cover-tools";
+        const toolDefs = [
+          { action: "contain", label: UI_GRID9_CONTAIN },
+          { action: "cover", label: UI_GRID9_COVER },
+          { action: "edit", label: UI_GRID9_EDIT },
+          { action: "remove", label: UI_GRID9_REMOVE }
+        ];
+        toolDefs.forEach((def) => {
+          const tool = document.createElement("button");
+          tool.type = "button";
+          tool.className = "grid9-cover-tool";
+          tool.dataset.grid9Tool = def.action;
+          tool.textContent = def.label;
+          tools.appendChild(tool);
+        });
+        box.append(input, img, placeholder, number, rjInput, tools);
+
+        const reviewWrap = document.createElement("div");
+        reviewWrap.className = "grid9-review-wrap";
+        const reviewArea = document.createElement("textarea");
+        reviewArea.className = "grid9-review-input";
+        reviewArea.rows = 3;
+        reviewArea.maxLength = 72;
+        reviewArea.placeholder = UI_GRID9_REVIEW_PLACEHOLDER;
+        reviewWrap.appendChild(reviewArea);
+
+        cell.append(tagInput, box, reviewWrap);
+        grid9Cells.appendChild(cell);
+        grid9CellEditors.push(cell);
+      }
+    }
+
+    function updateGrid9Toggles() {
+      if (!grid9Card) return;
+      grid9Card.classList.toggle("hide-numbers", !grid9ShowNumbers.checked);
+      grid9Card.classList.toggle("hide-rj", !grid9ShowRj.checked);
+    }
+
+    function applyGrid9Cover(index, src) {
+      const cell = grid9CellEditors[index];
+      if (!cell) return;
+      const img = cell.querySelector(".grid9-cover-image");
+      const box = cell.querySelector(".grid9-cover-box");
+      if (src) {
+        img.setAttribute("src", src);
+        box.classList.add("has-image");
+      } else {
+        img.removeAttribute("src");
+        box.classList.remove("has-image");
+      }
+    }
+
+    function setGrid9Cover(index, src) {
+      applyGrid9Cover(index, src);
+      saveState();
+    }
+
+    const grid9RjMeasureCanvas = document.createElement("canvas");
+
+    function fitGrid9RjWidth(input) {
+      if (!input) return;
+      const ctx = grid9RjMeasureCanvas.getContext("2d");
+      ctx.font = canvasFont('800', 11);
+      const baseWidth = Math.ceil(ctx.measureText("RJ00000000").width);
+      const text = input.value || "";
+      const textWidth = text ? Math.ceil(ctx.measureText(text).width) : 0;
+      input.style.width = Math.max(baseWidth + 16, textWidth + 16) + "px";
+    }
+
+    function setGrid9Fit(index, fit) {
+      const cell = grid9CellEditors[index];
+      if (!cell) return;
+      const img = cell.querySelector(".grid9-cover-image");
+      img.style.objectFit = fit === "contain" ? "contain" : "cover";
+      saveState();
+    }
+
+    function grid9HasCover(index) {
+      const cell = grid9CellEditors[index];
+      if (!cell) return false;
+      return Boolean(cell.querySelector(".grid9-cover-image").getAttribute("src"));
+    }
+
+    function readGrid9Cell(index) {
+      const cell = grid9CellEditors[index];
+      if (!cell) return null;
+      return {
+        cover: cell.querySelector(".grid9-cover-image").getAttribute("src") || "",
+        tag: cell.querySelector(".grid9-tag-input").value.trim(),
+        review: cell.querySelector(".grid9-review-input").value.trim(),
+        rj: cell.querySelector(".grid9-cell-rj-input").value.trim(),
+        fit: cell.querySelector(".grid9-cover-image").style.objectFit || "cover"
+      };
+    }
+
+    function writeGrid9Cell(index, data) {
+      const cell = grid9CellEditors[index];
+      if (!cell) return;
+      const next = data || {};
+      applyGrid9Cover(index, next.cover || "");
+      cell.querySelector(".grid9-cover-image").style.objectFit = next.fit === "contain" ? "contain" : "cover";
+      cell.querySelector(".grid9-tag-input").value = next.tag || "";
+      cell.querySelector(".grid9-review-input").value = next.review || "";
+      const rjInput = cell.querySelector(".grid9-cell-rj-input");
+      rjInput.value = next.rj || "";
+      fitGrid9RjWidth(rjInput);
+    }
+
+    function collectGrid9State() {
+      return {
+        title: grid9TitleText.textContent.trim(),
+        subtitle: grid9SubtitleText.textContent.trim(),
+        showNumbers: grid9ShowNumbers.checked,
+        showRj: grid9ShowRj.checked,
+        cells: Array.from({ length: 9 }, (_, index) => readGrid9Cell(index))
+      };
+    }
+
+    function applyGrid9State(state) {
+      if (!state || typeof state !== "object") return;
+      grid9TitleText.textContent = state.title || "";
+      grid9SubtitleText.textContent = state.subtitle || "";
+      grid9ShowNumbers.checked = state.showNumbers !== false;
+      grid9ShowRj.checked = state.showRj !== false;
+      for (let index = 0; index < 9; index += 1) {
+        writeGrid9Cell(index, (state.cells && state.cells[index]) || {});
+      }
+      updateGrid9EmptyClass();
+      updateGrid9Toggles();
+    }
+
+    function resetGrid9State() {
+      grid9TitleText.textContent = "";
+      grid9SubtitleText.textContent = "";
+      grid9ShowNumbers.checked = true;
+      grid9ShowRj.checked = true;
+      grid9CellEditors.forEach((cell, index) => {
+        applyGrid9Cover(index, "");
+        cell.querySelector(".grid9-tag-input").value = "";
+        cell.querySelector(".grid9-review-input").value = "";
+        cell.querySelector(".grid9-cell-rj-input").value = "";
+      });
+      updateGrid9EmptyClass();
+      updateGrid9Toggles();
+      saveState();
+    }
+
+    async function waitGrid9ImagesReady() {
+      const pending = [];
+      grid9CellEditors.forEach((cell) => {
+        const img = cell.querySelector(".grid9-cover-image");
+        if (img.getAttribute("src") && !img.complete) {
+          pending.push(img.decode().catch(() => {}));
+        }
+      });
+      await Promise.all(pending);
+    }
+
+    async function grid9CoverStorageDataUrl(dataUrl) {
+      if (!dataUrl) return dataUrl;
+      const img = await loadImage(dataUrl).catch(() => null);
+      if (!img || !img.naturalWidth || !img.naturalHeight) return dataUrl;
+      const width = img.naturalWidth;
+      const height = img.naturalHeight;
+      const scale = Math.min(1, 480 / Math.max(width, height));
+      const outWidth = Math.max(1, Math.round(width * scale));
+      const outHeight = Math.max(1, Math.round(height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = outWidth;
+      canvas.height = outHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, outWidth, outHeight);
+      ctx.drawImage(img, 0, 0, outWidth, outHeight);
+      return canvas.toDataURL("image/jpeg", 0.85);
+    }
+
+    async function migrateGrid9CoversToCompact() {
+      const tasks = [];
+      grid9CellEditors.forEach((cell, index) => {
+        const img = cell.querySelector(".grid9-cover-image");
+        const src = img.getAttribute("src");
+        if (src && !src.startsWith("data:image/jpeg")) {
+          tasks.push(grid9CoverStorageDataUrl(src).then((compact) => {
+            if (compact && compact !== src) img.setAttribute("src", compact);
+          }).catch(() => {}));
+        }
+      });
+      if (tasks.length) {
+        await Promise.all(tasks);
+        saveState();
+      }
+    }
+
+    async function fetchImageAsPngDataUrl(url) {
+      const normalizedUrl = normalizeImageUrl(url);
+      if (!normalizedUrl) throw new Error("empty image url");
+      const response = await fetchWithTimeout(normalizedUrl, { mode: "cors", credentials: "omit" }, isMobileView() ? 10000 : 15000);
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const blob = await response.blob();
+      if (!blob.type || !blob.type.startsWith("image/")) throw new Error("Not an image response");
+      return rasterizeImageToPngDataUrl(await blobToDataUrl(blob));
+    }
+
+    function grid9ImportMessage(imported, failed, skipped, empty) {
+      const parts = [];
+      parts.push(UI_GRID9_IMPORTED + " " + imported + String.fromCharCode(0x5f20));
+      if (failed > 0) parts.push(UI_GRID9_FAILED + " " + failed);
+      if (skipped > 0) parts.push(UI_GRID9_SKIPPED + " " + skipped);
+      if (empty > 0) parts.push(UI_GRID9_EMPTY + " " + empty);
+      return parts.join(String.fromCharCode(0xff0c));
+    }
+
+    function grid9FailureReason(error) {
+      const message = String((error && error.message) || "");
+      if (message === "no cover url") return UI_GRID9_NO_COVER;
+      if (message === "empty product") return UI_GRID9_NO_DATA;
+      if (message) return message;
+      return UI_GRID9_UNKNOWN;
+    }
+
+    function showGrid9ImportLoading() {
+      grid9ImportTitle.textContent = UI_GRID9_IMPORTING + String.fromCharCode(0x2026);
+      grid9ImportBody.textContent = "";
+      grid9ImportDoneButton.hidden = true;
+      grid9ImportModal.hidden = false;
+    }
+
+    function showGrid9ImportResult(imported, failed, skipped, empty, failures) {
+      grid9ImportTitle.textContent = UI_GRID9_IMPORT_DONE_TITLE;
+      grid9ImportBody.textContent = "";
+      const summary = document.createElement("p");
+      summary.style.margin = "0 0 6px";
+      summary.textContent = grid9ImportMessage(imported, failed, skipped, empty);
+      grid9ImportBody.appendChild(summary);
+      (Array.isArray(failures) ? failures : []).forEach((failure) => {
+        const line = document.createElement("p");
+        line.style.margin = "2px 0";
+        line.style.color = "var(--rose-deep)";
+        line.textContent = failure.rj + String.fromCharCode(0xff1a) + failure.reason;
+        grid9ImportBody.appendChild(line);
+      });
+      grid9ImportDoneButton.hidden = false;
+      grid9ImportModal.hidden = false;
+    }
+
+    async function importAllGrid9Covers() {
+      const jobs = [];
+      let emptyCount = 0;
+      let skipCount = 0;
+      grid9CellEditors.forEach((cell, index) => {
+        const rj = normalizeWorkno(cell.querySelector(".grid9-cell-rj-input").value);
+        if (!rj) {
+          emptyCount += 1;
+          return;
+        }
+        if (grid9HasCover(index)) {
+          skipCount += 1;
+          return;
+        }
+        jobs.push({ index, rj });
+      });
+      if (!jobs.length) {
+        grid9ImportTitle.textContent = UI_GRID9_IMPORT_DONE_TITLE;
+        grid9ImportBody.textContent = UI_GRID9_NOTHING;
+        grid9ImportDoneButton.hidden = false;
+        grid9ImportModal.hidden = false;
+        return;
+      }
+      showGrid9ImportLoading();
+      let imported = 0;
+      let failed = 0;
+      const failures = [];
+      let cursor = 0;
+      const concurrency = 2;
+      const worker = async () => {
+        while (cursor < jobs.length) {
+          const job = jobs[cursor];
+          cursor += 1;
+          try {
+            const product = parseDlsiteProduct(await fetchProductJson(job.rj));
+            const coverUrl = product && product.coverUrl;
+            if (!coverUrl) throw new Error("no cover url");
+            const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(coverUrl));
+            applyGrid9Cover(job.index, pngDataUrl);
+            const rjInput = grid9CellEditors[job.index].querySelector(".grid9-cell-rj-input");
+            rjInput.value = job.rj;
+            fitGrid9RjWidth(rjInput);
+            imported += 1;
+          } catch (error) {
+            console.warn("Grid9 batch import failed", job.rj, error);
+            failed += 1;
+            failures.push({ rj: job.rj, reason: grid9FailureReason(error) });
+          }
+        }
+      };
+      const workers = [];
+      for (let i = 0; i < Math.min(concurrency, jobs.length); i += 1) workers.push(worker());
+      await Promise.all(workers);
+      saveState();
+      showGrid9ImportResult(imported, failed, skipCount, emptyCount, failures);
+    }
+
+    function applyGrid9Preset(key) {
+      const preset = key === "voice" ? GRID9_PRESET_VOICE : (key === "summary" ? GRID9_PRESET_SUMMARY : null);
+      grid9CellEditors.forEach((cell, index) => {
+        const tagInput = cell.querySelector(".grid9-tag-input");
+        if (!tagInput) return;
+        tagInput.value = preset ? (preset[index] || "") : "";
+      });
+      saveState();
+    }
+
+    function grid9ExportFileName() {
+      return ["otome", "grid9", safeFilePart(currentThemeId, DEFAULT_THEME_ID)].join("_") + ".png";
+    }
+
+    async function downloadGrid9Card() {
+      await ensureCanvasFontReady();
+      try {
+        await waitGrid9ImagesReady();
+      } catch (imageError) {
+        console.warn("Grid9 export image wait failed", imageError);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 1440;
+      drawGrid9Card(canvas.getContext("2d"));
+      handleExportBlob(await canvasToBlob(canvas), grid9ExportFileName());
+    }
+
+    function grid9MeasureLines(ctx, text, maxWidth) {
+      const sourceLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+      let lines = 0;
+      for (const sourceLine of sourceLines) {
+        let line = "";
+        for (const char of Array.from(sourceLine)) {
+          const test = line + char;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            lines += 1;
+            line = char;
+          } else {
+            line = test;
+          }
+        }
+        if (line) lines += 1;
+        if (lines >= 2) return 2;
+      }
+      return Math.max(1, lines);
+    }
+
+    function drawLetterspacedCentered(ctx, text, cx, y, spacing) {
+      const chars = Array.from(text);
+      const widths = chars.map((char) => ctx.measureText(char).width);
+      let total = 0;
+      widths.forEach((w) => { total += w; });
+      total += spacing * Math.max(0, chars.length - 1);
+      let x = cx - total / 2;
+      chars.forEach((char, index) => {
+        ctx.fillText(char, x + widths[index] / 2, y);
+        x += widths[index] + spacing;
+      });
+    }
+
+    function grid9MaxLineWidth(ctx, text, maxWidth) {
+      let max = 0;
+      const sourceLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+      for (const sourceLine of sourceLines) {
+        let line = "";
+        for (const char of Array.from(sourceLine)) {
+          const test = line + char;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            max = Math.max(max, ctx.measureText(line).width);
+            line = char;
+          } else {
+            line = test;
+          }
+        }
+        if (line) max = Math.max(max, ctx.measureText(line).width);
+      }
+      return Math.max(1, max);
+    }
+
+    function drawGrid9TitleMarker(ctx, text, headerBottom) {
+      const theme = currentCardTheme();
+      const width = Math.min(840, grid9MaxLineWidth(ctx, text, 840)) + 48;
+      const height = 16;
+      const top = headerBottom + 16;
+      ctx.save();
+      ctx.translate(540, top + height / 2);
+      ctx.rotate(-1 * Math.PI / 180);
+      const grad = ctx.createLinearGradient(-width / 2, 0, width / 2, 0);
+      grad.addColorStop(0, themeAlpha("accent", .24));
+      grad.addColorStop(0.58, themeAlpha("accent", .18));
+      grad.addColorStop(1, themeAlpha("mint", .16));
+      ctx.fillStyle = grad;
+      roundRect(ctx, -width / 2, -height / 2, width, height, height / 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawGrid9Card(ctx) {
+      const width = 1080;
+      const height = 1440;
+      const state = collectGrid9State();
+      const theme = currentCardTheme();
+      const bg = ctx.createLinearGradient(0, 0, width, height);
+      bg.addColorStop(0, theme.bgStops[0]);
+      bg.addColorStop(0.48, theme.bgStops[1]);
+      bg.addColorStop(1, theme.bgStops[2]);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = "rgba(255,255,255,.3)";
+      for (let x = 0; x <= width; x += 36) ctx.fillRect(x, 0, 1, height);
+      for (let y = 0; y <= height; y += 36) ctx.fillRect(0, y, width, 1);
+      strokeRound(ctx, 16, 16, width - 32, height - 32, 30, themeAlpha("line", .78), 3);
+      strokeRound(ctx, 30, 30, width - 60, height - 60, 22, themeAlpha("dash", .42), 2, true);
+
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.fillStyle = themeAlpha("accent", .9);
+      ctx.font = canvasFont('900', 13);
+      drawLetterspacedCentered(ctx, UI_GRID9_KICKER, 540, 72, 4);
+      let headerBottom = 124;
+      if (state.title) {
+        ctx.fillStyle = theme.ink;
+        ctx.font = canvasFont('900', 49);
+        const lineCount = grid9MeasureLines(ctx, state.title, 840);
+        headerBottom = 124 + (lineCount - 1) * 60;
+        drawCenteredWrappedText(ctx, state.title, 120, 124, 840, 60, 2);
+        drawGrid9TitleMarker(ctx, state.title, headerBottom);
+      }
+      const subtitleY = headerBottom + 56;
+      if (state.subtitle) {
+        ctx.fillStyle = theme.muted;
+        ctx.font = canvasFont('800', 20);
+        const subWidth = Math.min(760, ctx.measureText(state.subtitle).width);
+        drawCenteredWrappedText(ctx, state.subtitle, 160, subtitleY, 760, 28, 1);
+        ctx.fillStyle = themeAlpha("accent", .62);
+        ctx.font = canvasFont('900', 15);
+        ctx.fillText(String.fromCharCode(0x2661), 540 - subWidth / 2 - 28, subtitleY);
+        ctx.fillText(String.fromCharCode(0x2661), 540 + subWidth / 2 + 28, subtitleY);
+      }
+      ctx.fillStyle = themeAlpha("accent", .6);
+      ctx.font = canvasFont('800', 13);
+      drawLetterspacedCentered(ctx, UI_GRID9_SPARKLES, 540, subtitleY + 24, 13);
+      ctx.restore();
+
+      const gridLeft = 58;
+      const gridTop = subtitleY + 50;
+      const gapX = 18;
+      const gapY = 20;
+      const cellWidth = (width - gridLeft * 2 - gapX * 2) / 3;
+      const gridBottom = 1388;
+      const cellHeight = (gridBottom - gridTop - gapY * 2) / 3;
+      for (let row = 0; row < 3; row += 1) {
+        for (let col = 0; col < 3; col += 1) {
+          const index = row * 3 + col;
+          const x = gridLeft + col * (cellWidth + gapX);
+          const y = gridTop + row * (cellHeight + gapY);
+          drawGrid9Cell(ctx, state, index, x, y, cellWidth, cellHeight);
+        }
+      }
+
+      ctx.save();
+      ctx.fillStyle = themeAlpha("ink", .09);
+      ctx.font = canvasFont('800', 13);
+      ctx.textAlign = "right";
+      ctx.fillText(UI_GRID9_WATERMARK, width - 54, height - 38);
+      ctx.restore();
+    }
+
+    function drawGrid9Cell(ctx, state, index, x, y, w, h) {
+      const theme = currentCardTheme();
+      const cell = state.cells[index] || {};
+      const gap = 10;
+      const tagRowHeight = 40;
+      const reviewRowHeight = 92;
+      const coverY = y + tagRowHeight + gap;
+      const coverHeight = h - tagRowHeight - reviewRowHeight - gap * 2;
+      const radius = 16;
+
+      const tagText = cell.tag || "";
+      if (tagText) {
+        const tagHeight = 38;
+        const ty = y + (tagRowHeight - tagHeight) / 2;
+        const grad = ctx.createLinearGradient(x, ty, x + w, ty + tagHeight);
+        grad.addColorStop(0, theme.accent);
+        grad.addColorStop(1, theme.accentDeep);
+        fillRound(ctx, x, ty, w, tagHeight, tagHeight / 2, grad);
+        ctx.fillStyle = "#fff";
+        ctx.textAlign = "center";
+        ctx.font = canvasFont('900', 18);
+        ctx.fillText(tagText, x + w / 2, ty + tagHeight / 2 + 6);
+        ctx.textAlign = "left";
+      }
+
+      if (cell.cover) {
+        fillRound(ctx, x, coverY, w, coverHeight, radius, theme.coverBg);
+        const imgElement = grid9CellEditors[index] ? grid9CellEditors[index].querySelector(".grid9-cover-image") : null;
+        if (imgElement && imgElement.complete && imgElement.naturalWidth) {
+          ctx.save();
+          roundRect(ctx, x, coverY, w, coverHeight, radius);
+          ctx.clip();
+          const iw = imgElement.naturalWidth;
+          const ih = imgElement.naturalHeight;
+          const fitMode = cell.fit === "contain" ? "contain" : "cover";
+          const scale = fitMode === "contain" ? Math.min(w / iw, coverHeight / ih) : Math.max(w / iw, coverHeight / ih);
+          const dw = iw * scale;
+          const dh = ih * scale;
+          ctx.drawImage(imgElement, x + (w - dw) / 2, coverY + (coverHeight - dh) / 2, dw, dh);
+          ctx.restore();
+        }
+        ctx.save();
+        ctx.shadowColor = "rgba(104,73,87,.13)";
+        ctx.shadowBlur = 18;
+        strokeRound(ctx, x, coverY, w, coverHeight, radius, "rgba(255,255,255,.96)", 3);
+        ctx.restore();
+        strokeRound(ctx, x, coverY, w, coverHeight, radius, themeAlpha("line", .78), 1);
+      } else {
+        fillRound(ctx, x, coverY, w, coverHeight, radius, themeAlpha("coverBg", .52));
+        strokeRound(ctx, x, coverY, w, coverHeight, radius, themeAlpha("accent", .44), 2, true);
+        ctx.save();
+        ctx.fillStyle = theme.muted;
+        ctx.font = canvasFont('900', 18);
+        ctx.textAlign = "center";
+        ctx.fillText(UI_GRID9_UPLOAD, x + w / 2, coverY + coverHeight / 2 + 6);
+        ctx.textAlign = "left";
+        ctx.restore();
+      }
+
+      if (state.showNumbers) {
+        const cx = x + 26;
+        const cy = coverY + 26;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 17, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,.94)";
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = themeAlpha("accent", .72);
+        ctx.stroke();
+        ctx.fillStyle = theme.accentDeep;
+        ctx.font = canvasFont('900', 16);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(String(index + 1), cx, cy + 1);
+        ctx.textBaseline = "alphabetic";
+        ctx.textAlign = "left";
+      }
+
+      const rjText = (state.showRj && cell.rj) ? cell.rj : "";
+      if (rjText) {
+        ctx.font = canvasFont('800', 11);
+        const badgeWidth = Math.ceil(ctx.measureText(rjText).width) + 14;
+        const badgeHeight = 24;
+        const bx = x + w - badgeWidth - 9;
+        const by = coverY + coverHeight - badgeHeight - 9;
+        fillRound(ctx, bx, by, badgeWidth, badgeHeight, 7, "rgba(255,255,255,.82)");
+        ctx.fillStyle = theme.accentDeep;
+        ctx.textAlign = "right";
+        ctx.fillText(rjText, bx + badgeWidth - 7, by + badgeHeight / 2 + 4);
+        ctx.textAlign = "left";
+      }
+
+      const reviewTop = coverY + coverHeight + gap;
+      fillRound(ctx, x + 1, reviewTop + 5, 3, reviewRowHeight - 10, 1.5, themeAlpha("accent", .5));
+      ctx.save();
+      ctx.fillStyle = themeAlpha("accentDeep", .5);
+      ctx.font = canvasFont('900', 18);
+      ctx.textAlign = "center";
+      ctx.fillText(String.fromCharCode(0x275d), x + 9, reviewTop + 26);
+      ctx.restore();
+      ctx.fillStyle = themeAlpha("ink", .9);
+      ctx.font = canvasFont('400', 15);
+      drawWrappedText(ctx, cell.review || "", x + 20, reviewTop + 26, w - 30, 21, 3);
+      ctx.strokeStyle = themeAlpha("accent", .35);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x + 10, reviewTop + reviewRowHeight - 8);
+      ctx.lineTo(x + w - 10, reviewTop + reviewRowHeight - 8);
+      ctx.stroke();
+      ctx.fillStyle = themeAlpha("accent", .55);
+      ctx.font = canvasFont('800', 12);
+      ctx.textAlign = "center";
+      ctx.fillText(String.fromCharCode(0x2726), x + w - 18, reviewTop + reviewRowHeight - 12);
+      ctx.textAlign = "left";
+    }
+
+    grid9ImportAllButton.addEventListener("click", importAllGrid9Covers);
+    grid9PresetButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      grid9PresetMenu.hidden = !grid9PresetMenu.hidden;
+    });
+    grid9PresetMenu.addEventListener("click", (event) => {
+      const item = event.target.closest("[data-preset]");
+      if (!item) return;
+      applyGrid9Preset(item.dataset.preset);
+      grid9PresetMenu.hidden = true;
+    });
+    document.addEventListener("click", (event) => {
+      if (!grid9PresetMenu || grid9PresetMenu.hidden) return;
+      if (grid9PresetMenu.contains(event.target) || grid9PresetButton.contains(event.target)) return;
+      grid9PresetMenu.hidden = true;
+    });
+    [grid9ShowNumbers, grid9ShowRj].forEach((checkbox) => {
+      checkbox.addEventListener("change", () => {
+        updateGrid9Toggles();
+        saveState();
+      });
+    });
+    grid9Cells.addEventListener("click", (event) => {
+      const cell = event.target.closest(".grid9-cell");
+      if (!cell) return;
+      const tool = event.target.closest(".grid9-cover-tool");
+      if (tool) {
+        event.preventDefault();
+        event.stopPropagation();
+        const index = Number(cell.dataset.grid9Index);
+        const action = tool.dataset.grid9Tool;
+        if (action === "contain") setGrid9Fit(index, "contain");
+        else if (action === "cover") setGrid9Fit(index, "cover");
+        else if (action === "edit") openGrid9ImageEditor(index);
+        else if (action === "remove") setGrid9Cover(index, "");
+        return;
+      }
+      if (event.target.closest(".grid9-cell-rj-input")) return;
+    });
+    grid9ImportDoneButton.addEventListener("click", () => { grid9ImportModal.hidden = true; });
+    grid9ImportModal.addEventListener("click", (event) => {
+      if (event.target === grid9ImportModal && !grid9ImportDoneButton.hidden) grid9ImportModal.hidden = true;
+    });
+    grid9Cells.addEventListener("change", (event) => {
+      const input = event.target.closest(".grid9-cover-input");
+      if (!input) return;
+      const cell = input.closest(".grid9-cell");
+      if (!cell) return;
+      const index = Number(cell.dataset.grid9Index);
+      const file = input.files && input.files[0];
+      input.value = "";
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const pngDataUrl = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result));
+          setGrid9Cover(index, pngDataUrl);
+        } catch (error) {
+          console.error("Grid9 cover normalize failed", error);
+          alert(UI_GRID9_UPLOAD_FAILED);
+        }
+      };
+
+      reader.readAsDataURL(file);
+    });
+/* ---- quick review template v1 (2x6) ---- */
+    const UI_QUICK_UPLOAD = String.fromCharCode(0x70b9, 0x51fb, 0x4e0a, 0x4f20, 0x20, 0x42, 0x4b);
+    const UI_QUICK_UPLOAD_MINI = String.fromCharCode(0x4e0a, 0x4f20);
+    const UI_QUICK_CV_PLACEHOLDER = String.fromCharCode(0x586b, 0x5199, 0x58f0, 0x4f18);
+    const UI_QUICK_REVIEW_PLACEHOLDER = String.fromCharCode(0x4e00, 0x53e5, 0x8bdd, 0x20) + "Repo";
+    const UI_QUICK_CONTAIN = String.fromCharCode(0x5b8c, 0x6574);
+    const UI_QUICK_COVER = String.fromCharCode(0x88c1, 0x5207);
+    const UI_QUICK_EDIT = String.fromCharCode(0x7f16, 0x8f91);
+    const UI_QUICK_REMOVE = String.fromCharCode(0x79fb, 0x9664);
+    const UI_QUICK_UPLOAD_FAILED = String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x9009, 0x62e9, 0x56fe, 0x7247, 0x3002);
+    const UI_QUICK_WATERMARK = String.fromCharCode(0x4e59, 0x6293, 0x8bb0, 0x5f55) + " \u00b7 QUICK VOICE NOTES";
+
+    function quickIsCoarse() {
+      return window.matchMedia("(hover: none), (pointer: coarse), (max-width: 780px)").matches;
+    }
+
+    function buildQuickCells() {
+      if (!quickCells) return;
+      quickCellEditors = [];
+      for (let index = 0; index < 12; index += 1) {
+        const item = document.createElement("article");
+        item.className = "quick-item";
+        item.dataset.quickIndex = String(index);
+
+        const decoTop = document.createElement("span");
+        decoTop.className = "quick-deco-top";
+        const decoBottom = document.createElement("span");
+        decoBottom.className = "quick-deco-bottom";
+
+        const body = document.createElement("div");
+        body.className = "quick-body";
+
+        const cover = document.createElement("div");
+        cover.className = "quick-cover";
+        const file = document.createElement("input");
+        file.className = "quick-file";
+        file.type = "file";
+        file.accept = "image/*";
+        const img = document.createElement("img");
+        img.alt = "";
+        const placeholder = document.createElement("span");
+        placeholder.className = "quick-cover-placeholder";
+        placeholder.textContent = UI_QUICK_UPLOAD;
+
+        const toolbar = document.createElement("div");
+        toolbar.className = "quick-cover-toolbar";
+        const toolDefs = [
+          { action: "contain", label: UI_QUICK_CONTAIN },
+          { action: "cover", label: UI_QUICK_COVER },
+          { action: "edit", label: UI_QUICK_EDIT },
+          { action: "remove", label: UI_QUICK_REMOVE }
+        ];
+        toolDefs.forEach((def) => {
+          const tool = document.createElement("button");
+          tool.type = "button";
+          tool.className = "quick-cover-tool";
+          tool.dataset.quickTool = def.action;
+          tool.textContent = def.label;
+          toolbar.appendChild(tool);
+        });
+
+        const bottom = document.createElement("div");
+        bottom.className = "quick-cover-bottom";
+        const uploadMini = document.createElement("button");
+        uploadMini.type = "button";
+        uploadMini.className = "quick-upload-mini";
+        uploadMini.textContent = UI_QUICK_UPLOAD_MINI;
+        const rjInput = document.createElement("input");
+        rjInput.className = "quick-rj";
+        rjInput.type = "text";
+        rjInput.maxLength = 12;
+        rjInput.placeholder = "RJ00000000";
+        rjInput.addEventListener("pointerdown", (event) => event.stopPropagation());
+        rjInput.addEventListener("click", (event) => event.stopPropagation());
+        rjInput.addEventListener("input", () => fitQuickRjWidth(rjInput));
+        fitQuickRjWidth(rjInput);
+        bottom.append(uploadMini, rjInput);
+
+        cover.append(file, img, placeholder, toolbar, bottom);
+
+        const content = document.createElement("div");
+        content.className = "quick-content";
+        const cvRow = document.createElement("div");
+        cvRow.className = "quick-cv-row";
+        const cvLabel = document.createElement("span");
+        cvLabel.className = "quick-cv-label";
+        cvLabel.textContent = "CV";
+        const cvInput = document.createElement("input");
+        cvInput.className = "quick-cv";
+        cvInput.type = "text";
+        cvInput.maxLength = 24;
+        cvInput.placeholder = UI_QUICK_CV_PLACEHOLDER;
+        cvRow.append(cvLabel, cvInput);
+        const divider = document.createElement("div");
+        divider.className = "quick-cv-divider";
+        const reviewWrap = document.createElement("div");
+        reviewWrap.className = "quick-review-wrap";
+        const reviewArea = document.createElement("textarea");
+        reviewArea.className = "quick-review";
+        reviewArea.maxLength = 78;
+        reviewArea.placeholder = UI_QUICK_REVIEW_PLACEHOLDER;
+        reviewWrap.appendChild(reviewArea);
+        content.append(cvRow, divider, reviewWrap);
+
+        body.append(cover, content);
+        item.append(decoTop, decoBottom, body);
+        quickCells.appendChild(item);
+        quickCellEditors.push(item);
+
+        file.addEventListener("change", () => {
+          const f = file.files && file.files[0];
+          file.value = "";
+          if (!f) return;
+          const reader = new FileReader();
+          reader.onload = async () => {
+            try {
+              const pngDataUrl = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result));
+              setQuickCover(index, pngDataUrl);
+            } catch (error) {
+              console.error("Quick cover normalize failed", error);
+              alert(UI_QUICK_UPLOAD_FAILED);
+            }
+          };
+          reader.readAsDataURL(f);
+        });
+
+        cover.addEventListener("click", (event) => {
+          if (event.target.closest(".quick-cover-toolbar, .quick-upload-mini, .quick-rj")) return;
+          if (quickIsCoarse()) {
+            if (!cover.classList.contains("has-image")) file.click();
+            else cover.classList.toggle("tools-open");
+          } else {
+            file.click();
+          }
+        });
+
+        uploadMini.addEventListener("click", (event) => {
+          event.stopPropagation();
+          file.click();
+        });
+
+        toolbar.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const btn = event.target.closest("[data-quick-tool]");
+          if (!btn) return;
+          const action = btn.dataset.quickTool;
+          if (action === "contain") setQuickFit(index, "contain");
+          else if (action === "cover") setQuickFit(index, "cover");
+          else if (action === "edit") openQuickImageEditor(index);
+          else if (action === "remove") setQuickCover(index, "");
+        });
+      }
+    }
+
+    function updateQuickShowRjButton() {
+      if (!quickShowRjButton || !quickCard) return;
+      quickShowRjButton.textContent = (quickShowRj ? "\u2611" : "\u2610") + " " + String.fromCharCode(0x663e, 0x793a) + "RJ" + String.fromCharCode(0x53f7);
+      quickCard.classList.toggle("hide-rj", !quickShowRj);
+    }
+
+    function applyQuickCover(index, src) {
+      const cell = quickCellEditors[index];
+      if (!cell) return;
+      const img = cell.querySelector(".quick-cover img");
+      const cover = cell.querySelector(".quick-cover");
+      if (src) {
+        img.setAttribute("src", src);
+        cover.classList.add("has-image");
+      } else {
+        img.removeAttribute("src");
+        cover.classList.remove("has-image", "tools-open");
+      }
+    }
+
+    function setQuickCover(index, src) {
+      applyQuickCover(index, src);
+      saveState();
+    }
+
+    function setQuickFit(index, fit) {
+      const cell = quickCellEditors[index];
+      if (!cell) return;
+      cell.querySelector(".quick-cover img").style.objectFit = fit === "contain" ? "contain" : "cover";
+      saveState();
+    }
+
+    function quickHasCover(index) {
+      const cell = quickCellEditors[index];
+      if (!cell) return false;
+      return Boolean(cell.querySelector(".quick-cover img").getAttribute("src"));
+    }
+
+    function readQuickCell(index) {
+      const cell = quickCellEditors[index];
+      if (!cell) return null;
+      return {
+        cover: cell.querySelector(".quick-cover img").getAttribute("src") || "",
+        coverFit: cell.querySelector(".quick-cover img").style.objectFit || "cover",
+        cv: cell.querySelector(".quick-cv").value.trim(),
+        rj: cell.querySelector(".quick-rj").value.trim(),
+        review: cell.querySelector(".quick-review").value.trim()
+      };
+    }
+
+    function writeQuickCell(index, data) {
+      const cell = quickCellEditors[index];
+      if (!cell) return;
+      const next = data || {};
+      applyQuickCover(index, next.cover || "");
+      cell.querySelector(".quick-cover img").style.objectFit = next.coverFit === "contain" ? "contain" : "cover";
+      cell.querySelector(".quick-cv").value = next.cv || "";
+      cell.querySelector(".quick-review").value = next.review || "";
+      const rjInput = cell.querySelector(".quick-rj");
+      rjInput.value = next.rj || "";
+      fitQuickRjWidth(rjInput);
+    }
+
+    function collectQuickState() {
+      return {
+        showRj: quickShowRj,
+        cells: Array.from({ length: 12 }, (_, index) => readQuickCell(index))
+      };
+    }
+
+    function applyQuickState(state) {
+      if (!state || typeof state !== "object") return;
+      quickShowRj = state.showRj !== false;
+      for (let index = 0; index < 12; index += 1) {
+        writeQuickCell(index, (state.cells && state.cells[index]) || {});
+      }
+      updateQuickShowRjButton();
+    }
+
+    function resetQuickState() {
+      quickShowRj = true;
+      quickCellEditors.forEach((cell, index) => {
+        applyQuickCover(index, "");
+        cell.querySelector(".quick-cover img").style.objectFit = "cover";
+        cell.querySelector(".quick-cv").value = "";
+        cell.querySelector(".quick-rj").value = "";
+        cell.querySelector(".quick-review").value = "";
+      });
+      updateQuickShowRjButton();
+      saveState();
+    }
+
+    const quickRjMeasureCanvas = document.createElement("canvas");
+
+    function fitQuickRjWidth(input) {
+      if (!input) return;
+      const ctx = quickRjMeasureCanvas.getContext("2d");
+      ctx.font = canvasFont('800', 10.5);
+      const baseWidth = Math.ceil(ctx.measureText("RJ00000000").width);
+      const text = input.value || "";
+      const textWidth = text ? Math.ceil(ctx.measureText(text).width) : 0;
+      input.style.width = Math.max(baseWidth + 16, textWidth + 16) + "px";
+    }
+
+    async function waitQuickImagesReady() {
+      const pending = [];
+      quickCellEditors.forEach((cell) => {
+        const img = cell.querySelector(".quick-cover img");
+        if (img.getAttribute("src") && !img.complete) {
+          pending.push(img.decode().catch(() => {}));
+        }
+      });
+      await Promise.all(pending);
+    }
+
+    async function migrateQuickCoversToCompact() {
+      const tasks = [];
+      quickCellEditors.forEach((cell) => {
+        const img = cell.querySelector(".quick-cover img");
+        const src = img.getAttribute("src");
+        if (src && !src.startsWith("data:image/jpeg")) {
+          tasks.push(grid9CoverStorageDataUrl(src).then((compact) => {
+            if (compact && compact !== src) img.setAttribute("src", compact);
+          }).catch(() => {}));
+        }
+      });
+      if (tasks.length) {
+        await Promise.all(tasks);
+        saveState();
+      }
+    }
+
+    async function importAllQuickCovers() {
+      const jobs = [];
+      let emptyCount = 0;
+      let skipCount = 0;
+      quickCellEditors.forEach((cell, index) => {
+        const rj = normalizeWorkno(cell.querySelector(".quick-rj").value);
+        if (!rj) {
+          emptyCount += 1;
+          return;
+        }
+        if (quickHasCover(index)) {
+          skipCount += 1;
+          return;
+        }
+        jobs.push({ index, rj });
+      });
+      if (!jobs.length) {
+        grid9ImportTitle.textContent = UI_GRID9_IMPORT_DONE_TITLE;
+        grid9ImportBody.textContent = UI_GRID9_NOTHING;
+        grid9ImportDoneButton.hidden = false;
+        grid9ImportModal.hidden = false;
+        return;
+      }
+      showGrid9ImportLoading();
+      let imported = 0;
+      let failed = 0;
+      const failures = [];
+      let cursor = 0;
+      const concurrency = 2;
+      const worker = async () => {
+        while (cursor < jobs.length) {
+          const job = jobs[cursor];
+          cursor += 1;
+          try {
+            const product = parseDlsiteProduct(await fetchProductJson(job.rj));
+            const coverUrl = product && product.coverUrl;
+            if (!coverUrl) throw new Error("no cover url");
+            const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(coverUrl));
+            applyQuickCover(job.index, pngDataUrl);
+            const rjInput = quickCellEditors[job.index].querySelector(".quick-rj");
+            rjInput.value = job.rj;
+            fitQuickRjWidth(rjInput);
+            const cvInput = quickCellEditors[job.index].querySelector(".quick-cv");
+            if (!cvInput.value.trim() && product.cv) cvInput.value = product.cv;
+            imported += 1;
+          } catch (error) {
+            console.warn("Quick batch import failed", job.rj, error);
+            failed += 1;
+            failures.push({ rj: job.rj, reason: grid9FailureReason(error) });
+          }
+        }
+      };
+      const workers = [];
+      for (let i = 0; i < Math.min(concurrency, jobs.length); i += 1) workers.push(worker());
+      await Promise.all(workers);
+      saveState();
+      showGrid9ImportResult(imported, failed, skipCount, emptyCount, failures);
+    }
+
+    function quickExportFileName() {
+      return ["otome", "quick", safeFilePart(currentThemeId, DEFAULT_THEME_ID)].join("_") + ".png";
+    }
+
+    async function downloadQuickCard() {
+      await ensureCanvasFontReady();
+      try {
+        await waitQuickImagesReady();
+      } catch (imageError) {
+        console.warn("Quick export image wait failed", imageError);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 1440;
+      drawQuickCard(canvas.getContext("2d"));
+      handleExportBlob(await canvasToBlob(canvas), quickExportFileName());
+    }
+
+    function drawQuickStar(ctx, cx, cy, outerR, fill) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.beginPath();
+      for (let i = 0; i < 10; i += 1) {
+        const r = i % 2 === 0 ? outerR : outerR * 0.42;
+        const angle = -Math.PI / 2 + i * Math.PI / 5;
+        const px = r * Math.cos(angle);
+        const py = r * Math.sin(angle);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawQuickDecoLine(ctx, x1, x2, y, color) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 5]);
+      ctx.beginPath();
+      ctx.moveTo(x1, y);
+      ctx.lineTo(x2, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    function drawQuickCard(ctx) {
+      const width = 1080;
+      const height = 1440;
+      const state = collectQuickState();
+      const theme = currentCardTheme();
+      const bg = ctx.createLinearGradient(0, 0, width, height);
+      bg.addColorStop(0, theme.bgStops[0]);
+      bg.addColorStop(0.48, theme.bgStops[1]);
+      bg.addColorStop(1, theme.bgStops[2]);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = "rgba(255,255,255,.34)";
+      for (let x = 0; x <= width; x += 36) ctx.fillRect(x, 0, 1, height);
+      for (let y = 0; y <= height; y += 36) ctx.fillRect(0, y, width, 1);
+      strokeRound(ctx, 16, 16, width - 32, height - 32, 30, themeAlpha("line", .78), 3);
+      strokeRound(ctx, 30, 30, width - 60, height - 60, 22, themeAlpha("dash", .42), 2, true);
+
+      const gridLeft = 54;
+      const gridTop = 48;
+      const gapX = 18;
+      const gapY = 14;
+      const cellWidth = (width - gridLeft * 2 - gapX) / 2;
+      const gridBottom = height - 54;
+      const cellHeight = (gridBottom - gridTop - gapY * 5) / 6;
+      for (let row = 0; row < 6; row += 1) {
+        for (let col = 0; col < 2; col += 1) {
+          const index = row * 2 + col;
+          const x = gridLeft + col * (cellWidth + gapX);
+          const y = gridTop + row * (cellHeight + gapY);
+          drawQuickCell(ctx, state, index, x, y, cellWidth, cellHeight);
+        }
+      }
+
+      ctx.save();
+      ctx.fillStyle = themeAlpha("ink", .09);
+      ctx.font = canvasFont('800', 12);
+      ctx.textAlign = "right";
+      ctx.fillText(UI_QUICK_WATERMARK, width - 54, height - 38);
+      ctx.restore();
+    }
+
+    function drawQuickCell(ctx, state, index, x, y, w, h) {
+      const theme = currentCardTheme();
+      const cell = state.cells[index] || {};
+      const radius = 23;
+
+      fillRound(ctx, x, y, w, h, radius, "rgba(255,255,255,.9)");
+      strokeRound(ctx, x, y, w, h, radius, themeAlpha("line", .5), 1);
+
+      const cx = x + w / 2;
+      const decoY = y + 16;
+      drawQuickDecoLine(ctx, x + 23, cx - 18, decoY, themeAlpha("accent", .4));
+      drawQuickDecoLine(ctx, cx + 18, x + w - 23, decoY, themeAlpha("mint", .45));
+      drawQuickStar(ctx, cx, decoY, 7.5, themeAlpha("accent", .68));
+
+      const decoBottomY = y + h - 15;
+      drawQuickDecoLine(ctx, x + 23, cx - 18, decoBottomY, themeAlpha("accent", .4));
+      drawQuickDecoLine(ctx, cx + 18, x + w - 23, decoBottomY, themeAlpha("mint", .45));
+      drawQuickStar(ctx, cx, decoBottomY, 7.5, themeAlpha("mint", .68));
+
+      const bodyTop = y + 17;
+      const bodyHeight = h - 33;
+      const coverWidth = 194;
+      const coverHeight = 154;
+      const coverX = x + 15;
+      const coverY = bodyTop + 12.2;
+
+      if (cell.cover) {
+        fillRound(ctx, coverX, coverY, coverWidth, coverHeight, 17, theme.coverBg);
+        const imgElement = quickCellEditors[index] ? quickCellEditors[index].querySelector(".quick-cover img") : null;
+        if (imgElement && imgElement.complete && imgElement.naturalWidth) {
+          ctx.save();
+          roundRect(ctx, coverX, coverY, coverWidth, coverHeight, 17);
+          ctx.clip();
+          const iw = imgElement.naturalWidth;
+          const ih = imgElement.naturalHeight;
+          const fitMode = cell.coverFit === "contain" ? "contain" : "cover";
+          const scale = fitMode === "contain" ? Math.min(coverWidth / iw, coverHeight / ih) : Math.max(coverWidth / iw, coverHeight / ih);
+          const dw = iw * scale;
+          const dh = ih * scale;
+          ctx.drawImage(imgElement, coverX + (coverWidth - dw) / 2, coverY + (coverHeight - dh) / 2, dw, dh);
+          ctx.restore();
+        }
+        ctx.save();
+        ctx.shadowColor = "rgba(104,73,87,.13)";
+        ctx.shadowBlur = 12;
+        strokeRound(ctx, coverX, coverY, coverWidth, coverHeight, 17, "rgba(255,255,255,.98)", 3);
+        ctx.restore();
+        strokeRound(ctx, coverX, coverY, coverWidth, coverHeight, 17, themeAlpha("line", .78), 1);
+      } else {
+        fillRound(ctx, coverX, coverY, coverWidth, coverHeight, 17, themeAlpha("coverBg", .52));
+        strokeRound(ctx, coverX, coverY, coverWidth, coverHeight, 17, themeAlpha("accent", .44), 2, true);
+        ctx.save();
+        ctx.fillStyle = theme.muted;
+        ctx.font = canvasFont('900', 14);
+        ctx.textAlign = "center";
+        ctx.fillText(UI_QUICK_UPLOAD, coverX + coverWidth / 2, coverY + coverHeight / 2 + 5);
+        ctx.textAlign = "left";
+        ctx.restore();
+      }
+
+      const rjText = (state.showRj && cell.rj) ? cell.rj : "";
+      if (rjText) {
+        ctx.font = canvasFont('800', 10.5);
+        const badgeWidth = Math.ceil(ctx.measureText(rjText).width) + 14;
+        const badgeHeight = 24;
+        const bx = coverX + coverWidth - badgeWidth - 7;
+        const by = coverY + coverHeight - badgeHeight - 7;
+        fillRound(ctx, bx, by, badgeWidth, badgeHeight, 8, "rgba(255,255,255,.86)");
+        ctx.fillStyle = theme.accentDeep;
+        ctx.textAlign = "left";
+        ctx.fillText(rjText, bx + 7, by + badgeHeight / 2 + 3.5);
+        ctx.textAlign = "left";
+      }
+
+      const contentX = x + 15 + coverWidth + 16;
+      const contentWidth = w - 15 - coverWidth - 16 - 15;
+      const cvBaseline = bodyTop + 21.2;
+      ctx.textAlign = "left";
+      ctx.fillStyle = theme.accent;
+      ctx.font = canvasFont('900', 18);
+      ctx.fillText("CV", contentX, cvBaseline + 7);
+      const cvLabelWidth = Math.ceil(ctx.measureText("CV").width);
+      ctx.fillStyle = theme.ink;
+      ctx.font = canvasFont('900', 18);
+      ctx.fillText(cell.cv || "", contentX + cvLabelWidth + 8, cvBaseline + 7);
+
+      const dividerY = bodyTop + 45.9;
+      ctx.save();
+      ctx.strokeStyle = themeAlpha("accent", .33);
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath();
+      ctx.moveTo(contentX, dividerY + 0.5);
+      ctx.lineTo(contentX + contentWidth, dividerY + 0.5);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      const wrapTop = bodyTop + 46.2;
+      const wrapHeight = bodyTop + bodyHeight - wrapTop;
+      ctx.fillStyle = themeAlpha("accent", .22);
+      ctx.fillRect(contentX, wrapTop + 14.4, 3, 105);
+      ctx.fillStyle = themeAlpha("accentDeep", .48);
+      ctx.font = canvasFont('900', 13);
+      ctx.fillText(String.fromCharCode(0x2661), contentX + 5, wrapTop + 26.4);
+      ctx.fillStyle = themeAlpha("ink", .9);
+      ctx.font = canvasFont('700', 14);
+      drawWrappedText(ctx, cell.review || "", contentX + 18, wrapTop + 29.4, contentWidth - 25, 21, 5);
+    }
+
+    quickShowRjButton.addEventListener("click", () => {
+      quickShowRj = !quickShowRj;
+      updateQuickShowRjButton();
+      saveState();
+    });
+    quickImportAllButton.addEventListener("click", importAllQuickCovers);
+    quickClearRepoButton.addEventListener("click", () => {
+      quickCellEditors.forEach((cell) => {
+        cell.querySelector(".quick-review").value = "";
+      });
+      saveState();
+    });
+
+    function bindQuickMobileFocus() {
+      if (!quickCard) return;
+      const areas = Array.from(quickCard.querySelectorAll(".quick-item"));
+      areas.forEach((area) => {
+        area.addEventListener("click", (event) => {
+          if (!isMobileView() || currentTemplate() !== "quick") return;
+          if (event.target.closest("button, input, textarea, select, .quick-cover")) return;
+          if (mobileFocusTarget !== area) {
+            event.preventDefault();
+            event.stopPropagation();
+            focusMobileArea(area);
+          }
+        }, true);
+        area.addEventListener("focusin", () => {
+          if (currentTemplate() !== "quick") return;
+          focusMobileArea(area);
+        });
+      });
     }
 
     const mobileFocusAreas = Array.from(card.querySelectorAll(".cover-box, .info-panel, .title-panel, .tags-panel, .price-panel, .ratings, .review-panel"));
@@ -3675,6 +5261,744 @@
         focusMobileArea(area);
       });
     });
+/* ---- trio template v1 (3 rows x 1080x1440) ---- */
+    const UI_TRIO_UPLOAD = String.fromCharCode(0x70b9, 0x51fb, 0x4e0a, 0x4f20, 0x20, 0x42, 0x4b);
+    const UI_TRIO_CV_PLACEHOLDER = String.fromCharCode(0x586b, 0x5199, 0x58f0, 0x4f18);
+    const UI_TRIO_REPO_PLACEHOLDER = String.fromCharCode(0x5199, 0x4e0b, 0x8fd9, 0x90e8, 0x4f5c, 0x54c1, 0x7684, 0x20) + "Repo" + String.fromCharCode(0x2026);
+    const UI_TRIO_CONTAIN = String.fromCharCode(0x5b8c, 0x6574);
+    const UI_TRIO_COVER = String.fromCharCode(0x88c1, 0x5207);
+    const UI_TRIO_EDIT = String.fromCharCode(0x7f16, 0x8f91);
+    const UI_TRIO_REMOVE = String.fromCharCode(0x79fb, 0x9664);
+    const UI_TRIO_UPLOAD_FAILED = String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x9009, 0x62e9, 0x56fe, 0x7247, 0x3002);
+    const UI_TRIO_WATERMARK = String.fromCharCode(0x4e59, 0x6293, 0x8bb0, 0x5f55) + " \u00b7 THREE VOICE NOTES";
+    const UI_TRIO_PRICE = String.fromCharCode(0x73b0, 0x4ef7);
+    const UI_TRIO_RATING = String.fromCharCode(0x603b, 0x8bc4);
+    const UI_TRIO_REPO_LABEL = "REPO";
+
+    function trioIsCoarse() {
+      return window.matchMedia("(hover: none), (pointer: coarse), (max-width: 780px)").matches;
+    }
+
+    function buildTrioCells() {
+      if (!trioCells) return;
+      trioCellEditors = [];
+      for (let index = 0; index < 3; index += 1) {
+        const item = document.createElement("article");
+        item.className = "trio-item";
+        item.dataset.trioIndex = String(index);
+
+        const dividerStar = document.createElement("span");
+        dividerStar.className = "trio-divider-star";
+
+        const decoTop = document.createElement("span");
+        decoTop.className = "trio-corner-deco top-left";
+        const decoTopStar = document.createElement("span");
+        decoTopStar.className = "deco-star";
+        decoTopStar.textContent = "\u2726";
+        const decoTopLine = document.createElement("span");
+        decoTopLine.className = "deco-line";
+        decoTop.append(decoTopStar, decoTopLine);
+
+        const decoBottom = document.createElement("span");
+        decoBottom.className = "trio-corner-deco bottom-right";
+        const decoBottomStar = document.createElement("span");
+        decoBottomStar.className = "deco-star";
+        decoBottomStar.textContent = "\u2726";
+        const decoBottomLine = document.createElement("span");
+        decoBottomLine.className = "deco-line";
+        decoBottom.append(decoBottomStar, decoBottomLine);
+
+        const cover = document.createElement("div");
+        cover.className = "trio-cover";
+        const file = document.createElement("input");
+        file.className = "trio-file";
+        file.type = "file";
+        file.accept = "image/*";
+        const img = document.createElement("img");
+        img.alt = "";
+        const placeholder = document.createElement("span");
+        placeholder.className = "trio-cover-placeholder";
+        placeholder.textContent = UI_TRIO_UPLOAD;
+        const toolbar = document.createElement("div");
+        toolbar.className = "trio-cover-tools";
+        const toolDefs = [
+          { action: "contain", label: UI_TRIO_CONTAIN },
+          { action: "cover", label: UI_TRIO_COVER },
+          { action: "edit", label: UI_TRIO_EDIT },
+          { action: "remove", label: UI_TRIO_REMOVE }
+        ];
+        toolDefs.forEach((def) => {
+          const tool = document.createElement("button");
+          tool.type = "button";
+          tool.className = "trio-cover-tool";
+          tool.dataset.trioTool = def.action;
+          tool.textContent = def.label;
+          toolbar.appendChild(tool);
+        });
+        cover.append(file, img, placeholder, toolbar);
+
+        const info = document.createElement("div");
+        info.className = "trio-info";
+
+        const infoRow = document.createElement("div");
+        infoRow.className = "trio-info-row";
+        const cvField = document.createElement("label");
+        cvField.className = "trio-inline-field";
+        const cvLabel = document.createElement("span");
+        cvLabel.className = "trio-field-label";
+        cvLabel.textContent = "CV";
+        const cvInput = document.createElement("input");
+        cvInput.className = "trio-field-input trio-cv";
+        cvInput.type = "text";
+        cvInput.maxLength = 30;
+        cvInput.placeholder = UI_TRIO_CV_PLACEHOLDER;
+        cvField.append(cvLabel, cvInput);
+        const rjField = document.createElement("label");
+        rjField.className = "trio-inline-field";
+        const rjLabel = document.createElement("span");
+        rjLabel.className = "trio-field-label";
+        rjLabel.textContent = "RJ";
+        const rjInput = document.createElement("input");
+        rjInput.className = "trio-rj-input";
+        rjInput.type = "text";
+        rjInput.maxLength = 12;
+        rjInput.placeholder = "RJ00000000";
+        rjInput.addEventListener("pointerdown", (event) => event.stopPropagation());
+        rjField.append(rjLabel, rjInput);
+        const topDivider = document.createElement("div");
+        topDivider.className = "trio-top-divider";
+        infoRow.append(cvField, rjField, topDivider);
+
+        const summary = document.createElement("div");
+        summary.className = "trio-summary-strip";
+        const priceBlock = document.createElement("label");
+        priceBlock.className = "trio-price-block";
+        const priceLabel = document.createElement("span");
+        priceLabel.className = "trio-small-label";
+        priceLabel.textContent = UI_TRIO_PRICE;
+        const pricePrefix = document.createElement("span");
+        pricePrefix.className = "trio-price-prefix";
+        pricePrefix.textContent = "\u00a5";
+        const priceInput = document.createElement("input");
+        priceInput.className = "trio-price-input";
+        priceInput.type = "text";
+        priceInput.inputmode = "numeric";
+        priceInput.maxLength = 8;
+        priceInput.placeholder = "0";
+        priceBlock.append(priceLabel, pricePrefix, priceInput);
+
+        const ratingBlock = document.createElement("div");
+        ratingBlock.className = "trio-rating-block";
+        const ratingLabel = document.createElement("span");
+        ratingLabel.className = "trio-small-label";
+        ratingLabel.textContent = UI_TRIO_RATING;
+        const stars = document.createElement("div");
+        stars.className = "trio-stars";
+        for (let n = 1; n <= 5; n += 1) {
+          const star = document.createElement("button");
+          star.type = "button";
+          star.className = "trio-star off";
+          star.dataset.trioScore = String(n);
+          star.textContent = "\u2605";
+          stars.appendChild(star);
+        }
+        const score = document.createElement("span");
+        score.className = "trio-score";
+        score.textContent = "0.0";
+        ratingBlock.append(ratingLabel, stars, score);
+        summary.append(priceBlock, ratingBlock);
+
+        const repo = document.createElement("div");
+        repo.className = "trio-repo";
+        const repoTitle = document.createElement("div");
+        repoTitle.className = "trio-repo-title";
+        repoTitle.textContent = UI_TRIO_REPO_LABEL;
+        const reviewArea = document.createElement("textarea");
+        reviewArea.className = "trio-repo-input";
+        reviewArea.maxLength = 240;
+        reviewArea.placeholder = UI_TRIO_REPO_PLACEHOLDER;
+        repo.append(repoTitle, reviewArea);
+
+        info.append(infoRow, summary, repo);
+        item.append(dividerStar, decoTop, decoBottom, cover, info);
+        trioCells.appendChild(item);
+        trioCellEditors.push(item);
+
+        file.addEventListener("change", () => {
+          const f = file.files && file.files[0];
+          file.value = "";
+          if (!f) return;
+          const reader = new FileReader();
+          reader.onload = async () => {
+            try {
+              const pngDataUrl = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result));
+              setTrioCover(index, pngDataUrl);
+            } catch (error) {
+              console.error("Trio cover normalize failed", error);
+              alert(UI_TRIO_UPLOAD_FAILED);
+            }
+          };
+          reader.readAsDataURL(f);
+        });
+
+        cover.addEventListener("click", (event) => {
+          if (event.target.closest(".trio-cover-tools")) return;
+          if (trioIsCoarse()) {
+            if (!cover.classList.contains("has-image")) file.click();
+            else cover.classList.toggle("tools-open");
+          } else {
+            file.click();
+          }
+        });
+
+        toolbar.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const btn = event.target.closest("[data-trio-tool]");
+          if (!btn) return;
+          const action = btn.dataset.trioTool;
+          if (action === "contain") setTrioFit(index, "contain");
+          else if (action === "cover") setTrioFit(index, "cover");
+          else if (action === "edit") openTrioImageEditor(index);
+          else if (action === "remove") setTrioCover(index, "");
+        });
+
+        stars.addEventListener("click", (event) => {
+          const btn = event.target.closest(".trio-star");
+          if (!btn) return;
+          setTrioRating(index, Number(btn.dataset.trioScore));
+        });
+      }
+    }
+
+    function applyTrioCover(index, src) {
+      const cell = trioCellEditors[index];
+      if (!cell) return;
+      const img = cell.querySelector(".trio-cover img");
+      const cover = cell.querySelector(".trio-cover");
+      if (src) {
+        img.setAttribute("src", src);
+        cover.classList.add("has-image");
+      } else {
+        img.removeAttribute("src");
+        cover.classList.remove("has-image", "tools-open");
+      }
+    }
+
+    function setTrioCover(index, src) {
+      applyTrioCover(index, src);
+      saveState();
+    }
+
+    function setTrioFit(index, fit) {
+      const cell = trioCellEditors[index];
+      if (!cell) return;
+      cell.querySelector(".trio-cover img").style.objectFit = fit === "contain" ? "contain" : "cover";
+      saveState();
+    }
+
+    function trioHasCover(index) {
+      const cell = trioCellEditors[index];
+      if (!cell) return false;
+      return Boolean(cell.querySelector(".trio-cover img").getAttribute("src"));
+    }
+
+    function setTrioRating(index, value) {
+      const cell = trioCellEditors[index];
+      if (!cell) return;
+      const rating = Math.max(0, Math.min(5, Number(value) || 0));
+      cell.querySelectorAll(".trio-star").forEach((star, idx) => star.classList.toggle("off", idx >= rating));
+      cell.querySelector(".trio-score").textContent = rating.toFixed(1);
+      saveState();
+    }
+
+    function readTrioCell(index) {
+      const cell = trioCellEditors[index];
+      if (!cell) return null;
+      const offCount = cell.querySelectorAll(".trio-star.off").length;
+      return {
+        cover: cell.querySelector(".trio-cover img").getAttribute("src") || "",
+        coverFit: cell.querySelector(".trio-cover img").style.objectFit || "cover",
+        cv: cell.querySelector(".trio-cv").value.trim(),
+        rj: cell.querySelector(".trio-rj-input").value.trim(),
+        price: cell.querySelector(".trio-price-input").value.trim(),
+        rating: Math.max(0, 5 - offCount),
+        repo: cell.querySelector(".trio-repo-input").value.trim()
+      };
+    }
+
+    function writeTrioCell(index, data) {
+      const cell = trioCellEditors[index];
+      if (!cell) return;
+      const next = data || {};
+      applyTrioCover(index, next.cover || "");
+      cell.querySelector(".trio-cover img").style.objectFit = next.coverFit === "contain" ? "contain" : "cover";
+      cell.querySelector(".trio-cv").value = next.cv || "";
+      cell.querySelector(".trio-rj-input").value = next.rj || "";
+      cell.querySelector(".trio-price-input").value = next.price || "";
+      const rating = Math.max(0, Math.min(5, Number(next.rating) || 0));
+      cell.querySelectorAll(".trio-star").forEach((star, idx) => star.classList.toggle("off", idx >= rating));
+      cell.querySelector(".trio-score").textContent = rating.toFixed(1);
+      cell.querySelector(".trio-repo-input").value = next.repo || "";
+    }
+
+    function collectTrioState() {
+      return {
+        cells: Array.from({ length: 3 }, (_, index) => readTrioCell(index))
+      };
+    }
+
+    function applyTrioState(state) {
+      if (!state || typeof state !== "object") return;
+      for (let index = 0; index < 3; index += 1) {
+        writeTrioCell(index, (state.cells && state.cells[index]) || {});
+      }
+    }
+
+    function resetTrioState() {
+      trioCellEditors.forEach((cell, index) => {
+        applyTrioCover(index, "");
+        cell.querySelector(".trio-cover img").style.objectFit = "cover";
+        cell.querySelector(".trio-cv").value = "";
+        cell.querySelector(".trio-rj-input").value = "";
+        cell.querySelector(".trio-price-input").value = "";
+        cell.querySelectorAll(".trio-star").forEach((star) => star.classList.add("off"));
+        cell.querySelector(".trio-score").textContent = "0.0";
+        cell.querySelector(".trio-repo-input").value = "";
+      });
+      saveState();
+    }
+
+    async function waitTrioImagesReady() {
+      const pending = [];
+      trioCellEditors.forEach((cell) => {
+        const img = cell.querySelector(".trio-cover img");
+        if (img.getAttribute("src") && !img.complete) {
+          pending.push(img.decode().catch(() => {}));
+        }
+      });
+      await Promise.all(pending);
+    }
+
+    async function migrateTrioCoversToCompact() {
+      const tasks = [];
+      trioCellEditors.forEach((cell) => {
+        const img = cell.querySelector(".trio-cover img");
+        const src = img.getAttribute("src");
+        if (src && !src.startsWith("data:image/jpeg")) {
+          tasks.push(grid9CoverStorageDataUrl(src).then((compact) => {
+            if (compact && compact !== src) img.setAttribute("src", compact);
+          }).catch(() => {}));
+        }
+      });
+      if (tasks.length) {
+        await Promise.all(tasks);
+        saveState();
+      }
+    }
+
+    async function importAllTrioCells() {
+      const jobs = [];
+      let emptyCount = 0;
+      trioCellEditors.forEach((cell, index) => {
+        const rj = normalizeWorkno(cell.querySelector(".trio-rj-input").value);
+        if (!rj) {
+          emptyCount += 1;
+          return;
+        }
+        jobs.push({ index, rj });
+      });
+      if (!jobs.length) {
+        grid9ImportTitle.textContent = UI_GRID9_IMPORT_DONE_TITLE;
+        grid9ImportBody.textContent = UI_GRID9_NOTHING;
+        grid9ImportDoneButton.hidden = false;
+        grid9ImportModal.hidden = false;
+        return;
+      }
+      showGrid9ImportLoading();
+      let imported = 0;
+      let failed = 0;
+      const failures = [];
+      let cursor = 0;
+      const concurrency = 2;
+      const worker = async () => {
+        while (cursor < jobs.length) {
+          const job = jobs[cursor];
+          cursor += 1;
+          try {
+            const product = parseDlsiteProduct(await fetchProductJson(job.rj));
+            if (!product) throw new Error("empty product");
+            const cell = trioCellEditors[job.index];
+            if (!trioHasCover(job.index) && product.coverUrl) {
+              const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl));
+              applyTrioCover(job.index, pngDataUrl);
+            }
+            const cvInput = cell.querySelector(".trio-cv");
+            if (!cvInput.value.trim() && product.cv) cvInput.value = product.cv;
+            const priceInput = cell.querySelector(".trio-price-input");
+            if (!priceInput.value.trim() && product.originalPrice) priceInput.value = product.originalPrice;
+            const rjInput = cell.querySelector(".trio-rj-input");
+            rjInput.value = job.rj;
+            imported += 1;
+          } catch (error) {
+            console.warn("Trio batch import failed", job.rj, error);
+            failed += 1;
+            failures.push({ rj: job.rj, reason: grid9FailureReason(error) });
+          }
+        }
+      };
+      const workers = [];
+      for (let i = 0; i < Math.min(concurrency, jobs.length); i += 1) workers.push(worker());
+      await Promise.all(workers);
+      saveState();
+      showGrid9ImportResult(imported, failed, 0, emptyCount, failures);
+    }
+
+    function trioEditorGlobals(index) {
+      const cell = trioCellEditors[index];
+      const src = cell ? (cell.querySelector(".trio-cover img").getAttribute("src") || "") : "";
+      return {
+        coverOriginalSrc: src || "",
+        coverEditedSrc: "",
+        coverMosaicMaskSrc: "",
+        coverBlurMaskSrc: "",
+        coverEditorUndoStack: [],
+        coverEditorRedoStack: [],
+        coverStickers: [],
+        stickerSources: JSON.parse(JSON.stringify(stickerSources || [])),
+        selectedStickerId: null,
+        editorTool: "mosaic",
+        coverSrc: src,
+        coverFit: "cover"
+      };
+    }
+
+    async function openTrioImageEditor(index) {
+      const cell = trioCellEditors[index];
+      if (!cell) return;
+      const src = cell.querySelector(".trio-cover img").getAttribute("src") || "";
+      if (!src) {
+        cell.querySelector(".trio-file")?.click();
+        return;
+      }
+      if (imageEditorMode === "standalone") leaveStandaloneImageTool();
+      if (imageEditorMode !== "trio") templateEditorGlobalsBackup = editorGlobals();
+      imageEditorMode = "trio";
+      activeTrioIndex = index;
+      placeImageEditorForTemplate();
+      applyEditorGlobals(trioEditorGlobals(index));
+      await loadEditorFromCurrentGlobals(src);
+    }
+
+    function trioExportFileName() {
+      return ["otome", "trio", safeFilePart(currentThemeId, DEFAULT_THEME_ID)].join("_") + ".png";
+    }
+
+    async function downloadTrioCard() {
+      await ensureCanvasFontReady();
+      try {
+        await waitTrioImagesReady();
+      } catch (imageError) {
+        console.warn("Trio export image wait failed", imageError);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 1440;
+      drawTrioCard(canvas.getContext("2d"));
+      handleExportBlob(await canvasToBlob(canvas), trioExportFileName());
+    }
+
+    function drawTrioStar(ctx, cx, cy, outerR, fill) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.beginPath();
+      for (let i = 0; i < 10; i += 1) {
+        const r = i % 2 === 0 ? outerR : outerR * 0.42;
+        const angle = -Math.PI / 2 + i * Math.PI / 5;
+        const px = r * Math.cos(angle);
+        const py = r * Math.sin(angle);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawTrioDashedLine(ctx, x1, x2, y, color) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 6]);
+      ctx.beginPath();
+      ctx.moveTo(x1, y);
+      ctx.lineTo(x2, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    function drawTrioCard(ctx) {
+      const width = 1080;
+      const height = 1440;
+      const state = collectTrioState();
+      const theme = currentCardTheme();
+      const bg = ctx.createLinearGradient(0, 0, width, height);
+      bg.addColorStop(0, theme.bgStops[0]);
+      bg.addColorStop(0.48, theme.bgStops[1]);
+      bg.addColorStop(1, theme.bgStops[2]);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = "rgba(255,255,255,.3)";
+      for (let x = 0; x <= width; x += 36) ctx.fillRect(x, 0, 1, height);
+      for (let y = 0; y <= height; y += 36) ctx.fillRect(0, y, width, 1);
+      strokeRound(ctx, 16, 16, width - 32, height - 32, 30, themeAlpha("line", .78), 3);
+      strokeRound(ctx, 30, 30, width - 60, height - 60, 22, themeAlpha("dash", .42), 2, true);
+
+      const listLeft = 62;
+      const listTop = 58;
+      const listRight = width - 62;
+      const listBottom = height - 58;
+      const gap = 30;
+      const cellWidth = listRight - listLeft;
+      const cellHeight = (listBottom - listTop - gap * 2) / 3;
+      for (let index = 0; index < 3; index += 1) {
+        const x = listLeft;
+        const y = listTop + index * (cellHeight + gap);
+        drawTrioCell(ctx, state, index, x, y, cellWidth, cellHeight);
+      }
+      for (let index = 0; index < 2; index += 1) {
+        const y = listTop + index * (cellHeight + gap);
+        const cy = y + cellHeight + gap / 2;
+        const cx = width / 2;
+        drawTrioDashedLine(ctx, listLeft + 70, cx - 16, cy, themeAlpha("accent", .38));
+        drawTrioDashedLine(ctx, cx + 16, listRight - 70, cy, themeAlpha("mint", .42));
+        drawTrioStar(ctx, cx, cy, 8, themeAlpha("accent", .64));
+      }
+
+      ctx.save();
+      ctx.fillStyle = themeAlpha("ink", .09);
+      ctx.font = canvasFont('800', 12);
+      ctx.textAlign = "right";
+      ctx.fillText(UI_TRIO_WATERMARK, width - 54, height - 38);
+      ctx.restore();
+    }
+
+    function drawTrioCell(ctx, state, index, x, y, w, h) {
+      const theme = currentCardTheme();
+      const cell = state.cells[index] || {};
+      const radius = 26;
+
+      const bgGrad = ctx.createLinearGradient(x, y, x + w, y + h);
+      bgGrad.addColorStop(0, "rgba(255,255,255,.62)");
+      bgGrad.addColorStop(1, "rgba(255,255,255,.28)");
+      fillRound(ctx, x, y, w, h, radius, bgGrad);
+      const washAccent = ctx.createRadialGradient(x + w * 0.07, y + h * 0.1, 0, x + w * 0.07, y + h * 0.1, h * 0.55);
+      washAccent.addColorStop(0, themeAlpha("accent", .07));
+      washAccent.addColorStop(1, "rgba(255,255,255,0)");
+      fillRound(ctx, x, y, w, h, radius, washAccent);
+      const washMint = ctx.createRadialGradient(x + w * 0.93, y + h * 0.9, 0, x + w * 0.93, y + h * 0.9, h * 0.5);
+      washMint.addColorStop(0, themeAlpha("mint", .07));
+      washMint.addColorStop(1, "rgba(255,255,255,0)");
+      fillRound(ctx, x, y, w, h, radius, washMint);
+      strokeRound(ctx, x, y, w, h, radius, themeAlpha("line", .6), 1);
+
+      ctx.save();
+      ctx.fillStyle = themeAlpha("accent", .72);
+      ctx.font = canvasFont('900', 13);
+      ctx.textAlign = "left";
+      ctx.fillText("\u2726", x + 28, y + 24);
+      ctx.fillRect(x + 50, y + 17.5, 62, 1);
+      ctx.restore();
+      ctx.save();
+      ctx.fillStyle = themeAlpha("mint", .76);
+      ctx.font = canvasFont('900', 13);
+      ctx.textAlign = "left";
+      ctx.fillRect(x + w - 90, y + h - 17.5, 62, 1);
+      ctx.fillText("\u2726", x + w - 28, y + h - 12);
+      ctx.restore();
+
+      const coverX = x + 20;
+      const coverY = y + (h - 300) / 2;
+      const coverW = 400;
+      const coverH = 300;
+      const coverRadius = 20;
+
+      if (cell.cover) {
+        fillRound(ctx, coverX, coverY, coverW, coverH, coverRadius, theme.coverBg);
+        const imgElement = trioCellEditors[index] ? trioCellEditors[index].querySelector(".trio-cover img") : null;
+        if (imgElement && imgElement.complete && imgElement.naturalWidth) {
+          ctx.save();
+          roundRect(ctx, coverX, coverY, coverW, coverH, coverRadius);
+          ctx.clip();
+          const iw = imgElement.naturalWidth;
+          const ih = imgElement.naturalHeight;
+          const fitMode = cell.coverFit === "contain" ? "contain" : "cover";
+          const scale = fitMode === "contain" ? Math.min(coverW / iw, coverH / ih) : Math.max(coverW / iw, coverH / ih);
+          const dw = iw * scale;
+          const dh = ih * scale;
+          ctx.drawImage(imgElement, coverX + (coverW - dw) / 2, coverY + (coverH - dh) / 2, dw, dh);
+          ctx.restore();
+        }
+        ctx.save();
+        ctx.shadowColor = "rgba(104,73,87,.13)";
+        ctx.shadowBlur = 22;
+        strokeRound(ctx, coverX, coverY, coverW, coverH, coverRadius, "rgba(255,255,255,.98)", 3);
+        ctx.restore();
+        strokeRound(ctx, coverX, coverY, coverW, coverH, coverRadius, themeAlpha("line", .78), 1);
+      } else {
+        fillRound(ctx, coverX, coverY, coverW, coverH, coverRadius, themeAlpha("coverBg", .52));
+        strokeRound(ctx, coverX, coverY, coverW, coverH, coverRadius, themeAlpha("accent", .44), 2, true);
+        ctx.save();
+        ctx.fillStyle = theme.muted;
+        ctx.font = canvasFont('900', 18);
+        ctx.textAlign = "center";
+        ctx.fillText(UI_TRIO_UPLOAD, coverX + coverW / 2, coverY + coverH / 2 + 6);
+        ctx.textAlign = "left";
+        ctx.restore();
+      }
+
+      const infoX = x + 20 + coverW + 24;
+      const infoW = w - 20 - coverW - 24 - 20;
+      const infoTop = y + 20;
+      const infoBottom = y + h - 20;
+      const row1Baseline = infoTop + 22;
+      const dividerY = infoTop + 26;
+      const summaryTop = dividerY + 14;
+      const summaryH = 54;
+      const repoTop = summaryTop + summaryH + 13;
+      const repoBottom = infoBottom;
+
+      ctx.textAlign = "left";
+      ctx.font = canvasFont('900', 19);
+      const cvLabelW = ctx.measureText("CV").width;
+      ctx.fillStyle = theme.accent;
+      ctx.fillText("CV", infoX, row1Baseline);
+      ctx.fillStyle = theme.ink;
+      ctx.fillText(cell.cv || "", infoX + cvLabelW + 9, row1Baseline);
+
+      const rjText = cell.rj || "";
+      ctx.font = canvasFont('850', 16);
+      const rjW = ctx.measureText(rjText).width;
+      const rjMinW = ctx.measureText("RJ00000000").width;
+      ctx.font = canvasFont('900', 19);
+      const rjBlockW = Math.max(rjW, rjMinW);
+      ctx.fillStyle = theme.accent;
+      ctx.textAlign = "right";
+      ctx.fillText("RJ", infoX + infoW - rjBlockW - 9, row1Baseline);
+      ctx.fillStyle = theme.ink;
+      ctx.fillText(rjText, infoX + infoW, row1Baseline);
+      ctx.textAlign = "left";
+
+      ctx.save();
+      ctx.strokeStyle = themeAlpha("accent", .3);
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath();
+      ctx.moveTo(infoX, dividerY + 0.5);
+      ctx.lineTo(infoX + infoW, dividerY + 0.5);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      const summaryX = infoX;
+      const summaryW = infoW;
+      const summaryGrad = ctx.createLinearGradient(summaryX, summaryTop, summaryX + summaryW, summaryTop);
+      summaryGrad.addColorStop(0, themeAlpha("accent", .07));
+      summaryGrad.addColorStop(1, themeAlpha("mint", .07));
+      fillRound(ctx, summaryX, summaryTop, summaryW, summaryH, 16, summaryGrad);
+      const summaryPadX = 13;
+      const innerW = summaryW - summaryPadX * 2;
+      const priceColW = innerW / 2.4;
+      const ratingColX = summaryX + summaryPadX + priceColW + 16;
+      const summaryBaseline = summaryTop + 35;
+
+      ctx.font = canvasFont('900', 14);
+      ctx.fillStyle = theme.muted;
+      ctx.textAlign = "left";
+      ctx.fillText(UI_TRIO_PRICE, summaryX + summaryPadX, summaryBaseline);
+      const priceLabelW = ctx.measureText(UI_TRIO_PRICE).width;
+      ctx.fillStyle = theme.accentDeep;
+      ctx.font = canvasFont('900', 23);
+      ctx.fillText("\u00a5", summaryX + summaryPadX + priceLabelW + 9, summaryBaseline + 1);
+      const yenW = ctx.measureText("\u00a5").width;
+      ctx.fillText(cell.price || "", summaryX + summaryPadX + priceLabelW + 9 + yenW + 5, summaryBaseline + 1);
+
+      ctx.font = canvasFont('900', 14);
+      ctx.fillStyle = theme.muted;
+      ctx.fillText(UI_TRIO_RATING, ratingColX, summaryBaseline);
+      const ratingLabelW = ctx.measureText(UI_TRIO_RATING).width;
+      const starX = ratingColX + ratingLabelW + 9;
+      const rating = Math.max(0, Math.min(5, Number(cell.rating) || 0));
+      ctx.font = canvasFont('900', 25);
+      for (let i = 0; i < 5; i += 1) {
+        ctx.fillStyle = i < rating ? theme.accent : themeAlpha("accent", .26);
+        ctx.fillText(STAR_CHAR, starX + i * 29, summaryBaseline + 4);
+      }
+      ctx.fillStyle = theme.accentDeep;
+      ctx.font = canvasFont('900', 16);
+      ctx.fillText(rating.toFixed(1), starX + 5 * 29 + 8, summaryBaseline + 2);
+
+      const repoLeftX = infoX;
+      const repoTextX = infoX + 22;
+      ctx.fillStyle = themeAlpha("accent", .22);
+      ctx.fillRect(repoLeftX, repoTop + 5, 3, repoBottom - repoTop - 10);
+      ctx.fillStyle = themeAlpha("accentDeep", .5);
+      ctx.font = canvasFont('900', 15);
+      ctx.fillText("\u2661", repoLeftX + 6, repoTop + 24);
+      ctx.fillStyle = theme.accentDeep;
+      ctx.font = canvasFont('900', 13);
+      ctx.fillText(UI_TRIO_REPO_LABEL, repoTextX, repoTop + 24);
+      ctx.fillStyle = themeAlpha("ink", .9);
+      ctx.font = canvasFont('700', 15);
+      drawWrappedText(ctx, cell.repo || "", repoTextX, repoTop + 46, infoW - 22 - 10, 25, 6);
+    }
+
+    trioImportAllButton?.addEventListener("click", importAllTrioCells);
+    trioClearRepoButton?.addEventListener("click", () => {
+      trioCellEditors.forEach((cell) => {
+        cell.querySelector(".trio-repo-input").value = "";
+      });
+      saveState();
+    });
+
+    function bindTrioMobileFocus() {
+      if (!trioCard) return;
+      const areas = Array.from(trioCard.querySelectorAll(".trio-item"));
+      areas.forEach((area) => {
+        area.addEventListener("click", (event) => {
+          if (!isMobileView() || currentTemplate() !== "trio") return;
+          if (event.target.closest("button, input, textarea, select, .trio-cover")) return;
+          if (mobileFocusTarget !== area) {
+            event.preventDefault();
+            event.stopPropagation();
+            focusMobileArea(area);
+          }
+        }, true);
+        area.addEventListener("focusin", () => {
+          if (currentTemplate() !== "trio") return;
+          focusMobileArea(area);
+        });
+      });
+    }
+    function bindGrid9MobileFocus() {
+      const areas = Array.from(grid9Card.querySelectorAll(".grid9-header, .grid9-cell"));
+      areas.forEach((area) => {
+        area.addEventListener("click", (event) => {
+          if (!isMobileView() || currentTemplate() !== "grid9") return;
+          if (event.target.closest("button, input, textarea, select")) return;
+          if (mobileFocusTarget !== area) {
+            event.preventDefault();
+            event.stopPropagation();
+            focusMobileArea(area);
+          }
+        }, true);
+        area.addEventListener("focusin", () => {
+          if (currentTemplate() !== "grid9") return;
+          focusMobileArea(area);
+        });
+      });
+    }
     mobileFocusBack.addEventListener("click", clearMobileFocus);
     reviewEditConfirm.addEventListener("click", () => closeReviewEditor(true));
     reviewEditCancel.addEventListener("click", () => closeReviewEditor(false));
@@ -3990,7 +6314,16 @@
       if (event.target.closest(".star, .choice-button")) scheduleSave();
     });
     syncPlayerUi(true);
+    buildGrid9Cells();
+    bindGrid9MobileFocus();
+    buildQuickCells();
+    bindQuickMobileFocus();
+    buildTrioCells();
+    bindTrioMobileFocus();
     restoreState();
+    void migrateGrid9CoversToCompact();
+    void migrateQuickCoversToCompact();
+    void migrateTrioCoversToCompact();
     restoreActiveMenu();
     restoreMainPage();
     scrollActivePickerIntoView();

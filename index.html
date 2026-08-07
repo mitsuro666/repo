@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
@@ -88,6 +88,9 @@
         <div class="menu-panel template-switch" data-menu-panel="template" aria-label="template">
           <button class="template-button active" data-template="full" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7L6.8 19l1-5.8-4.2-4.1 5.8-.8L12 3Z"/></svg><span>&#23436;&#25972;&#29256;</span></button>
           <button class="template-button" data-template="compact" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12"/><path d="M8 12h12"/><path d="M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span>&#31616;&#30053;&#29256;</span></button>
+          <button class="template-button" data-template="grid9" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>&#20061;&#23467;&#26684;</span></button>
+          <button class="template-button" data-template="quick" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="18" rx="2"/><rect x="13" y="3" width="8" height="18" rx="2"/></svg><span>&#36895;&#35780;&#29256;</span></button>
+          <button class="template-button" data-template="trio" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="4.5" rx="2"/><rect x="3" y="9.75" width="18" height="4.5" rx="2"/><rect x="3" y="15.5" width="18" height="4.5" rx="2"/></svg><span>&#19977;&#23467;&#26684;</span></button>
         </div>
         <div class="menu-panel theme-bar" id="themeBar" data-menu-panel="theme" hidden>
           <button class="theme-button active" data-theme="matcha-berry-cheese" type="button" aria-label="matcha berry cheese" style="--theme-c1:#9bc4b2;--theme-c2:#ffe5d9;--theme-c3:#fec9d4;--theme-c4:#b84f78"><span class="theme-dot"></span><span class="c1">&#x62b9;</span><span class="c2">&#x8336;</span><span class="c3">&#x8393;</span><span class="c4">&#x916a;</span></button>
@@ -167,19 +170,19 @@
 
         <section class="price-panel" aria-label="价格">
           <div class="section-label price-label">价格</div>
-          <div class="metric hero">
-            <div class="metric-label">现价</div>
-            <input class="soft-input numeric-input" id="currentPrice" type="text" inputmode="numeric" pattern="[0-9]*" />
-          </div>
-          <div class="metric secondary">
+          <div class="metric">
             <div class="metric-label">原价</div>
             <input class="soft-input numeric-input" id="originalPrice" type="text" inputmode="numeric" pattern="[0-9]*" />
           </div>
-          <div class="metric compact">
+          <div class="metric">
+            <div class="metric-label">现价</div>
+            <input class="soft-input numeric-input" id="currentPrice" type="text" inputmode="numeric" pattern="[0-9]*" />
+          </div>
+          <div class="metric">
             <div class="metric-label">现折扣</div>
             <div class="metric-entry"><input class="soft-input numeric-input" id="currentDiscount" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" /><span class="metric-suffix">%off</span></div>
           </div>
-          <div class="metric compact">
+          <div class="metric">
             <div class="metric-label">史低</div>
             <div class="metric-entry"><input class="soft-input numeric-input" id="lowestPrice" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" /><span class="metric-suffix">%off</span></div>
           </div>
@@ -187,7 +190,7 @@
 
         <section class="ratings" aria-label="评价">
           <div class="section-label rating-section-label">评分</div>
-          <div class="rating-row" data-rating="overall"><div class="rating-label">总体</div><div class="stars-wrap"><div class="stars" aria-label="总体评分"></div><span class="rating-value" aria-label="总体数值"></span></div></div>
+          <div class="rating-row" data-rating="overall"><div class="rating-label">总体</div><div class="stars" aria-label="总体评分"></div></div>
           <div class="rating-row" data-rating="cv"><div class="rating-label">CV</div><div class="stars" aria-label="CV评分"></div></div>
           <div class="rating-row" data-rating="story"><div class="rating-label">剧本</div><div class="stars" aria-label="剧本评分"></div></div>
           <div class="rating-row" data-rating="se"><div class="rating-label">SE</div><div class="stars" aria-label="SE评分"></div></div>
@@ -222,6 +225,55 @@
 
 
       </section>
+      <section class="card grid9-card" id="grid9Card" hidden>
+        <header class="grid9-header">
+          <div class="grid9-header-tools">
+            <label class="grid9-toggle"><input id="grid9ShowNumbers" type="checkbox" checked />&#26174;&#31034;&#32534;&#21495;</label>
+            <label class="grid9-toggle"><input id="grid9ShowRj" type="checkbox" checked />&#26174;&#31034;RJ&#21495;</label>
+          </div>
+          <div class="grid9-kicker">VOICE LOG &#10022; NOTE</div>
+          <div class="grid9-title-wrap">
+            <span class="grid9-marker"></span>
+            <div class="grid9-title editable is-empty" id="grid9TitleText" contenteditable="true" aria-label="&#22823;&#26631;&#39064;"></div>
+            <div class="grid9-title-placeholder" aria-hidden="true">&#12304;&#20027;&#26631;&#39064;&#12305;</div>
+          </div>
+          <div class="grid9-subtitle-box">
+            <div class="grid9-subtitle editable is-empty" id="grid9SubtitleText" contenteditable="true" aria-label="&#21103;&#26631;&#39064;"></div>
+            <div class="grid9-subtitle-placeholder" aria-hidden="true">&#12304;&#21103;&#26631;&#39064;&#12305;</div>
+          </div>
+          <div class="grid9-sparkles">&#10022; &#183; &#9825; &#183; &#10022;</div>
+        </header>
+        <div class="grid9-grid" id="grid9Cells"></div>
+        <div class="grid9-watermark">&#20057;&#25235;&#35760;&#24405; &#183; OTOME VOICE LOG</div>
+      </section>
+      <section class="card quick-card" id="quickCard" hidden>
+        <div class="quick-grid" id="quickCells"></div>
+        <div class="quick-watermark">&#20057;&#25235;&#35760;&#24405; &#183; QUICK VOICE NOTES</div>
+      </section>
+      <section class="card trio-card" id="trioCard" hidden>
+        <div class="trio-list" id="trioCells"></div>
+        <div class="trio-watermark">&#20057;&#25235;&#35760;&#24405; &#183; THREE VOICE NOTES</div>
+      </section>
+    </div>
+    <div class="grid9-external-tools" id="grid9ExternalTools" hidden>
+      <button class="tool-button primary" id="grid9ImportAllButton" type="button">&#25353;RJ&#19968;&#38190;&#23548;&#20837;BK</button>
+      <div class="preset-wrap">
+        <button class="tool-button" id="grid9PresetButton" type="button">&#30701;&#26631;&#39064;&#39044;&#35774; &#9662;</button>
+        <div class="preset-menu" id="grid9PresetMenu" hidden>
+          <button class="preset-item" type="button" data-preset="summary">&#24635;&#32467;&#22411;</button>
+          <button class="preset-item" type="button" data-preset="voice">&#22768;&#20248; BEST9</button>
+          <button class="preset-item" type="button" data-preset="clear">&#28165;&#31354;&#30701;&#26631;&#39064;</button>
+        </div>
+      </div>
+    </div>
+    <div class="quick-external-tools" id="quickExternalTools" hidden>
+      <button class="tool-button" id="quickShowRjButton" type="button">&#9745; &#26174;&#31034;RJ&#21495;</button>
+      <button class="tool-button primary" id="quickImportAllButton" type="button">&#25353;RJ&#19968;&#38190;&#23548;&#20837;BK</button>
+      <button class="tool-button" id="quickClearRepoButton" type="button">&#21482;&#28165;&#31354;Repo</button>
+    </div>
+    <div class="trio-external-tools" id="trioExternalTools" hidden>
+      <button class="tool-button primary" id="trioImportAllButton" type="button">&#25353;RJ&#19968;&#38190;&#23548;&#20837;</button>
+      <button class="tool-button" id="trioClearRepoButton" type="button">&#21482;&#28165;&#31354;Repo</button>
     </div>
 
         <section class="app-page utility-page image-tool-page" id="imageToolPage" hidden>
@@ -306,6 +358,16 @@
     </div>
     </section>
   </main>
+
+    <div class="grid9-import-modal" id="grid9ImportModal" hidden>
+      <div class="grid9-import-sheet">
+        <h2 class="grid9-import-title" id="grid9ImportTitle"></h2>
+        <div class="grid9-import-body" id="grid9ImportBody"></div>
+        <div class="grid9-import-actions">
+          <button class="tool-button primary" id="grid9ImportDoneButton" type="button">&#23436;&#25104;</button>
+        </div>
+      </div>
+    </div>
 
     <div class="usage-info-modal" id="usageInfoModal" hidden>
       <div class="usage-info-sheet">
