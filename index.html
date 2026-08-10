@@ -25,6 +25,7 @@
             <path d="M125 5c2.3 4 4 5.7 7.8 8-3.8 2.3-5.5 4-7.8 8-2.3-4-4-5.7-7.8-8 3.8-2.3 5.5-4 7.8-8Z" opacity=".72"/>
           </g>
         </svg>
+        <span class="site-brand-mark" aria-hidden="true">&#10022;</span>
         <h1 class="site-title">&#20057;&#25235;&#35760;&#24405;</h1>
         <svg class="title-side-ornament is-right" viewBox="0 0 250 26" aria-hidden="true">
           <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -70,6 +71,7 @@
           <div class="mobile-data-dropdown" id="mobileDataDropdown" hidden>
             <button class="mobile-data-option" id="mobileImportDataButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg><span>&#23548;&#20837;&#25968;&#25454;</span></button>
             <button class="mobile-data-option" id="mobileExportDataButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span>&#23548;&#20986;&#25968;&#25454;</span></button>
+            <button class="mobile-data-option" id="mobileSaveToCollectionButton" type="button"><span>♡</span><span>&#23384;&#20837;&#25910;&#34255;</span></button>
             <button class="mobile-data-option" id="mobileUsageGuideButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg><span>&#20351;&#29992;&#35828;&#26126;</span></button>
             <button class="mobile-data-option" id="mobileUsageInfoButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01"/><path d="M11 12h1v4h1"/></svg><span>&#20851;&#20110;&#26412;&#31449;</span></button>
           </div>
@@ -79,6 +81,7 @@
           <button class="menu-tab" data-menu="theme" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 0 0 0 16h1.3a1.7 1.7 0 0 0 1.2-2.9 1.7 1.7 0 0 1 1.2-2.9H17a3 3 0 0 0 3-3C20 7.3 16.4 4 12 4Z"/><circle cx="8.3" cy="10" r=".7"/><circle cx="11" cy="7.7" r=".7"/><circle cx="14" cy="8" r=".7"/></svg><span>&#27169;&#26495;&#33394;&#21345;</span></button>
         </nav>
         <div class="toolbar-actions" data-template-tool>
+          <button class="action-button" id="saveToCollectionButton" type="button"><span>♡</span><span>&#23384;&#20837;&#25910;&#34255;</span></button>
           <button class="action-button" id="resetButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6.5 6l1 14h9l1-14"/><path d="M10 11v5"/><path d="M14 11v5"/></svg><span>&#28165;&#31354;&#20869;&#23481;</span></button>
           <button class="action-button" id="importDataButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg><span>&#23548;&#20837;&#25968;&#25454;</span></button>
           <button class="action-button" id="exportDataButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span>&#23548;&#20986;&#25968;&#25454;</span></button>
@@ -234,7 +237,6 @@
             <label class="grid9-toggle"><input id="grid9ShowRj" type="checkbox" checked />&#26174;&#31034;RJ&#21495;</label>
           </div>
           <div class="grid9-title-style-tools" aria-label="&#26631;&#39064;&#26679;&#24335;">
-            <span class="grid9-title-style-caption">&#26631;&#39064;&#26679;&#24335;</span>
             <button class="grid9-title-style-button is-selected" id="grid9TitleStyleCream" type="button" data-title-style="cream">&#22902;&#27833;&#25551;&#36793;</button>
             <button class="grid9-title-style-button" id="grid9TitleStyleOffset" type="button" data-title-style="offset">&#21452;&#23618;&#38169;&#20301;</button>
             <button class="grid9-title-style-button" id="grid9TitleStyleChip" type="button" data-title-style="chip">&#36148;&#32440;&#24213;&#26495;</button>
@@ -294,12 +296,19 @@
       <input class="hidden" id="standaloneImageInput" type="file" accept="image/*" />
     </section>
 
-    <section class="app-page utility-page collection-placeholder-page" id="collectionPage" hidden>
-      <h2 class="utility-page-title">&#25105;&#30340;&#25910;&#34255;</h2>
-      <div class="collection-card-grid">
-        <div class="collection-card">&#25910;&#34255;&#21015;&#34920;<br /><span class="menu-placeholder">1.0 &#20043;&#21518;&#21487;&#20197;&#22312;&#36825;&#37324;&#26597;&#30475;&#24050;&#20445;&#23384;&#30340; repo</span></div>
-        <div class="collection-card">&#26368;&#36817;&#32534;&#36753;<br /><span class="menu-placeholder">&#39044;&#30041;&#37325;&#26032;&#25171;&#24320;&#32534;&#36753;&#30340;&#20837;&#21475;</span></div>
-        <div class="collection-card">&#25628;&#32034;&#21644;&#26631;&#31614;<br /><span class="menu-placeholder">&#21518;&#32493;&#21487;&#20197;&#25353; CV / &#31038;&#22242; / RJ &#26597;&#25214;</span></div>
+    <section class="app-page collection-demo" id="collectionPage" hidden>
+      <div class="collection-toolbar"><div class="collection-head"><div></div><div class="toolbar-actions"><button class="action-button" id="collectionImportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg><span>导入备份</span></button><button class="action-button" id="collectionExportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span>导出备份</span></button><button class="action-button primary" id="collectionNewRecordButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>新建记录</span></button><input class="hidden" id="collectionImportInput" type="file" accept="application/json,.json" /></div></div></div>
+      <div class="collection-library-workspace">
+      <div class="collection-controls"><label class="collection-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="collectionSearch" placeholder="搜索标题 / RJ / CV / 社团 / 标签…" /></label><select id="collectionSort"><option value="recent">最近编辑</option><option value="added">添加日期</option><option value="cv">CV名</option><option value="title">标题</option><option value="rating">评分 高→低</option><option value="originalPrice">原价 高→低</option><option value="price">现价 高→低</option><option value="lowestPrice">史低 高→低</option></select><div class="collection-view-toggle"><button id="collectionGridBtn" class="collection-icon active" type="button" title="网格视图"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/></svg></button><button id="collectionListBtn" class="collection-icon" type="button" title="列表视图"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></button></div></div>
+      <div class="collection-layout"><aside class="collection-tags" id="collectionTagPanel"><b>收藏标签</b><div id="collectionTagLinks"></div><div class="collection-tag-actions"><button class="collection-add-tag" id="collectionAddTagButton" type="button">＋ 新建标签</button><button class="collection-remove-tag" id="collectionRemoveTagButton" type="button">− 移除标签</button></div></aside><div id="collectionGrid" class="collection-grid"></div></div>
+      <div class="collection-list-footer"><nav class="collection-pager" id="collectionPager" aria-label="收藏分页" hidden><button id="collectionPrevPage" type="button">← 上一页</button><span id="collectionPageText">1 / 1</span><button id="collectionNextPage" type="button">下一页 →</button></nav><div class="collection-footer-count"><span id="collectionCount"></span></div></div>
+      </div>
+    </section>
+
+    <section class="app-page collection-detail-page" id="collectionDetailPage" hidden>
+      <div class="collection-detail-workspace">
+      <div class="collection-detail-toolbar"><button id="collectionBack" type="button">← 返回列表</button><div><button id="collectionEditRecordButton" type="button">编辑repo</button><button class="primary" id="collectionDetailSaveButton" type="button">保存记录</button></div></div>
+      <article class="collection-archive-sheet"><header class="collection-archive-hero"><div class="collection-detail-art" id="collectionDetailArt"></div><div class="collection-archive-intro"><small>OTOME VOICE ARCHIVE</small><h2 id="collectionDetailTitle" contenteditable="true"></h2><p id="collectionDetailCn" contenteditable="true"></p><div class="collection-facts"><div><b>CV</b><span id="collectionDetailCv" contenteditable="true"></span></div><div><b>社团</b><span id="collectionDetailCircle" contenteditable="true"></span></div><div><b>RJ</b><span id="collectionDetailRj" contenteditable="true"></span></div><div><b>时长</b><span id="collectionDetailTime" contenteditable="true"></span></div><div><b>购入价</b><span id="collectionDetailPrice" contenteditable="true"></span></div><div><b>评分</b><span id="collectionDetailRating" contenteditable="true"></span></div></div><div class="collection-archive-tags"><div><span>作品关键词</span><div id="collectionDetailKeywords"></div><button class="collection-detail-add-button" id="collectionDetailAddKeyword" type="button">＋ 添加关键词</button></div><div><span>我的标签</span><div id="collectionDetailLibraryTags"></div><button class="collection-detail-add-button" id="collectionDetailAddTag" type="button">＋ 添加标签</button></div></div></div></header><div class="collection-archive-body"><section><h3>作品简介</h3><p id="collectionDetailSummary" contenteditable="true"></p></section><section><h3>角色资料</h3><p id="collectionDetailCharacter" contenteditable="true"></p></section><section><h3>我的评价</h3><div class="collection-rating-table"><div><span>总体</span><span id="collectionDetailRatingStars"></span></div></div></section><section class="collection-archive-review"><h3>Repo / 感想</h3><p id="collectionDetailReview" contenteditable="true"></p></section></div></article>
       </div>
     </section>
 

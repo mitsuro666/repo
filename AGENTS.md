@@ -33,34 +33,42 @@ deployed on GitHub Pages.
   must be localized to a data URL first (`localizeImageToPngDataUrl` falls back
   to `stamp-data/` embedded copies, then to `<img>` rasterization).
 
-## Design rules for new templates and modules
+## Design rules for new card templates
 
-- New templates and styles must be theme-aware. Never introduce a fixed
-  template/module color when the color should change with the selected palette.
+- These color-card rules apply only to card templates and their exported card
+  canvases. They do not apply to general website modules such as My Favorites,
+  the image editor, import/settings panels, or other non-template UI.
+- New card templates and template styles must be theme-aware. Never introduce a
+  fixed template color when the color should change with the selected palette.
   Use the existing semantic variables such as `--card-ink`, `--card-muted`,
   `--card-accent`, `--card-accent-deep`, `--card-line`, `--card-mint`,
   `--card-cover-bg`, and `--card-bg-*`; use `color-mix()` with those variables
   for lighter, darker, or translucent variants.
-- A new theme-dependent color must first be added as a semantic `--card-*`
-  variable in every theme block, then consumed by the template/module. Do not
-  add a raw hex value directly to a new component rule except for genuinely
-  theme-independent values such as pure white used for contrast.
+- A new theme-dependent template color must first be added as a semantic
+  `--card-*` variable in every theme block, then consumed by the template. Do
+  not add a raw hex value directly to a new template rule except for genuinely
+  theme-independent values such as pure white used for contrast. Non-template
+  website modules may use their own UI color system and do not need `--card-*`.
 - When drawing a new template on canvas, pass palette-derived colors into the
   drawing functions. Do not hard-code palette hex values in new JavaScript
   drawing logic.
-- New modules should establish an intentional alignment: left, right, or
-  centered. Keep sibling modules on a consistent alignment axis and use equal,
-  explicit `gap`/spacing values between comparable modules.
+- New template sections should establish an intentional alignment: left, right,
+  or centered. Keep sibling sections on a consistent alignment axis and use
+  equal, explicit `gap`/spacing values between comparable sections.
 - Prefer layout primitives (`grid`/`flex`, `gap`, `align-items`,
-  `justify-content`, `text-align`) over per-element offset nudges. When a
-  module has repeated items, define the spacing once on the parent.
-- Before handing off a change, statically check that new theme-dependent colors
-  reference semantic variables and that new repeated layouts use consistent
-  alignment and spacing. Functional, visual, and end-to-end verification is
-  intentionally left to the user per the working preferences below.
+  `justify-content`, `text-align`) over per-element offset nudges in templates.
+  When a template has repeated items, define the spacing once on the parent.
+- Before handing off a template change, statically check that new
+  theme-dependent colors reference semantic variables and that repeated
+  sections use consistent alignment and spacing. Functional, visual, and
+  end-to-end verification is intentionally left to the user per the working
+  preferences below.
 ## Working preferences
 
 - When changing code, only run basic syntax/static checks (e.g. JS parse check). Do NOT run functional, visual, or end-to-end verification - no browser automation, no screenshot rendering, no click-through testing. The user verifies the actual effect themselves.
+- In `js/app.js`, always declare storage-key constants and other `const`/`let`
+  dependencies before the first statement that uses or passes them. Never add
+  a use-before-declaration dependency to page initialization.
 
 ## Preview/export parity workflow for grid9 title styles
 

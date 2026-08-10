@@ -10,6 +10,7 @@
     const stage = document.getElementById("stage");
     const imageToolPage = document.getElementById("imageToolPage");
     const collectionPage = document.getElementById("collectionPage");
+    const collectionDetailPage = document.getElementById("collectionDetailPage");
     const standaloneImageInput = document.getElementById("standaloneImageInput");
     const standaloneImageUploadButton = document.getElementById("standaloneImageUploadButton");
     const imageToolEmpty = document.getElementById("imageToolEmpty");
@@ -31,6 +32,8 @@
     const importDataInput = document.getElementById("importDataInput");
     const importButton = document.getElementById("importButton");
     const resetButton = document.getElementById("resetButton");
+    const saveToCollectionButton = document.getElementById("saveToCollectionButton");
+    const mobileSaveToCollectionButton = document.getElementById("mobileSaveToCollectionButton");
     const templateButtons = Array.from(document.querySelectorAll(".template-button"));
     const templateSwitch = document.querySelector(".template-switch");
     const themeBar = document.getElementById("themeBar");
@@ -110,7 +113,33 @@
       grid9TitleText.classList.toggle("is-empty", grid9TitleText.textContent.trim() === "");
       grid9SubtitleText.classList.toggle("is-empty", grid9SubtitleText.textContent.trim() === "");
     }
+    function limitGrid9Text(node, maxLength) {
+      const chars = Array.from(node.textContent || "");
+      if (chars.length <= maxLength) return;
+      node.textContent = chars.slice(0, maxLength).join("");
+    }
     updateGrid9EmptyClass();
+    const GRID9_TITLE_STYLE_STORAGE_KEY = "otome-record-card-grid9-title-style-v1";
+    const GRID9_TITLE_TEXT_STORAGE_KEY = "otome-record-card-grid9-title-v1";
+    const GRID9_SUBTITLE_TEXT_STORAGE_KEY = "otome-record-card-grid9-subtitle-v1";
+    const grid9Composing = new WeakSet();
+    function saveGrid9Text(node, storageKey) {
+      localStorage.setItem(storageKey, node.textContent.trim());
+    }
+    function bindGrid9TextInput(node, maxLength, storageKey) {
+      node.addEventListener("compositionstart", () => grid9Composing.add(node));
+      node.addEventListener("compositionend", () => {
+        grid9Composing.delete(node);
+        limitGrid9Text(node, maxLength);
+        saveGrid9Text(node, storageKey);
+      });
+      node.addEventListener("input", () => {
+        if (!grid9Composing.has(node)) limitGrid9Text(node, maxLength);
+        saveGrid9Text(node, storageKey);
+      });
+    }
+    bindGrid9TextInput(grid9TitleText, 15, GRID9_TITLE_TEXT_STORAGE_KEY);
+    bindGrid9TextInput(grid9SubtitleText, 34, GRID9_SUBTITLE_TEXT_STORAGE_KEY);
     [grid9TitleText, grid9SubtitleText].forEach((node) => {
       node.addEventListener("blur", updateGrid9EmptyClass);
     });
@@ -146,6 +175,7 @@
     grid9TitleStyleButtons.forEach((button) => button.addEventListener("click", () => {
       grid9TitleStyle = ["offset", "chip", "split", "frost"].includes(button.dataset.titleStyle) ? button.dataset.titleStyle : "cream";
       updateGrid9TitleStyle();
+      localStorage.setItem(GRID9_TITLE_STYLE_STORAGE_KEY, grid9TitleStyle);
       saveState();
     }));
     updateGrid9TitleStyle();
@@ -516,6 +546,7 @@
       if (trioExternalTools) trioExternalTools.hidden = !trioActive;
       if (imageToolPage) imageToolPage.hidden = page !== "image-tool";
       if (collectionPage) collectionPage.hidden = page !== "collection";
+      if (collectionDetailPage) collectionDetailPage.hidden = true;
     }
 
     function setMainPage(pageName, persist = true) {
@@ -4238,11 +4269,17 @@
 
     function applyGrid9State(state) {
       if (!state || typeof state !== "object") return;
-      grid9TitleText.textContent = state.title || "";
-      grid9SubtitleText.textContent = state.subtitle || "";
+      grid9TitleText.textContent = localStorage.getItem(GRID9_TITLE_TEXT_STORAGE_KEY) ?? state.title ?? "";
+      grid9SubtitleText.textContent = localStorage.getItem(GRID9_SUBTITLE_TEXT_STORAGE_KEY) ?? state.subtitle ?? "";
+      limitGrid9Text(grid9TitleText, 15);
+      limitGrid9Text(grid9SubtitleText, 34);
+      localStorage.setItem(GRID9_TITLE_TEXT_STORAGE_KEY, grid9TitleText.textContent.trim());
+      localStorage.setItem(GRID9_SUBTITLE_TEXT_STORAGE_KEY, grid9SubtitleText.textContent.trim());
       grid9ShowNumbers.checked = state.showNumbers !== false;
       grid9ShowRj.checked = state.showRj !== false;
-      grid9TitleStyle = ["offset", "chip", "split", "frost"].includes(state.titleStyle) ? state.titleStyle : "cream";
+      const savedTitleStyle = state.titleStyle || localStorage.getItem(GRID9_TITLE_STYLE_STORAGE_KEY);
+      grid9TitleStyle = ["offset", "chip", "split", "frost"].includes(savedTitleStyle) ? savedTitleStyle : "cream";
+      localStorage.setItem(GRID9_TITLE_STYLE_STORAGE_KEY, grid9TitleStyle);
       for (let index = 0; index < 9; index += 1) {
         writeGrid9Cell(index, (state.cells && state.cells[index]) || {});
       }
@@ -4579,25 +4616,34 @@
       ctx.textAlign = "center";
       ctx.lineJoin = "round";
       ctx.font = canvasFont("950", 58);
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 6;
       ctx.strokeStyle = "rgba(255,248,251,.94)";
       const lines = grid9WrapLines(ctx, text, maxWidth, lineCount);
       lines.forEach((line, index) => {
         const tx = x + maxWidth / 2;
         const ty = y + index * lineHeight;
+        ctx.shadowColor = themeAlpha("accentDeep", .08);
+        ctx.shadowBlur = 14;
+        ctx.shadowOffsetY = 8;
         ctx.strokeText(line, tx, ty);
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
         const grad = ctx.createLinearGradient(0, ty - 58, 0, ty + 8);
         grad.addColorStop(0, theme.ink);
         grad.addColorStop(.48, theme.ink);
         grad.addColorStop(.48, theme.accent);
-        grad.addColorStop(1, theme.accentDeep);
+        grad.addColorStop(1, theme.accent);
         ctx.fillStyle = grad;
         ctx.fillText(line, tx, ty);
       });
-      const lineWidth = Math.min(760, maxWidth * .88);
+      const titleWrapWidth = Math.min(maxWidth + 48, grid9MaxLineWidth(ctx, text, maxWidth) + 48);
+      const lineWidth = titleWrapWidth * .88;
       ctx.strokeStyle = themeAlpha("accent", .58);
-      ctx.lineWidth = 1;
-      [y - 68, y + lineCount * lineHeight - 9].forEach((lineY) => {
+      ctx.lineWidth = .5;
+      const topLineY = y - 52;
+      const bottomLineY = y + 17;
+      [topLineY, bottomLineY].forEach((lineY) => {
         ctx.beginPath();
         ctx.moveTo(x + maxWidth / 2 - lineWidth / 2, lineY);
         ctx.lineTo(x + maxWidth / 2 + lineWidth / 2, lineY);
@@ -4605,8 +4651,8 @@
       });
       ctx.fillStyle = themeAlpha("accent", .76);
       ctx.font = canvasFont("900", 16);
-      ctx.fillText(String.fromCharCode(0x2726), x + maxWidth / 2, y - 76);
-      ctx.fillText(String.fromCharCode(0x2726), x + maxWidth / 2, y + lineCount * lineHeight + 3);
+      ctx.fillText(String.fromCharCode(0x2726), x + maxWidth / 2, y - 50);
+      ctx.fillText(String.fromCharCode(0x2726), x + maxWidth / 2, y + 29);
       ctx.restore();
     }
 
@@ -4668,29 +4714,28 @@
       drawLetterspacedCentered(ctx, UI_GRID9_KICKER, 540, 58, 4);
       const titleBaselineY = 129;
       const titleLineHeight = 67;
-      let titleLineCount = 1;
+      const titleLineCount = 1;
       if (state.title) {
         ctx.fillStyle = theme.ink;
         const titleFontSize = ["split", "frost"].includes(state.titleStyle) ? 58 : 64;
         ctx.font = canvasFont('950', titleFontSize);
-        titleLineCount = grid9MeasureLines(ctx, state.title, 900);
-        const markerAnchorY = 136 + (titleLineCount - 1) * titleLineHeight;
+        const markerAnchorY = 136;
         if (state.titleStyle === "offset") {
-          drawCenteredWrappedOffsetText(ctx, state.title, 90, titleBaselineY, 900, titleLineHeight, 2);
+          drawCenteredWrappedOffsetText(ctx, state.title, 90, titleBaselineY, 900, titleLineHeight, 1);
         } else if (state.titleStyle === "chip") {
           ctx.font = canvasFont('950', 52);
           drawGrid9TitleChip(ctx, state.title, 540, titleBaselineY, 900, 60, titleLineCount);
           drawCenteredWrappedText(ctx, state.title, 90, titleBaselineY, 900, 60, 2);
         } else if (state.titleStyle === "split") {
-          drawGrid9TitleSplit(ctx, state.title, 90, titleBaselineY, 900, 66, titleLineCount);
+          drawGrid9TitleSplit(ctx, state.title, 90, titleBaselineY - 8, 900, 66, titleLineCount);
         } else if (state.titleStyle === "frost") {
           drawGrid9TitleFrost(ctx, state.title, 90, titleBaselineY, 900, 66, titleLineCount);
         } else {
           drawGrid9TitleMarker(ctx, state.title, markerAnchorY);
-          drawCenteredWrappedStrokedText(ctx, state.title, 90, titleBaselineY, 900, titleLineHeight, 2);
+          drawCenteredWrappedStrokedText(ctx, state.title, 90, titleBaselineY, 900, titleLineHeight, 1);
         }
       }
-      const subtitleY = 185 + (titleLineCount - 1) * titleLineHeight;
+      const subtitleY = (state.titleStyle === "split" ? 177 : 185) + (titleLineCount - 1) * titleLineHeight;
       if (state.subtitle) {
         ctx.fillStyle = theme.muted;
         ctx.font = canvasFont('800', 20);
@@ -6613,3 +6658,328 @@
     fitStage();
     updateDiscount();
     syncDiscountColor();
+
+    (() => {
+      const page = document.getElementById("collectionPage");
+      if (!page) return;
+      let records = [];
+      let tag = "all", listMode = false, scrollY = 0, collectionPageIndex = 0, activeCollectionRecordId = null;
+      const COLLECTION_PAGE_SIZE = 8;
+      const grid = document.getElementById("collectionGrid");
+      const collectionScroller = page.parentElement;
+      const COLLECTION_TAGS_KEY = "otome-record-card-collection-tags-v1";
+      const COLLECTION_REMOVED_TAGS_KEY = "otome-record-card-collection-removed-tags-v1";
+      const COLLECTION_DETAIL_KEY = "otome-record-card-collection-detail-v1";
+      let customCollectionTags = [];
+      let removedCollectionTags = [];
+      try { customCollectionTags = JSON.parse(localStorage.getItem(COLLECTION_TAGS_KEY) || "[]"); } catch { customCollectionTags = []; }
+      try { removedCollectionTags = JSON.parse(localStorage.getItem(COLLECTION_REMOVED_TAGS_KEY) || "[]"); } catch { removedCollectionTags = []; }
+      const defaultCollectionTags = [];
+      function escapeCollectionText(value) { return String(value ?? "").replace(/[&<>"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[character]); }
+      function collectionTagNames() { return Array.from(new Set(defaultCollectionTags.concat(customCollectionTags).concat(records.flatMap(work => work.tags || [])))).filter(name => !removedCollectionTags.includes(name)); }
+      function renderCollectionTags() {
+        const links = document.getElementById("collectionTagLinks");
+        const names = collectionTagNames();
+        const buttons = [{ name:"all", label:"全部", count:records.length }].concat(names.map(name => ({ name, label:name, count:records.filter(work => (work.tags || []).includes(name)).length })));
+        links.innerHTML = buttons.map(item => `<button type="button" class="${tag === item.name ? "active" : ""}" data-collection-tag="${escapeCollectionText(item.name)}"><span>${escapeCollectionText(item.label)}</span><span class="collection-tag-count">${item.count}</span></button>`).join("");
+      }
+      function render() {
+        renderCollectionTags();
+        const q = document.getElementById("collectionSearch").value.trim().toLowerCase();
+        let a = records.filter(r => tag === "all" || (r.tags || []).includes(tag)).filter(r => !q || [r.title,r.cn,r.cv,r.rj,r.circle,r.keywords,...(r.tags || [])].join(" ").toLowerCase().includes(q));
+        const s = document.getElementById("collectionSort").value;
+        if (s === "recent") a.sort((x,y) => (y.editedAt || 0) - (x.editedAt || 0));
+        if (s === "added") a.sort((x,y) => (y.addedAt || 0) - (x.addedAt || 0));
+        if (s === "rating") a.sort((x,y) => (y.rating || 0) - (x.rating || 0));
+        if (["originalPrice","price","lowestPrice"].includes(s)) a.sort((x,y) => (y[s] || 0) - (x[s] || 0));
+        if (s === "cv") a.sort((x,y) => (x.cv || "").localeCompare(y.cv || "","ja"));
+        if (s === "title") a.sort((x,y) => (x.title || "").localeCompare(y.title || "","ja"));
+        const pageCount = Math.max(1, Math.ceil(a.length / COLLECTION_PAGE_SIZE));
+        collectionPageIndex = Math.max(0, Math.min(collectionPageIndex, pageCount - 1));
+        const visible = a.slice(collectionPageIndex * COLLECTION_PAGE_SIZE, (collectionPageIndex + 1) * COLLECTION_PAGE_SIZE);
+        grid.classList.toggle("list-mode", listMode);
+        grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"${r.cover ? ` style="background-image:url('${r.cover}')"` : ""}><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div>${r.tags?.[0] ? `<i class="collection-tag-mini">${escapeCollectionText(r.tags[0])}</i>` : ""}</div></article>`).join("") : "<div class=\"collection-empty\">暂无收藏记录</div>";
+        document.getElementById("collectionCount").textContent = a.length + " 条记录";
+        const pager = document.getElementById("collectionPager");
+        pager.hidden = a.length <= COLLECTION_PAGE_SIZE;
+        document.getElementById("collectionPageText").textContent = (collectionPageIndex + 1) + " / " + pageCount;
+        document.getElementById("collectionPrevPage").disabled = collectionPageIndex === 0;
+        document.getElementById("collectionNextPage").disabled = collectionPageIndex >= pageCount - 1;
+      }
+      function renderDetailChips(id, values) {
+        const element = document.getElementById(id);
+        const nextValues = Array.from(new Set((values || []).map(value => String(value || "").trim()).filter(Boolean)));
+        element.dataset.values = JSON.stringify(nextValues);
+        element.innerHTML = nextValues.map(value => `<em>${escapeCollectionText(value)}<button type="button" data-remove-detail-chip="${escapeCollectionText(value)}" aria-label="删除">×</button></em>`).join("");
+      }
+      function detailChipValues(id) {
+        const element = document.getElementById(id);
+        try { return JSON.parse(element.dataset.values || "[]"); } catch { return []; }
+      }
+      function addDetailChip(id, message) {
+        const value = String(prompt(message) || "").trim();
+        if (!value) return;
+        renderDetailChips(id, detailChipValues(id).concat(value));
+      }
+      function detailText(id) { return document.getElementById(id).textContent.trim(); }
+      function openDetail(id) {
+        const r = records.find(x => String(x.id) === String(id));
+        if (!r) return;
+        activeCollectionRecordId = r.id;
+        localStorage.setItem(COLLECTION_DETAIL_KEY, String(r.id));
+        scrollY = collectionScroller ? collectionScroller.scrollTop : window.scrollY;
+        document.getElementById("collectionDetailTitle").textContent = r.title || "";
+        document.getElementById("collectionDetailCn").textContent = r.cn || "";
+        ["Cv","Circle","Rj","Time"].forEach((key,index) => { document.getElementById("collectionDetail" + key).textContent = [r.cv,r.circle,r.rj,r.time][index] || ""; });
+        document.getElementById("collectionDetailPrice").textContent = r.price === "" || r.price == null ? "" : "¥" + r.price;
+        document.getElementById("collectionDetailRating").textContent = r.rating === "" || r.rating == null ? "" : Number(r.rating).toFixed(1);
+        document.getElementById("collectionDetailSummary").textContent = r.summary || "";
+        document.getElementById("collectionDetailCharacter").textContent = r.character || "";
+        document.getElementById("collectionDetailReview").textContent = r.review || "";
+        renderDetailChips("collectionDetailKeywords", String(r.keywords || "").split(" / ").filter(Boolean));
+        renderDetailChips("collectionDetailLibraryTags", r.tags || []);
+        const rating = r.rating === "" || r.rating == null ? 0 : Math.max(0,Math.min(5,Math.round(Number(r.rating))));
+        document.getElementById("collectionDetailRatingStars").textContent = rating ? "★".repeat(rating) + "☆".repeat(5-rating) : "—";
+        const detailArt = document.getElementById("collectionDetailArt");
+        detailArt.style.backgroundImage = r.cover ? `url('${r.cover}')` : "";
+        detailArt.style.backgroundSize = "contain";
+        detailArt.style.backgroundPosition = "center";
+        detailArt.style.backgroundRepeat = "no-repeat";
+        page.hidden = true;
+        if (collectionDetailPage) collectionDetailPage.hidden = false;
+        if (workspaceTitle) workspaceTitle.textContent = "作品档案";
+        if (collectionScroller) collectionScroller.scrollTo({ top:0, behavior:"instant" });
+        else window.scrollTo(0,0);
+      }
+      function openNewDetail() {
+        activeCollectionRecordId = null;
+        localStorage.removeItem(COLLECTION_DETAIL_KEY);
+        scrollY = collectionScroller ? collectionScroller.scrollTop : window.scrollY;
+        ["collectionDetailTitle","collectionDetailCn","collectionDetailCv","collectionDetailCircle","collectionDetailRj","collectionDetailTime","collectionDetailPrice","collectionDetailRating","collectionDetailSummary","collectionDetailCharacter","collectionDetailReview"].forEach(id => { document.getElementById(id).textContent = ""; });
+        renderDetailChips("collectionDetailKeywords", []);
+        renderDetailChips("collectionDetailLibraryTags", []);
+        document.getElementById("collectionDetailRatingStars").textContent = "—";
+        const detailArt = document.getElementById("collectionDetailArt");
+        detailArt.style.backgroundImage = "";
+        detailArt.style.backgroundSize = "contain";
+        detailArt.style.backgroundPosition = "center";
+        detailArt.style.backgroundRepeat = "no-repeat";
+        page.hidden = true;
+        if (collectionDetailPage) collectionDetailPage.hidden = false;
+        if (workspaceTitle) workspaceTitle.textContent = "作品档案";
+        if (collectionScroller) collectionScroller.scrollTo({ top:0, behavior:"instant" });
+        else window.scrollTo(0,0);
+      }
+      grid.addEventListener("click", event => {
+        const record = event.target.closest(".collection-record");
+        if (!record || !grid.contains(record)) return;
+        openDetail(record.dataset.id);
+      });
+      document.getElementById("collectionSearch").oninput = () => { collectionPageIndex = 0; render(); };
+      document.getElementById("collectionSort").onchange = () => { collectionPageIndex = 0; render(); };
+      document.getElementById("collectionTagLinks").onclick = event => { const button = event.target.closest("[data-collection-tag]"); if (!button) return; tag = button.dataset.collectionTag; collectionPageIndex = 0; render(); };
+      document.getElementById("collectionAddTagButton").onclick = () => { const name = String(prompt("请输入新标签名称") || "").trim(); if (!name || name === "全部" || defaultCollectionTags.includes(name) || customCollectionTags.includes(name)) return; customCollectionTags.push(name); localStorage.setItem(COLLECTION_TAGS_KEY, JSON.stringify(customCollectionTags)); tag = name; collectionPageIndex = 0; render(); };
+      document.getElementById("collectionRemoveTagButton").onclick = async () => {
+        const name = String(prompt("请输入要移除的标签名称") || "").trim();
+        if (!name || name === "all" || name === "全部" || !collectionTagNames().includes(name)) return;
+        if (!confirm("确定移除标签“" + name + "”吗？只会移除收藏条目上的标签，不会删除条目。")) return;
+        const now = Date.now();
+        const affected = records.filter(work => (work.tags || []).includes(name));
+        records = records.map(work => ({ ...work, tags:(work.tags || []).filter(item => item !== name), editedAt:affected.includes(work) ? now : work.editedAt }));
+        customCollectionTags = customCollectionTags.filter(item => item !== name);
+        if (!defaultCollectionTags.includes(name)) removedCollectionTags = removedCollectionTags.filter(item => item !== name);
+        else if (!removedCollectionTags.includes(name)) removedCollectionTags.push(name);
+        localStorage.setItem(COLLECTION_TAGS_KEY, JSON.stringify(customCollectionTags));
+        localStorage.setItem(COLLECTION_REMOVED_TAGS_KEY, JSON.stringify(removedCollectionTags));
+        await putWorks(records);
+        if (tag === name) tag = "all";
+        collectionPageIndex = 0;
+        render();
+      };
+      document.getElementById("collectionGridBtn").onclick = () => { listMode = false; document.getElementById("collectionGridBtn").classList.add("active"); document.getElementById("collectionListBtn").classList.remove("active"); render(); };
+      document.getElementById("collectionListBtn").onclick = () => { listMode = true; document.getElementById("collectionListBtn").classList.add("active"); document.getElementById("collectionGridBtn").classList.remove("active"); render(); };
+      document.getElementById("collectionBack").onclick = () => { localStorage.removeItem(COLLECTION_DETAIL_KEY); if (collectionDetailPage) collectionDetailPage.hidden = true; page.hidden = false; if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES.collection; requestAnimationFrame(() => { if (collectionScroller) collectionScroller.scrollTo({ top:scrollY, behavior:"instant" }); else window.scrollTo(0,scrollY); }); };
+      document.querySelector('.main-nav-button[data-page="collection"]')?.addEventListener("click", () => localStorage.removeItem(COLLECTION_DETAIL_KEY));
+      ["collectionDetailKeywords","collectionDetailLibraryTags"].forEach(id => document.getElementById(id).onclick = event => {
+        const button = event.target.closest("[data-remove-detail-chip]");
+        if (!button) return;
+        renderDetailChips(id, detailChipValues(id).filter(value => value !== button.dataset.removeDetailChip));
+      });
+      document.getElementById("collectionDetailAddKeyword").onclick = () => addDetailChip("collectionDetailKeywords", "请输入关键词");
+      document.getElementById("collectionDetailAddTag").onclick = () => addDetailChip("collectionDetailLibraryTags", "请输入我的标签");
+      document.getElementById("collectionDetailSaveButton").onclick = async () => {
+        const work = records.find(item => String(item.id) === String(activeCollectionRecordId));
+        const nextRj = normalizeWorkno(detailText("collectionDetailRj"));
+        const duplicate = nextRj && records.some(item => item !== work && item.rj === nextRj);
+        if (duplicate) { alert("这个 RJ 号已经存在，不能保存为重复档案。"); return; }
+        const priceText = detailText("collectionDetailPrice").replace(/^¥\s*/, "");
+        const ratingText = detailText("collectionDetailRating");
+        const optionalNumber = value => value === "" ? "" : Number(value);
+        const now = Date.now();
+        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), price:optionalNumber(priceText), rating:optionalNumber(ratingText), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), editedAt:now };
+        try {
+          if (work && nextWork.id !== work.id) await deleteWork(work.id);
+          await putWorks([nextWork]);
+          records = records.filter(item => item !== work && item.id !== nextWork.id).concat(nextWork);
+          activeCollectionRecordId = nextWork.id;
+          openDetail(nextWork.id);
+          alert("档案已保存");
+        } catch (error) {
+          console.error("Save collection detail failed", error);
+          alert("档案保存失败，请稍后重试。");
+        }
+      };
+      document.getElementById("collectionEditRecordButton").onclick = () => {
+        const work = records.find(item => String(item.id) === String(activeCollectionRecordId));
+        if (!work) return;
+        const state = collectState();
+        const ratings = Array.isArray(state.ratings) ? state.ratings.slice() : [];
+        if (work.rating !== "" && work.rating != null) ratings[0] = Number(work.rating) || 0;
+        applyState({ ...state, template:"full", theme:"matcha-berry-cheese", recordTitle:work.title || "", cvText:work.cv || "", circleText:work.circle || "", rjText:work.rj || "", durationText:work.time || "", originalPrice:work.originalPrice === "" ? "" : work.originalPrice, currentPrice:work.price === "" ? "" : work.price, lowestPrice:work.lowestPrice === "" ? "" : work.lowestPrice, ratings, tags:String(work.keywords || "").split(" / ").filter(Boolean), reviewText:work.review || "", coverSrc:work.cover || "", coverOriginalSrc:work.cover || "", coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverStickers:[] }, true);
+        setMainPage("template");
+      };
+      document.getElementById("collectionPrevPage").onclick = () => { if (collectionPageIndex > 0) { collectionPageIndex -= 1; render(); if (collectionScroller) collectionScroller.scrollTo({ top:0, behavior:"smooth" }); } };
+      document.getElementById("collectionNextPage").onclick = () => { collectionPageIndex += 1; render(); if (collectionScroller) collectionScroller.scrollTo({ top:0, behavior:"smooth" }); };
+      render();
+      function openWorksDatabase() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open("otome-record-card-collection", 2);
+          request.onupgradeneeded = () => {
+            if (!request.result.objectStoreNames.contains("works")) request.result.createObjectStore("works", { keyPath: "id" });
+          };
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => resolve(request.result);
+        });
+      }
+      async function loadWorks() {
+        const database = await openWorksDatabase();
+        return new Promise((resolve, reject) => {
+          const request = database.transaction("works", "readonly").objectStore("works").getAll();
+          request.onsuccess = () => { database.close(); resolve(request.result || []); };
+          request.onerror = () => { database.close(); reject(request.error); };
+        });
+      }
+      async function putWorks(works) {
+        const database = await openWorksDatabase();
+        return new Promise((resolve, reject) => {
+          const transaction = database.transaction("works", "readwrite");
+          const store = transaction.objectStore("works");
+          works.forEach(work => store.put(work));
+          transaction.oncomplete = () => { database.close(); resolve(); };
+          transaction.onerror = () => { database.close(); reject(transaction.error); };
+        });
+      }
+      function deleteWork(id) {
+        return new Promise((resolve, reject) => {
+          openWorksDatabase().then(database => {
+            const request = database.transaction("works", "readwrite").objectStore("works").delete(id);
+            request.onsuccess = () => { database.close(); resolve(); };
+            request.onerror = () => { database.close(); reject(request.error); };
+          }).catch(reject);
+        });
+      }
+      function exportCollectionBackup() {
+        const payload = { type:"otome-record-card-works", version:1, exportedAt:new Date().toISOString(), works:records };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "otome-collection-backup.json";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+      async function importCollectionBackup(file) {
+        try {
+          const payload = JSON.parse(await file.text());
+          const imported = Array.isArray(payload) ? payload : payload?.works;
+          if (!Array.isArray(imported)) throw new Error("Invalid collection backup");
+          const valid = imported.filter(work => work && typeof work === "object" && work.id);
+          await putWorks(valid);
+          const merged = new Map(records.map(work => [String(work.id), work]));
+          valid.forEach(work => merged.set(String(work.id), work));
+          records = Array.from(merged.values());
+          collectionPageIndex = 0;
+          render();
+          alert("已导入 " + valid.length + " 条收藏记录");
+        } catch (error) {
+          console.error("Import collection failed", error);
+          alert("收藏备份导入失败，请确认文件格式正确。");
+        }
+      }
+      function nextTemporaryWorkId() {
+        const largest = records.reduce((max, work) => {
+          const match = String(work.id || "").match(/^ID(\d{8})$/);
+          return match ? Math.max(max, Number(match[1])) : max;
+        }, 0);
+        nextTemporaryWorkId.value = Math.max(nextTemporaryWorkId.value || 0, largest) + 1;
+        return "ID" + String(nextTemporaryWorkId.value).padStart(8, "0");
+      }
+      function normalizedWork(source, index, data) {
+        const rj = normalizeWorkno(data.rj || "");
+        const hasContent = Boolean(rj || data.title || data.cv || data.review || data.cover || data.price || data.rating);
+        if (!hasContent) return null;
+        const sourceSlot = source + ":" + index;
+        const existingTemporary = !rj ? records.find(work => !work.rj && work.sourceSlot === sourceSlot) : null;
+        const id = rj || existingTemporary?.id || nextTemporaryWorkId();
+        const optionalNumber = value => String(value ?? "").trim() === "" ? "" : Number(value);
+        return { id, rj, title: data.title || "", cn: data.cn || "", cv: data.cv || "", circle: data.circle || "", time: data.time || "", originalPrice: optionalNumber(data.originalPrice), price: optionalNumber(data.price), lowestPrice: optionalNumber(data.lowestPrice), rating: optionalNumber(data.rating), cover: data.cover || "", coverFit: data.coverFit || "cover", review: data.review || "", keywords: data.keywords || "", tags: data.tags || [], source, sourceSlot };
+      }
+      function extractCurrentWorks(state) {
+        const found = new Map();
+        const add = (source, index, data) => {
+          const work = normalizedWork(source, index, data);
+          if (!work) return;
+          const previous = found.get(work.id);
+          if (!previous) { found.set(work.id, work); return; }
+          Object.keys(work).forEach(key => { if (work[key] !== "" && (!Array.isArray(work[key]) || work[key].length)) previous[key] = work[key]; });
+        };
+        add("single", 0, { rj:state.rjText, title:state.recordTitle, cn:state.cnChoice, cv:state.cvText, circle:state.circleText, time:state.durationText, originalPrice:state.originalPrice, price:state.currentPrice, lowestPrice:state.lowestPrice, rating:Array.isArray(state.ratings) ? state.ratings[0] : 0, cover:state.coverSrc, coverFit:state.coverFit, review:state.reviewText, keywords:(state.tags || []).join(" / ") });
+        (state.grid9?.cells || []).slice(0,9).forEach((cell,index) => add("grid9", index, { rj:cell.rj, cover:cell.cover, coverFit:cell.fit, review:cell.review }));
+        (state.quick?.cells || []).slice(0,12).forEach((cell,index) => add("quick", index, { rj:cell.rj, cv:cell.cv, cover:cell.cover, coverFit:cell.coverFit, review:cell.review }));
+        (state.trio?.cells || []).slice(0,3).forEach((cell,index) => add("trio", index, { rj:cell.rj, price:cell.price, rating:cell.rating, cover:cell.cover, coverFit:cell.coverFit, review:cell.repo }));
+        return Array.from(found.values());
+      }
+      async function saveCurrentToCollection() {
+        [saveToCollectionButton, mobileSaveToCollectionButton].forEach(button => { if (button) { button.disabled = true; button.setAttribute("aria-busy", "true"); } });
+        const state = collectState();
+        const now = Date.now();
+        try {
+          const extracted = extractCurrentWorks(state);
+          if (!extracted.length) { alert("没有可存入收藏的记录。"); return; }
+          const existingById = new Map(records.map(work => [work.id, work]));
+          let added = 0;
+          let updated = 0;
+          const nextWorks = extracted.map(work => {
+            const previous = existingById.get(work.id);
+            if (previous) updated += 1; else added += 1;
+            const merged = { ...(previous || {}), ...work, addedAt: previous?.addedAt || now, editedAt: now };
+            Object.keys(work).forEach(key => { if (work[key] === "" || (Array.isArray(work[key]) && !work[key].length)) merged[key] = previous?.[key] ?? work[key]; });
+            return merged;
+          });
+          await putWorks(nextWorks);
+          records = records.filter(item => !nextWorks.some(work => work.id === item.id)).concat(nextWorks);
+          render();
+          alert("已存入 " + added + " 条，更新 " + updated + " 条");
+        } catch (error) {
+          console.error("Save to collection failed", error);
+          alert("存入收藏失败，请检查浏览器是否允许本地存储。");
+        } finally {
+          [saveToCollectionButton, mobileSaveToCollectionButton].forEach(button => { if (button) { button.disabled = false; button.removeAttribute("aria-busy"); } });
+        }
+      }
+      [saveToCollectionButton, mobileSaveToCollectionButton].forEach(button => { if (button) button.addEventListener("click", saveCurrentToCollection); });
+      const collectionImportInput = document.getElementById("collectionImportInput");
+      document.getElementById("collectionImportButton").onclick = () => collectionImportInput.click();
+      document.getElementById("collectionExportButton").onclick = exportCollectionBackup;
+      document.getElementById("collectionNewRecordButton").onclick = openNewDetail;
+      collectionImportInput.onchange = () => { const file = collectionImportInput.files?.[0]; if (file) void importCollectionBackup(file); collectionImportInput.value = ""; };
+      loadWorks().then(items => {
+        records = items;
+        render();
+        const savedDetailId = localStorage.getItem(COLLECTION_DETAIL_KEY);
+        if (savedDetailId && records.some(work => String(work.id) === savedDetailId)) openDetail(savedDetailId);
+        else if (savedDetailId) localStorage.removeItem(COLLECTION_DETAIL_KEY);
+      }).catch(error => console.error("Load collection failed", error));
+    })();
