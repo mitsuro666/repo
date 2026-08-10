@@ -66,6 +66,11 @@ deployed on GitHub Pages.
 ## Working preferences
 
 - When changing code, only run basic syntax/static checks (e.g. JS parse check). Do NOT run functional, visual, or end-to-end verification - no browser automation, no screenshot rendering, no click-through testing. The user verifies the actual effect themselves.
+- When adding a new button, match the existing buttons in the same module or
+  action group: reuse their height, padding, border radius, border weight,
+  typography, spacing, and interaction states. A semantic variant such as a
+  destructive action may change color, but must keep the established shape and
+  dimensions unless the user explicitly requests a different treatment.
 - In `js/app.js`, always declare storage-key constants and other `const`/`let`
   dependencies before the first statement that uses or passes them. Never add
   a use-before-declaration dependency to page initialization.

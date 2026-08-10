@@ -4081,6 +4081,8 @@
     const UI_GRID9_KICKER = "SITUATION \u2726 VOICE";
     const UI_GRID9_SPARKLES = "\u2726 \u00b7 \u2661 \u00b7 \u2726";
     const UI_GRID9_IMPORT_DONE_TITLE = String.fromCharCode(0x5df2, 0x6839, 0x636e, 0x52, 0x4a, 0x53f7, 0x5bfc, 0x5165, 0x4fe1, 0x606f);
+    const UI_GRID9_IMPORT_ACTION = String.fromCharCode(0x6309, 0x52, 0x4a, 0x53f7, 0x5bfc, 0x5165, 0x4fe1, 0x606f);
+    const UI_GRID9_IMPORT_CHOOSE_MODE = String.fromCharCode(0x68c0, 0x6d4b, 0x5230, 0x5df2, 0x6709, 0x4fe1, 0x606f, 0xff0c, 0x8bf7, 0x9009, 0x62e9, 0x5bfc, 0x5165, 0x65b9, 0x5f0f, 0x3002);
     const UI_GRID9_NO_COVER = String.fromCharCode(0x6ca1, 0x6709, 0x62ff, 0x5230, 0x5c01, 0x9762);
     const UI_GRID9_NO_DATA = String.fromCharCode(0x6ca1, 0x6709, 0x8bfb, 0x53d6, 0x5230, 0x8d44, 0x6599);
     const UI_GRID9_UNKNOWN = String.fromCharCode(0x672a, 0x77e5, 0x539f, 0x56e0);
@@ -4088,6 +4090,9 @@
     const grid9ImportTitle = document.getElementById("grid9ImportTitle");
     const grid9ImportBody = document.getElementById("grid9ImportBody");
     const grid9ImportDoneButton = document.getElementById("grid9ImportDoneButton");
+    const grid9ImportOverwriteButton = document.getElementById("grid9ImportOverwriteButton");
+    const grid9ImportFillButton = document.getElementById("grid9ImportFillButton");
+    const grid9ImportCancelButton = document.getElementById("grid9ImportCancelButton");
     const GRID9_PRESET_SUMMARY = [
       String.fromCharCode(0x6700, 0x559c, 0x6b22),
       String.fromCharCode(0x6700, 0x60ca, 0x559c),
@@ -4387,6 +4392,29 @@
       grid9ImportModal.hidden = false;
     }
 
+    function chooseBatchImportMode(hasExisting) {
+      if (!hasExisting) return Promise.resolve("fill");
+      return new Promise((resolve) => {
+        grid9ImportTitle.textContent = UI_GRID9_IMPORT_ACTION;
+        grid9ImportBody.textContent = UI_GRID9_IMPORT_CHOOSE_MODE;
+        grid9ImportDoneButton.hidden = true;
+        grid9ImportOverwriteButton.hidden = false;
+        grid9ImportFillButton.hidden = false;
+        grid9ImportCancelButton.hidden = false;
+        grid9ImportModal.hidden = false;
+        const finish = (mode) => {
+          grid9ImportOverwriteButton.hidden = true;
+          grid9ImportFillButton.hidden = true;
+          grid9ImportCancelButton.hidden = true;
+          grid9ImportModal.hidden = true;
+          resolve(mode);
+        };
+        grid9ImportOverwriteButton.onclick = () => finish("overwrite");
+        grid9ImportFillButton.onclick = () => finish("fill");
+        grid9ImportCancelButton.onclick = () => finish(null);
+      });
+    }
+
     function showGrid9ImportResult(imported, failed, skipped, empty, failures) {
       grid9ImportTitle.textContent = UI_GRID9_IMPORT_DONE_TITLE;
       grid9ImportBody.textContent = "";
@@ -4406,6 +4434,8 @@
     }
 
     async function importAllGrid9Covers() {
+      const mode = await chooseBatchImportMode(grid9CellEditors.some((cell) => cell.querySelector(".grid9-cell-rj-input").value.trim() || grid9HasCover(Number(cell.dataset.grid9Index))));
+      if (!mode) return;
       const jobs = [];
       let emptyCount = 0;
       let skipCount = 0;
@@ -4415,7 +4445,7 @@
           emptyCount += 1;
           return;
         }
-        if (grid9HasCover(index)) {
+        if (mode === "fill" && grid9HasCover(index)) {
           skipCount += 1;
           return;
         }
@@ -4640,9 +4670,9 @@
       const titleWrapWidth = Math.min(maxWidth + 48, grid9MaxLineWidth(ctx, text, maxWidth) + 48);
       const lineWidth = titleWrapWidth * .88;
       ctx.strokeStyle = themeAlpha("accent", .58);
-      ctx.lineWidth = .5;
-      const topLineY = y - 52;
-      const bottomLineY = y + 17;
+      ctx.lineWidth = .25;
+      const topLineY = y - 54;
+      const bottomLineY = y + 22;
       [topLineY, bottomLineY].forEach((lineY) => {
         ctx.beginPath();
         ctx.moveTo(x + maxWidth / 2 - lineWidth / 2, lineY);
@@ -4727,7 +4757,7 @@
           drawGrid9TitleChip(ctx, state.title, 540, titleBaselineY, 900, 60, titleLineCount);
           drawCenteredWrappedText(ctx, state.title, 90, titleBaselineY, 900, 60, 2);
         } else if (state.titleStyle === "split") {
-          drawGrid9TitleSplit(ctx, state.title, 90, titleBaselineY - 8, 900, 66, titleLineCount);
+          drawGrid9TitleSplit(ctx, state.title, 90, titleBaselineY - 3, 900, 66, titleLineCount);
         } else if (state.titleStyle === "frost") {
           drawGrid9TitleFrost(ctx, state.title, 90, titleBaselineY, 900, 66, titleLineCount);
         } else {
@@ -5269,6 +5299,8 @@
     }
 
     async function importAllQuickCovers() {
+      const mode = await chooseBatchImportMode(quickCellEditors.some((cell) => cell.querySelector(".quick-rj").value.trim() || quickHasCover(Number(cell.dataset.quickIndex)) || cell.querySelector(".quick-cv").value.trim()));
+      if (!mode) return;
       const jobs = [];
       let emptyCount = 0;
       let skipCount = 0;
@@ -5278,7 +5310,7 @@
           emptyCount += 1;
           return;
         }
-        if (quickHasCover(index)) {
+        if (mode === "fill" && quickHasCover(index)) {
           skipCount += 1;
           return;
         }
@@ -5311,7 +5343,7 @@
             rjInput.value = job.rj;
             fitQuickRjWidth(rjInput);
             const cvInput = quickCellEditors[job.index].querySelector(".quick-cv");
-            if (!cvInput.value.trim() && product.cv) cvInput.value = product.cv;
+            if ((mode === "overwrite" || !cvInput.value.trim()) && product.cv) cvInput.value = product.cv;
             imported += 1;
           } catch (error) {
             console.warn("Quick batch import failed", job.rj, error);
@@ -5523,8 +5555,8 @@
       ctx.font = canvasFont('900', 13);
       ctx.fillText(String.fromCharCode(0x2661), contentX + 5, wrapTop + 26.4);
       ctx.fillStyle = themeAlpha("ink", .9);
-      ctx.font = canvasFont('700', 14);
-      drawWrappedText(ctx, cell.review || "", contentX + 18, wrapTop + 29.4, contentWidth - 25, 21, 5);
+      ctx.font = canvasFont('700', 20);
+      drawWrappedText(ctx, cell.review || "", contentX + 18, wrapTop + 29.4, contentWidth - 25, 25, 4);
     }
 
     quickShowRjButton.addEventListener("click", () => {
@@ -5914,6 +5946,8 @@
     }
 
     async function importAllTrioCells() {
+      const mode = await chooseBatchImportMode(trioCellEditors.some((cell) => cell.querySelector(".trio-rj-input").value.trim() || trioHasCover(Number(cell.dataset.trioIndex)) || cell.querySelector(".trio-cv").value.trim() || cell.querySelector(".trio-price-input").value.trim()));
+      if (!mode) return;
       const jobs = [];
       let emptyCount = 0;
       trioCellEditors.forEach((cell, index) => {
@@ -5945,14 +5979,14 @@
             const product = parseDlsiteProduct(await fetchProductJson(job.rj));
             if (!product) throw new Error("empty product");
             const cell = trioCellEditors[job.index];
-            if (!trioHasCover(job.index) && product.coverUrl) {
+            if ((mode === "overwrite" || !trioHasCover(job.index)) && product.coverUrl) {
               const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl));
               applyTrioCover(job.index, pngDataUrl);
             }
             const cvInput = cell.querySelector(".trio-cv");
-            if (!cvInput.value.trim() && product.cv) cvInput.value = product.cv;
+            if ((mode === "overwrite" || !cvInput.value.trim()) && product.cv) cvInput.value = product.cv;
             const priceInput = cell.querySelector(".trio-price-input");
-            if (!priceInput.value.trim() && product.originalPrice) priceInput.value = product.originalPrice;
+            if ((mode === "overwrite" || !priceInput.value.trim()) && product.originalPrice) priceInput.value = product.originalPrice;
             const rjInput = cell.querySelector(".trio-rj-input");
             rjInput.value = job.rj;
             imported += 1;
@@ -6663,13 +6697,29 @@
       const page = document.getElementById("collectionPage");
       if (!page) return;
       let records = [];
-      let tag = "all", listMode = false, scrollY = 0, collectionPageIndex = 0, activeCollectionRecordId = null;
+      let tag = "all", listMode = false, collectionTagEditMode = false, collectionTagRemoveMode = false, collectionTagDraftActive = false, scrollY = 0, collectionPageIndex = 0, activeCollectionRecordId = null, collectionDetailInitialSnapshot = "";
       const COLLECTION_PAGE_SIZE = 8;
       const grid = document.getElementById("collectionGrid");
       const collectionScroller = page.parentElement;
+      const collectionSavePrompt = document.getElementById("collectionSavePrompt");
+      const collectionSavePromptCancel = document.getElementById("collectionSavePromptCancel");
+      const collectionSavePromptConfirm = document.getElementById("collectionSavePromptConfirm");
+      const collectionRjImportPrompt = document.getElementById("collectionRjImportPrompt");
+      const collectionRjImportPromptTitle = document.getElementById("collectionRjImportPromptTitle");
+      const collectionRjImportPromptBody = document.getElementById("collectionRjImportPromptBody");
+      const collectionRjImportCancel = document.getElementById("collectionRjImportCancel");
+      const collectionRjImportFill = document.getElementById("collectionRjImportFill");
+      const collectionRjImportOverwrite = document.getElementById("collectionRjImportOverwrite");
+      const collectionRjImportDone = document.getElementById("collectionRjImportDone");
+      document.getElementById("collectionDetailTitle").dataset.placeholder = String.fromCharCode(0x6807, 0x9898);
+      document.getElementById("collectionDetailPrice").previousElementSibling.textContent = String.fromCharCode(0x539f, 0x4ef7);
       const COLLECTION_TAGS_KEY = "otome-record-card-collection-tags-v1";
       const COLLECTION_REMOVED_TAGS_KEY = "otome-record-card-collection-removed-tags-v1";
       const COLLECTION_DETAIL_KEY = "otome-record-card-collection-detail-v1";
+      const COLLECTION_BACKUP_TYPE = "otome-record-card-works";
+      const COLLECTION_BACKUP_VERSION = 2;
+      const COLLECTION_NEW_KEYWORD_TEXT = String.fromCharCode(0x65b0, 0x5173, 0x952e, 0x8bcd);
+      const COLLECTION_NEW_TAG_TEXT = String.fromCharCode(0x65b0, 0x6807, 0x7b7e);
       let customCollectionTags = [];
       let removedCollectionTags = [];
       try { customCollectionTags = JSON.parse(localStorage.getItem(COLLECTION_TAGS_KEY) || "[]"); } catch { customCollectionTags = []; }
@@ -6679,9 +6729,11 @@
       function collectionTagNames() { return Array.from(new Set(defaultCollectionTags.concat(customCollectionTags).concat(records.flatMap(work => work.tags || [])))).filter(name => !removedCollectionTags.includes(name)); }
       function renderCollectionTags() {
         const links = document.getElementById("collectionTagLinks");
+        links.classList.toggle("remove-mode", collectionTagRemoveMode);
+        links.classList.toggle("edit-mode", collectionTagEditMode);
         const names = collectionTagNames();
         const buttons = [{ name:"all", label:"全部", count:records.length }].concat(names.map(name => ({ name, label:name, count:records.filter(work => (work.tags || []).includes(name)).length })));
-        links.innerHTML = buttons.map(item => `<button type="button" class="${tag === item.name ? "active" : ""}" data-collection-tag="${escapeCollectionText(item.name)}"><span>${escapeCollectionText(item.label)}</span><span class="collection-tag-count">${item.count}</span></button>`).join("");
+        links.innerHTML = buttons.map(item => `<div class="collection-tag-row">${collectionTagEditMode && item.name !== "all" ? `<span class="collection-tag-filter ${tag === item.name ? "active" : ""}" contenteditable="true" data-original-collection-tag="${escapeCollectionText(item.name)}">${escapeCollectionText(item.label)}</span>` : `<button type="button" class="collection-tag-filter ${tag === item.name ? "active" : ""}" data-collection-tag="${escapeCollectionText(item.name)}"><span>${escapeCollectionText(item.label)}</span></button>`}<span class="collection-tag-count">${item.count}</span>${item.name === "all" ? "" : `<button type="button" class="collection-tag-remove" data-remove-collection-tag="${escapeCollectionText(item.name)}" aria-label="移除标签 ${escapeCollectionText(item.label)}">×</button>`}</div>`).join("") + (collectionTagDraftActive ? `<div class="collection-tag-row collection-tag-draft"><span class="collection-tag-draft-name" contenteditable="true">新标签</span><button type="button" class="collection-tag-finish" data-finish-collection-tag>完成</button></div>` : "");
       }
       function render() {
         renderCollectionTags();
@@ -6698,7 +6750,7 @@
         collectionPageIndex = Math.max(0, Math.min(collectionPageIndex, pageCount - 1));
         const visible = a.slice(collectionPageIndex * COLLECTION_PAGE_SIZE, (collectionPageIndex + 1) * COLLECTION_PAGE_SIZE);
         grid.classList.toggle("list-mode", listMode);
-        grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"${r.cover ? ` style="background-image:url('${r.cover}')"` : ""}><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div>${r.tags?.[0] ? `<i class="collection-tag-mini">${escapeCollectionText(r.tags[0])}</i>` : ""}</div></article>`).join("") : "<div class=\"collection-empty\">暂无收藏记录</div>";
+        grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"${r.cover ? ` style="background-image:url('${r.cover}')"` : ""}><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div><i class="collection-tag-mini${r.tags?.[0] ? "" : " is-empty"}">${escapeCollectionText(r.tags?.[0] || "占位")}</i></div></article>`).join("") : "<div class=\"collection-empty\">暂无收藏记录</div>";
         document.getElementById("collectionCount").textContent = a.length + " 条记录";
         const pager = document.getElementById("collectionPager");
         pager.hidden = a.length <= COLLECTION_PAGE_SIZE;
@@ -6708,24 +6760,87 @@
       }
       function renderDetailChips(id, values) {
         const element = document.getElementById(id);
-        const nextValues = Array.from(new Set((values || []).map(value => String(value || "").trim()).filter(Boolean)));
+        const nextValues = (values || []).map(value => String(value || "").trim()).filter(Boolean);
         element.dataset.values = JSON.stringify(nextValues);
-        element.innerHTML = nextValues.map(value => `<em>${escapeCollectionText(value)}<button type="button" data-remove-detail-chip="${escapeCollectionText(value)}" aria-label="删除">×</button></em>`).join("");
+        element.innerHTML = nextValues.map(value => `<em><span contenteditable="true">${escapeCollectionText(value)}</span><button type="button" data-remove-detail-chip="${escapeCollectionText(value)}" aria-label="删除">×</button></em>`).join("");
       }
       function detailChipValues(id) {
         const element = document.getElementById(id);
-        try { return JSON.parse(element.dataset.values || "[]"); } catch { return []; }
+        return Array.from(element.querySelectorAll("em > span")).map(span => span.textContent.trim()).filter(Boolean);
       }
-      function addDetailChip(id, message) {
-        const value = String(prompt(message) || "").trim();
-        if (!value) return;
+      function addDetailChip(id, value) {
         renderDetailChips(id, detailChipValues(id).concat(value));
+        const editors = document.getElementById(id).querySelectorAll("em > span");
+        const editor = editors[editors.length - 1];
+        if (!editor) return;
+        editor.focus();
+        selectEditableText(editor);
       }
       function detailText(id) { return document.getElementById(id).textContent.trim(); }
+      function requestCollectionDetailSave() {
+        return new Promise(resolve => {
+          collectionSavePrompt.hidden = false;
+          collectionSavePromptConfirm.focus();
+          const finish = value => {
+            collectionSavePrompt.hidden = true;
+            collectionSavePromptCancel.onclick = null;
+            collectionSavePromptConfirm.onclick = null;
+            resolve(value);
+          };
+          collectionSavePromptCancel.onclick = () => finish(false);
+          collectionSavePromptConfirm.onclick = () => finish(true);
+        });
+      }
+      function requestCollectionRjImportMode() {
+        return new Promise(resolve => {
+          collectionRjImportPromptTitle.textContent = "按RJ号导入信息";
+          collectionRjImportPromptBody.textContent = "检测到已有信息，请选择导入方式。";
+          collectionRjImportOverwrite.hidden = false;
+          collectionRjImportFill.hidden = false;
+          collectionRjImportCancel.hidden = false;
+          collectionRjImportDone.hidden = true;
+          collectionRjImportPrompt.hidden = false;
+          collectionRjImportOverwrite.focus();
+          const finish = value => {
+            collectionRjImportPrompt.hidden = true;
+            collectionRjImportCancel.onclick = null;
+            collectionRjImportFill.onclick = null;
+            collectionRjImportOverwrite.onclick = null;
+            resolve(value);
+          };
+          collectionRjImportCancel.onclick = () => finish(null);
+          collectionRjImportFill.onclick = () => finish("fill");
+          collectionRjImportOverwrite.onclick = () => finish("overwrite");
+        });
+      }
+      function showCollectionRjImportLoading() {
+        collectionRjImportPromptTitle.textContent = "正在导入信息…";
+        collectionRjImportPromptBody.textContent = "";
+        collectionRjImportOverwrite.hidden = true;
+        collectionRjImportFill.hidden = true;
+        collectionRjImportCancel.hidden = true;
+        collectionRjImportDone.hidden = true;
+        collectionRjImportPrompt.hidden = false;
+      }
+      function showCollectionRjImportResult(message, failed = false) {
+        collectionRjImportPromptTitle.textContent = failed ? "导入失败" : "已根据RJ号导入信息";
+        collectionRjImportPromptBody.textContent = message;
+        collectionRjImportDone.hidden = false;
+        collectionRjImportPrompt.hidden = false;
+      }
+      collectionRjImportDone.onclick = () => { collectionRjImportPrompt.hidden = true; };
+      collectionRjImportPrompt.addEventListener("click", event => {
+        if (event.target === collectionRjImportPrompt && !collectionRjImportDone.hidden) collectionRjImportPrompt.hidden = true;
+      });
+      function collectionDetailSnapshot() {
+        const textIds = ["collectionDetailTitle","collectionDetailCn","collectionDetailCv","collectionDetailCircle","collectionDetailRj","collectionDetailTime","collectionDetailPrice","collectionDetailRating","collectionDetailSummary","collectionDetailCharacter","collectionDetailReview"];
+        return JSON.stringify({ text:textIds.map(detailText), keywords:detailChipValues("collectionDetailKeywords"), tags:detailChipValues("collectionDetailLibraryTags") });
+      }
       function openDetail(id) {
         const r = records.find(x => String(x.id) === String(id));
         if (!r) return;
         activeCollectionRecordId = r.id;
+        document.getElementById("collectionDeleteRecordButton").hidden = false;
         localStorage.setItem(COLLECTION_DETAIL_KEY, String(r.id));
         scrollY = collectionScroller ? collectionScroller.scrollTop : window.scrollY;
         document.getElementById("collectionDetailTitle").textContent = r.title || "";
@@ -6738,6 +6853,7 @@
         document.getElementById("collectionDetailReview").textContent = r.review || "";
         renderDetailChips("collectionDetailKeywords", String(r.keywords || "").split(" / ").filter(Boolean));
         renderDetailChips("collectionDetailLibraryTags", r.tags || []);
+        collectionDetailInitialSnapshot = collectionDetailSnapshot();
         const rating = r.rating === "" || r.rating == null ? 0 : Math.max(0,Math.min(5,Math.round(Number(r.rating))));
         document.getElementById("collectionDetailRatingStars").textContent = rating ? "★".repeat(rating) + "☆".repeat(5-rating) : "—";
         const detailArt = document.getElementById("collectionDetailArt");
@@ -6753,11 +6869,13 @@
       }
       function openNewDetail() {
         activeCollectionRecordId = null;
+        document.getElementById("collectionDeleteRecordButton").hidden = true;
         localStorage.removeItem(COLLECTION_DETAIL_KEY);
         scrollY = collectionScroller ? collectionScroller.scrollTop : window.scrollY;
         ["collectionDetailTitle","collectionDetailCn","collectionDetailCv","collectionDetailCircle","collectionDetailRj","collectionDetailTime","collectionDetailPrice","collectionDetailRating","collectionDetailSummary","collectionDetailCharacter","collectionDetailReview"].forEach(id => { document.getElementById(id).textContent = ""; });
         renderDetailChips("collectionDetailKeywords", []);
         renderDetailChips("collectionDetailLibraryTags", []);
+        collectionDetailInitialSnapshot = collectionDetailSnapshot();
         document.getElementById("collectionDetailRatingStars").textContent = "—";
         const detailArt = document.getElementById("collectionDetailArt");
         detailArt.style.backgroundImage = "";
@@ -6777,37 +6895,127 @@
       });
       document.getElementById("collectionSearch").oninput = () => { collectionPageIndex = 0; render(); };
       document.getElementById("collectionSort").onchange = () => { collectionPageIndex = 0; render(); };
-      document.getElementById("collectionTagLinks").onclick = event => { const button = event.target.closest("[data-collection-tag]"); if (!button) return; tag = button.dataset.collectionTag; collectionPageIndex = 0; render(); };
-      document.getElementById("collectionAddTagButton").onclick = () => { const name = String(prompt("请输入新标签名称") || "").trim(); if (!name || name === "全部" || defaultCollectionTags.includes(name) || customCollectionTags.includes(name)) return; customCollectionTags.push(name); localStorage.setItem(COLLECTION_TAGS_KEY, JSON.stringify(customCollectionTags)); tag = name; collectionPageIndex = 0; render(); };
-      document.getElementById("collectionRemoveTagButton").onclick = async () => {
-        const name = String(prompt("请输入要移除的标签名称") || "").trim();
-        if (!name || name === "all" || name === "全部" || !collectionTagNames().includes(name)) return;
-        if (!confirm("确定移除标签“" + name + "”吗？只会移除收藏条目上的标签，不会删除条目。")) return;
-        const now = Date.now();
-        const affected = records.filter(work => (work.tags || []).includes(name));
-        records = records.map(work => ({ ...work, tags:(work.tags || []).filter(item => item !== name), editedAt:affected.includes(work) ? now : work.editedAt }));
-        customCollectionTags = customCollectionTags.filter(item => item !== name);
-        if (!defaultCollectionTags.includes(name)) removedCollectionTags = removedCollectionTags.filter(item => item !== name);
-        else if (!removedCollectionTags.includes(name)) removedCollectionTags.push(name);
-        localStorage.setItem(COLLECTION_TAGS_KEY, JSON.stringify(customCollectionTags));
-        localStorage.setItem(COLLECTION_REMOVED_TAGS_KEY, JSON.stringify(removedCollectionTags));
-        await putWorks(records);
-        if (tag === name) tag = "all";
+      document.getElementById("collectionTagLinks").onclick = async event => {
+        const finishButton = event.target.closest("[data-finish-collection-tag]");
+        if (finishButton) {
+          const draft = document.querySelector(".collection-tag-draft-name");
+          const name = String(draft?.textContent || "").trim();
+          const exists = name === "全部" || collectionTagNames().includes(name);
+          collectionTagDraftActive = false;
+          if (name && !exists) {
+            customCollectionTags.push(name);
+            localStorage.setItem(COLLECTION_TAGS_KEY, JSON.stringify(customCollectionTags));
+            tag = name;
+            collectionPageIndex = 0;
+          }
+          render();
+          return;
+        }
+        const removeButton = event.target.closest("[data-remove-collection-tag]");
+        if (removeButton) {
+          const name = removeButton.dataset.removeCollectionTag;
+          if (!name || name === "all" || name === "全部") return;
+          const now = Date.now();
+          const affected = records.filter(work => (work.tags || []).includes(name));
+          records = records.map(work => ({ ...work, tags:(work.tags || []).filter(item => item !== name), editedAt:affected.includes(work) ? now : work.editedAt }));
+          customCollectionTags = customCollectionTags.filter(item => item !== name);
+          if (!defaultCollectionTags.includes(name)) removedCollectionTags = removedCollectionTags.filter(item => item !== name);
+          else if (!removedCollectionTags.includes(name)) removedCollectionTags.push(name);
+          localStorage.setItem(COLLECTION_TAGS_KEY, JSON.stringify(customCollectionTags));
+          localStorage.setItem(COLLECTION_REMOVED_TAGS_KEY, JSON.stringify(removedCollectionTags));
+          await putWorks(records);
+          if (tag === name) tag = "all";
+          collectionPageIndex = 0;
+          render();
+          return;
+        }
+        const button = event.target.closest("[data-collection-tag]");
+        if (!button) return;
+        tag = button.dataset.collectionTag;
         collectionPageIndex = 0;
         render();
       };
+      document.getElementById("collectionAddTagButton").onclick = () => {
+        if (!collectionTagDraftActive) {
+          collectionTagDraftActive = true;
+          renderCollectionTags();
+        }
+        const draft = document.querySelector(".collection-tag-draft-name");
+        if (draft) {
+          draft.focus();
+          focusTagText(draft);
+        }
+      };
+      document.getElementById("collectionEditTagButton").onclick = async event => {
+        if (!collectionTagEditMode) {
+          collectionTagEditMode = true;
+          collectionTagRemoveMode = false;
+          document.getElementById("collectionRemoveTagButton").setAttribute("aria-pressed", "false");
+          event.currentTarget.setAttribute("aria-pressed", "true");
+          renderCollectionTags();
+          document.querySelector("[data-original-collection-tag]")?.focus();
+          return;
+        }
+        const used = new Set(["全部"]);
+        const renames = new Map();
+        document.querySelectorAll("[data-original-collection-tag]").forEach(element => {
+          const original = element.dataset.originalCollectionTag;
+          const requested = String(element.textContent || "").trim();
+          const next = requested && !used.has(requested) ? requested : original;
+          used.add(next);
+          renames.set(original, next);
+        });
+        const now = Date.now();
+        records = records.map(work => {
+          const nextTags = (work.tags || []).map(name => renames.get(name) || name);
+          const changed = nextTags.some((name,index) => name !== (work.tags || [])[index]);
+          return changed ? { ...work, tags:Array.from(new Set(nextTags)), editedAt:now } : work;
+        });
+        customCollectionTags = Array.from(new Set(customCollectionTags.map(name => renames.get(name) || name)));
+        if (renames.has(tag)) tag = renames.get(tag);
+        localStorage.setItem(COLLECTION_TAGS_KEY, JSON.stringify(customCollectionTags));
+        await putWorks(records);
+        collectionTagEditMode = false;
+        event.currentTarget.setAttribute("aria-pressed", "false");
+        render();
+      };
+      document.getElementById("collectionRemoveTagButton").onclick = event => {
+        collectionTagRemoveMode = !collectionTagRemoveMode;
+        collectionTagEditMode = false;
+        document.getElementById("collectionEditTagButton").setAttribute("aria-pressed", "false");
+        event.currentTarget.setAttribute("aria-pressed", String(collectionTagRemoveMode));
+        renderCollectionTags();
+      };
       document.getElementById("collectionGridBtn").onclick = () => { listMode = false; document.getElementById("collectionGridBtn").classList.add("active"); document.getElementById("collectionListBtn").classList.remove("active"); render(); };
       document.getElementById("collectionListBtn").onclick = () => { listMode = true; document.getElementById("collectionListBtn").classList.add("active"); document.getElementById("collectionGridBtn").classList.remove("active"); render(); };
-      document.getElementById("collectionBack").onclick = () => { localStorage.removeItem(COLLECTION_DETAIL_KEY); if (collectionDetailPage) collectionDetailPage.hidden = true; page.hidden = false; if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES.collection; requestAnimationFrame(() => { if (collectionScroller) collectionScroller.scrollTo({ top:scrollY, behavior:"instant" }); else window.scrollTo(0,scrollY); }); };
+      function returnToCollectionList() {
+        localStorage.removeItem(COLLECTION_DETAIL_KEY);
+        if (collectionDetailPage) collectionDetailPage.hidden = true;
+        page.hidden = false;
+        if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES.collection;
+        requestAnimationFrame(() => { if (collectionScroller) collectionScroller.scrollTo({ top:scrollY, behavior:"instant" }); else window.scrollTo(0,scrollY); });
+      }
       document.querySelector('.main-nav-button[data-page="collection"]')?.addEventListener("click", () => localStorage.removeItem(COLLECTION_DETAIL_KEY));
-      ["collectionDetailKeywords","collectionDetailLibraryTags"].forEach(id => document.getElementById(id).onclick = event => {
-        const button = event.target.closest("[data-remove-detail-chip]");
-        if (!button) return;
-        renderDetailChips(id, detailChipValues(id).filter(value => value !== button.dataset.removeDetailChip));
+      ["collectionDetailKeywords","collectionDetailLibraryTags"].forEach(id => {
+        const element = document.getElementById(id);
+        element.onclick = event => {
+          const button = event.target.closest("[data-remove-detail-chip]");
+          if (!button) return;
+          button.closest("em")?.remove();
+        };
+        element.onkeydown = event => {
+          if (event.key !== "Enter" || !event.target.matches("em > span")) return;
+          event.preventDefault();
+          event.target.blur();
+        };
+        element.addEventListener("focusout", event => {
+          if (!event.target.matches("em > span") || event.target.textContent.trim()) return;
+          event.target.closest("em")?.remove();
+        });
       });
-      document.getElementById("collectionDetailAddKeyword").onclick = () => addDetailChip("collectionDetailKeywords", "请输入关键词");
-      document.getElementById("collectionDetailAddTag").onclick = () => addDetailChip("collectionDetailLibraryTags", "请输入我的标签");
-      document.getElementById("collectionDetailSaveButton").onclick = async () => {
+      document.getElementById("collectionDetailAddKeyword").onclick = () => addDetailChip("collectionDetailKeywords", COLLECTION_NEW_KEYWORD_TEXT);
+      document.getElementById("collectionDetailAddTag").onclick = () => addDetailChip("collectionDetailLibraryTags", COLLECTION_NEW_TAG_TEXT);
+      async function saveCollectionDetail(showSuccessMessage = true) {
         const work = records.find(item => String(item.id) === String(activeCollectionRecordId));
         const nextRj = normalizeWorkno(detailText("collectionDetailRj"));
         const duplicate = nextRj && records.some(item => item !== work && item.rj === nextRj);
@@ -6822,11 +7030,36 @@
           await putWorks([nextWork]);
           records = records.filter(item => item !== work && item.id !== nextWork.id).concat(nextWork);
           activeCollectionRecordId = nextWork.id;
+          render();
           openDetail(nextWork.id);
-          alert("档案已保存");
+          if (showSuccessMessage) alert("档案已保存");
+          return true;
         } catch (error) {
           console.error("Save collection detail failed", error);
           alert("档案保存失败，请稍后重试。");
+          return false;
+        }
+      }
+      document.getElementById("collectionBack").onclick = async () => {
+        if (collectionDetailSnapshot() !== collectionDetailInitialSnapshot) {
+          const shouldSave = await requestCollectionDetailSave();
+          if (!shouldSave || !await saveCollectionDetail(false)) return;
+        }
+        returnToCollectionList();
+      };
+      document.getElementById("collectionDetailSaveButton").onclick = () => saveCollectionDetail(true);
+      document.getElementById("collectionDeleteRecordButton").onclick = async () => {
+        const work = records.find(item => String(item.id) === String(activeCollectionRecordId));
+        if (!work || !confirm("确定永久删除这条收藏记录吗？此操作无法撤销。")) return;
+        try {
+          await deleteWork(work.id);
+          records = records.filter(item => item !== work);
+          activeCollectionRecordId = null;
+          render();
+          returnToCollectionList();
+        } catch (error) {
+          console.error("Delete collection record failed", error);
+          alert("删除条目失败，请稍后重试。");
         }
       };
       document.getElementById("collectionEditRecordButton").onclick = () => {
@@ -6879,7 +7112,7 @@
         });
       }
       function exportCollectionBackup() {
-        const payload = { type:"otome-record-card-works", version:1, exportedAt:new Date().toISOString(), works:records };
+        const payload = { type:COLLECTION_BACKUP_TYPE, version:COLLECTION_BACKUP_VERSION, exportedAt:new Date().toISOString(), works:records, customTags:customCollectionTags, removedTags:removedCollectionTags };
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
@@ -6893,19 +7126,119 @@
       async function importCollectionBackup(file) {
         try {
           const payload = JSON.parse(await file.text());
-          const imported = Array.isArray(payload) ? payload : payload?.works;
-          if (!Array.isArray(imported)) throw new Error("Invalid collection backup");
-          const valid = imported.filter(work => work && typeof work === "object" && work.id);
-          await putWorks(valid);
+          const legacyArray = Array.isArray(payload);
+          if (!legacyArray && (!payload || typeof payload !== "object" || payload.type !== COLLECTION_BACKUP_TYPE || ![1,2].includes(payload.version))) throw new Error("Unsupported collection backup");
+          const imported = legacyArray ? payload : payload.works;
+          if (!Array.isArray(imported)) throw new Error("Invalid collection records");
+          const importedIds = new Set();
+          imported.forEach(work => {
+            if (!work || typeof work !== "object" || Array.isArray(work) || !String(work.id ?? "").trim()) throw new Error("Invalid collection record");
+            const id = String(work.id);
+            if (importedIds.has(id)) throw new Error("Duplicate collection record id");
+            importedIds.add(id);
+            if (work.tags != null && (!Array.isArray(work.tags) || work.tags.some(name => typeof name !== "string"))) throw new Error("Invalid collection record tags");
+          });
+          const importedCustomTags = legacyArray || payload.version < 2 ? [] : payload.customTags;
+          const importedRemovedTags = legacyArray || payload.version < 2 ? [] : payload.removedTags;
+          if (!Array.isArray(importedCustomTags) || importedCustomTags.some(name => typeof name !== "string")) throw new Error("Invalid custom tags");
+          if (!Array.isArray(importedRemovedTags) || importedRemovedTags.some(name => typeof name !== "string")) throw new Error("Invalid removed tags");
+          await putWorks(imported);
           const merged = new Map(records.map(work => [String(work.id), work]));
-          valid.forEach(work => merged.set(String(work.id), work));
+          imported.forEach(work => merged.set(String(work.id), work));
           records = Array.from(merged.values());
+          customCollectionTags = Array.from(new Set(customCollectionTags.concat(importedCustomTags).map(name => name.trim()).filter(name => name && name !== "全部")));
+          removedCollectionTags = Array.from(new Set(removedCollectionTags.concat(importedRemovedTags).map(name => name.trim()).filter(Boolean)));
+          localStorage.setItem(COLLECTION_TAGS_KEY, JSON.stringify(customCollectionTags));
+          localStorage.setItem(COLLECTION_REMOVED_TAGS_KEY, JSON.stringify(removedCollectionTags));
           collectionPageIndex = 0;
           render();
-          alert("已导入 " + valid.length + " 条收藏记录");
+          alert("已导入 " + imported.length + " 条收藏记录");
         } catch (error) {
           console.error("Import collection failed", error);
           alert("收藏备份导入失败，请确认文件格式正确。");
+        }
+      }
+      async function importCollectionByRj() {
+        const button = document.getElementById("collectionRjImportButton");
+        const label = button.querySelector("span");
+        const jobs = records.map((work,index) => {
+          const legacyRjId = /^RJ\d+$/i.test(String(work.id || "")) ? work.id : "";
+          return { work, index, rj:normalizeWorkno(work.rj || legacyRjId) };
+        }).filter(job => job.rj);
+        const skipped = records.length - jobs.length;
+        if (!jobs.length) {
+          showCollectionRjImportResult("没有可导入的有效 RJ 号。", true);
+          return;
+        }
+        const isEmpty = value => value == null || String(value).trim() === "";
+        const allImportTargetsEmpty = jobs.every(({ work }) => isEmpty(work.title) && isEmpty(work.cv) && isEmpty(work.cover) && isEmpty(work.circle) && isEmpty(work.originalPrice));
+        const mode = allImportTargetsEmpty ? "overwrite" : await requestCollectionRjImportMode();
+        if (!mode) return;
+        showCollectionRjImportLoading();
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+        label.textContent = "导入中 0/" + jobs.length;
+        const updates = [];
+        let completed = 0;
+        let failed = 0;
+        let coverFailed = 0;
+        let cursor = 0;
+        const worker = async () => {
+          while (cursor < jobs.length) {
+            const job = jobs[cursor];
+            cursor += 1;
+            try {
+              const product = parseDlsiteProduct(await fetchProductJson(job.rj));
+              if (!product || (!product.title && !product.cv && !product.circle && !product.originalPrice && !product.coverUrl)) throw new Error("empty product");
+              const nextWork = { ...job.work };
+              const canWrite = value => mode === "overwrite" || isEmpty(value);
+              if (product.title && canWrite(job.work.title)) nextWork.title = product.title;
+              if (product.cv && canWrite(job.work.cv)) nextWork.cv = product.cv;
+              if (product.circle && canWrite(job.work.circle)) nextWork.circle = product.circle;
+              if (product.originalPrice !== "" && product.originalPrice != null && canWrite(job.work.originalPrice)) {
+                const price = Number(product.originalPrice);
+                if (Number.isFinite(price)) nextWork.originalPrice = price;
+              }
+              if (product.coverUrl && canWrite(job.work.cover)) {
+                try {
+                  nextWork.cover = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl));
+                  nextWork.coverFit = "cover";
+                } catch (coverError) {
+                  coverFailed += 1;
+                  console.warn("Collection RJ cover import failed", job.rj, coverError);
+                }
+              }
+              nextWork.editedAt = Date.now();
+              updates.push(nextWork);
+            } catch (error) {
+              failed += 1;
+              console.warn("Collection RJ import failed", job.rj, error);
+            } finally {
+              completed += 1;
+              label.textContent = "导入中 " + completed + "/" + jobs.length;
+            }
+          }
+        };
+        try {
+          await Promise.all(Array.from({ length:Math.min(2,jobs.length) }, () => worker()));
+          if (updates.length) {
+            await putWorks(updates);
+            const updateMap = new Map(updates.map(work => [String(work.id), work]));
+            records = records.map(work => updateMap.get(String(work.id)) || work);
+            render();
+          }
+          const parts = ["成功 " + updates.length + " 条"];
+          if (failed) parts.push("失败 " + failed + " 条");
+          if (skipped) parts.push("跳过 " + skipped + " 条");
+          if (coverFailed) parts.push("其中 BK 保留原图 " + coverFailed + " 条");
+          showCollectionRjImportResult(parts.join("，"));
+        } catch (error) {
+          console.error("Save collection RJ import failed", error);
+          showCollectionRjImportResult("导入结果保存失败，原收藏记录未被覆盖。", true);
+        } finally {
+          button.disabled = false;
+          button.removeAttribute("aria-busy");
+          label.textContent = "按RJ号导入信息";
         }
       }
       function nextTemporaryWorkId() {
@@ -6971,6 +7304,7 @@
       }
       [saveToCollectionButton, mobileSaveToCollectionButton].forEach(button => { if (button) button.addEventListener("click", saveCurrentToCollection); });
       const collectionImportInput = document.getElementById("collectionImportInput");
+      document.getElementById("collectionRjImportButton").onclick = importCollectionByRj;
       document.getElementById("collectionImportButton").onclick = () => collectionImportInput.click();
       document.getElementById("collectionExportButton").onclick = exportCollectionBackup;
       document.getElementById("collectionNewRecordButton").onclick = openNewDetail;

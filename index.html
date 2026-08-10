@@ -270,7 +270,7 @@
       </section>
     </div>
     <div class="grid9-external-tools" id="grid9ExternalTools" hidden>
-      <button class="tool-button primary" id="grid9ImportAllButton" type="button">&#25353;RJ&#21495;&#19968;&#38190;&#23548;&#20837;BK</button>
+      <button class="tool-button primary" id="grid9ImportAllButton" type="button">&#25353;RJ&#21495;&#23548;&#20837;&#20449;&#24687;</button>
       <button class="tool-button" id="grid9ClearBkButton" type="button">&#28165;&#31354;BK</button>
       <div class="preset-wrap">
         <button class="tool-button" id="grid9PresetButton" type="button">&#30701;&#26631;&#39064;&#39044;&#35774; &#9662;</button>
@@ -284,11 +284,11 @@
     </div>
     <div class="quick-external-tools" id="quickExternalTools" hidden>
       <button class="tool-button" id="quickShowRjButton" type="button">&#9745; &#26174;&#31034; RJ &#21495;</button>
-      <button class="tool-button primary" id="quickImportAllButton" type="button">&#25353;RJ&#21495;&#19968;&#38190;&#23548;&#20837;BK</button>
+      <button class="tool-button primary" id="quickImportAllButton" type="button">&#25353;RJ&#21495;&#23548;&#20837;&#20449;&#24687;</button>
       <button class="tool-button" id="quickClearRepoButton" type="button">&#28165;&#31354; repo</button>
     </div>
     <div class="trio-external-tools" id="trioExternalTools" hidden>
-      <button class="tool-button primary" id="trioImportAllButton" type="button">&#25353;RJ&#19968;&#38190;&#23548;&#20837;</button>
+      <button class="tool-button primary" id="trioImportAllButton" type="button">&#25353;RJ&#21495;&#23548;&#20837;&#20449;&#24687;</button>
       <button class="tool-button" id="trioClearRepoButton" type="button">&#21482;&#28165;&#31354;Repo</button>
     </div>
 
@@ -297,20 +297,35 @@
     </section>
 
     <section class="app-page collection-demo" id="collectionPage" hidden>
-      <div class="collection-toolbar"><div class="collection-head"><div></div><div class="toolbar-actions"><button class="action-button" id="collectionImportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg><span>导入备份</span></button><button class="action-button" id="collectionExportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span>导出备份</span></button><button class="action-button primary" id="collectionNewRecordButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>新建记录</span></button><input class="hidden" id="collectionImportInput" type="file" accept="application/json,.json" /></div></div></div>
+      <div class="collection-toolbar"><div class="collection-head"><div></div><div class="toolbar-actions"><button class="action-button" id="collectionRjImportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg><span>按RJ号导入信息</span></button><button class="action-button" id="collectionImportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg><span>导入备份</span></button><button class="action-button" id="collectionExportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span>导出备份</span></button><button class="action-button primary" id="collectionNewRecordButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>新建记录</span></button><input class="hidden" id="collectionImportInput" type="file" accept="application/json,.json" /></div></div></div>
       <div class="collection-library-workspace">
       <div class="collection-controls"><label class="collection-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="collectionSearch" placeholder="搜索标题 / RJ / CV / 社团 / 标签…" /></label><select id="collectionSort"><option value="recent">最近编辑</option><option value="added">添加日期</option><option value="cv">CV名</option><option value="title">标题</option><option value="rating">评分 高→低</option><option value="originalPrice">原价 高→低</option><option value="price">现价 高→低</option><option value="lowestPrice">史低 高→低</option></select><div class="collection-view-toggle"><button id="collectionGridBtn" class="collection-icon active" type="button" title="网格视图"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/></svg></button><button id="collectionListBtn" class="collection-icon" type="button" title="列表视图"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></button></div></div>
-      <div class="collection-layout"><aside class="collection-tags" id="collectionTagPanel"><b>收藏标签</b><div id="collectionTagLinks"></div><div class="collection-tag-actions"><button class="collection-add-tag" id="collectionAddTagButton" type="button">＋ 新建标签</button><button class="collection-remove-tag" id="collectionRemoveTagButton" type="button">− 移除标签</button></div></aside><div id="collectionGrid" class="collection-grid"></div></div>
-      <div class="collection-list-footer"><nav class="collection-pager" id="collectionPager" aria-label="收藏分页" hidden><button id="collectionPrevPage" type="button">← 上一页</button><span id="collectionPageText">1 / 1</span><button id="collectionNextPage" type="button">下一页 →</button></nav><div class="collection-footer-count"><span id="collectionCount"></span></div></div>
+      <div class="collection-layout"><aside class="collection-tags" id="collectionTagPanel"><b>收藏标签</b><div id="collectionTagLinks"></div><div class="collection-tag-actions"><button class="collection-add-tag" id="collectionAddTagButton" type="button">＋ 新建</button><button class="collection-edit-tag" id="collectionEditTagButton" type="button" aria-pressed="false">编辑</button><button class="collection-remove-tag" id="collectionRemoveTagButton" type="button" aria-pressed="false">× 移除</button></div></aside><div id="collectionGrid" class="collection-grid"></div></div>
+      <div class="collection-list-footer"><nav class="collection-pager" id="collectionPager" aria-label="收藏分页" hidden><button id="collectionPrevPage" type="button" aria-label="上一页"></button><span id="collectionPageText">1 / 1</span><button id="collectionNextPage" type="button" aria-label="下一页"></button></nav><div class="collection-footer-count"><span id="collectionCount"></span></div></div>
       </div>
     </section>
 
     <section class="app-page collection-detail-page" id="collectionDetailPage" hidden>
       <div class="collection-detail-workspace">
-      <div class="collection-detail-toolbar"><button id="collectionBack" type="button">← 返回列表</button><div><button id="collectionEditRecordButton" type="button">编辑repo</button><button class="primary" id="collectionDetailSaveButton" type="button">保存记录</button></div></div>
-      <article class="collection-archive-sheet"><header class="collection-archive-hero"><div class="collection-detail-art" id="collectionDetailArt"></div><div class="collection-archive-intro"><small>OTOME VOICE ARCHIVE</small><h2 id="collectionDetailTitle" contenteditable="true"></h2><p id="collectionDetailCn" contenteditable="true"></p><div class="collection-facts"><div><b>CV</b><span id="collectionDetailCv" contenteditable="true"></span></div><div><b>社团</b><span id="collectionDetailCircle" contenteditable="true"></span></div><div><b>RJ</b><span id="collectionDetailRj" contenteditable="true"></span></div><div><b>时长</b><span id="collectionDetailTime" contenteditable="true"></span></div><div><b>购入价</b><span id="collectionDetailPrice" contenteditable="true"></span></div><div><b>评分</b><span id="collectionDetailRating" contenteditable="true"></span></div></div><div class="collection-archive-tags"><div><span>作品关键词</span><div id="collectionDetailKeywords"></div><button class="collection-detail-add-button" id="collectionDetailAddKeyword" type="button">＋ 添加关键词</button></div><div><span>我的标签</span><div id="collectionDetailLibraryTags"></div><button class="collection-detail-add-button" id="collectionDetailAddTag" type="button">＋ 添加标签</button></div></div></div></header><div class="collection-archive-body"><section><h3>作品简介</h3><p id="collectionDetailSummary" contenteditable="true"></p></section><section><h3>角色资料</h3><p id="collectionDetailCharacter" contenteditable="true"></p></section><section><h3>我的评价</h3><div class="collection-rating-table"><div><span>总体</span><span id="collectionDetailRatingStars"></span></div></div></section><section class="collection-archive-review"><h3>Repo / 感想</h3><p id="collectionDetailReview" contenteditable="true"></p></section></div></article>
+      <div class="collection-detail-toolbar"><button id="collectionBack" type="button">← 返回列表</button><div><button id="collectionEditRecordButton" type="button">编辑repo</button><button class="danger" id="collectionDeleteRecordButton" type="button" hidden>删除条目</button><button class="primary" id="collectionDetailSaveButton" type="button">保存记录</button></div></div>
+      <article class="collection-archive-sheet"><header class="collection-archive-hero"><div class="collection-detail-art" id="collectionDetailArt"></div><div class="collection-archive-intro"><small>OTOME VOICE ARCHIVE</small><h2 id="collectionDetailTitle" contenteditable="true"></h2><p id="collectionDetailCn" contenteditable="true"></p><div class="collection-facts"><div><b>CV</b><span id="collectionDetailCv" contenteditable="true"></span></div><div><b>社团</b><span id="collectionDetailCircle" contenteditable="true"></span></div><div><b>RJ</b><span id="collectionDetailRj" contenteditable="true"></span></div><div><b>时长</b><span id="collectionDetailTime" contenteditable="true"></span></div><div><b>购入价</b><span id="collectionDetailPrice" contenteditable="true"></span></div><div><b>评分</b><span id="collectionDetailRating" contenteditable="true"></span></div></div><div class="collection-archive-tags"><div><span>作品关键词</span><div id="collectionDetailKeywords"></div><button class="collection-detail-add-button" id="collectionDetailAddKeyword" type="button" aria-label="&#28155;&#21152;&#20851;&#38190;&#35789;">＋</button></div><div><span>我的标签</span><div id="collectionDetailLibraryTags"></div><button class="collection-detail-add-button" id="collectionDetailAddTag" type="button" aria-label="&#28155;&#21152;&#26631;&#31614;">＋</button></div></div></div></header><div class="collection-archive-body"><section><h3>作品简介</h3><p id="collectionDetailSummary" contenteditable="true"></p></section><section><h3>角色资料</h3><p id="collectionDetailCharacter" contenteditable="true"></p></section><section><h3>我的评价</h3><div class="collection-rating-table"><div><span>总体</span><span id="collectionDetailRatingStars"></span></div></div></section><section class="collection-archive-review"><h3>Repo / 感想</h3><p id="collectionDetailReview" contenteditable="true"></p></section></div></article>
       </div>
     </section>
+
+    <div class="collection-save-prompt" id="collectionSavePrompt" hidden>
+      <div class="collection-save-prompt-sheet" role="dialog" aria-modal="true" aria-labelledby="collectionSavePromptText">
+        <p id="collectionSavePromptText">&#26159;&#21542;&#20445;&#23384;&#20462;&#25913;&#65311;</p>
+        <div><button id="collectionSavePromptCancel" type="button">&#21462;&#28040;</button><button class="primary" id="collectionSavePromptConfirm" type="button">&#20445;&#23384;</button></div>
+      </div>
+    </div>
+
+    <div class="grid9-import-modal" id="collectionRjImportPrompt" hidden>
+      <div class="grid9-import-sheet" role="dialog" aria-modal="true" aria-labelledby="collectionRjImportPromptTitle">
+        <h2 class="grid9-import-title" id="collectionRjImportPromptTitle">按RJ号导入信息</h2>
+        <div class="grid9-import-body" id="collectionRjImportPromptBody">检测到已有信息，请选择导入方式。</div>
+        <div class="grid9-import-actions"><button class="tool-button primary" id="collectionRjImportOverwrite" type="button">覆盖全部</button><button class="tool-button" id="collectionRjImportFill" type="button">填充空位</button><button class="tool-button" id="collectionRjImportCancel" type="button">取消</button><button class="tool-button primary" id="collectionRjImportDone" type="button" hidden>完成</button></div>
+      </div>
+    </div>
 
     <div class="import-help-popover" id="importHelpPopover" hidden></div>
 
@@ -387,6 +402,9 @@
         <h2 class="grid9-import-title" id="grid9ImportTitle"></h2>
         <div class="grid9-import-body" id="grid9ImportBody"></div>
         <div class="grid9-import-actions">
+          <button class="tool-button primary" id="grid9ImportOverwriteButton" type="button" hidden>&#35206;&#30422;&#20840;&#37096;</button>
+          <button class="tool-button" id="grid9ImportFillButton" type="button" hidden>&#22635;&#20805;&#31354;&#20301;</button>
+          <button class="tool-button" id="grid9ImportCancelButton" type="button" hidden>&#21462;&#28040;</button>
           <button class="tool-button primary" id="grid9ImportDoneButton" type="button">&#23436;&#25104;</button>
         </div>
       </div>
