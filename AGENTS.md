@@ -66,6 +66,13 @@ deployed on GitHub Pages.
 ## Working preferences
 
 - When changing code, only run basic syntax/static checks (e.g. JS parse check). Do NOT run functional, visual, or end-to-end verification - no browser automation, no screenshot rendering, no click-through testing. The user verifies the actual effect themselves.
+- Treat the user's stated scope as a hard boundary. Change only the explicitly
+  named view, template, version, module, element, or behavior. Never extend a
+  local request to adjacent views or related features merely for consistency.
+  If any part of the target scope or intended reference is ambiguous, do not
+  edit; ask the user to clarify first. Do not make unsolicited cleanup,
+  refactors, visual adjustments, or behavior changes outside the confirmed
+  scope.
 - When adding a new button, match the existing buttons in the same module or
   action group: reuse their height, padding, border radius, border weight,
   typography, spacing, and interaction states. A semantic variant such as a

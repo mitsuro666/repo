@@ -1607,13 +1607,13 @@
       return { hasChinese };
     }
 
-    function applyImportedProduct(product, chineseChoice) {
-      if (product.title) setEditableText("recordTitle", product.title);
-      if (product.cv) setEditableText("cvText", product.cv);
-      if (product.circle) setEditableText("circleText", product.circle);
-      if (product.originalPrice) originalPrice.value = product.originalPrice;
+    function applyImportedProduct(product, chineseChoice, mode = "overwrite") {
+      if (product.title && (mode === "overwrite" || !editableText("recordTitle").trim())) setEditableText("recordTitle", product.title);
+      if (product.cv && (mode === "overwrite" || !editableText("cvText").trim())) setEditableText("cvText", product.cv);
+      if (product.circle && (mode === "overwrite" || !editableText("circleText").trim())) setEditableText("circleText", product.circle);
+      if (product.originalPrice && (mode === "overwrite" || !originalPrice.value.trim())) originalPrice.value = product.originalPrice;
       setChineseChoice(chineseChoice);
-      if (Array.isArray(product.keywords)) renderTags(product.keywords.slice(0, 8));
+      if (Array.isArray(product.keywords) && (mode === "overwrite" || !tags.querySelector(".tag"))) renderTags(product.keywords.slice(0, 8));
       updateDiscount();
       saveState();
     }
@@ -1657,7 +1657,8 @@
         alert(UI_IMPORT_NEED_RJ);
         return;
       }
-      if (hasImportOverwriteTarget() && !window.confirm(UI_IMPORT_OVERWRITE_CONFIRM)) return;
+      const importMode = await chooseBatchImportMode(hasImportOverwriteTarget());
+      if (!importMode) return;
       importButton.disabled = true;
       importButton.textContent = UI_IMPORT_LOADING;
       try {
@@ -1674,8 +1675,8 @@
             console.warn("Chinese edition detection failed, keep fallback", translatableError);
           }
         }
-        applyImportedProduct(product, chineseChoice);
-        if (product.coverUrl) {
+        applyImportedProduct(product, chineseChoice, importMode);
+        if (product.coverUrl && (importMode === "overwrite" || !coverImage.getAttribute("src"))) {
           try {
             await importCoverFromUrl(product.coverUrl);
           } catch (coverError) {
@@ -2603,6 +2604,41 @@
       await loadEditorFromCurrentGlobals(src);
     }
 
+    function setCollectionDetailCover(src, fit) {
+      const art = document.getElementById("collectionDetailArt");
+      if (!art) return;
+      const nextSrc = src || "";
+      const nextFit = fit === "cover" ? "cover" : "contain";
+      art.dataset.coverSrc = nextSrc;
+      art.dataset.coverFit = nextFit;
+      art.style.backgroundImage = nextSrc ? `url('${nextSrc}')` : "";
+      art.style.backgroundSize = nextFit;
+      art.style.backgroundPosition = "center";
+      art.style.backgroundRepeat = "no-repeat";
+      art.classList.toggle("has-image", Boolean(nextSrc));
+    }
+
+    function collectionDetailEditorGlobals() {
+      const art = document.getElementById("collectionDetailArt");
+      const src = art?.dataset.coverSrc || "";
+      return { coverOriginalSrc:src, coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverEditorUndoStack:[], coverEditorRedoStack:[], coverStickers:[], stickerSources:JSON.parse(JSON.stringify(stickerSources || [])), selectedStickerId:null, editorTool:"mosaic", coverSrc:src, coverFit:art?.dataset.coverFit || "contain" };
+    }
+
+    async function openCollectionDetailImageEditor() {
+      const art = document.getElementById("collectionDetailArt");
+      const src = art?.dataset.coverSrc || "";
+      if (!src) {
+        document.getElementById("collectionDetailCoverInput")?.click();
+        return;
+      }
+      if (imageEditorMode === "standalone") leaveStandaloneImageTool();
+      if (imageEditorMode !== "collection-detail") templateEditorGlobalsBackup = editorGlobals();
+      imageEditorMode = "collection-detail";
+      placeImageEditorForTemplate();
+      applyEditorGlobals(collectionDetailEditorGlobals());
+      await loadEditorFromCurrentGlobals(src);
+    }
+
     function grid9EditorGlobals(index) {
       const cell = grid9CellEditors[index];
       const src = cell ? (cell.querySelector(".grid9-cover-image").getAttribute("src") || "") : "";
@@ -2829,6 +2865,38 @@
         restoreTemplateEditorGlobals();
         placeImageEditorForTemplate();
         if (imageToolEmpty) imageToolEmpty.hidden = false;
+        return;
+      }
+      if (imageEditorMode === "collection-detail") {
+        let shouldClose = true;
+        try {
+          if (editorImage) {
+            if (apply) {
+              const nextEditedSrc = await updateEditedCoverFromEditor();
+              if (!nextEditedSrc) throw new Error("Edited cover is empty");
+              const fit = document.getElementById("collectionDetailArt")?.dataset.coverFit || "contain";
+              setCollectionDetailCover(await grid9CoverStorageDataUrl(nextEditedSrc), fit);
+            } else {
+              restoreEditorSessionSnapshot();
+            }
+          }
+        } catch (error) {
+          console.error("Collection detail image editor close failed", error);
+          shouldClose = !apply;
+          alert("图片编辑结果应用失败，请再试一次。");
+        } finally {
+          if (shouldClose) {
+            editorSessionSnapshot = null;
+            editorDrawing = false;
+            editorLastPoint = null;
+            editorStickerDrag = null;
+            selectedStickerId = null;
+            imageEditModal.hidden = true;
+            imageEditorMode = "template";
+            restoreTemplateEditorGlobals();
+            placeImageEditorForTemplate();
+          }
+        }
         return;
       }
       if (imageEditorMode === "grid9") {
@@ -3562,6 +3630,15 @@
       const g = parseInt(full.slice(2, 4), 16) || 0;
       const b = parseInt(full.slice(4, 6), 16) || 0;
       return "rgba(" + r + "," + g + "," + b + "," + alphaValue + ")";
+    }
+
+    function themeTint(key, whiteRatio, alphaValue = 1) {
+      const theme = currentCardTheme();
+      const hex = (theme[key] || "#000000").replace("#", "");
+      const full = hex.length === 3 ? hex.split("").map((ch) => ch + ch).join("") : hex;
+      const ratio = Math.max(0, Math.min(1, whiteRatio));
+      const mix = (start) => Math.round((parseInt(full.slice(start, start + 2), 16) || 0) * (1 - ratio) + 255 * ratio);
+      return "rgba(" + mix(0) + "," + mix(2) + "," + mix(4) + "," + alphaValue + ")";
     }
 
     function themeGradient(ctx, x1, y1, x2, y2, first = "accent", second = "accentDeep") {
@@ -4646,27 +4723,42 @@
       ctx.textAlign = "center";
       ctx.lineJoin = "round";
       ctx.font = canvasFont("950", 58);
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = "rgba(255,248,251,.94)";
       const lines = grid9WrapLines(ctx, text, maxWidth, lineCount);
+      const titleLayer = document.createElement("canvas");
+      titleLayer.width = ctx.canvas.width;
+      titleLayer.height = ctx.canvas.height;
+      const titleCtx = titleLayer.getContext("2d");
+      titleCtx.textAlign = "center";
+      titleCtx.lineJoin = "round";
+      titleCtx.font = canvasFont("950", 58);
       lines.forEach((line, index) => {
         const tx = x + maxWidth / 2;
-        const ty = y + index * lineHeight;
-        ctx.shadowColor = themeAlpha("accentDeep", .08);
-        ctx.shadowBlur = 14;
-        ctx.shadowOffsetY = 8;
-        ctx.strokeText(line, tx, ty);
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetY = 0;
-        const grad = ctx.createLinearGradient(0, ty - 58, 0, ty + 8);
+        const ty = y + 2 + index * lineHeight;
+        const grad = titleCtx.createLinearGradient(0, ty - 58, 0, ty + 8);
         grad.addColorStop(0, theme.ink);
         grad.addColorStop(.48, theme.ink);
         grad.addColorStop(.48, theme.accent);
         grad.addColorStop(1, theme.accent);
-        ctx.fillStyle = grad;
-        ctx.fillText(line, tx, ty);
+        titleCtx.fillStyle = grad;
+        titleCtx.fillText(line, tx, ty);
+        titleCtx.globalCompositeOperation = "source-atop";
+        titleCtx.lineWidth = 2;
+        titleCtx.strokeStyle = themeTint("accent", .78, .96);
+        titleCtx.strokeText(line, tx, ty);
+        titleCtx.globalCompositeOperation = "source-over";
       });
+      ctx.lineWidth = .5;
+      ctx.strokeStyle = themeAlpha("accentDeep", .82);
+      ctx.shadowColor = themeAlpha("accentDeep", .08);
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetY = 8;
+      lines.forEach((line, index) => {
+        ctx.strokeText(line, x + maxWidth / 2, y + 2 + index * lineHeight);
+      });
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.drawImage(titleLayer, 0, 0);
       const titleWrapWidth = Math.min(maxWidth + 48, grid9MaxLineWidth(ctx, text, maxWidth) + 48);
       const lineWidth = titleWrapWidth * .88;
       ctx.strokeStyle = themeAlpha("accent", .58);
@@ -6698,7 +6790,8 @@
       if (!page) return;
       let records = [];
       let tag = "all", listMode = false, collectionTagEditMode = false, collectionTagRemoveMode = false, collectionTagDraftActive = false, scrollY = 0, collectionPageIndex = 0, activeCollectionRecordId = null, collectionDetailInitialSnapshot = "";
-      const COLLECTION_PAGE_SIZE = 8;
+      const COLLECTION_GRID_PAGE_SIZE = 8;
+      const COLLECTION_LIST_PAGE_SIZE = 4;
       const grid = document.getElementById("collectionGrid");
       const collectionScroller = page.parentElement;
       const collectionSavePrompt = document.getElementById("collectionSavePrompt");
@@ -6746,14 +6839,16 @@
         if (["originalPrice","price","lowestPrice"].includes(s)) a.sort((x,y) => (y[s] || 0) - (x[s] || 0));
         if (s === "cv") a.sort((x,y) => (x.cv || "").localeCompare(y.cv || "","ja"));
         if (s === "title") a.sort((x,y) => (x.title || "").localeCompare(y.title || "","ja"));
-        const pageCount = Math.max(1, Math.ceil(a.length / COLLECTION_PAGE_SIZE));
+        const pageSize = listMode ? COLLECTION_LIST_PAGE_SIZE : COLLECTION_GRID_PAGE_SIZE;
+        const pageCount = Math.max(1, Math.ceil(a.length / pageSize));
         collectionPageIndex = Math.max(0, Math.min(collectionPageIndex, pageCount - 1));
-        const visible = a.slice(collectionPageIndex * COLLECTION_PAGE_SIZE, (collectionPageIndex + 1) * COLLECTION_PAGE_SIZE);
+        const visible = a.slice(collectionPageIndex * pageSize, (collectionPageIndex + 1) * pageSize);
         grid.classList.toggle("list-mode", listMode);
-        grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"${r.cover ? ` style="background-image:url('${r.cover}')"` : ""}><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div><i class="collection-tag-mini${r.tags?.[0] ? "" : " is-empty"}">${escapeCollectionText(r.tags?.[0] || "占位")}</i></div></article>`).join("") : "<div class=\"collection-empty\">暂无收藏记录</div>";
+        page.classList.toggle("collection-list-mode", listMode);
+        grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"${r.cover ? ` style="background-image:url('${r.cover}')"` : ""}><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><strong class="collection-list-title">${escapeCollectionText(r.title || "未填写标题")}</strong><b class="collection-list-cv">${escapeCollectionText(r.cv || "未填写 CV")}</b><div class="collection-list-bottom"><small>${escapeCollectionText(r.rj || "无 RJ")}</small>${r.tags?.[0] ? `<i class="collection-tag-mini">${escapeCollectionText(r.tags[0])}</i>` : ""}</div><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "未填写 CV")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div><i class="collection-tag-mini${r.tags?.[0] ? "" : " is-empty"}">${escapeCollectionText(r.tags?.[0] || "占位")}</i></div></article>`).join("") : "<div class=\"collection-empty\">暂无收藏记录</div>";
         document.getElementById("collectionCount").textContent = a.length + " 条记录";
         const pager = document.getElementById("collectionPager");
-        pager.hidden = a.length <= COLLECTION_PAGE_SIZE;
+        pager.hidden = a.length <= pageSize;
         document.getElementById("collectionPageText").textContent = (collectionPageIndex + 1) + " / " + pageCount;
         document.getElementById("collectionPrevPage").disabled = collectionPageIndex === 0;
         document.getElementById("collectionNextPage").disabled = collectionPageIndex >= pageCount - 1;
@@ -6834,7 +6929,8 @@
       });
       function collectionDetailSnapshot() {
         const textIds = ["collectionDetailTitle","collectionDetailCn","collectionDetailCv","collectionDetailCircle","collectionDetailRj","collectionDetailTime","collectionDetailPrice","collectionDetailRating","collectionDetailSummary","collectionDetailCharacter","collectionDetailReview"];
-        return JSON.stringify({ text:textIds.map(detailText), keywords:detailChipValues("collectionDetailKeywords"), tags:detailChipValues("collectionDetailLibraryTags") });
+        const art = document.getElementById("collectionDetailArt");
+        return JSON.stringify({ text:textIds.map(detailText), keywords:detailChipValues("collectionDetailKeywords"), tags:detailChipValues("collectionDetailLibraryTags"), cover:art?.dataset.coverSrc || "", coverFit:art?.dataset.coverFit || "contain" });
       }
       function openDetail(id) {
         const r = records.find(x => String(x.id) === String(id));
@@ -6853,14 +6949,10 @@
         document.getElementById("collectionDetailReview").textContent = r.review || "";
         renderDetailChips("collectionDetailKeywords", String(r.keywords || "").split(" / ").filter(Boolean));
         renderDetailChips("collectionDetailLibraryTags", r.tags || []);
-        collectionDetailInitialSnapshot = collectionDetailSnapshot();
         const rating = r.rating === "" || r.rating == null ? 0 : Math.max(0,Math.min(5,Math.round(Number(r.rating))));
         document.getElementById("collectionDetailRatingStars").textContent = rating ? "★".repeat(rating) + "☆".repeat(5-rating) : "—";
-        const detailArt = document.getElementById("collectionDetailArt");
-        detailArt.style.backgroundImage = r.cover ? `url('${r.cover}')` : "";
-        detailArt.style.backgroundSize = "contain";
-        detailArt.style.backgroundPosition = "center";
-        detailArt.style.backgroundRepeat = "no-repeat";
+        setCollectionDetailCover(r.cover || "", r.coverFit || "contain");
+        collectionDetailInitialSnapshot = collectionDetailSnapshot();
         page.hidden = true;
         if (collectionDetailPage) collectionDetailPage.hidden = false;
         if (workspaceTitle) workspaceTitle.textContent = "作品档案";
@@ -6875,13 +6967,9 @@
         ["collectionDetailTitle","collectionDetailCn","collectionDetailCv","collectionDetailCircle","collectionDetailRj","collectionDetailTime","collectionDetailPrice","collectionDetailRating","collectionDetailSummary","collectionDetailCharacter","collectionDetailReview"].forEach(id => { document.getElementById(id).textContent = ""; });
         renderDetailChips("collectionDetailKeywords", []);
         renderDetailChips("collectionDetailLibraryTags", []);
-        collectionDetailInitialSnapshot = collectionDetailSnapshot();
         document.getElementById("collectionDetailRatingStars").textContent = "—";
-        const detailArt = document.getElementById("collectionDetailArt");
-        detailArt.style.backgroundImage = "";
-        detailArt.style.backgroundSize = "contain";
-        detailArt.style.backgroundPosition = "center";
-        detailArt.style.backgroundRepeat = "no-repeat";
+        setCollectionDetailCover("", "contain");
+        collectionDetailInitialSnapshot = collectionDetailSnapshot();
         page.hidden = true;
         if (collectionDetailPage) collectionDetailPage.hidden = false;
         if (workspaceTitle) workspaceTitle.textContent = "作品档案";
@@ -7015,6 +7103,30 @@
       });
       document.getElementById("collectionDetailAddKeyword").onclick = () => addDetailChip("collectionDetailKeywords", COLLECTION_NEW_KEYWORD_TEXT);
       document.getElementById("collectionDetailAddTag").onclick = () => addDetailChip("collectionDetailLibraryTags", COLLECTION_NEW_TAG_TEXT);
+      const collectionDetailArt = document.getElementById("collectionDetailArt");
+      const collectionDetailCoverInput = document.getElementById("collectionDetailCoverInput");
+      collectionDetailArt.onclick = () => collectionDetailCoverInput.click();
+      collectionDetailCoverInput.onchange = () => {
+        const file = collectionDetailCoverInput.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const src = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result));
+            setCollectionDetailCover(src, collectionDetailArt.dataset.coverFit || "contain");
+          } catch (error) {
+            console.error("Collection detail cover upload failed", error);
+            alert("图片处理失败，请重新选择图片。");
+          } finally {
+            collectionDetailCoverInput.value = "";
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+      document.getElementById("collectionDetailContainButton").onclick = () => setCollectionDetailCover(collectionDetailArt.dataset.coverSrc || "", "contain");
+      document.getElementById("collectionDetailCoverButton").onclick = () => setCollectionDetailCover(collectionDetailArt.dataset.coverSrc || "", "cover");
+      document.getElementById("collectionDetailImageEditButton").onclick = () => void openCollectionDetailImageEditor();
+      document.getElementById("collectionDetailRemoveCoverButton").onclick = () => setCollectionDetailCover("", collectionDetailArt.dataset.coverFit || "contain");
       async function saveCollectionDetail(showSuccessMessage = true) {
         const work = records.find(item => String(item.id) === String(activeCollectionRecordId));
         const nextRj = normalizeWorkno(detailText("collectionDetailRj"));
@@ -7024,7 +7136,7 @@
         const ratingText = detailText("collectionDetailRating");
         const optionalNumber = value => value === "" ? "" : Number(value);
         const now = Date.now();
-        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), price:optionalNumber(priceText), rating:optionalNumber(ratingText), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), editedAt:now };
+        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), price:optionalNumber(priceText), rating:optionalNumber(ratingText), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
         try {
           if (work && nextWork.id !== work.id) await deleteWork(work.id);
           await putWorks([nextWork]);
@@ -7043,7 +7155,7 @@
       document.getElementById("collectionBack").onclick = async () => {
         if (collectionDetailSnapshot() !== collectionDetailInitialSnapshot) {
           const shouldSave = await requestCollectionDetailSave();
-          if (!shouldSave || !await saveCollectionDetail(false)) return;
+          if (shouldSave && !await saveCollectionDetail(false)) return;
         }
         returnToCollectionList();
       };

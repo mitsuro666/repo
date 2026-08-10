@@ -376,15 +376,25 @@
     .collection-cover span { position:absolute;z-index:2;left:14px;right:14px;bottom:12px;color:#fff;font-size:13px;font-weight:700;line-height:1.45;opacity:0;transform:translateY(6px);transition:.2s; }
     .collection-record:hover .collection-cover span { opacity:1;transform:none; }
     .collection-meta { padding:7px 2px 0; }
+    .collection-list-title { display:none; }
+    .collection-list-cv,.collection-list-bottom { display:none; }
     .collection-meta-row { display:flex;justify-content:space-between;gap:8px; }
     .collection-meta b { min-width:0;overflow:hidden;color:var(--ink);font-size:14px;text-overflow:ellipsis;white-space:nowrap; }
     .collection-meta small { color:rgba(95,76,88,.62);font-size:12px;white-space:nowrap; }
     .collection-tag-mini { display:inline-block;margin-top:4px;padding:2px 6px;border:1px solid rgba(217,95,140,.38);border-radius:3px;color:var(--accent);font-size:10px; }
     .collection-tag-mini.is-empty { visibility:hidden; }
     .collection-empty { grid-column:1/-1;min-height:220px;display:grid;place-items:center;color:rgba(95,76,88,.55); }
-    .collection-grid.list-mode { display:block; }
+    .collection-grid.list-mode { min-height:512px;display:block;transform:translateY(-12px); }
+    .collection-demo.collection-list-mode .collection-list-footer { transform:translateY(-12px); }
     .collection-grid.list-mode .collection-record { display:grid;grid-template-columns:132px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid rgba(217,95,140,.18); }
-    .collection-grid.list-mode .collection-meta { display:flex;align-items:center;justify-content:space-between; }
+    .collection-grid.list-mode .collection-meta { min-height:0;display:flex;align-items:stretch;justify-content:space-between;flex-direction:column;padding:0; }
+    .collection-grid.list-mode .collection-list-title { display:-webkit-box;overflow:hidden;color:var(--ink);font-size:15px;line-height:1.35;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:2; }
+    .collection-grid.list-mode .collection-list-cv { display:block;font-size:14px;font-weight:700; }
+    .collection-grid.list-mode .collection-list-bottom { display:flex;align-items:center;gap:9px;min-width:0; }
+    .collection-grid.list-mode .collection-list-bottom small { flex:0 0 auto;font-size:12px; }
+    .collection-grid.list-mode .collection-list-bottom .collection-tag-mini { display:inline-block;overflow:hidden;margin:0;text-overflow:ellipsis;white-space:nowrap; }
+    .collection-grid.list-mode .collection-meta-row,.collection-grid.list-mode .collection-meta > .collection-tag-mini { display:none; }
+    .collection-grid.list-mode .collection-cover span { display:none; }
     .collection-pager { display:flex;align-items:center;justify-content:center;gap:16px;margin:26px 0 0 216px;transform:translateY(-2px); }
     .collection-pager[hidden] { display:none!important; }
     .collection-pager button { width:32px;height:32px;display:grid;place-items:center;border:1px solid rgba(217,95,140,.24);border-radius:50%;background:rgba(255,255,255,.62);padding:0;color:var(--ink); }
@@ -413,7 +423,11 @@
     .collection-archive-sheet { max-width:1280px;margin:0 auto; }
     .collection-archive-sheet { background:rgba(255,253,251,.7);border-top:2px solid rgba(217,95,140,.38);border-bottom:1px solid rgba(217,95,140,.28); }
     .collection-archive-hero { display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:42px;padding:34px 12px 36px;border-bottom:1px solid rgba(217,95,140,.2); }
-    .collection-detail-art { width:100%;aspect-ratio:4/3;border:1px solid rgba(217,95,140,.26);background-position:center;background-size:contain;background-repeat:no-repeat;background-color:color-mix(in srgb,var(--card-cover-bg,#fff) 88%,var(--card-accent,#d95f8c)); }
+    .collection-detail-art-wrap { min-width:0; }
+    .collection-detail-art { width:100%;aspect-ratio:4/3;display:grid;place-items:center;border:1px solid rgba(217,95,140,.26);padding:0;background-position:center;background-size:contain;background-repeat:no-repeat;background-color:color-mix(in srgb,var(--card-cover-bg,#fff) 88%,var(--card-accent,#d95f8c));color:rgba(95,76,88,.5);font:inherit;font-size:13px;cursor:pointer; }
+    .collection-detail-art.has-image > span { display:none; }
+    .collection-detail-cover-tools { display:flex;flex-wrap:wrap;gap:6px;margin-top:8px; }
+    .collection-detail-cover-tools .tiny-button { min-height:28px;border:1px solid rgba(217,95,140,.3);border-radius:999px;padding:0 10px;background:rgba(255,255,255,.8);color:#b84f78;font-size:11px;font-weight:800;cursor:pointer; }
     .collection-archive-intro { padding:6px 8px 0 0; }
     .collection-archive-intro > small { color:var(--accent);font-size:11px;letter-spacing:.18em; }
     .collection-archive-intro h2 { margin:12px 0 7px;font-size:30px;line-height:1.45; }
@@ -468,7 +482,7 @@
     .collection-crumb > span { color:#d8adb9; }
     .collection-crumb small { color:#a68b98;font-size:12px; }
     .collection-summary { min-height:0;margin:0;color:#a68b98; }
-    .collection-library-workspace { min-height:calc(100vh - 76px);display:flex;flex-direction:column;padding:28px 38px 24px; }
+    .collection-library-workspace { min-height:calc(100vh - 76px);display:flex;flex-direction:column;padding:12px 38px 24px; }
     .collection-list-footer { display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-top:12px; }
     .collection-list-footer .collection-pager { grid-column:2;margin:0; }
     .collection-footer-count { grid-column:3;justify-self:end;color:#a68b98;font-size:13px; }
@@ -514,7 +528,7 @@
       .collection-head .action-button { flex:0 0 auto; }
       .collection-subbar { min-height:52px;padding:0 18px; }
       .collection-crumb small { display:none; }
-      .collection-library-workspace { min-height:calc(100vh - 62px);padding:18px 16px 24px; }
+      .collection-library-workspace { min-height:calc(100vh - 62px);padding:2px 16px 24px; }
       .collection-list-footer { grid-template-columns:1fr auto;gap:12px; }
       .collection-list-footer .collection-pager { grid-column:1;justify-self:start; }
       .collection-footer-count { grid-column:2; }
