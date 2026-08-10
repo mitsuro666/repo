@@ -53,6 +53,10 @@
     const reviewEditCancel = document.getElementById("reviewEditCancel");
     const imageEditModal = document.getElementById("imageEditModal");
     const imageEditCloseButton = document.getElementById("imageEditCloseButton");
+    const usageGuideButton = document.getElementById("usageGuideButton");
+    const mobileUsageGuideButton = document.getElementById("mobileUsageGuideButton");
+    const usageGuideModal = document.getElementById("usageGuideModal");
+    const usageGuideCloseButton = document.getElementById("usageGuideCloseButton");
     const usageInfoButton = document.getElementById("usageInfoButton");
     const mobileUsageInfoButton = document.getElementById("mobileUsageInfoButton");
     const usageInfoModal = document.getElementById("usageInfoModal");
@@ -115,8 +119,10 @@
     const grid9Cells = document.getElementById("grid9Cells");
     const grid9ExternalTools = document.getElementById("grid9ExternalTools");
     const grid9ImportAllButton = document.getElementById("grid9ImportAllButton");
+    const grid9ClearBkButton = document.getElementById("grid9ClearBkButton");
     const grid9PresetButton = document.getElementById("grid9PresetButton");
     const grid9PresetMenu = document.getElementById("grid9PresetMenu");
+    const grid9ClearRepoButton = document.getElementById("grid9ClearRepoButton");
     let grid9CellEditors = [];
     let activeGrid9Index = -1;
     const quickCard = document.getElementById("quickCard");
@@ -3929,18 +3935,18 @@
     const UI_GRID9_REVIEW_PLACEHOLDER = String.fromCharCode(0x77ed, 0x8bc4, 0xff0c, 0x6700, 0x591a, 0x4e09, 0x884c);
     const UI_GRID9_RJ_PLACEHOLDER = String.fromCharCode(0x52, 0x4a, 0x53f7);
     const UI_GRID9_UPLOAD_FAILED = String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x9009, 0x62e9, 0x56fe, 0x7247, 0x3002);
-    const UI_GRID9_WATERMARK = String.fromCharCode(0x4e59, 0x6293, 0x8bb0, 0x5f55, 0xb7, 0x20, 0x4f, 0x54, 0x4f, 0x4d, 0x45, 0x20, 0x56, 0x4f, 0x49, 0x43, 0x45, 0x20, 0x4c, 0x4f, 0x47);
+    const UI_GRID9_WATERMARK = "OTOME SITUATION VOICE";
     const UI_GRID9_IMPORTED = String.fromCharCode(0x5df2, 0x5bfc, 0x5165);
     const UI_GRID9_FAILED = String.fromCharCode(0x5931, 0x8d25);
     const UI_GRID9_SKIPPED = String.fromCharCode(0x8df3, 0x8fc7);
     const UI_GRID9_EMPTY = String.fromCharCode(0x672a, 0x586b);
     const UI_GRID9_NOTHING = String.fromCharCode(0x6ca1, 0x6709, 0x53ef, 0x5bfc, 0x5165, 0x7684, 0x683c, 0x5b50, 0x3002);
-    const UI_GRID9_CONTAIN = String.fromCharCode(0x5b8c, 0x6574, 0x663e, 0x793a);
+    const UI_GRID9_CONTAIN = String.fromCharCode(0x5b8c, 0x6574);
     const UI_GRID9_COVER = String.fromCharCode(0x88c1, 0x5207);
     const UI_GRID9_EDIT = String.fromCharCode(0x7f16, 0x8f91);
     const UI_GRID9_REMOVE = String.fromCharCode(0x79fb, 0x9664);
     const UI_GRID9_IMPORTING = String.fromCharCode(0x6b63, 0x5728, 0x5bfc, 0x5165, 0x4fe1, 0x606f);
-    const UI_GRID9_KICKER = "VOICE LOG \u2726 NOTE";
+    const UI_GRID9_KICKER = "SITUATION \u2726 VOICE";
     const UI_GRID9_SPARKLES = "\u2726 \u00b7 \u2661 \u00b7 \u2726";
     const UI_GRID9_IMPORT_DONE_TITLE = String.fromCharCode(0x5df2, 0x6839, 0x636e, 0x52, 0x4a, 0x53f7, 0x5bfc, 0x5165, 0x4fe1, 0x606f);
     const UI_GRID9_NO_COVER = String.fromCharCode(0x6ca1, 0x6709, 0x62ff, 0x5230, 0x5c01, 0x9762);
@@ -4397,7 +4403,7 @@
       const theme = currentCardTheme();
       const width = Math.min(840, grid9MaxLineWidth(ctx, text, 840)) + 48;
       const height = 16;
-      const top = headerBottom + 16;
+      const top = headerBottom - 16;
       ctx.save();
       ctx.translate(540, top + height / 2);
       ctx.rotate(-1 * Math.PI / 180);
@@ -4432,17 +4438,17 @@
       ctx.textAlign = "center";
       ctx.fillStyle = themeAlpha("accent", .9);
       ctx.font = canvasFont('900', 13);
-      drawLetterspacedCentered(ctx, UI_GRID9_KICKER, 540, 72, 4);
-      let headerBottom = 124;
+      drawLetterspacedCentered(ctx, UI_GRID9_KICKER, 540, 58, 4);
+      let headerBottom = 108;
       if (state.title) {
         ctx.fillStyle = theme.ink;
         ctx.font = canvasFont('900', 49);
         const lineCount = grid9MeasureLines(ctx, state.title, 840);
-        headerBottom = 124 + (lineCount - 1) * 60;
-        drawCenteredWrappedText(ctx, state.title, 120, 124, 840, 60, 2);
+        headerBottom = 108 + (lineCount - 1) * 60;
+        drawCenteredWrappedText(ctx, state.title, 120, 108, 840, 60, 2);
         drawGrid9TitleMarker(ctx, state.title, headerBottom);
       }
-      const subtitleY = headerBottom + 56;
+      const subtitleY = headerBottom + 58;
       if (state.subtitle) {
         ctx.fillStyle = theme.muted;
         ctx.font = canvasFont('800', 20);
@@ -4485,64 +4491,74 @@
     function drawGrid9Cell(ctx, state, index, x, y, w, h) {
       const theme = currentCardTheme();
       const cell = state.cells[index] || {};
-      const gap = 10;
-      const tagRowHeight = 40;
-      const reviewRowHeight = 92;
-      const coverY = y + tagRowHeight + gap;
-      const coverHeight = h - tagRowHeight - reviewRowHeight - gap * 2;
+      const gap = 14;
+      const tagRowHeight = 48;
+      const reviewRowHeight = 102;
+      const coverSlotY = y + tagRowHeight + gap;
+      const coverSlotHeight = h - tagRowHeight - reviewRowHeight - gap * 2;
+      const coverBoxScale = 0.9;
+      const targetCoverWidth = w * coverBoxScale;
+      const targetCoverHeight = targetCoverWidth * 3 / 4;
+      const coverFitScale = Math.min(1, coverSlotHeight / targetCoverHeight);
+      const coverWidth = targetCoverWidth * coverFitScale;
+      const coverHeight = targetCoverHeight * coverFitScale;
+      const coverX = x + (w - coverWidth) / 2;
+      const coverY = coverSlotY + (coverSlotHeight - coverHeight) / 2;
       const radius = 16;
 
       const tagText = cell.tag || "";
       if (tagText) {
-        const tagHeight = 38;
+        const tagHeight = 46;
+        const tagWidth = coverWidth;
+        const tagX = coverX;
         const ty = y + (tagRowHeight - tagHeight) / 2;
-        const grad = ctx.createLinearGradient(x, ty, x + w, ty + tagHeight);
+        const grad = ctx.createLinearGradient(tagX, ty, tagX + tagWidth, ty + tagHeight);
         grad.addColorStop(0, theme.accent);
         grad.addColorStop(1, theme.accentDeep);
-        fillRound(ctx, x, ty, w, tagHeight, tagHeight / 2, grad);
+        fillRound(ctx, tagX, ty, tagWidth, tagHeight, tagHeight / 2, grad);
         ctx.fillStyle = "#fff";
         ctx.textAlign = "center";
-        ctx.font = canvasFont('900', 18);
-        ctx.fillText(tagText, x + w / 2, ty + tagHeight / 2 + 6);
+        ctx.font = canvasFont('900', 21);
+        ctx.fillText(tagText, tagX + tagWidth / 2, ty + tagHeight / 2 + 7);
         ctx.textAlign = "left";
       }
 
       if (cell.cover) {
-        fillRound(ctx, x, coverY, w, coverHeight, radius, theme.coverBg);
+        fillRound(ctx, coverX, coverY, coverWidth, coverHeight, radius, theme.coverBg);
         const imgElement = grid9CellEditors[index] ? grid9CellEditors[index].querySelector(".grid9-cover-image") : null;
         if (imgElement && imgElement.complete && imgElement.naturalWidth) {
           ctx.save();
-          roundRect(ctx, x, coverY, w, coverHeight, radius);
+          roundRect(ctx, coverX, coverY, coverWidth, coverHeight, radius);
           ctx.clip();
           const iw = imgElement.naturalWidth;
           const ih = imgElement.naturalHeight;
           const fitMode = cell.fit === "contain" ? "contain" : "cover";
-          const scale = fitMode === "contain" ? Math.min(w / iw, coverHeight / ih) : Math.max(w / iw, coverHeight / ih);
+          const scale = fitMode === "contain" ? Math.min(coverWidth / iw, coverHeight / ih) : Math.max(coverWidth / iw, coverHeight / ih);
           const dw = iw * scale;
           const dh = ih * scale;
-          ctx.drawImage(imgElement, x + (w - dw) / 2, coverY + (coverHeight - dh) / 2, dw, dh);
+          ctx.drawImage(imgElement, coverX + (coverWidth - dw) / 2, coverY + (coverHeight - dh) / 2, dw, dh);
           ctx.restore();
         }
         ctx.save();
         ctx.shadowColor = "rgba(104,73,87,.13)";
         ctx.shadowBlur = 18;
-        strokeRound(ctx, x, coverY, w, coverHeight, radius, "rgba(255,255,255,.96)", 3);
+        strokeRound(ctx, coverX, coverY, coverWidth, coverHeight, radius, "rgba(255,255,255,.96)", 3);
         ctx.restore();
-        strokeRound(ctx, x, coverY, w, coverHeight, radius, themeAlpha("line", .78), 1);
+        strokeRound(ctx, coverX, coverY, coverWidth, coverHeight, radius, themeAlpha("line", .78), 1);
       } else {
-        fillRound(ctx, x, coverY, w, coverHeight, radius, themeAlpha("coverBg", .52));
-        strokeRound(ctx, x, coverY, w, coverHeight, radius, themeAlpha("accent", .44), 2, true);
+        fillRound(ctx, coverX, coverY, coverWidth, coverHeight, radius, themeAlpha("coverBg", .52));
+        strokeRound(ctx, coverX, coverY, coverWidth, coverHeight, radius, themeAlpha("accent", .44), 2, true);
         ctx.save();
         ctx.fillStyle = theme.muted;
         ctx.font = canvasFont('900', 18);
         ctx.textAlign = "center";
-        ctx.fillText(UI_GRID9_UPLOAD, x + w / 2, coverY + coverHeight / 2 + 6);
+        ctx.fillText(UI_GRID9_UPLOAD, coverX + coverWidth / 2, coverY + coverHeight / 2 + 6);
         ctx.textAlign = "left";
         ctx.restore();
       }
 
       if (state.showNumbers) {
-        const cx = x + 26;
+        const cx = coverX + 26;
         const cy = coverY + 26;
         ctx.beginPath();
         ctx.arc(cx, cy, 17, 0, Math.PI * 2);
@@ -4563,42 +4579,50 @@
       const rjText = (state.showRj && cell.rj) ? cell.rj : "";
       if (rjText) {
         ctx.font = canvasFont('800', 11);
-        const badgeWidth = Math.ceil(ctx.measureText(rjText).width) + 14;
+        const baseBadgeTextWidth = Math.ceil(ctx.measureText("RJ00000000").width);
+        const badgeTextWidth = Math.ceil(ctx.measureText(rjText).width);
+        const badgeWidth = Math.max(baseBadgeTextWidth, badgeTextWidth) + 14;
         const badgeHeight = 24;
-        const bx = x + w - badgeWidth - 9;
+        const bx = coverX + coverWidth - badgeWidth - 9;
         const by = coverY + coverHeight - badgeHeight - 9;
         fillRound(ctx, bx, by, badgeWidth, badgeHeight, 7, "rgba(255,255,255,.82)");
         ctx.fillStyle = theme.accentDeep;
-        ctx.textAlign = "right";
-        ctx.fillText(rjText, bx + badgeWidth - 7, by + badgeHeight / 2 + 4);
+        ctx.textAlign = "center";
+        ctx.fillText(rjText, bx + badgeWidth / 2, by + badgeHeight / 2 + 4);
         ctx.textAlign = "left";
       }
 
-      const reviewTop = coverY + coverHeight + gap;
-      fillRound(ctx, x + 1, reviewTop + 5, 3, reviewRowHeight - 10, 1.5, themeAlpha("accent", .5));
+      const reviewTop = coverSlotY + coverSlotHeight + gap;
+      fillRound(ctx, x + 1, reviewTop + 9, 3, reviewRowHeight - 10, 1.5, themeAlpha("accent", .5));
       ctx.save();
       ctx.fillStyle = themeAlpha("accentDeep", .5);
       ctx.font = canvasFont('900', 18);
       ctx.textAlign = "center";
-      ctx.fillText(String.fromCharCode(0x275d), x + 9, reviewTop + 26);
+      ctx.fillText(String.fromCharCode(0x275d), x + 14, reviewTop + 21);
       ctx.restore();
       ctx.fillStyle = themeAlpha("ink", .9);
-      ctx.font = canvasFont('400', 15);
-      drawWrappedText(ctx, cell.review || "", x + 20, reviewTop + 26, w - 30, 21, 3);
+      ctx.font = canvasFont('400', 18);
+      drawWrappedText(ctx, cell.review || "", x + 20, reviewTop + 23, w - 30, 22, 4);
       ctx.strokeStyle = themeAlpha("accent", .35);
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(x + 10, reviewTop + reviewRowHeight - 8);
-      ctx.lineTo(x + w - 10, reviewTop + reviewRowHeight - 8);
+      ctx.moveTo(x + 20, reviewTop + reviewRowHeight - 6);
+      ctx.lineTo(x + w - 10, reviewTop + reviewRowHeight - 6);
       ctx.stroke();
       ctx.fillStyle = themeAlpha("accent", .55);
       ctx.font = canvasFont('800', 12);
       ctx.textAlign = "center";
-      ctx.fillText(String.fromCharCode(0x2726), x + w - 18, reviewTop + reviewRowHeight - 12);
+      ctx.fillText(String.fromCharCode(0x2726), x + w - 14, reviewTop + reviewRowHeight - 10);
       ctx.textAlign = "left";
     }
 
     grid9ImportAllButton.addEventListener("click", importAllGrid9Covers);
+    grid9ClearBkButton.addEventListener("click", () => {
+      grid9CellEditors.forEach((cell, index) => {
+        applyGrid9Cover(index, "");
+      });
+      saveState();
+    });
     grid9PresetButton.addEventListener("click", (event) => {
       event.stopPropagation();
       grid9PresetMenu.hidden = !grid9PresetMenu.hidden;
@@ -4613,6 +4637,12 @@
       if (!grid9PresetMenu || grid9PresetMenu.hidden) return;
       if (grid9PresetMenu.contains(event.target) || grid9PresetButton.contains(event.target)) return;
       grid9PresetMenu.hidden = true;
+    });
+    grid9ClearRepoButton.addEventListener("click", () => {
+      grid9CellEditors.forEach((cell) => {
+        cell.querySelector(".grid9-review-input").value = "";
+      });
+      saveState();
     });
     [grid9ShowNumbers, grid9ShowRj].forEach((checkbox) => {
       checkbox.addEventListener("change", () => {
@@ -5272,7 +5302,7 @@
     const UI_TRIO_UPLOAD_FAILED = String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x9009, 0x62e9, 0x56fe, 0x7247, 0x3002);
     const UI_TRIO_WATERMARK = String.fromCharCode(0x4e59, 0x6293, 0x8bb0, 0x5f55) + " \u00b7 THREE VOICE NOTES";
     const UI_TRIO_PRICE = String.fromCharCode(0x73b0, 0x4ef7);
-    const UI_TRIO_RATING = String.fromCharCode(0x603b, 0x8bc4);
+    const UI_TRIO_RATING = String.fromCharCode(0x8bc4, 0x5206);
     const UI_TRIO_REPO_LABEL = "REPO";
 
     function trioIsCoarse() {
@@ -5287,26 +5317,10 @@
         item.className = "trio-item";
         item.dataset.trioIndex = String(index);
 
-        const dividerStar = document.createElement("span");
-        dividerStar.className = "trio-divider-star";
-
         const decoTop = document.createElement("span");
-        decoTop.className = "trio-corner-deco top-left";
-        const decoTopStar = document.createElement("span");
-        decoTopStar.className = "deco-star";
-        decoTopStar.textContent = "\u2726";
-        const decoTopLine = document.createElement("span");
-        decoTopLine.className = "deco-line";
-        decoTop.append(decoTopStar, decoTopLine);
-
+        decoTop.className = "trio-frame-deco top";
         const decoBottom = document.createElement("span");
-        decoBottom.className = "trio-corner-deco bottom-right";
-        const decoBottomStar = document.createElement("span");
-        decoBottomStar.className = "deco-star";
-        decoBottomStar.textContent = "\u2726";
-        const decoBottomLine = document.createElement("span");
-        decoBottomLine.className = "deco-line";
-        decoBottom.append(decoBottomStar, decoBottomLine);
+        decoBottom.className = "trio-frame-deco bottom";
 
         const cover = document.createElement("div");
         cover.className = "trio-cover";
@@ -5356,8 +5370,8 @@
         const rjField = document.createElement("label");
         rjField.className = "trio-inline-field";
         const rjLabel = document.createElement("span");
-        rjLabel.className = "trio-field-label";
-        rjLabel.textContent = "RJ";
+        rjLabel.className = "trio-rj-label";
+        rjLabel.textContent = String.fromCharCode(0x52, 0x4a, 0x53f7);
         const rjInput = document.createElement("input");
         rjInput.className = "trio-rj-input";
         rjInput.type = "text";
@@ -5410,17 +5424,14 @@
 
         const repo = document.createElement("div");
         repo.className = "trio-repo";
-        const repoTitle = document.createElement("div");
-        repoTitle.className = "trio-repo-title";
-        repoTitle.textContent = UI_TRIO_REPO_LABEL;
         const reviewArea = document.createElement("textarea");
         reviewArea.className = "trio-repo-input";
         reviewArea.maxLength = 240;
         reviewArea.placeholder = UI_TRIO_REPO_PLACEHOLDER;
-        repo.append(repoTitle, reviewArea);
+        repo.append(reviewArea);
 
         info.append(infoRow, summary, repo);
-        item.append(dividerStar, decoTop, decoBottom, cover, info);
+        item.append(decoTop, decoBottom, cover, info);
         trioCells.appendChild(item);
         trioCellEditors.push(item);
 
@@ -5465,7 +5476,10 @@
         stars.addEventListener("click", (event) => {
           const btn = event.target.closest(".trio-star");
           if (!btn) return;
-          setTrioRating(index, Number(btn.dataset.trioScore));
+          const rect = btn.getBoundingClientRect();
+          const half = event.clientX - rect.left < rect.width / 2;
+          const score = Number(btn.dataset.trioScore) - (half ? 0.5 : 0);
+          setTrioRating(index, score);
         });
       }
     }
@@ -5505,8 +5519,12 @@
     function setTrioRating(index, value) {
       const cell = trioCellEditors[index];
       if (!cell) return;
-      const rating = Math.max(0, Math.min(5, Number(value) || 0));
-      cell.querySelectorAll(".trio-star").forEach((star, idx) => star.classList.toggle("off", idx >= rating));
+      const rating = Math.max(0, Math.min(5, Math.round((Number(value) || 0) * 2) / 2));
+      cell.querySelectorAll(".trio-star").forEach((star, idx) => {
+        const starValue = idx + 1;
+        star.classList.toggle("half", rating === starValue - 0.5);
+        star.classList.toggle("off", rating < starValue - 0.5);
+      });
       cell.querySelector(".trio-score").textContent = rating.toFixed(1);
       saveState();
     }
@@ -5514,14 +5532,17 @@
     function readTrioCell(index) {
       const cell = trioCellEditors[index];
       if (!cell) return null;
-      const offCount = cell.querySelectorAll(".trio-star.off").length;
+      const rating = Array.from(cell.querySelectorAll(".trio-star")).reduce((sum, star) => {
+        if (star.classList.contains("half")) return sum + 0.5;
+        return sum + (star.classList.contains("off") ? 0 : 1);
+      }, 0);
       return {
         cover: cell.querySelector(".trio-cover img").getAttribute("src") || "",
         coverFit: cell.querySelector(".trio-cover img").style.objectFit || "cover",
         cv: cell.querySelector(".trio-cv").value.trim(),
         rj: cell.querySelector(".trio-rj-input").value.trim(),
         price: cell.querySelector(".trio-price-input").value.trim(),
-        rating: Math.max(0, 5 - offCount),
+        rating,
         repo: cell.querySelector(".trio-repo-input").value.trim()
       };
     }
@@ -5535,8 +5556,12 @@
       cell.querySelector(".trio-cv").value = next.cv || "";
       cell.querySelector(".trio-rj-input").value = next.rj || "";
       cell.querySelector(".trio-price-input").value = next.price || "";
-      const rating = Math.max(0, Math.min(5, Number(next.rating) || 0));
-      cell.querySelectorAll(".trio-star").forEach((star, idx) => star.classList.toggle("off", idx >= rating));
+      const rating = Math.max(0, Math.min(5, Math.round((Number(next.rating) || 0) * 2) / 2));
+      cell.querySelectorAll(".trio-star").forEach((star, idx) => {
+        const starValue = idx + 1;
+        star.classList.toggle("half", rating === starValue - 0.5);
+        star.classList.toggle("off", rating < starValue - 0.5);
+      });
       cell.querySelector(".trio-score").textContent = rating.toFixed(1);
       cell.querySelector(".trio-repo-input").value = next.repo || "";
     }
@@ -5561,7 +5586,10 @@
         cell.querySelector(".trio-cv").value = "";
         cell.querySelector(".trio-rj-input").value = "";
         cell.querySelector(".trio-price-input").value = "";
-        cell.querySelectorAll(".trio-star").forEach((star) => star.classList.add("off"));
+        cell.querySelectorAll(".trio-star").forEach((star) => {
+          star.classList.add("off");
+          star.classList.remove("half");
+        });
         cell.querySelector(".trio-score").textContent = "0.0";
         cell.querySelector(".trio-repo-input").value = "";
       });
@@ -5738,6 +5766,13 @@
       ctx.restore();
     }
 
+    function drawTrioFrameDeco(ctx, x, y, w) {
+      const cx = x + w / 2;
+      drawTrioDashedLine(ctx, x + 92, cx - 13, y, themeAlpha("accent", .3));
+      drawTrioDashedLine(ctx, cx + 13, x + w - 92, y, themeAlpha("mint", .34));
+      drawTrioStar(ctx, cx, y, 6, themeAlpha("accent", .52));
+    }
+
     function drawTrioCard(ctx) {
       const width = 1080;
       const height = 1440;
@@ -5767,14 +5802,6 @@
         const y = listTop + index * (cellHeight + gap);
         drawTrioCell(ctx, state, index, x, y, cellWidth, cellHeight);
       }
-      for (let index = 0; index < 2; index += 1) {
-        const y = listTop + index * (cellHeight + gap);
-        const cy = y + cellHeight + gap / 2;
-        const cx = width / 2;
-        drawTrioDashedLine(ctx, listLeft + 70, cx - 16, cy, themeAlpha("accent", .38));
-        drawTrioDashedLine(ctx, cx + 16, listRight - 70, cy, themeAlpha("mint", .42));
-        drawTrioStar(ctx, cx, cy, 8, themeAlpha("accent", .64));
-      }
 
       ctx.save();
       ctx.fillStyle = themeAlpha("ink", .09);
@@ -5803,25 +5830,13 @@
       fillRound(ctx, x, y, w, h, radius, washMint);
       strokeRound(ctx, x, y, w, h, radius, themeAlpha("line", .6), 1);
 
-      ctx.save();
-      ctx.fillStyle = themeAlpha("accent", .72);
-      ctx.font = canvasFont('900', 13);
-      ctx.textAlign = "left";
-      ctx.fillText("\u2726", x + 28, y + 24);
-      ctx.fillRect(x + 50, y + 17.5, 62, 1);
-      ctx.restore();
-      ctx.save();
-      ctx.fillStyle = themeAlpha("mint", .76);
-      ctx.font = canvasFont('900', 13);
-      ctx.textAlign = "left";
-      ctx.fillRect(x + w - 90, y + h - 17.5, 62, 1);
-      ctx.fillText("\u2726", x + w - 28, y + h - 12);
-      ctx.restore();
+      drawTrioFrameDeco(ctx, x, y + 13, w);
+      drawTrioFrameDeco(ctx, x, y + h - 13, w);
 
       const coverX = x + 20;
-      const coverY = y + (h - 300) / 2;
-      const coverW = 400;
-      const coverH = 300;
+      const coverW = 420;
+      const coverH = 315;
+      const coverY = y + (h - coverH) / 2;
       const coverRadius = 20;
 
       if (cell.cover) {
@@ -5860,34 +5875,29 @@
 
       const infoX = x + 20 + coverW + 24;
       const infoW = w - 20 - coverW - 24 - 20;
-      const infoTop = y + 20;
-      const infoBottom = y + h - 20;
+      const infoTop = coverY;
+      const infoBottom = y + h - 13 - 30;
       const row1Baseline = infoTop + 22;
-      const dividerY = infoTop + 26;
-      const summaryTop = dividerY + 14;
-      const summaryH = 54;
-      const repoTop = summaryTop + summaryH + 13;
+      const dividerY = infoTop + 36;
+      const summaryTop = dividerY + 30;
+      const summaryH = 46;
+      const repoTop = summaryTop + summaryH + 30;
       const repoBottom = infoBottom;
 
       ctx.textAlign = "left";
-      ctx.font = canvasFont('900', 19);
+      ctx.font = canvasFont('900', 24);
+      const cvX = infoX + 22;
       const cvLabelW = ctx.measureText("CV").width;
       ctx.fillStyle = theme.accent;
-      ctx.fillText("CV", infoX, row1Baseline);
+      ctx.fillText("CV", cvX, row1Baseline);
       ctx.fillStyle = theme.ink;
-      ctx.fillText(cell.cv || "", infoX + cvLabelW + 9, row1Baseline);
+      ctx.fillText(cell.cv || "", cvX + cvLabelW + 9, row1Baseline);
 
       const rjText = cell.rj || "";
-      ctx.font = canvasFont('850', 16);
-      const rjW = ctx.measureText(rjText).width;
-      const rjMinW = ctx.measureText("RJ00000000").width;
-      ctx.font = canvasFont('900', 19);
-      const rjBlockW = Math.max(rjW, rjMinW);
-      ctx.fillStyle = theme.accent;
+      ctx.font = canvasFont('900', 22);
       ctx.textAlign = "right";
-      ctx.fillText("RJ", infoX + infoW - rjBlockW - 9, row1Baseline);
       ctx.fillStyle = theme.ink;
-      ctx.fillText(rjText, infoX + infoW, row1Baseline);
+      ctx.fillText(rjText, infoX + infoW - 30, row1Baseline);
       ctx.textAlign = "left";
 
       ctx.save();
@@ -5896,22 +5906,22 @@
       ctx.setLineDash([3, 4]);
       ctx.beginPath();
       ctx.moveTo(infoX, dividerY + 0.5);
-      ctx.lineTo(infoX + infoW, dividerY + 0.5);
+      ctx.lineTo(infoX + infoW - 20, dividerY + 0.5);
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
 
       const summaryX = infoX;
-      const summaryW = infoW;
+      const summaryW = infoW - 20;
       const summaryGrad = ctx.createLinearGradient(summaryX, summaryTop, summaryX + summaryW, summaryTop);
       summaryGrad.addColorStop(0, themeAlpha("accent", .07));
       summaryGrad.addColorStop(1, themeAlpha("mint", .07));
-      fillRound(ctx, summaryX, summaryTop, summaryW, summaryH, 16, summaryGrad);
-      const summaryPadX = 13;
+      fillRound(ctx, summaryX, summaryTop, summaryW, summaryH, 14, summaryGrad);
+      const summaryPadX = 22;
       const innerW = summaryW - summaryPadX * 2;
       const priceColW = innerW / 2.4;
-      const ratingColX = summaryX + summaryPadX + priceColW + 16;
-      const summaryBaseline = summaryTop + 35;
+      const ratingColX = summaryX + summaryPadX + priceColW + 16 - 1;
+      const summaryBaseline = summaryTop + 30;
 
       ctx.font = canvasFont('900', 14);
       ctx.fillStyle = theme.muted;
@@ -5932,26 +5942,38 @@
       const rating = Math.max(0, Math.min(5, Number(cell.rating) || 0));
       ctx.font = canvasFont('900', 25);
       for (let i = 0; i < 5; i += 1) {
-        ctx.fillStyle = i < rating ? theme.accent : themeAlpha("accent", .26);
-        ctx.fillText(STAR_CHAR, starX + i * 29, summaryBaseline + 4);
+        const starLeft = starX + i * 29;
+        const starValue = i + 1;
+        ctx.fillStyle = themeAlpha("accent", .26);
+        ctx.fillText(STAR_CHAR, starLeft, summaryBaseline + 4);
+        if (rating >= starValue - 0.5) {
+          ctx.save();
+          if (rating < starValue) {
+            ctx.beginPath();
+            ctx.rect(starLeft, summaryBaseline - 22, 14, 32);
+            ctx.clip();
+          }
+          ctx.fillStyle = theme.accent;
+          ctx.fillText(STAR_CHAR, starLeft, summaryBaseline + 4);
+          ctx.restore();
+        }
       }
       ctx.fillStyle = theme.accentDeep;
       ctx.font = canvasFont('900', 16);
+      ctx.textAlign = "left";
       ctx.fillText(rating.toFixed(1), starX + 5 * 29 + 8, summaryBaseline + 2);
+      ctx.textAlign = "left";
 
       const repoLeftX = infoX;
       const repoTextX = infoX + 22;
       ctx.fillStyle = themeAlpha("accent", .22);
-      ctx.fillRect(repoLeftX, repoTop + 5, 3, repoBottom - repoTop - 10);
+      ctx.fillRect(repoLeftX, repoTop, 3, repoBottom - repoTop);
       ctx.fillStyle = themeAlpha("accentDeep", .5);
-      ctx.font = canvasFont('900', 15);
-      ctx.fillText("\u2661", repoLeftX + 6, repoTop + 24);
-      ctx.fillStyle = theme.accentDeep;
-      ctx.font = canvasFont('900', 13);
-      ctx.fillText(UI_TRIO_REPO_LABEL, repoTextX, repoTop + 24);
+      ctx.font = canvasFont('900', 16);
+      ctx.fillText("\u2661", repoLeftX + 6, repoTop + 18);
       ctx.fillStyle = themeAlpha("ink", .9);
-      ctx.font = canvasFont('700', 15);
-      drawWrappedText(ctx, cell.repo || "", repoTextX, repoTop + 46, infoW - 22 - 10, 25, 6);
+      ctx.font = canvasFont('600', 20);
+      drawWrappedText(ctx, cell.repo || "", repoTextX, repoTop + 18, infoW - 22 - 20, 31, 6);
     }
 
     trioImportAllButton?.addEventListener("click", importAllTrioCells);
@@ -6244,6 +6266,16 @@
       mobileDataMenuButton?.setAttribute("aria-expanded", "false");
       exportRecordData();
     });
+    usageGuideButton?.addEventListener("click", () => { if (usageGuideModal) usageGuideModal.hidden = false; });
+    mobileUsageGuideButton?.addEventListener("click", () => {
+      if (mobileDataDropdown) mobileDataDropdown.hidden = true;
+      mobileDataMenuButton?.setAttribute("aria-expanded", "false");
+      if (usageGuideModal) usageGuideModal.hidden = false;
+    });
+    usageGuideCloseButton?.addEventListener("click", () => { if (usageGuideModal) usageGuideModal.hidden = true; });
+    usageGuideModal?.addEventListener("click", (event) => {
+      if (event.target === usageGuideModal) usageGuideModal.hidden = true;
+    });
     usageInfoButton?.addEventListener("click", () => { if (usageInfoModal) usageInfoModal.hidden = false; });
     mobileUsageInfoButton?.addEventListener("click", () => {
       if (mobileDataDropdown) mobileDataDropdown.hidden = true;
@@ -6337,4 +6369,3 @@
     fitStage();
     updateDiscount();
     syncDiscountColor();
-  

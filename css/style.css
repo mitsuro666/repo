@@ -3381,7 +3381,7 @@
       position: absolute;
       left: 5%;
       right: 5%;
-      bottom: 7px;
+      bottom: 13px;
       height: 16px;
       z-index: 0;
       border-radius: 999px;
@@ -3500,26 +3500,27 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       grid-template-rows: repeat(3, minmax(0, 1fr));
-      gap: 20px 18px;
+      gap: 14px 18px;
     }
     .grid9-cell {
       min-width: 0;
       min-height: 0;
       display: grid;
-      grid-template-rows: 40px minmax(0, 1fr) 92px;
-      gap: 10px;
+      grid-template-rows: 48px minmax(0, 1fr) 102px;
+      gap: 20px;
       align-content: start;
     }
     .grid9-tag-input {
-      width: 100%;
-      height: 40px;
+      width: 90%;
+      justify-self: center;
+      height: 48px;
       border: 0;
       border-radius: 999px;
       padding: 0 14px;
       outline: 0;
       color: #fff;
       text-align: center;
-      font-size: 18px;
+      font-size: 21px;
       font-weight: 900;
       background: linear-gradient(135deg, var(--card-accent), var(--card-accent-deep));
       box-shadow: 0 5px 12px color-mix(in srgb, var(--card-accent-deep) 15%, transparent);
@@ -3529,9 +3530,13 @@
     }
     .grid9-cover-box {
       position: relative;
-      width: 100%;
-      height: 100%;
+      width: 90%;
+      height: auto;
+      aspect-ratio: 4 / 3;
+      align-self: center;
+      justify-self: center;
       min-height: 0;
+      top: 6px;
       border-radius: 16px;
       overflow: hidden;
       cursor: pointer;
@@ -3610,7 +3615,7 @@
       color: var(--card-accent-deep);
       background: rgba(255, 255, 255, 0.82);
       box-shadow: 0 2px 8px rgba(104, 73, 87, 0.1);
-      text-align: left;
+      text-align: center;
       font-size: 11px;
       font-weight: 800;
     }
@@ -3625,15 +3630,15 @@
     }
     .grid9-review-wrap {
       position: relative;
-      min-height: 92px;
-      padding: 11px 10px 8px 19px;
-      background: linear-gradient(90deg, color-mix(in srgb, var(--card-accent) 18%, transparent) 0 3px, transparent 3px 100%);
+      min-height: 102px;
+      padding: 8px 10px 4px 19px;
+      background: linear-gradient(90deg, color-mix(in srgb, var(--card-accent) 18%, transparent) 0 3px, transparent 3px 100%) 0 8px / 100% calc(100% - 8px) no-repeat;
     }
     .grid9-review-wrap::before {
       content: "\275D";
       position: absolute;
-      left: 2px;
-      top: 3px;
+      left: 8px;
+      top: 0;
       color: color-mix(in srgb, var(--card-accent-deep) 50%, transparent);
       font-size: 18px;
       font-weight: 900;
@@ -3650,17 +3655,17 @@
     }
     .grid9-review-input {
       width: 100%;
-      height: 68px;
+      height: 90px;
       resize: none;
       overflow: hidden;
       border: 0;
       border-bottom: 1.5px solid color-mix(in srgb, var(--card-accent) 38%, transparent);
       outline: 0;
-      padding: 0 2px 5px 0;
+      padding: 0 2px 0 0;
       color: var(--card-ink);
       background: transparent;
-      font-size: 15px;
-      line-height: 1.45;
+      font-size: 18px;
+      line-height: 1.22;
       font-weight: 700;
       display: block;
     }
@@ -4212,7 +4217,7 @@
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: 400px minmax(0, 1fr);
+  grid-template-columns: 420px minmax(0, 1fr);
   gap: 24px;
   align-items: center;
   padding: 16px 20px;
@@ -4223,33 +4228,48 @@
     radial-gradient(circle at 93% 90%, color-mix(in srgb, var(--card-mint) 7%, transparent), transparent 24%),
     linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.28));
 }
-.trio-item:not(:last-child)::after {
+.trio-frame-deco {
+  position: absolute;
+  left: 92px;
+  right: 92px;
+  z-index: 2;
+  height: 10px;
+  pointer-events: none;
+}
+.trio-frame-deco.top {
+  top: 8px;
+}
+.trio-frame-deco.bottom {
+  bottom: 8px;
+}
+.trio-frame-deco::before {
   content: "";
   position: absolute;
-  left: 70px;
-  right: 70px;
-  bottom: -15px;
+  left: 0;
+  right: 0;
+  top: 50%;
   height: 1px;
+  transform: translateY(-50%);
   background:
     repeating-linear-gradient(
       90deg,
-      color-mix(in srgb, var(--card-accent) 38%, transparent) 0 5px,
-      transparent 5px 11px
-    ) left center / calc(50% - 15px) 1px no-repeat,
+      color-mix(in srgb, var(--card-accent) 30%, transparent) 0 4px,
+      transparent 4px 10px
+    ) left center / calc(50% - 13px) 1px no-repeat,
     repeating-linear-gradient(
       90deg,
-      color-mix(in srgb, var(--card-mint) 42%, transparent) 0 5px,
-      transparent 5px 11px
-    ) right center / calc(50% - 15px) 1px no-repeat;
+      color-mix(in srgb, var(--card-mint) 34%, transparent) 0 4px,
+      transparent 4px 10px
+    ) right center / calc(50% - 13px) 1px no-repeat;
 }
-.trio-divider-star {
+.trio-frame-deco::after {
+  content: "";
   position: absolute;
   left: 50%;
-  bottom: -22px;
-  z-index: 2;
-  width: 14px;
-  height: 14px;
-  transform: translateX(-50%);
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%);
   clip-path: polygon(
     50% 0%,
     61% 35%,
@@ -4265,48 +4285,14 @@
   background: color-mix(in srgb, var(--card-accent) 64%, white);
   pointer-events: none;
 }
-.trio-item:last-child .trio-divider-star {
-  display: none;
-}
 
-/* light magazine deco: pink star + line top-left, mint line + star bottom-right */
-.trio-corner-deco {
-  position: absolute;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  pointer-events: none;
-  opacity: 0.72;
-}
-.trio-corner-deco .deco-star {
-  font-size: 13px;
-  line-height: 1;
-}
-.trio-corner-deco .deco-line {
-  width: 62px;
-  height: 1px;
-  border-radius: 999px;
-  background: currentColor;
-}
-.trio-corner-deco.top-left {
-  left: 28px;
-  top: 10px;
-  color: color-mix(in srgb, var(--card-accent) 72%, transparent);
-}
-.trio-corner-deco.bottom-right {
-  right: 28px;
-  bottom: 10px;
-  flex-direction: row-reverse;
-  color: color-mix(in srgb, var(--card-mint) 76%, transparent);
-}
-
-/* BK: fixed 4:3 (400x300) */
+/* BK: fixed 4:3 (420x315) */
 .trio-cover {
   position: relative;
-  width: 400px;
-  height: 300px;
+  width: 420px;
+  height: 315px;
   align-self: center;
+  transform: translateY(0);
   overflow: hidden;
   border-radius: 20px;
   cursor: pointer;
@@ -4393,12 +4379,15 @@
 /* right info column */
 .trio-info {
   min-width: 0;
-  height: 100%;
+  height: 355px;
+  align-self: center;
+  box-sizing: border-box;
   display: grid;
-  grid-template-rows: auto auto 1fr;
-  align-content: center;
-  gap: 12px;
-  padding: 4px 2px;
+  grid-template-rows: auto auto auto;
+  align-content: space-between;
+  gap: 0;
+  padding: 0 2px 30px;
+  transform: translateY(20px);
 }
 .trio-info-row {
   display: grid;
@@ -4412,10 +4401,13 @@
   align-items: center;
   gap: 9px;
 }
+.trio-info-row > .trio-inline-field:first-child {
+  padding-left: 22px;
+}
 .trio-field-label {
   flex: 0 0 auto;
   color: var(--card-accent);
-  font-size: 19px;
+  font-size: 24px;
   font-weight: 900;
 }
 .trio-field-input {
@@ -4426,20 +4418,26 @@
   padding: 0;
   color: var(--card-ink);
   background: transparent;
-  font-size: 19px;
+  font-size: 24px;
   line-height: 1.15;
   font-weight: 900;
 }
 .trio-rj-input {
-  width: 132px;
+  width: 150px;
   border: 0;
   outline: 0;
   padding: 0;
   color: var(--card-ink);
   background: transparent;
   text-align: left;
-  font-size: 16px;
-  font-weight: 850;
+  font-size: 22px;
+  font-weight: 900;
+}
+.trio-rj-label {
+  flex: 0 0 auto;
+  color: var(--card-accent);
+  font-size: 24px;
+  font-weight: 900;
 }
 .trio-field-input::placeholder,
 .trio-rj-input::placeholder {
@@ -4447,18 +4445,20 @@
 }
 .trio-top-divider {
   grid-column: 1 / -1;
+  margin-right: 20px;
   border-top: 1px dashed color-mix(in srgb, var(--card-accent) 30%, transparent);
 }
 
 /* price + rating summary strip */
 .trio-summary-strip {
-  min-height: 54px;
+  min-height: 46px;
+  margin-right: 20px;
   display: grid;
   grid-template-columns: 1fr 1.4fr;
   gap: 16px;
   align-items: center;
-  padding: 8px 13px;
-  border-radius: 16px;
+  padding: 6px 0 6px 22px;
+  border-radius: 14px;
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--card-accent) 7%, transparent),
@@ -4471,6 +4471,12 @@
   align-items: center;
   gap: 9px;
   min-width: 0;
+}
+.trio-rating-block {
+  transform: translateX(-1px);
+}
+.trio-score {
+  margin-left: 8px;
 }
 .trio-small-label {
   flex: 0 0 auto;
@@ -4518,17 +4524,28 @@
 .trio-star.off {
   color: color-mix(in srgb, var(--card-accent) 26%, transparent);
 }
+.trio-star.half {
+  color: transparent;
+  background: linear-gradient(
+    90deg,
+    var(--card-accent) 0 50%,
+    color-mix(in srgb, var(--card-accent) 26%, transparent) 50% 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
 .trio-score {
   color: var(--card-accent-deep);
   font-size: 16px;
   font-weight: 900;
 }
 
-/* repo: right column, left accent line + heart + REPO title */
+/* repo: right column, left accent line + heart */
 .trio-repo {
   position: relative;
   min-height: 0;
-  padding: 13px 10px 9px 22px;
+  margin-right: 10px;
+  padding: 0 10px 0 22px;
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--card-accent) 15%, transparent) 0 3px,
@@ -4539,22 +4556,15 @@
   content: "\2661";
   position: absolute;
   left: 2px;
-  top: 11px;
+  top: 0;
   color: color-mix(in srgb, var(--card-accent-deep) 50%, transparent);
   font-size: 15px;
   font-weight: 900;
   pointer-events: none;
 }
-.trio-repo-title {
-  margin-bottom: 5px;
-  color: var(--card-accent-deep);
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  font-weight: 900;
-}
 .trio-repo-input {
   width: 100%;
-  height: 150px;
+  height: 190px;
   resize: none;
   overflow: hidden;
   border: 0;
@@ -4562,9 +4572,9 @@
   padding: 0;
   color: var(--card-ink);
   background: transparent;
-  font-size: 16px;
-  line-height: 1.58;
-  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.55;
+  font-weight: 600;
   display: block;
 }
 .trio-repo-input::placeholder {
