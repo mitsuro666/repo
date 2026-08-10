@@ -233,9 +233,19 @@
             <label class="grid9-toggle"><input id="grid9ShowNumbers" type="checkbox" checked />&#26174;&#31034;&#32534;&#21495;</label>
             <label class="grid9-toggle"><input id="grid9ShowRj" type="checkbox" checked />&#26174;&#31034;RJ&#21495;</label>
           </div>
+          <div class="grid9-title-style-tools" aria-label="&#26631;&#39064;&#26679;&#24335;">
+            <span class="grid9-title-style-caption">&#26631;&#39064;&#26679;&#24335;</span>
+            <button class="grid9-title-style-button is-selected" id="grid9TitleStyleCream" type="button" data-title-style="cream">&#22902;&#27833;&#25551;&#36793;</button>
+            <button class="grid9-title-style-button" id="grid9TitleStyleOffset" type="button" data-title-style="offset">&#21452;&#23618;&#38169;&#20301;</button>
+            <button class="grid9-title-style-button" id="grid9TitleStyleChip" type="button" data-title-style="chip">&#36148;&#32440;&#24213;&#26495;</button>
+            <button class="grid9-title-style-button" id="grid9TitleStyleSplit" type="button" data-title-style="split">&#21452;&#33394;&#20999;&#21322;</button>
+            <button class="grid9-title-style-button" id="grid9TitleStyleFrost" type="button" data-title-style="frost">&#31958;&#38684;&#27874;&#28010;</button>
+          </div>
           <div class="grid9-kicker">SITUATION &#10022; VOICE</div>
           <div class="grid9-title-wrap">
             <span class="grid9-marker"></span>
+            <span class="grid9-d-lines" aria-hidden="true"><span class="line top"></span><span class="spark top">&#10022;</span><span class="line bottom"></span><span class="spark bottom">&#10022;</span></span>
+            <span class="grid9-e-wave" aria-hidden="true"><svg viewBox="0 0 760 36" fill="none" preserveAspectRatio="none"><path class="wave-main" d="M8 22 C72 4, 142 31, 212 18 S354 2, 425 18 S568 31, 648 16 S726 10, 752 18"/><path class="wave-soft" d="M40 19 C97 10, 156 28, 220 18 S362 8, 437 20 S568 28, 649 18 S723 11, 748 16"/></svg></span>
             <div class="grid9-title editable is-empty" id="grid9TitleText" contenteditable="true" aria-label="&#22823;&#26631;&#39064;"></div>
             <div class="grid9-title-placeholder" aria-hidden="true">&#12304;&#20027;&#26631;&#39064;&#12305;</div>
           </div>
@@ -271,9 +281,9 @@
       <button class="tool-button" id="grid9ClearRepoButton" type="button">&#28165;&#31354;repo</button>
     </div>
     <div class="quick-external-tools" id="quickExternalTools" hidden>
-      <button class="tool-button" id="quickShowRjButton" type="button">&#9745; &#26174;&#31034;RJ&#21495;</button>
-      <button class="tool-button primary" id="quickImportAllButton" type="button">&#25353;RJ&#19968;&#38190;&#23548;&#20837;BK</button>
-      <button class="tool-button" id="quickClearRepoButton" type="button">&#21482;&#28165;&#31354;Repo</button>
+      <button class="tool-button" id="quickShowRjButton" type="button">&#9745; &#26174;&#31034; RJ &#21495;</button>
+      <button class="tool-button primary" id="quickImportAllButton" type="button">&#25353;RJ&#21495;&#19968;&#38190;&#23548;&#20837;BK</button>
+      <button class="tool-button" id="quickClearRepoButton" type="button">&#28165;&#31354; repo</button>
     </div>
     <div class="trio-external-tools" id="trioExternalTools" hidden>
       <button class="tool-button primary" id="trioImportAllButton" type="button">&#25353;RJ&#19968;&#38190;&#23548;&#20837;</button>
@@ -441,6 +451,3 @@
   <script src="js/app.js"></script>
 </body>
 </html>
-
-
-

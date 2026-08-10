@@ -32,6 +32,52 @@ deployed on GitHub Pages.
   Chrome taints them and `toDataURL()` throws `SecurityError`. Sticker images
   must be localized to a data URL first (`localizeImageToPngDataUrl` falls back
   to `stamp-data/` embedded copies, then to `<img>` rasterization).
+
+## Design rules for new templates and modules
+
+- New templates and styles must be theme-aware. Never introduce a fixed
+  template/module color when the color should change with the selected palette.
+  Use the existing semantic variables such as `--card-ink`, `--card-muted`,
+  `--card-accent`, `--card-accent-deep`, `--card-line`, `--card-mint`,
+  `--card-cover-bg`, and `--card-bg-*`; use `color-mix()` with those variables
+  for lighter, darker, or translucent variants.
+- A new theme-dependent color must first be added as a semantic `--card-*`
+  variable in every theme block, then consumed by the template/module. Do not
+  add a raw hex value directly to a new component rule except for genuinely
+  theme-independent values such as pure white used for contrast.
+- When drawing a new template on canvas, pass palette-derived colors into the
+  drawing functions. Do not hard-code palette hex values in new JavaScript
+  drawing logic.
+- New modules should establish an intentional alignment: left, right, or
+  centered. Keep sibling modules on a consistent alignment axis and use equal,
+  explicit `gap`/spacing values between comparable modules.
+- Prefer layout primitives (`grid`/`flex`, `gap`, `align-items`,
+  `justify-content`, `text-align`) over per-element offset nudges. When a
+  module has repeated items, define the spacing once on the parent.
+- Before handing off a change, statically check that new theme-dependent colors
+  reference semantic variables and that new repeated layouts use consistent
+  alignment and spacing. Functional, visual, and end-to-end verification is
+  intentionally left to the user per the working preferences below.
 ## Working preferences
 
 - When changing code, only run basic syntax/static checks (e.g. JS parse check). Do NOT run functional, visual, or end-to-end verification - no browser automation, no screenshot rendering, no click-through testing. The user verifies the actual effect themselves.
+
+## Preview/export parity workflow for grid9 title styles
+
+- Treat work as three phases: (1) when creating a new style, implement the
+  preview and export together; (2) during the preview-tuning phase, assume the
+  user wants the export changed in parallel to match every preview adjustment;
+  (3) during the export-confirmation phase, compare export against the approved
+  preview and make export-only corrections.
+- If the phase or the intended reference is unclear before an edit, ask which
+  phase applies and whether the preview or export is the source to follow.
+- The live grid9 preview is the visual source of truth for export parity. For
+  every new or changed export drawing, compare the preview CSS/HTML with the
+  corresponding canvas code: structure, dimensions, spacing, colors, borders,
+  shadows, highlights, under-bars, text sizing, wrapping, and positions.
+- During export-only corrections, report any preview/export differences before
+  editing and confirm whether the preview should also change. Keep adjustments
+  scoped to the requested version and style.
+- New title styles must use the same palette-derived values and geometry in
+  preview and export wherever possible. Keep style-specific adjustments scoped
+  to that style only.

@@ -3363,6 +3363,33 @@
       height: 16px;
       accent-color: var(--card-accent-deep);
     }
+    .grid9-title-style-tools {
+      position: absolute;
+      top: -4px;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--card-muted);
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .grid9-title-style-button {
+      border: 1px solid color-mix(in srgb, var(--card-accent-deep) 28%, transparent);
+      border-radius: 999px;
+      padding: 4px 9px;
+      color: var(--card-muted);
+      background: rgba(255, 255, 255, .42);
+      font: inherit;
+      cursor: pointer;
+    }
+    .grid9-title-style-button:hover,
+    .grid9-title-style-button.is-selected {
+      color: var(--card-accent-deep);
+      border-color: color-mix(in srgb, var(--card-accent-deep) 52%, transparent);
+      background: rgba(255, 255, 255, .7);
+    }
     .grid9-kicker {
       color: var(--card-accent);
       font-size: 13px;
@@ -3375,40 +3402,45 @@
       display: inline-grid;
       place-items: center;
       max-width: 100%;
-      padding: 0 20px 10px;
+      padding: 0 22px 10px;
     }
     .grid9-marker {
       position: absolute;
-      left: 5%;
-      right: 5%;
-      bottom: 13px;
-      height: 16px;
+      left: 0;
+      right: 0;
+      bottom: 11px;
+      height: 18px;
       z-index: 0;
       border-radius: 999px;
       background: linear-gradient(
         90deg,
         color-mix(in srgb, var(--card-accent) 24%, transparent) 0%,
-        color-mix(in srgb, var(--card-accent) 18%, transparent) 58%,
-        color-mix(in srgb, var(--card-mint) 16%, transparent) 100%
+        color-mix(in srgb, var(--card-accent) 13%, transparent) 52%,
+        color-mix(in srgb, var(--card-accent-deep) 14%, transparent) 100%
       );
-      transform: rotate(-1deg);
-      filter: blur(0.15px);
+      transform: translateX(-8px) rotate(-0.6deg);
     }
     .grid9-title {
       position: relative;
       z-index: 2;
       grid-area: 1 / 1;
-      max-width: 840px;
+      max-width: 900px;
       min-height: 1.2em;
       color: var(--card-ink);
-      font-size: 49px;
-      font-weight: 900;
-      line-height: 1.2;
+      font-size: 64px;
+      font-weight: 950;
+      line-height: 1.12;
+      letter-spacing: 0.01em;
       text-align: center;
       outline: 0;
       cursor: text;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
+      -webkit-text-stroke: 4px rgba(255, 248, 251, 0.98);
+      paint-order: stroke fill;
+      text-shadow:
+        0 2px 0 rgba(255, 255, 255, 0.95),
+        0 7px 14px rgba(131, 82, 113, 0.16);
     }
     .grid9-title.is-empty {
       width: 100%;
@@ -3418,20 +3450,173 @@
       z-index: 1;
       grid-area: 1 / 1;
       color: color-mix(in srgb, var(--card-muted) 46%, transparent);
-      font-size: 49px;
-      font-weight: 900;
-      line-height: 1.2;
+      font-size: 64px;
+      font-weight: 950;
+      line-height: 1.12;
       white-space: nowrap;
       cursor: text;
+      -webkit-text-stroke: 4px rgba(255, 248, 251, 0.78);
+      paint-order: stroke fill;
     }
     .grid9-title:not(.is-empty) + .grid9-title-placeholder {
       display: none;
+    }
+    .grid9-card.grid9-title-offset .grid9-marker {
+      display: none;
+    }
+    .grid9-card.grid9-title-offset .grid9-title,
+    .grid9-card.grid9-title-offset .grid9-title-placeholder {
+      -webkit-text-stroke: 0;
+      paint-order: normal;
+      text-shadow:
+        -4px 7px 0 color-mix(in srgb, var(--card-accent-deep) 20%, transparent),
+        5px 5px 0 color-mix(in srgb, var(--card-accent) 40%, transparent),
+        0 5px 12px rgba(112, 76, 102, .1);
+    }
+    .grid9-card.grid9-title-chip .grid9-marker {
+      display: none;
+    }
+    .grid9-card.grid9-title-chip .grid9-title-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 930px;
+      height: 83px;
+      box-sizing: border-box;
+      padding: 0 36px;
+      border: 3px solid rgba(255, 255, 255, .96);
+      border-radius: 999px;
+      background: linear-gradient(90deg, color-mix(in srgb, var(--card-accent) 24%, white), color-mix(in srgb, var(--card-accent-deep) 20%, white));
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--card-accent) 34%, transparent), 0 10px 22px color-mix(in srgb, var(--card-accent-deep) 18%, transparent);
+    }
+    .grid9-card.grid9-title-chip .grid9-title-wrap::after {
+      content: "";
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      bottom: -7px;
+      height: 11px;
+      border-radius: 999px;
+      background: rgba(159, 201, 184, .18);
+      z-index: -1;
+    }
+    .grid9-card.grid9-title-chip .grid9-title,
+    .grid9-card.grid9-title-chip .grid9-title-placeholder {
+      font-size: 52px;
+      line-height: 1.16;
+      color: color-mix(in srgb, var(--card-ink) 82%, #5f465d);
+      -webkit-text-stroke: 0;
+      text-shadow: none;
+    }
+    .grid9-d-lines,
+    .grid9-e-wave {
+      display: none;
+    }
+    .grid9-card.grid9-title-split .grid9-marker,
+    .grid9-card.grid9-title-frost .grid9-marker {
+      display: none;
+    }
+    .grid9-card.grid9-title-split .grid9-title-wrap {
+      padding: 18px 24px 12px;
+    }
+    .grid9-card.grid9-title-split .grid9-title {
+      font-size: 58px;
+      line-height: 1.14;
+      background: linear-gradient(180deg, var(--card-ink) 0 48%, var(--card-accent) 48% 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-stroke: 2px rgba(255, 248, 251, .94);
+      paint-order: stroke fill;
+      text-shadow: 0 8px 14px color-mix(in srgb, var(--card-accent-deep) 8%, transparent);
+    }
+    .grid9-card.grid9-title-split .grid9-d-lines {
+      position: absolute;
+      inset: 0;
+      display: block;
+      pointer-events: none;
+    }
+    .grid9-card.grid9-title-split .grid9-d-lines .line {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      height: 1px;
+      background: linear-gradient(90deg, color-mix(in srgb, var(--card-accent) 58%, transparent), color-mix(in srgb, var(--card-accent-deep) 58%, transparent));
+    }
+    .grid9-card.grid9-title-split .grid9-d-lines .line.top { top: 0; }
+    .grid9-card.grid9-title-split .grid9-d-lines .line.bottom { bottom: 0; }
+    .grid9-card.grid9-title-split .grid9-d-lines .spark {
+      position: absolute;
+      left: 50%;
+      color: color-mix(in srgb, var(--card-accent) 76%, transparent);
+      font-size: 16px;
+      line-height: 1;
+      transform: translateX(-50%);
+    }
+    .grid9-card.grid9-title-split .grid9-d-lines .spark.top { top: -8px; }
+    .grid9-card.grid9-title-split .grid9-d-lines .spark.bottom { bottom: -8px; }
+    .grid9-card.grid9-title-frost .grid9-title-wrap {
+      padding: 0 20px 14px;
+    }
+    .grid9-card.grid9-title-frost .grid9-title {
+      font-size: 58px;
+      line-height: 1.14;
+      color: var(--card-ink);
+      -webkit-text-stroke: 5px rgba(255, 250, 252, .98);
+      paint-order: stroke fill;
+      text-shadow: 2px 3px 0 color-mix(in srgb, var(--card-accent) 50%, transparent), 4px 6px 0 color-mix(in srgb, var(--card-accent-deep) 18%, transparent), 0 10px 16px color-mix(in srgb, var(--card-accent-deep) 8%, transparent);
+    }
+    .grid9-card.grid9-title-frost .grid9-title-wrap::after {
+      content: "";
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      top: 54px;
+      height: 36px;
+      z-index: 0;
+      pointer-events: none;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--card-accent) 42%, transparent);
+      transform: skewX(-8deg) rotate(-2deg);
+    }
+    .grid9-card.grid9-title-frost .grid9-e-wave {
+      position: absolute;
+      left: 50%;
+      top: 54px;
+      display: block;
+      width: 90%;
+      height: 36px;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .grid9-card.grid9-title-frost .grid9-e-wave svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .grid9-card.grid9-title-frost .grid9-e-wave path {
+      fill: none;
+      stroke-linecap: round;
+    }
+    .grid9-card.grid9-title-frost .grid9-e-wave .wave-main {
+      stroke: color-mix(in srgb, var(--card-accent) 42%, transparent);
+      stroke-width: 16;
+    }
+    .grid9-card.grid9-title-frost .grid9-e-wave .wave-soft {
+      stroke: color-mix(in srgb, var(--card-accent-deep) 16%, transparent);
+      stroke-width: 10;
+    }
+    .grid9-card.grid9-title-chip .grid9-subtitle-box,
+    .grid9-card.grid9-title-chip .grid9-sparkles {
+      position: relative;
+      top: 3px;
     }
     .grid9-subtitle-box {
       position: relative;
       width: fit-content;
       max-width: 100%;
-      margin: 14px auto 0;
+      margin: 6px auto 0;
       min-height: 28px;
     }
     .grid9-subtitle {
@@ -3488,7 +3673,7 @@
       display: none;
     }
     .grid9-sparkles {
-      margin-top: 12px;
+      margin-top: 6px;
       color: color-mix(in srgb, var(--card-accent) 60%, transparent);
       font-size: 13px;
       letter-spacing: 1em;
@@ -3756,6 +3941,16 @@
       z-index: 3;
       display: flex;
       gap: 4px;
+      opacity: 0;
+      transform: translateY(3px);
+      pointer-events: none;
+      transition: opacity 0.14s ease, transform 0.14s ease;
+    }
+    .grid9-cover-box:hover .grid9-cover-tools,
+    .grid9-cover-box:focus-within .grid9-cover-tools {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
     }
     .grid9-cover-tool {
       min-height: 22px;
@@ -3811,6 +4006,11 @@
     }
 
     @media (max-width: 780px) {
+      .grid9-cover-tools {
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
+      }
       .grid9-external-tools {
         width: 100%;
         max-width: calc(100vw - 32px);
@@ -4028,6 +4228,8 @@
   width: auto;
   min-width: 44px;
   max-width: 154px;
+  flex: 0 0 auto;
+  margin-left: auto;
   height: 24px;
   border: 0;
   outline: 0;
@@ -4154,9 +4356,10 @@
   pointer-events: none;
 }
 
-/* external tools: exactly three buttons */
+/* external tools */
 .quick-external-tools {
-  width: min(100%, 1080px);
+  width: fit-content;
+  max-width: 100%;
   margin: 14px auto 0;
   justify-self: center;
   display: flex;
@@ -4169,7 +4372,10 @@
   display: none !important;
 }
 .quick-external-tools .tool-button {
+  width: 160px;
   min-width: 160px;
+  flex: 0 0 160px;
+  white-space: nowrap;
 }
 
 /* mobile: keep 2x6 scaled preview; tap BK toggles toolbar */

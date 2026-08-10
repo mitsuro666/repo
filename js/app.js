@@ -116,6 +116,7 @@
     });
     const grid9ShowNumbers = document.getElementById("grid9ShowNumbers");
     const grid9ShowRj = document.getElementById("grid9ShowRj");
+    const grid9TitleStyleButtons = Array.from(document.querySelectorAll("[data-title-style]"));
     const grid9Cells = document.getElementById("grid9Cells");
     const grid9ExternalTools = document.getElementById("grid9ExternalTools");
     const grid9ImportAllButton = document.getElementById("grid9ImportAllButton");
@@ -125,6 +126,29 @@
     const grid9ClearRepoButton = document.getElementById("grid9ClearRepoButton");
     let grid9CellEditors = [];
     let activeGrid9Index = -1;
+    let grid9TitleStyle = "cream";
+
+    function updateGrid9TitleStyle() {
+      const isOffset = grid9TitleStyle === "offset";
+      const isChip = grid9TitleStyle === "chip";
+      const isSplit = grid9TitleStyle === "split";
+      const isFrost = grid9TitleStyle === "frost";
+      grid9Card.classList.toggle("grid9-title-offset", isOffset);
+      grid9Card.classList.toggle("grid9-title-chip", isChip);
+      grid9Card.classList.toggle("grid9-title-split", isSplit);
+      grid9Card.classList.toggle("grid9-title-frost", isFrost);
+      grid9TitleStyleButtons.forEach((button) => {
+        const selected = button.dataset.titleStyle === grid9TitleStyle;
+        button.classList.toggle("is-selected", selected);
+        button.setAttribute("aria-pressed", String(selected));
+      });
+    }
+    grid9TitleStyleButtons.forEach((button) => button.addEventListener("click", () => {
+      grid9TitleStyle = ["offset", "chip", "split", "frost"].includes(button.dataset.titleStyle) ? button.dataset.titleStyle : "cream";
+      updateGrid9TitleStyle();
+      saveState();
+    }));
+    updateGrid9TitleStyle();
     const quickCard = document.getElementById("quickCard");
     const quickCells = document.getElementById("quickCells");
     const quickExternalTools = document.getElementById("quickExternalTools");
@@ -3422,6 +3446,83 @@
       return lines.length * lineHeight;
     }
 
+    function drawCenteredWrappedStrokedText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3) {
+      const lines = [];
+      const sourceLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+      for (const sourceLine of sourceLines) {
+        if (lines.length >= maxLines) break;
+        if (!sourceLine) {
+          lines.push("");
+          continue;
+        }
+        let line = "";
+        for (const char of Array.from(sourceLine)) {
+          const test = line + char;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            lines.push(line);
+            line = char;
+            if (lines.length >= maxLines) break;
+          } else {
+            line = test;
+          }
+        }
+        if (line && lines.length < maxLines) lines.push(line);
+      }
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.lineJoin = "round";
+      ctx.miterLimit = 2;
+      lines.forEach((item, index) => {
+        const tx = x + maxWidth / 2;
+        const ty = y + index * lineHeight;
+        ctx.shadowColor = "rgba(131,82,113,.16)";
+        ctx.shadowBlur = 14;
+        ctx.shadowOffsetY = 7;
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = "rgba(255,248,251,.98)";
+        ctx.strokeText(item, tx, ty);
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.fillStyle = "rgba(255,255,255,.95)";
+        ctx.fillText(item, tx, ty + 2);
+        ctx.fillStyle = currentCardTheme().ink;
+        ctx.fillText(item, tx, ty);
+      });
+      ctx.restore();
+      return lines.length * lineHeight;
+    }
+
+    function drawCenteredWrappedOffsetText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3) {
+      const lines = [];
+      const sourceLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+      for (const sourceLine of sourceLines) {
+        if (lines.length >= maxLines) break;
+        let line = "";
+        for (const char of Array.from(sourceLine)) {
+          const test = line + char;
+          if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = char; }
+          else line = test;
+          if (lines.length >= maxLines) break;
+        }
+        if (line && lines.length < maxLines) lines.push(line);
+      }
+      ctx.save();
+      ctx.textAlign = "center";
+      lines.forEach((item, index) => {
+        const tx = x + maxWidth / 2;
+        const ty = y + index * lineHeight;
+        ctx.fillStyle = themeAlpha("accentDeep", .2);
+        ctx.fillText(item, tx - 4, ty + 7);
+        ctx.fillStyle = themeAlpha("accent", .4);
+        ctx.fillText(item, tx + 5, ty + 5);
+        ctx.fillStyle = currentCardTheme().ink;
+        ctx.fillText(item, tx, ty);
+      });
+      ctx.restore();
+      return lines.length * lineHeight;
+    }
+
     function themeAlpha(key, alphaValue) {
       const theme = currentCardTheme();
       const hex = (theme[key] || "#000000").replace("#", "");
@@ -4130,6 +4231,7 @@
         subtitle: grid9SubtitleText.textContent.trim(),
         showNumbers: grid9ShowNumbers.checked,
         showRj: grid9ShowRj.checked,
+        titleStyle: grid9TitleStyle,
         cells: Array.from({ length: 9 }, (_, index) => readGrid9Cell(index))
       };
     }
@@ -4140,11 +4242,13 @@
       grid9SubtitleText.textContent = state.subtitle || "";
       grid9ShowNumbers.checked = state.showNumbers !== false;
       grid9ShowRj.checked = state.showRj !== false;
+      grid9TitleStyle = ["offset", "chip", "split", "frost"].includes(state.titleStyle) ? state.titleStyle : "cream";
       for (let index = 0; index < 9; index += 1) {
         writeGrid9Cell(index, (state.cells && state.cells[index]) || {});
       }
       updateGrid9EmptyClass();
       updateGrid9Toggles();
+      updateGrid9TitleStyle();
     }
 
     function resetGrid9State() {
@@ -4152,6 +4256,7 @@
       grid9SubtitleText.textContent = "";
       grid9ShowNumbers.checked = true;
       grid9ShowRj.checked = true;
+      grid9TitleStyle = "cream";
       grid9CellEditors.forEach((cell, index) => {
         applyGrid9Cover(index, "");
         cell.querySelector(".grid9-tag-input").value = "";
@@ -4160,6 +4265,7 @@
       });
       updateGrid9EmptyClass();
       updateGrid9Toggles();
+      updateGrid9TitleStyle();
       saveState();
     }
 
@@ -4367,6 +4473,27 @@
       return Math.max(1, lines);
     }
 
+    function grid9WrapLines(ctx, text, maxWidth, maxLines = 2) {
+      const lines = [];
+      const sourceLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+      for (const sourceLine of sourceLines) {
+        if (lines.length >= maxLines) break;
+        let line = "";
+        for (const char of Array.from(sourceLine)) {
+          const test = line + char;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            lines.push(line);
+            line = char;
+          } else {
+            line = test;
+          }
+          if (lines.length >= maxLines) break;
+        }
+        if (line && lines.length < maxLines) lines.push(line);
+      }
+      return lines;
+    }
+
     function drawLetterspacedCentered(ctx, text, cx, y, spacing) {
       const chars = Array.from(text);
       const widths = chars.map((char) => ctx.measureText(char).width);
@@ -4401,19 +4528,119 @@
 
     function drawGrid9TitleMarker(ctx, text, headerBottom) {
       const theme = currentCardTheme();
-      const width = Math.min(840, grid9MaxLineWidth(ctx, text, 840)) + 48;
-      const height = 16;
-      const top = headerBottom - 16;
+      const width = Math.min(900, grid9MaxLineWidth(ctx, text, 900)) + 44;
+      const height = 18;
+      const top = headerBottom - 11;
       ctx.save();
       ctx.translate(540, top + height / 2);
-      ctx.rotate(-1 * Math.PI / 180);
+      ctx.rotate(-0.6 * Math.PI / 180);
       const grad = ctx.createLinearGradient(-width / 2, 0, width / 2, 0);
       grad.addColorStop(0, themeAlpha("accent", .24));
-      grad.addColorStop(0.58, themeAlpha("accent", .18));
-      grad.addColorStop(1, themeAlpha("mint", .16));
+      grad.addColorStop(0.52, themeAlpha("accent", .13));
+      grad.addColorStop(1, themeAlpha("accentDeep", .14));
       ctx.fillStyle = grad;
       roundRect(ctx, -width / 2, -height / 2, width, height, height / 2);
       ctx.fill();
+      ctx.restore();
+    }
+
+    function drawGrid9TitleChip(ctx, text, x, y, maxWidth, lineHeight, lineCount = 1) {
+      const width = Math.min(930, grid9MaxLineWidth(ctx, text, maxWidth) + 72);
+      const height = lineCount * lineHeight + 18;
+      const left = x - width / 2;
+      const top = y - 58;
+      ctx.save();
+      ctx.fillStyle = themeAlpha("mint", .18);
+      roundRect(ctx, left + width * .08, top + height - 4, width * .84, 11, 6);
+      ctx.fill();
+      const grad = ctx.createLinearGradient(left, top, left + width, top);
+      grad.addColorStop(0, themeAlpha("accent", .24));
+      grad.addColorStop(1, themeAlpha("accentDeep", .2));
+      ctx.fillStyle = grad;
+      ctx.shadowColor = themeAlpha("accentDeep", .4);
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 12;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = themeAlpha("accent", .48);
+      roundRect(ctx, left - 2, top - 2, width + 4, height + 4, height / 2 + 2);
+      ctx.stroke();
+      roundRect(ctx, left, top, width, height, height / 2);
+      ctx.fill();
+      ctx.shadowColor = "transparent";
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(255,255,255,.96)";
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawGrid9TitleSplit(ctx, text, x, y, maxWidth, lineHeight, lineCount = 1) {
+      const theme = currentCardTheme();
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.lineJoin = "round";
+      ctx.font = canvasFont("950", 58);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "rgba(255,248,251,.94)";
+      const lines = grid9WrapLines(ctx, text, maxWidth, lineCount);
+      lines.forEach((line, index) => {
+        const tx = x + maxWidth / 2;
+        const ty = y + index * lineHeight;
+        ctx.strokeText(line, tx, ty);
+        const grad = ctx.createLinearGradient(0, ty - 58, 0, ty + 8);
+        grad.addColorStop(0, theme.ink);
+        grad.addColorStop(.48, theme.ink);
+        grad.addColorStop(.48, theme.accent);
+        grad.addColorStop(1, theme.accentDeep);
+        ctx.fillStyle = grad;
+        ctx.fillText(line, tx, ty);
+      });
+      const lineWidth = Math.min(760, maxWidth * .88);
+      ctx.strokeStyle = themeAlpha("accent", .58);
+      ctx.lineWidth = 1;
+      [y - 68, y + lineCount * lineHeight - 9].forEach((lineY) => {
+        ctx.beginPath();
+        ctx.moveTo(x + maxWidth / 2 - lineWidth / 2, lineY);
+        ctx.lineTo(x + maxWidth / 2 + lineWidth / 2, lineY);
+        ctx.stroke();
+      });
+      ctx.fillStyle = themeAlpha("accent", .76);
+      ctx.font = canvasFont("900", 16);
+      ctx.fillText(String.fromCharCode(0x2726), x + maxWidth / 2, y - 76);
+      ctx.fillText(String.fromCharCode(0x2726), x + maxWidth / 2, y + lineCount * lineHeight + 3);
+      ctx.restore();
+    }
+
+    function drawGrid9TitleFrost(ctx, text, x, y, maxWidth, lineHeight, lineCount = 1) {
+      const theme = currentCardTheme();
+      const lines = grid9WrapLines(ctx, text, maxWidth, lineCount);
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.font = canvasFont("950", 58);
+      ctx.lineJoin = "round";
+      lines.forEach((line, index) => {
+        const tx = x + maxWidth / 2;
+        const ty = y + index * lineHeight;
+        ctx.lineWidth = 10;
+        ctx.strokeStyle = "rgba(255,250,252,.98)";
+        ctx.shadowColor = themeAlpha("accentDeep", .08);
+        ctx.shadowBlur = 16;
+        ctx.shadowOffsetY = 10;
+        ctx.strokeText(line, tx, ty);
+        ctx.shadowColor = "transparent";
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = themeAlpha("accent", .5);
+        ctx.strokeText(line, tx + 2, ty + 3);
+        ctx.fillStyle = theme.ink;
+        ctx.fillText(line, tx, ty);
+      });
+      ctx.strokeStyle = themeAlpha("accent", .42);
+      ctx.lineWidth = 16;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(x + 18, y + 24);
+      ctx.bezierCurveTo(x + 130, y + 6, x + 220, y + 32, x + 330, y + 20);
+      ctx.bezierCurveTo(x + 450, y + 4, x + 560, y + 32, x + maxWidth - 18, y + 18);
+      ctx.stroke();
       ctx.restore();
     }
 
@@ -4439,16 +4666,31 @@
       ctx.fillStyle = themeAlpha("accent", .9);
       ctx.font = canvasFont('900', 13);
       drawLetterspacedCentered(ctx, UI_GRID9_KICKER, 540, 58, 4);
-      let headerBottom = 108;
+      const titleBaselineY = 129;
+      const titleLineHeight = 67;
+      let titleLineCount = 1;
       if (state.title) {
         ctx.fillStyle = theme.ink;
-        ctx.font = canvasFont('900', 49);
-        const lineCount = grid9MeasureLines(ctx, state.title, 840);
-        headerBottom = 108 + (lineCount - 1) * 60;
-        drawCenteredWrappedText(ctx, state.title, 120, 108, 840, 60, 2);
-        drawGrid9TitleMarker(ctx, state.title, headerBottom);
+        const titleFontSize = ["split", "frost"].includes(state.titleStyle) ? 58 : 64;
+        ctx.font = canvasFont('950', titleFontSize);
+        titleLineCount = grid9MeasureLines(ctx, state.title, 900);
+        const markerAnchorY = 136 + (titleLineCount - 1) * titleLineHeight;
+        if (state.titleStyle === "offset") {
+          drawCenteredWrappedOffsetText(ctx, state.title, 90, titleBaselineY, 900, titleLineHeight, 2);
+        } else if (state.titleStyle === "chip") {
+          ctx.font = canvasFont('950', 52);
+          drawGrid9TitleChip(ctx, state.title, 540, titleBaselineY, 900, 60, titleLineCount);
+          drawCenteredWrappedText(ctx, state.title, 90, titleBaselineY, 900, 60, 2);
+        } else if (state.titleStyle === "split") {
+          drawGrid9TitleSplit(ctx, state.title, 90, titleBaselineY, 900, 66, titleLineCount);
+        } else if (state.titleStyle === "frost") {
+          drawGrid9TitleFrost(ctx, state.title, 90, titleBaselineY, 900, 66, titleLineCount);
+        } else {
+          drawGrid9TitleMarker(ctx, state.title, markerAnchorY);
+          drawCenteredWrappedStrokedText(ctx, state.title, 90, titleBaselineY, 900, titleLineHeight, 2);
+        }
       }
-      const subtitleY = headerBottom + 58;
+      const subtitleY = 185 + (titleLineCount - 1) * titleLineHeight;
       if (state.subtitle) {
         ctx.fillStyle = theme.muted;
         ctx.font = canvasFont('800', 20);
@@ -4461,11 +4703,12 @@
       }
       ctx.fillStyle = themeAlpha("accent", .6);
       ctx.font = canvasFont('800', 13);
-      drawLetterspacedCentered(ctx, UI_GRID9_SPARKLES, 540, subtitleY + 24, 13);
+      const sparklesY = subtitleY + 28;
+      drawLetterspacedCentered(ctx, UI_GRID9_SPARKLES, 540, sparklesY, 13);
       ctx.restore();
 
       const gridLeft = 58;
-      const gridTop = subtitleY + 50;
+      const gridTop = sparklesY + 17;
       const gapX = 18;
       const gapY = 20;
       const cellWidth = (width - gridLeft * 2 - gapX * 2) / 3;
@@ -4948,7 +5191,8 @@
       const baseWidth = Math.ceil(ctx.measureText("RJ00000000").width);
       const text = input.value || "";
       const textWidth = text ? Math.ceil(ctx.measureText(text).width) : 0;
-      input.style.width = Math.max(baseWidth + 16, textWidth + 16) + "px";
+      // Keep the right edge fixed; the width grows toward the left for longer RJ numbers.
+      input.style.width = Math.max(baseWidth + 14, textWidth + 14) + "px";
     }
 
     async function waitQuickImagesReady() {
