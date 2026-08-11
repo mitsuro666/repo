@@ -66,6 +66,14 @@ deployed on GitHub Pages.
 ## Working preferences
 
 - When changing code, only run basic syntax/static checks (e.g. JS parse check). Do NOT run functional, visual, or end-to-end verification - no browser automation, no screenshot rendering, no click-through testing. The user verifies the actual effect themselves.
+- Follow the user's current instruction literally: change exactly the elements,
+  properties, and amounts they name, using the current state as the baseline.
+  Do not reinterpret the request through earlier edits, infer an unstated goal,
+  compensate for prior changes, or add related adjustments.
+- If any requested target, reference point, amount, or scope is uncertain, stop
+  and ask the user before editing. Never turn an assumption into a code change.
+- Any idea beyond the user's explicit instruction must be presented for
+  confirmation first and must not be implemented until the user approves it.
 - Treat the user's stated scope as a hard boundary. Change only the explicitly
   named view, template, version, module, element, or behavior. Never extend a
   local request to adjacent views or related features merely for consistency.
@@ -73,6 +81,34 @@ deployed on GitHub Pages.
   edit; ask the user to clarify first. Do not make unsolicited cleanup,
   refactors, visual adjustments, or behavior changes outside the confirmed
   scope.
+- For layout or position changes, edit each requested element or module
+  independently. Do not move a shared parent container when that would also
+  move elements the user did not name. Treat "other elements must not move" as
+  a requirement to preserve every unaffected element's existing positioning
+  rule and coordinates.
+- Make CSS patches with selector-level context. Never replace a common property
+  such as `transform`, `top`, `margin`, or `padding` by matching the property
+  value alone when the same declaration may occur in multiple selectors.
+- Before editing layout code, identify the exact selector and unique surrounding
+  block, then make one narrowly scoped patch against that block. The patch must
+  be unambiguous by construction; do not compensate for a broad or uncertain
+  edit with large post-edit searches or repeated verification passes.
+- Keep preview and canvas export positioning mapped per element: cover/BK,
+  title or CV row, divider/decorations, price/rating, and review/content must
+  each have an explicit counterpart. Do not use one aggregate offset to imitate
+  several independent requested movements.
+- If a reported visual result contradicts the intended change, inspect the
+  current selectors and computed coordinate formulas before applying another
+  offset. Do not guess a corrective distance from the screenshot alone.
+- When the actual cause of a reported issue is identified, explain the cause
+  and the evidence for it before editing, then fix that cause directly with the
+  smallest scoped change. Do not satisfy only the visible symptom by adding
+  duplicate text, pseudo-element content, compensating overlays, or other
+  workaround layers when the underlying element, encoding, layout rule, or
+  sizing behavior can be corrected directly.
+- Treat garbled terminal output as a possible decoding or display problem, not
+  proof that the source file is corrupted. Compare it with the browser result
+  and verify the file encoding or raw source before changing markup or text.
 - When adding a new button, match the existing buttons in the same module or
   action group: reuse their height, padding, border radius, border weight,
   typography, spacing, and interaction states. A semantic variant such as a

@@ -715,7 +715,10 @@
       const availableHeight = isMobileView()
         ? Math.max(360, mobileViewportHeight() - toolbarHeight - themeBarHeight - 38)
         : Number.POSITIVE_INFINITY;
-      const fullScale = Math.min(1, availableWidth / size.width, availableHeight / size.height);
+      const mobileDisplayScale = isMobileView() ? 1.03 : 1;
+      const fullScale = isMobileView()
+        ? Math.min(1, (availableWidth * mobileDisplayScale) / size.width)
+        : Math.min(1, availableWidth / size.width, availableHeight / size.height);
 
       stage.classList.toggle("is-focused", isMobileView() && Boolean(mobileFocusTarget) && currentTemplate() !== "compact");
 
@@ -739,7 +742,7 @@
       stage.classList.remove("is-focused");
       const centerX = Math.max(0, (availableWidth - size.width * fullScale) / 2);
       activeCard.style.transform = "translateX(" + Math.round(centerX) + "px) scale(" + fullScale + ")";
-      stage.style.height = (size.height * fullScale + (isMobileView() ? 0 : 16)) + "px";
+      stage.style.height = (size.height * fullScale + (isMobileView() ? 24 : 16)) + "px";
       stage.scrollLeft = 0;
       stage.scrollTop = 0;
       mobileFocusBack.classList.add("hidden");
@@ -5627,7 +5630,7 @@
       ctx.font = canvasFont('900', 18);
       ctx.fillText(cell.cv || "", contentX + cvLabelWidth + 8, cvBaseline + 7);
 
-      const dividerY = bodyTop + 45.9;
+      const dividerY = bodyTop + 37.9;
       ctx.save();
       ctx.strokeStyle = themeAlpha("accent", .33);
       ctx.lineWidth = 1;
@@ -5639,16 +5642,16 @@
       ctx.setLineDash([]);
       ctx.restore();
 
-      const wrapTop = bodyTop + 46.2;
+      const wrapTop = bodyTop + 30.2;
       const wrapHeight = bodyTop + bodyHeight - wrapTop;
       ctx.fillStyle = themeAlpha("accent", .22);
-      ctx.fillRect(contentX, wrapTop + 14.4, 3, 105);
+      ctx.fillRect(contentX, wrapTop + 14.4, 3, 126);
       ctx.fillStyle = themeAlpha("accentDeep", .48);
       ctx.font = canvasFont('900', 13);
       ctx.fillText(String.fromCharCode(0x2661), contentX + 5, wrapTop + 26.4);
       ctx.fillStyle = themeAlpha("ink", .9);
       ctx.font = canvasFont('700', 20);
-      drawWrappedText(ctx, cell.review || "", contentX + 18, wrapTop + 29.4, contentWidth - 25, 25, 4);
+      drawWrappedText(ctx, cell.review || "", contentX + 18, wrapTop + 29.4, contentWidth - 25, 21, 6);
     }
 
     quickShowRjButton.addEventListener("click", () => {
@@ -6293,10 +6296,10 @@
       const infoTop = coverY;
       const infoBottom = y + h - 13 - 30;
       const row1Baseline = infoTop + 22;
-      const dividerY = infoTop + 36;
-      const summaryTop = dividerY + 30;
+      const dividerY = infoTop + 16;
+      const summaryTop = dividerY + 39;
       const summaryH = 46;
-      const repoTop = summaryTop + summaryH + 30;
+      const repoTop = infoTop + 140;
       const repoBottom = infoBottom;
 
       ctx.textAlign = "left";
@@ -6318,12 +6321,10 @@
       ctx.save();
       ctx.strokeStyle = themeAlpha("accent", .3);
       ctx.lineWidth = 1;
-      ctx.setLineDash([3, 4]);
       ctx.beginPath();
       ctx.moveTo(infoX, dividerY + 0.5);
       ctx.lineTo(infoX + infoW - 20, dividerY + 0.5);
       ctx.stroke();
-      ctx.setLineDash([]);
       ctx.restore();
 
       const summaryX = infoX;
@@ -6388,7 +6389,7 @@
       ctx.fillText("\u2661", repoLeftX + 6, repoTop + 18);
       ctx.fillStyle = themeAlpha("ink", .9);
       ctx.font = canvasFont('600', 20);
-      drawWrappedText(ctx, cell.repo || "", repoTextX, repoTop + 18, infoW - 22 - 20, 31, 6);
+      drawWrappedText(ctx, cell.repo || "", repoTextX, repoTop + 18, infoW - 22 - 20, 31, 7);
     }
 
     trioImportAllButton?.addEventListener("click", importAllTrioCells);

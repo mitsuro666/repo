@@ -3062,6 +3062,10 @@
     }
 
     @media (max-width: 780px) {
+      .site-header {
+        display: none;
+      }
+
       .image-edit-modal {
         place-items: start center;
         padding: 10px 8px calc(96px + env(safe-area-inset-bottom));
@@ -3346,6 +3350,17 @@
         font-size: 14px;
         font-weight: 900;
       }
+      #mobileSaveToCollectionButton {
+        justify-content: flex-start;
+        text-align: left;
+      }
+      #mobileSaveToCollectionButton > span:first-child {
+        width: 18px;
+        flex: 0 0 18px;
+        font-size: 18px;
+        line-height: 1;
+        text-align: center;
+      }
       .menu-secondary-row {
         width: calc(100% - 20px);
         min-width: 0;
@@ -3450,7 +3465,8 @@
         display: contents;
       }
       #importDataButton,
-      #exportDataButton { display: none !important; }
+      #exportDataButton,
+      #saveToCollectionButton { display: none !important; }
       #resetButton { order: 1; }
       #downloadButton { order: 1; }
       #importDataInput { order: 5; }
@@ -4565,7 +4581,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 45.9px;
+  top: 37.9px;
   border-top: 1px dashed color-mix(in srgb, var(--card-accent) 33%, transparent);
   pointer-events: none;
 }
@@ -4573,6 +4589,7 @@
 /* repo: light note style with left line + heart, no bottom line */
 .quick-review-wrap {
   position: relative;
+  top: -16px;
   min-height: 0;
   padding: 14.4px 7px 2px 18px;
 }
@@ -4592,7 +4609,7 @@
   left: 0;
   top: 14.4px;
   width: 3px;
-  height: 105px;
+  height: 126px;
   background: color-mix(in srgb, var(--card-accent) 22%, transparent);
   pointer-events: none;
 }
@@ -4600,7 +4617,7 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  height: 105px;
+  height: 126px;
   resize: none;
   overflow: hidden;
   border: 0;
@@ -4609,7 +4626,7 @@
   color: var(--card-ink);
   background: transparent;
   font-size: 20px;
-  line-height: 1.2;
+  line-height: 1.05;
   font-weight: 700;
   display: block;
 }
@@ -4925,7 +4942,9 @@
 .trio-top-divider {
   grid-column: 1 / -1;
   margin-right: 20px;
-  border-top: 1px dashed color-mix(in srgb, var(--card-accent) 30%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--card-accent) 30%, transparent);
+  position: relative;
+  top: -20px;
 }
 
 /* price + rating summary strip */
@@ -4943,6 +4962,7 @@
     color-mix(in srgb, var(--card-accent) 7%, transparent),
     color-mix(in srgb, var(--card-mint) 7%, transparent)
   );
+  transform: translateY(-11px);
 }
 .trio-price-block,
 .trio-rating-block {
@@ -5025,6 +5045,7 @@
   min-height: 0;
   margin-right: 10px;
   padding: 0 10px 0 22px;
+  transform: translateY(-2px);
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--card-accent) 15%, transparent) 0 3px,
@@ -5043,7 +5064,7 @@
 }
 .trio-repo-input {
   width: 100%;
-  height: 190px;
+  height: 217px;
   resize: none;
   overflow: hidden;
   border: 0;
