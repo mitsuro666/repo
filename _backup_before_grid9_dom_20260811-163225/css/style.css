@@ -3796,8 +3796,6 @@
     .grid9-card.grid9-title-split .grid9-title {
       font-size: 58px;
       line-height: 1.14;
-    }
-    .grid9-card.grid9-title-split #grid9TitleText {
       background: linear-gradient(180deg, var(--card-ink) 0 48%, var(--card-accent) 48% 100%);
       -webkit-background-clip: text;
       background-clip: text;
@@ -3810,7 +3808,6 @@
     .grid9-card.grid9-title-split .grid9-d-lines {
       position: absolute;
       inset: 0;
-      z-index: 4;
       display: block;
       pointer-events: none;
     }
@@ -3852,12 +3849,25 @@
       paint-order: stroke fill;
       text-shadow: 2px 3px 0 color-mix(in srgb, var(--card-accent) 50%, transparent), 4px 6px 0 color-mix(in srgb, var(--card-accent-deep) 18%, transparent), 0 10px 16px color-mix(in srgb, var(--card-accent-deep) 8%, transparent);
     }
+    .grid9-card.grid9-title-frost .grid9-title-wrap::after {
+      content: "";
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      top: 54px;
+      height: 36px;
+      z-index: 0;
+      pointer-events: none;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--card-accent) 42%, transparent);
+      transform: skewX(-8deg) rotate(-2deg);
+    }
     .grid9-card.grid9-title-frost .grid9-e-wave {
       position: absolute;
       left: 50%;
       top: 54px;
       display: block;
-      width: min(90%, 760px);
+      width: 90%;
       height: 36px;
       transform: translateX(-50%);
       pointer-events: none;
@@ -4146,61 +4156,6 @@
       letter-spacing: 0.14em;
       font-weight: 800;
       pointer-events: none;
-    }
-    .grid9-card.is-exporting {
-      transform: none !important;
-      transition: none !important;
-      user-select: none;
-    }
-    .grid9-card.is-exporting *,
-    .grid9-card.is-exporting *::before,
-    .grid9-card.is-exporting *::after {
-      animation: none !important;
-      transition: none !important;
-      caret-color: transparent !important;
-    }
-    .grid9-card.is-exporting .grid9-title-placeholder,
-    .grid9-card.is-exporting .grid9-subtitle-placeholder {
-      display: none !important;
-    }
-    .grid9-card.is-exporting .grid9-title,
-    .grid9-card.is-exporting .grid9-subtitle,
-    .grid9-card.is-exporting .grid9-cover-box {
-      cursor: default;
-    }
-    .grid9-card.is-exporting:not(.grid9-title-split) .grid9-title {
-      -webkit-text-fill-color: currentColor;
-    }
-    .grid9-card.is-exporting .grid9-cover-box:hover {
-      transform: none;
-    }
-    .grid9-card.is-exporting .grid9-export-static-tag {
-      display: grid;
-      place-items: center;
-      line-height: 1;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-    .grid9-card.is-exporting .grid9-export-static-tag.is-empty {
-      color: transparent;
-      background: transparent;
-      box-shadow: none;
-    }
-    .grid9-card.is-exporting .grid9-export-static-rj {
-      display: grid;
-      place-items: center;
-      line-height: 1;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-    .grid9-card.is-exporting .grid9-export-static-rj.is-empty,
-    .grid9-card.is-exporting.hide-rj .grid9-export-static-rj {
-      display: none;
-    }
-    .grid9-card.is-exporting .grid9-export-static-review {
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      word-break: break-word;
     }
     .grid9-external-tools {
       width: min(100%, 1080px);

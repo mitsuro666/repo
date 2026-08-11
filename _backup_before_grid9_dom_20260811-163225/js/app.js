@@ -196,19 +196,10 @@
     let trioCellEditors = [];
     let activeTrioIndex = -1;
     const STORAGE_KEY = "otome-record-card-v1";
-    const STATE_STORAGE_MODE_KEY = "otome-record-card-storage-mode-v1";
-    const STATE_STORAGE_MODE_INDEXED_DB = "indexeddb";
-    const STATE_DB_NAME = "otome-record-card-state-v1";
-    const STATE_DB_VERSION = 1;
-    const STATE_DB_STORE = "state";
-    const STATE_DB_KEY = "current";
     const MENU_STORAGE_KEY = "otome-record-card-active-menu";
     const MAIN_PAGE_STORAGE_KEY = "otome-record-card-main-page";
     const DLSITE_PROXY_URL = "https://dlsite-rj-import.shuiyingsheng.workers.dev/";
     const DEFAULT_THEME_ID = "matcha-berry-cheese";
-    let stateRestoreComplete = false;
-    let stateUsesIndexedDb = localStorage.getItem(STATE_STORAGE_MODE_KEY) === STATE_STORAGE_MODE_INDEXED_DB;
-    let stateSaveQueue = Promise.resolve(true);
     const CARD_THEMES = {
       "matcha-berry-cheese": {
         id: "matcha-berry-cheese",
@@ -3133,107 +3124,16 @@
       };
     }
 
-    function openStateDatabase() {
-      return new Promise((resolve, reject) => {
-        if (!window.indexedDB) {
-          reject(new Error("IndexedDB is unavailable"));
-          return;
-        }
-        const request = indexedDB.open(STATE_DB_NAME, STATE_DB_VERSION);
-        request.onupgradeneeded = () => {
-          const db = request.result;
-          if (!db.objectStoreNames.contains(STATE_DB_STORE)) db.createObjectStore(STATE_DB_STORE);
-        };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error || new Error("IndexedDB open failed"));
-        request.onblocked = () => reject(new Error("IndexedDB open blocked"));
-      });
-    }
-
-    async function writeStateToIndexedDb(state) {
-      const db = await openStateDatabase();
+    function saveState() {
       try {
-        await new Promise((resolve, reject) => {
-          const transaction = db.transaction(STATE_DB_STORE, "readwrite");
-          transaction.objectStore(STATE_DB_STORE).put(state, STATE_DB_KEY);
-          transaction.oncomplete = () => resolve();
-          transaction.onerror = () => reject(transaction.error || new Error("IndexedDB write failed"));
-          transaction.onabort = () => reject(transaction.error || new Error("IndexedDB write aborted"));
-        });
-      } finally {
-        db.close();
-      }
-    }
-
-    async function readStateFromIndexedDb() {
-      const db = await openStateDatabase();
-      try {
-        return await new Promise((resolve, reject) => {
-          const transaction = db.transaction(STATE_DB_STORE, "readonly");
-          const request = transaction.objectStore(STATE_DB_STORE).get(STATE_DB_KEY);
-          request.onsuccess = () => resolve(request.result || null);
-          request.onerror = () => reject(request.error || new Error("IndexedDB read failed"));
-        });
-      } finally {
-        db.close();
-      }
-    }
-
-    function isStorageQuotaError(error) {
-      return Boolean(error && (error.name === "QuotaExceededError" || /quota/i.test(String((error && error.message) || error))));
-    }
-
-    async function persistState(state) {
-      if (stateUsesIndexedDb) {
-        try {
-          await writeStateToIndexedDb(state);
-          return true;
-        } catch (error) {
-          console.warn("IndexedDB state save failed", error);
-          if (!storageFullWarned) {
-            storageFullWarned = true;
-            alert(UI_STORAGE_FULL);
-          }
-          return false;
-        }
-      }
-
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        return true;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
       } catch (error) {
-        if (!isStorageQuotaError(error)) {
-          console.warn("save failed", error);
-          return false;
-        }
-        console.warn("Local storage quota exceeded, switching state storage to IndexedDB", error);
-      }
-
-      try {
-        await writeStateToIndexedDb(state);
-        stateUsesIndexedDb = true;
-        localStorage.removeItem(STORAGE_KEY);
-        try {
-          localStorage.setItem(STATE_STORAGE_MODE_KEY, STATE_STORAGE_MODE_INDEXED_DB);
-        } catch (markerError) {
-          console.warn("IndexedDB state marker save failed", markerError);
-        }
-        return true;
-      } catch (error) {
-        console.warn("IndexedDB fallback save failed", error);
-        if (!storageFullWarned) {
+        console.warn("save failed", error);
+        if (!storageFullWarned && error && (error.name === "QuotaExceededError" || /quota/i.test(String((error && error.message) || error)))) {
           storageFullWarned = true;
           alert(UI_STORAGE_FULL);
         }
-        return false;
       }
-    }
-
-    function saveState() {
-      if (!stateRestoreComplete) return Promise.resolve(false);
-      const state = collectState();
-      stateSaveQueue = stateSaveQueue.catch(() => false).then(() => persistState(state));
-      return stateSaveQueue;
     }
 
     function renderTags(savedTags) {
@@ -3302,33 +3202,14 @@
       return true;
     }
 
-    async function restoreState() {
+    function restoreState() {
       let state;
-      if (!stateUsesIndexedDb) {
-        try {
-          state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-        } catch {
-          state = null;
-        }
-      }
-      if (!state) {
-        try {
-          const indexedState = await readStateFromIndexedDb();
-          if (indexedState && typeof indexedState === "object") {
-            state = indexedState;
-            stateUsesIndexedDb = true;
-            try {
-              localStorage.setItem(STATE_STORAGE_MODE_KEY, STATE_STORAGE_MODE_INDEXED_DB);
-            } catch (markerError) {
-              console.warn("IndexedDB state marker restore failed", markerError);
-            }
-          }
-        } catch (error) {
-          console.warn("IndexedDB state restore failed", error);
-        }
+      try {
+        state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      } catch {
+        state = null;
       }
       if (!applyState(state, false)) applyCardTheme(DEFAULT_THEME_ID, false);
-      stateRestoreComplete = true;
     }
 
     function scheduleSave() {
@@ -4085,12 +3966,11 @@
     function importRecordData(file) {
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = async () => {
+      reader.onload = () => {
         try {
           const data = normalizeImportedData(JSON.parse(String(reader.result || "")));
           if (!data) throw new Error("empty data");
-          if (!applyState(data, false)) throw new Error("invalid data");
-          if (!await saveState()) throw new Error("state persistence failed");
+          if (!applyState(data, true)) throw new Error("invalid data");
         } catch (error) {
           console.error(error);
           alert(UI_IMPORT_DATA_FAILED);
@@ -4333,7 +4213,6 @@
         box.className = "grid9-cover-box";
         const input = document.createElement("input");
         input.className = "grid9-cover-input";
-        input.dataset.editorOnly = "";
         input.type = "file";
         input.accept = "image/*";
         const img = document.createElement("img");
@@ -4355,7 +4234,6 @@
         fitGrid9RjWidth(rjInput);
         const tools = document.createElement("div");
         tools.className = "grid9-cover-tools";
-        tools.dataset.editorOnly = "";
         const toolDefs = [
           { action: "contain", label: UI_GRID9_CONTAIN },
           { action: "cover", label: UI_GRID9_COVER },
@@ -4476,8 +4354,8 @@
 
     function applyGrid9State(state) {
       if (!state || typeof state !== "object") return;
-      grid9TitleText.textContent = state.title ?? localStorage.getItem(GRID9_TITLE_TEXT_STORAGE_KEY) ?? "";
-      grid9SubtitleText.textContent = state.subtitle ?? localStorage.getItem(GRID9_SUBTITLE_TEXT_STORAGE_KEY) ?? "";
+      grid9TitleText.textContent = localStorage.getItem(GRID9_TITLE_TEXT_STORAGE_KEY) ?? state.title ?? "";
+      grid9SubtitleText.textContent = localStorage.getItem(GRID9_SUBTITLE_TEXT_STORAGE_KEY) ?? state.subtitle ?? "";
       limitGrid9Text(grid9TitleText, 15);
       limitGrid9Text(grid9SubtitleText, 34);
       localStorage.setItem(GRID9_TITLE_TEXT_STORAGE_KEY, grid9TitleText.textContent.trim());
@@ -4708,170 +4586,7 @@
       return ["otome", "grid9", safeFilePart(currentThemeId, DEFAULT_THEME_ID)].join("_") + ".png";
     }
 
-    let grid9ExportCssPromise = null;
-    let grid9ExportFontDataUrlPromise = null;
-
-    function collectGrid9ExportCss() {
-      const blocks = [];
-      Array.from(document.styleSheets).forEach((sheet) => {
-        let rules;
-        try {
-          rules = sheet.cssRules;
-        } catch (error) {
-          throw new Error("Grid9 export cannot read stylesheet: " + (sheet.href || "inline"));
-        }
-        Array.from(rules || []).forEach((rule) => {
-          if (rule.type === CSSRule.FONT_FACE_RULE) return;
-          blocks.push(rule.cssText);
-        });
-      });
-      const cssText = blocks.join("\n");
-      if (!cssText.includes(".grid9-card")) throw new Error("Grid9 export stylesheet is missing");
-      return cssText;
-    }
-
-    async function grid9ExportFontDataUrl() {
-      if (!grid9ExportFontDataUrlPromise) {
-        grid9ExportFontDataUrlPromise = (async () => {
-          const fontUrl = new URL("font/BlackSugarPlumCandy-Bold.ttf", document.baseURI);
-          const response = await fetch(fontUrl.href, { credentials: "same-origin" });
-          if (!response.ok) throw new Error("Grid9 export font HTTP " + response.status);
-          return blobToDataUrl(await response.blob());
-        })();
-      }
-      return grid9ExportFontDataUrlPromise;
-    }
-
-    async function grid9ExportCss() {
-      if (!grid9ExportCssPromise) {
-        grid9ExportCssPromise = (async () => {
-          const cssText = collectGrid9ExportCss();
-          const fontDataUrl = await grid9ExportFontDataUrl();
-          return cssText + "\n" +
-            '@font-face{font-family:"' + CANVAS_FONT + '";src:url("' + fontDataUrl + '") format("truetype");font-weight:400 900;font-style:normal;font-display:block;}' +
-            '.grid9-export-host,.grid9-export-host *{font-family:"' + CANVAS_FONT + '",' + CANVAS_FALLBACK + ';}';
-        })();
-      }
-      return grid9ExportCssPromise;
-    }
-
-    function replaceGrid9ExportControl(sourceRoot, cloneRoot, selector, exportClass) {
-      const sourceNodes = Array.from(sourceRoot.querySelectorAll(selector));
-      const cloneNodes = Array.from(cloneRoot.querySelectorAll(selector));
-      cloneNodes.forEach((cloneNode, index) => {
-        const sourceNode = sourceNodes[index];
-        const replacement = document.createElement("div");
-        const value = sourceNode && "value" in sourceNode ? String(sourceNode.value || "") : "";
-        replacement.className = cloneNode.className + " " + exportClass;
-        replacement.style.cssText = cloneNode.style.cssText;
-        replacement.textContent = value;
-        if (!value) replacement.classList.add("is-empty");
-        cloneNode.replaceWith(replacement);
-      });
-    }
-
-    async function localizeGrid9SnapshotImages(sourceRoot, cloneRoot) {
-      const sourceImages = Array.from(sourceRoot.querySelectorAll("img"));
-      const cloneImages = Array.from(cloneRoot.querySelectorAll("img"));
-      const tasks = cloneImages.map(async (cloneImage, index) => {
-        const sourceImage = sourceImages[index];
-        const src = sourceImage ? sourceImage.getAttribute("src") : cloneImage.getAttribute("src");
-        if (!src) {
-          cloneImage.removeAttribute("src");
-          return;
-        }
-        const localSrc = await localizeImageToPngDataUrl(src);
-        cloneImage.setAttribute("src", localSrc);
-        await loadImage(localSrc);
-      });
-      await Promise.all(tasks);
-    }
-
-    async function createGrid9ExportSnapshot() {
-      const host = document.createElement("div");
-      host.className = "grid9-export-host";
-      host.setAttribute("aria-hidden", "true");
-      host.style.cssText = "position:fixed;left:-20000px;top:0;width:1080px;height:1440px;overflow:hidden;pointer-events:none;z-index:-1;";
-
-      const clone = grid9Card.cloneNode(true);
-      clone.removeAttribute("hidden");
-      clone.classList.add("is-exporting");
-      clone.style.setProperty("width", "1080px");
-      clone.style.setProperty("height", "1440px");
-      clone.style.setProperty("transform", "none", "important");
-      clone.style.setProperty("transition", "none", "important");
-      clone.querySelectorAll("[data-editor-only]").forEach((node) => node.remove());
-      clone.querySelectorAll("[contenteditable]").forEach((node) => node.removeAttribute("contenteditable"));
-      replaceGrid9ExportControl(grid9Card, clone, ".grid9-tag-input", "grid9-export-static-tag");
-      replaceGrid9ExportControl(grid9Card, clone, ".grid9-cell-rj-input", "grid9-export-static-rj");
-      replaceGrid9ExportControl(grid9Card, clone, ".grid9-review-input", "grid9-export-static-review");
-      await localizeGrid9SnapshotImages(grid9Card, clone);
-
-      host.appendChild(clone);
-      document.body.appendChild(host);
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      return { host, clone };
-    }
-
-    async function grid9SnapshotCanvas(snapshot) {
-      const svgNamespace = "http://www.w3.org/2000/svg";
-      const svg = document.createElementNS(svgNamespace, "svg");
-      svg.setAttribute("xmlns", svgNamespace);
-      svg.setAttribute("width", "1080");
-      svg.setAttribute("height", "1440");
-      svg.setAttribute("viewBox", "0 0 1080 1440");
-
-      const foreignObject = document.createElementNS(svgNamespace, "foreignObject");
-      foreignObject.setAttribute("x", "0");
-      foreignObject.setAttribute("y", "0");
-      foreignObject.setAttribute("width", "1080");
-      foreignObject.setAttribute("height", "1440");
-
-      const wrapper = document.createElement("div");
-      wrapper.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-      wrapper.className = "grid9-export-host";
-      wrapper.style.cssText = "width:1080px;height:1440px;margin:0;padding:0;overflow:hidden;";
-      const rootStyle = getComputedStyle(document.documentElement);
-      ["--ink", "--muted", "--rose", "--rose-deep", "--cream", "--mint", "--gold", "--shadow"].forEach((name) => {
-        const value = rootStyle.getPropertyValue(name);
-        if (value) wrapper.style.setProperty(name, value.trim());
-      });
-      const style = document.createElement("style");
-      style.textContent = await grid9ExportCss();
-      wrapper.append(style, snapshot.cloneNode(true));
-      foreignObject.appendChild(wrapper);
-      svg.appendChild(foreignObject);
-
-      const svgText = new XMLSerializer().serializeToString(svg);
-      const svgUrl = await blobToDataUrl(new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }));
-      const image = await loadImage(svgUrl);
-      const canvas = document.createElement("canvas");
-      canvas.width = 1080;
-      canvas.height = 1440;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Grid9 export canvas context is unavailable");
-      ctx.drawImage(image, 0, 0, 1080, 1440);
-      if (ctx.getImageData(540, 720, 1, 1).data[3] === 0) {
-        throw new Error("Grid9 DOM export rendered a blank image");
-      }
-      return canvas;
-    }
-
-    async function createGrid9DomExportBlob() {
-      await ensureCanvasFontReady();
-      await waitGrid9ImagesReady();
-      const snapshot = await createGrid9ExportSnapshot();
-      try {
-        const canvas = await grid9SnapshotCanvas(snapshot.clone);
-        const blob = await canvasToBlob(canvas);
-        if (!blob || blob.size < 1024) throw new Error("Grid9 DOM export returned an empty image");
-        return blob;
-      } finally {
-        snapshot.host.remove();
-      }
-    }
-
-    async function downloadGrid9CardLegacy() {
+    async function downloadGrid9Card() {
       await ensureCanvasFontReady();
       try {
         await waitGrid9ImagesReady();
@@ -4883,19 +4598,6 @@
       canvas.height = 1440;
       drawGrid9Card(canvas.getContext("2d"));
       handleExportBlob(await canvasToBlob(canvas), grid9ExportFileName());
-    }
-
-    async function downloadGrid9Card() {
-      if (isMobileView() || grid9TitleStyle === "split") {
-        await downloadGrid9CardLegacy();
-        return;
-      }
-      try {
-        handleExportBlob(await createGrid9DomExportBlob(), grid9ExportFileName());
-      } catch (error) {
-        console.warn("Grid9 DOM export failed, using legacy canvas export", error);
-        await downloadGrid9CardLegacy();
-      }
     }
 
     function grid9MeasureLines(ctx, text, maxWidth) {
@@ -7066,18 +6768,10 @@
     bindQuickMobileFocus();
     buildTrioCells();
     bindTrioMobileFocus();
-    void restoreState().then(() => {
-      void migrateGrid9CoversToCompact();
-      void migrateQuickCoversToCompact();
-      void migrateTrioCoversToCompact();
-      fitStage();
-      updateDiscount();
-      syncDiscountColor();
-    }).catch((error) => {
-      stateRestoreComplete = true;
-      console.error("State restore failed", error);
-      applyCardTheme(DEFAULT_THEME_ID, false);
-    });
+    restoreState();
+    void migrateGrid9CoversToCompact();
+    void migrateQuickCoversToCompact();
+    void migrateTrioCoversToCompact();
     restoreActiveMenu();
     restoreMainPage();
     scrollActivePickerIntoView();
