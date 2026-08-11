@@ -757,17 +757,6 @@
       mobileFocusBack.classList.add("hidden");
     }
 
-    function clearMobileFocus() {
-      mobileFocusTarget = null;
-      fitStage();
-    }
-
-    function focusMobileArea(area) {
-      if (!isMobileView() || currentTemplate() === "compact") return;
-      mobileFocusTarget = area;
-      fitStage();
-    }
-
     function openReviewEditor() {
       if (!isMobileView()) return;
       reviewEditArea.value = document.getElementById("reviewText").value || "";
@@ -4886,16 +4875,7 @@
     }
 
     async function downloadGrid9Card() {
-      if (isMobileView() || grid9TitleStyle === "split") {
-        await downloadGrid9CardLegacy();
-        return;
-      }
-      try {
-        handleExportBlob(await createGrid9DomExportBlob(), grid9ExportFileName());
-      } catch (error) {
-        console.warn("Grid9 DOM export failed, using legacy canvas export", error);
-        await downloadGrid9CardLegacy();
-      }
+      await downloadGrid9CardLegacy();
     }
 
     function grid9MeasureLines(ctx, text, maxWidth) {
@@ -5086,6 +5066,35 @@
       ctx.textAlign = "center";
       ctx.font = canvasFont("950", 58);
       ctx.lineJoin = "round";
+      const titleWrapWidth = Math.min(maxWidth + 40, grid9MaxLineWidth(ctx, text, maxWidth) + 40);
+      const waveWidth = Math.min(titleWrapWidth * .9, 760);
+      const waveScaleX = waveWidth / 760;
+      const waveLeft = x + maxWidth / 2 - waveWidth / 2;
+      const waveTop = y - 8;
+      const waveX = (value) => waveLeft + value * waveScaleX;
+      const waveY = (value) => waveTop + value;
+
+      ctx.lineCap = "round";
+      ctx.strokeStyle = themeAlpha("accent", .42);
+      ctx.lineWidth = 16;
+      ctx.beginPath();
+      ctx.moveTo(waveX(8), waveY(22));
+      ctx.bezierCurveTo(waveX(72), waveY(4), waveX(142), waveY(31), waveX(212), waveY(18));
+      ctx.bezierCurveTo(waveX(282), waveY(5), waveX(354), waveY(2), waveX(425), waveY(18));
+      ctx.bezierCurveTo(waveX(496), waveY(34), waveX(568), waveY(31), waveX(648), waveY(16));
+      ctx.bezierCurveTo(waveX(728), waveY(1), waveX(726), waveY(10), waveX(752), waveY(18));
+      ctx.stroke();
+
+      ctx.strokeStyle = themeAlpha("accentDeep", .16);
+      ctx.lineWidth = 10;
+      ctx.beginPath();
+      ctx.moveTo(waveX(40), waveY(19));
+      ctx.bezierCurveTo(waveX(97), waveY(10), waveX(156), waveY(28), waveX(220), waveY(18));
+      ctx.bezierCurveTo(waveX(284), waveY(8), waveX(362), waveY(8), waveX(437), waveY(20));
+      ctx.bezierCurveTo(waveX(512), waveY(32), waveX(568), waveY(28), waveX(649), waveY(18));
+      ctx.bezierCurveTo(waveX(730), waveY(8), waveX(723), waveY(11), waveX(748), waveY(16));
+      ctx.stroke();
+
       lines.forEach((line, index) => {
         const tx = x + maxWidth / 2;
         const ty = y + index * lineHeight;
@@ -5102,14 +5111,6 @@
         ctx.fillStyle = theme.ink;
         ctx.fillText(line, tx, ty);
       });
-      ctx.strokeStyle = themeAlpha("accent", .42);
-      ctx.lineWidth = 16;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(x + 18, y + 24);
-      ctx.bezierCurveTo(x + 130, y + 6, x + 220, y + 32, x + 330, y + 20);
-      ctx.bezierCurveTo(x + 450, y + 4, x + 560, y + 32, x + maxWidth - 18, y + 18);
-      ctx.stroke();
       ctx.restore();
     }
 
@@ -5312,8 +5313,8 @@
       ctx.fillText(String.fromCharCode(0x275d), x + 14, reviewTop + 21);
       ctx.restore();
       ctx.fillStyle = themeAlpha("ink", .9);
-      ctx.font = canvasFont('400', 18);
-      drawWrappedText(ctx, cell.review || "", x + 20, reviewTop + 23, w - 30, 22, 4);
+      ctx.font = canvasFont('700', 24);
+      drawWrappedText(ctx, cell.review || "", x + 20, reviewTop + 29, w - 20, 29, 3);
       ctx.strokeStyle = themeAlpha("accent", .35);
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -5965,26 +5966,6 @@
       saveState();
     });
 
-    function bindQuickMobileFocus() {
-      if (!quickCard) return;
-      const areas = Array.from(quickCard.querySelectorAll(".quick-item"));
-      areas.forEach((area) => {
-        area.addEventListener("click", (event) => {
-          if (!isMobileView() || currentTemplate() !== "quick") return;
-          if (event.target.closest("button, input, textarea, select, .quick-cover")) return;
-          if (mobileFocusTarget !== area) {
-            event.preventDefault();
-            event.stopPropagation();
-            focusMobileArea(area);
-          }
-        }, true);
-        area.addEventListener("focusin", () => {
-          if (currentTemplate() !== "quick") return;
-          focusMobileArea(area);
-        });
-      });
-    }
-
     const mobileFocusAreas = Array.from(card.querySelectorAll(".cover-box, .info-panel, .title-panel, .tags-panel, .price-panel, .ratings, .review-panel"));
     mobileFocusAreas.forEach((area) => {
       area.addEventListener("click", (event) => {
@@ -5994,16 +5975,7 @@
           openReviewEditor();
           return;
         }
-        if (isMobileView() && currentTemplate() === "full" && mobileFocusTarget !== area) {
-          event.preventDefault();
-          event.stopPropagation();
-          focusMobileArea(area);
-        }
       }, true);
-      area.addEventListener("focusin", () => {
-        if (area.classList.contains("review-panel") && isMobileView()) return;
-        focusMobileArea(area);
-      });
     });
 /* ---- trio template v1 (3 rows x 1080x1440) ---- */
     const UI_TRIO_UPLOAD = String.fromCharCode(0x70b9, 0x51fb, 0x4e0a, 0x4f20, 0x20, 0x42, 0x4b);
@@ -6437,6 +6409,78 @@
       return ["otome", "trio", safeFilePart(currentThemeId, DEFAULT_THEME_ID)].join("_") + ".png";
     }
 
+    function trioMeasuredBox(node, cardRect) {
+      const rect = node.getBoundingClientRect();
+      return {
+        x: rect.left - cardRect.left,
+        y: rect.top - cardRect.top,
+        width: rect.width,
+        height: rect.height
+      };
+    }
+
+    function trioMeasuredText(node, cardRect) {
+      const box = trioMeasuredBox(node, cardRect);
+      const style = getComputedStyle(node);
+      const fontSize = Number.parseFloat(style.fontSize) || 16;
+      const parsedLineHeight = Number.parseFloat(style.lineHeight);
+      return {
+        ...box,
+        fontSize,
+        fontWeight: style.fontWeight || "400",
+        lineHeight: Number.isFinite(parsedLineHeight) ? parsedLineHeight : fontSize * 1.2,
+        textAlign: style.textAlign || "left",
+        letterSpacing: style.letterSpacing || "normal"
+      };
+    }
+
+    async function measureTrioExportLayout() {
+      const host = document.createElement("div");
+      host.setAttribute("aria-hidden", "true");
+      host.style.cssText = "position:fixed;left:-20000px;top:0;width:1080px;height:1440px;overflow:hidden;pointer-events:none;z-index:-1;";
+      const clone = trioCard.cloneNode(true);
+      clone.removeAttribute("hidden");
+      clone.style.setProperty("width", "1080px");
+      clone.style.setProperty("height", "1440px");
+      clone.style.setProperty("transform", "none", "important");
+      clone.style.setProperty("transition", "none", "important");
+      host.appendChild(clone);
+      document.body.appendChild(host);
+      try {
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const cardRect = clone.getBoundingClientRect();
+        const cells = Array.from(clone.querySelectorAll(".trio-item")).map((item) => {
+          const query = (selector) => item.querySelector(selector);
+          return {
+            item: trioMeasuredBox(item, cardRect),
+            decoTop: trioMeasuredBox(query(".trio-frame-deco.top"), cardRect),
+            decoBottom: trioMeasuredBox(query(".trio-frame-deco.bottom"), cardRect),
+            cover: trioMeasuredBox(query(".trio-cover"), cardRect),
+            cvLabel: trioMeasuredText(query(".trio-field-label"), cardRect),
+            cvInput: trioMeasuredText(query(".trio-cv"), cardRect),
+            rjLabel: trioMeasuredText(query(".trio-rj-label"), cardRect),
+            rjInput: trioMeasuredText(query(".trio-rj-input"), cardRect),
+            divider: trioMeasuredBox(query(".trio-top-divider"), cardRect),
+            summary: trioMeasuredBox(query(".trio-summary-strip"), cardRect),
+            priceLabel: trioMeasuredText(query(".trio-price-block .trio-small-label"), cardRect),
+            pricePrefix: trioMeasuredText(query(".trio-price-prefix"), cardRect),
+            priceInput: trioMeasuredText(query(".trio-price-input"), cardRect),
+            ratingLabel: trioMeasuredText(query(".trio-rating-block .trio-small-label"), cardRect),
+            stars: Array.from(item.querySelectorAll(".trio-star")).map((star) => trioMeasuredText(star, cardRect)),
+            score: trioMeasuredText(query(".trio-score"), cardRect),
+            repo: trioMeasuredBox(query(".trio-repo"), cardRect),
+            repoInput: trioMeasuredText(query(".trio-repo-input"), cardRect)
+          };
+        });
+        return {
+          cells,
+          watermark: trioMeasuredText(clone.querySelector(".trio-watermark"), cardRect)
+        };
+      } finally {
+        host.remove();
+      }
+    }
+
     async function downloadTrioCard() {
       await ensureCanvasFontReady();
       try {
@@ -6447,7 +6491,13 @@
       const canvas = document.createElement("canvas");
       canvas.width = 1080;
       canvas.height = 1440;
-      drawTrioCard(canvas.getContext("2d"));
+      let measuredLayout = null;
+      try {
+        measuredLayout = await measureTrioExportLayout();
+      } catch (error) {
+        console.warn("Trio DOM layout measurement failed, using legacy coordinates", error);
+      }
+      drawTrioCard(canvas.getContext("2d"), measuredLayout);
       handleExportBlob(await canvasToBlob(canvas), trioExportFileName());
     }
 
@@ -6489,7 +6539,52 @@
       drawTrioStar(ctx, cx, y, 6, themeAlpha("accent", .52));
     }
 
-    function drawTrioCard(ctx) {
+    function trioSetMeasuredFont(ctx, metric) {
+      ctx.font = canvasFont(metric.fontWeight, metric.fontSize);
+      if ("letterSpacing" in ctx) ctx.letterSpacing = metric.letterSpacing === "normal" ? "0px" : metric.letterSpacing;
+    }
+
+    function trioMeasuredBaseline(ctx, metric) {
+      const sample = ctx.measureText(String.fromCharCode(0x56fd) + "Ag");
+      const ascent = sample.fontBoundingBoxAscent || sample.actualBoundingBoxAscent || metric.fontSize * 0.82;
+      const descent = sample.fontBoundingBoxDescent || sample.actualBoundingBoxDescent || metric.fontSize * 0.18;
+      return metric.y + (metric.height - ascent - descent) / 2 + ascent;
+    }
+
+    function drawTrioMeasuredText(ctx, text, metric, color, align = metric.textAlign) {
+      ctx.save();
+      trioSetMeasuredFont(ctx, metric);
+      ctx.fillStyle = color;
+      ctx.textBaseline = "alphabetic";
+      const normalizedAlign = align === "center" || align === "right" ? align : "left";
+      ctx.textAlign = normalizedAlign;
+      const x = normalizedAlign === "center" ? metric.x + metric.width / 2 : (normalizedAlign === "right" ? metric.x + metric.width : metric.x);
+      ctx.beginPath();
+      ctx.rect(metric.x, metric.y, metric.width, metric.height);
+      ctx.clip();
+      ctx.fillText(String(text || ""), x, trioMeasuredBaseline(ctx, metric));
+      ctx.restore();
+    }
+
+    function drawTrioMeasuredRepo(ctx, text, metric, color) {
+      ctx.save();
+      trioSetMeasuredFont(ctx, metric);
+      ctx.fillStyle = color;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      const sample = ctx.measureText(String.fromCharCode(0x56fd) + "Ag");
+      const ascent = sample.fontBoundingBoxAscent || sample.actualBoundingBoxAscent || metric.fontSize * 0.82;
+      const descent = sample.fontBoundingBoxDescent || sample.actualBoundingBoxDescent || metric.fontSize * 0.18;
+      const firstBaseline = metric.y + Math.max(0, (metric.lineHeight - ascent - descent) / 2) + ascent;
+      const maxLines = Math.max(1, Math.floor(metric.height / metric.lineHeight));
+      ctx.beginPath();
+      ctx.rect(metric.x, metric.y, metric.width, metric.height);
+      ctx.clip();
+      drawWrappedText(ctx, text, metric.x, firstBaseline, metric.width, metric.lineHeight, maxLines);
+      ctx.restore();
+    }
+
+    function drawTrioCard(ctx, measuredLayout = null) {
       const width = 1080;
       const height = 1440;
       const state = collectTrioState();
@@ -6506,25 +6601,142 @@
       strokeRound(ctx, 16, 16, width - 32, height - 32, 30, themeAlpha("line", .78), 3);
       strokeRound(ctx, 30, 30, width - 60, height - 60, 22, themeAlpha("dash", .42), 2, true);
 
-      const listLeft = 62;
-      const listTop = 58;
-      const listRight = width - 62;
-      const listBottom = height - 58;
-      const gap = 30;
-      const cellWidth = listRight - listLeft;
-      const cellHeight = (listBottom - listTop - gap * 2) / 3;
-      for (let index = 0; index < 3; index += 1) {
-        const x = listLeft;
-        const y = listTop + index * (cellHeight + gap);
-        drawTrioCell(ctx, state, index, x, y, cellWidth, cellHeight);
+      if (measuredLayout && measuredLayout.cells.length === 3) {
+        measuredLayout.cells.forEach((layout, index) => drawTrioMeasuredCell(ctx, state, index, layout));
+      } else {
+        const listLeft = 62;
+        const listTop = 58;
+        const listRight = width - 62;
+        const listBottom = height - 58;
+        const gap = 30;
+        const cellWidth = listRight - listLeft;
+        const cellHeight = (listBottom - listTop - gap * 2) / 3;
+        for (let index = 0; index < 3; index += 1) {
+          const x = listLeft;
+          const y = listTop + index * (cellHeight + gap);
+          drawTrioCell(ctx, state, index, x, y, cellWidth, cellHeight);
+        }
       }
 
+      if (measuredLayout && measuredLayout.watermark) {
+        drawTrioMeasuredText(ctx, UI_TRIO_WATERMARK, measuredLayout.watermark, themeAlpha("ink", .09), "left");
+      } else {
+        ctx.save();
+        ctx.fillStyle = themeAlpha("ink", .09);
+        ctx.font = canvasFont('800', 12);
+        ctx.textAlign = "right";
+        ctx.fillText(UI_TRIO_WATERMARK, width - 54, height - 38);
+        ctx.restore();
+      }
+    }
+
+    function drawTrioMeasuredCell(ctx, state, index, layout) {
+      const theme = currentCardTheme();
+      const cell = state.cells[index] || {};
+      const { item, cover } = layout;
+      const radius = 26;
+
+      const bgGrad = ctx.createLinearGradient(item.x, item.y, item.x + item.width, item.y + item.height);
+      bgGrad.addColorStop(0, "rgba(255,255,255,.62)");
+      bgGrad.addColorStop(1, "rgba(255,255,255,.28)");
+      fillRound(ctx, item.x, item.y, item.width, item.height, radius, bgGrad);
+      const washAccent = ctx.createRadialGradient(item.x + item.width * 0.07, item.y + item.height * 0.1, 0, item.x + item.width * 0.07, item.y + item.height * 0.1, item.height * 0.55);
+      washAccent.addColorStop(0, themeAlpha("accent", .07));
+      washAccent.addColorStop(1, "rgba(255,255,255,0)");
+      fillRound(ctx, item.x, item.y, item.width, item.height, radius, washAccent);
+      const washMint = ctx.createRadialGradient(item.x + item.width * 0.93, item.y + item.height * 0.9, 0, item.x + item.width * 0.93, item.y + item.height * 0.9, item.height * 0.5);
+      washMint.addColorStop(0, themeAlpha("mint", .07));
+      washMint.addColorStop(1, "rgba(255,255,255,0)");
+      fillRound(ctx, item.x, item.y, item.width, item.height, radius, washMint);
+      strokeRound(ctx, item.x, item.y, item.width, item.height, radius, themeAlpha("line", .6), 1);
+
+      drawTrioFrameDeco(ctx, item.x, layout.decoTop.y + layout.decoTop.height / 2, item.width);
+      drawTrioFrameDeco(ctx, item.x, layout.decoBottom.y + layout.decoBottom.height / 2, item.width);
+
+      const coverRadius = 20;
+      if (cell.cover) {
+        fillRound(ctx, cover.x, cover.y, cover.width, cover.height, coverRadius, theme.coverBg);
+        const imgElement = trioCellEditors[index] ? trioCellEditors[index].querySelector(".trio-cover img") : null;
+        if (imgElement && imgElement.complete && imgElement.naturalWidth) {
+          ctx.save();
+          roundRect(ctx, cover.x, cover.y, cover.width, cover.height, coverRadius);
+          ctx.clip();
+          const iw = imgElement.naturalWidth;
+          const ih = imgElement.naturalHeight;
+          const fitMode = cell.coverFit === "contain" ? "contain" : "cover";
+          const scale = fitMode === "contain" ? Math.min(cover.width / iw, cover.height / ih) : Math.max(cover.width / iw, cover.height / ih);
+          const dw = iw * scale;
+          const dh = ih * scale;
+          ctx.drawImage(imgElement, cover.x + (cover.width - dw) / 2, cover.y + (cover.height - dh) / 2, dw, dh);
+          ctx.restore();
+        }
+        ctx.save();
+        ctx.shadowColor = "rgba(104,73,87,.13)";
+        ctx.shadowBlur = 22;
+        strokeRound(ctx, cover.x, cover.y, cover.width, cover.height, coverRadius, "rgba(255,255,255,.98)", 3);
+        ctx.restore();
+        strokeRound(ctx, cover.x, cover.y, cover.width, cover.height, coverRadius, themeAlpha("line", .78), 1);
+      } else {
+        fillRound(ctx, cover.x, cover.y, cover.width, cover.height, coverRadius, themeAlpha("coverBg", .52));
+        strokeRound(ctx, cover.x, cover.y, cover.width, cover.height, coverRadius, themeAlpha("accent", .44), 2, true);
+        const placeholderMetric = { ...cover, fontSize: 18, fontWeight: "900", lineHeight: 22, textAlign: "center", letterSpacing: "normal" };
+        drawTrioMeasuredText(ctx, UI_TRIO_UPLOAD, placeholderMetric, theme.muted, "center");
+      }
+
+      drawTrioMeasuredText(ctx, "CV", layout.cvLabel, theme.accent);
+      drawTrioMeasuredText(ctx, cell.cv || "", layout.cvInput, theme.ink);
+      drawTrioMeasuredText(ctx, String.fromCharCode(0x52, 0x4a, 0x53f7), layout.rjLabel, theme.accent);
+      drawTrioMeasuredText(ctx, cell.rj || "", layout.rjInput, theme.ink);
+
       ctx.save();
-      ctx.fillStyle = themeAlpha("ink", .09);
-      ctx.font = canvasFont('800', 12);
-      ctx.textAlign = "right";
-      ctx.fillText(UI_TRIO_WATERMARK, width - 54, height - 38);
+      ctx.strokeStyle = themeAlpha("accent", .3);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(layout.divider.x, layout.divider.y + 0.5);
+      ctx.lineTo(layout.divider.x + layout.divider.width, layout.divider.y + 0.5);
+      ctx.stroke();
       ctx.restore();
+
+      const summaryGrad = ctx.createLinearGradient(layout.summary.x, layout.summary.y, layout.summary.x + layout.summary.width, layout.summary.y);
+      summaryGrad.addColorStop(0, themeAlpha("accent", .07));
+      summaryGrad.addColorStop(1, themeAlpha("mint", .07));
+      fillRound(ctx, layout.summary.x, layout.summary.y, layout.summary.width, layout.summary.height, 14, summaryGrad);
+      drawTrioMeasuredText(ctx, UI_TRIO_PRICE, layout.priceLabel, theme.muted);
+      drawTrioMeasuredText(ctx, "\u00a5", layout.pricePrefix, theme.accentDeep);
+      drawTrioMeasuredText(ctx, cell.price || "", layout.priceInput, theme.accentDeep);
+      drawTrioMeasuredText(ctx, UI_TRIO_RATING, layout.ratingLabel, theme.muted);
+
+      const rating = Math.max(0, Math.min(5, Number(cell.rating) || 0));
+      layout.stars.forEach((starMetric, starIndex) => {
+        drawTrioMeasuredText(ctx, STAR_CHAR, starMetric, themeAlpha("accent", .26), "center");
+        const starValue = starIndex + 1;
+        if (rating < starValue - 0.5) return;
+        ctx.save();
+        if (rating < starValue) {
+          ctx.beginPath();
+          ctx.rect(starMetric.x, starMetric.y, starMetric.width / 2, starMetric.height);
+          ctx.clip();
+        }
+        drawTrioMeasuredText(ctx, STAR_CHAR, starMetric, theme.accent, "center");
+        ctx.restore();
+      });
+      drawTrioMeasuredText(ctx, rating.toFixed(1), layout.score, theme.accentDeep);
+
+      ctx.fillStyle = themeAlpha("accent", .15);
+      ctx.fillRect(layout.repo.x, layout.repo.y, 3, layout.repo.height);
+      const heartMetric = {
+        x: layout.repo.x + 6,
+        y: layout.repo.y,
+        width: 18,
+        height: 20,
+        fontSize: 15,
+        fontWeight: "900",
+        lineHeight: 18,
+        textAlign: "left",
+        letterSpacing: "normal"
+      };
+      drawTrioMeasuredText(ctx, "\u2661", heartMetric, themeAlpha("accentDeep", .5));
+      drawTrioMeasuredRepo(ctx, cell.repo || "", layout.repoInput, theme.ink);
     }
 
     function drawTrioCell(ctx, state, index, x, y, w, h) {
@@ -6698,44 +6910,6 @@
       saveState();
     });
 
-    function bindTrioMobileFocus() {
-      if (!trioCard) return;
-      const areas = Array.from(trioCard.querySelectorAll(".trio-item"));
-      areas.forEach((area) => {
-        area.addEventListener("click", (event) => {
-          if (!isMobileView() || currentTemplate() !== "trio") return;
-          if (event.target.closest("button, input, textarea, select, .trio-cover")) return;
-          if (mobileFocusTarget !== area) {
-            event.preventDefault();
-            event.stopPropagation();
-            focusMobileArea(area);
-          }
-        }, true);
-        area.addEventListener("focusin", () => {
-          if (currentTemplate() !== "trio") return;
-          focusMobileArea(area);
-        });
-      });
-    }
-    function bindGrid9MobileFocus() {
-      const areas = Array.from(grid9Card.querySelectorAll(".grid9-header, .grid9-cell"));
-      areas.forEach((area) => {
-        area.addEventListener("click", (event) => {
-          if (!isMobileView() || currentTemplate() !== "grid9") return;
-          if (event.target.closest("button, input, textarea, select")) return;
-          if (mobileFocusTarget !== area) {
-            event.preventDefault();
-            event.stopPropagation();
-            focusMobileArea(area);
-          }
-        }, true);
-        area.addEventListener("focusin", () => {
-          if (currentTemplate() !== "grid9") return;
-          focusMobileArea(area);
-        });
-      });
-    }
-    mobileFocusBack.addEventListener("click", clearMobileFocus);
     reviewEditConfirm.addEventListener("click", () => closeReviewEditor(true));
     reviewEditCancel.addEventListener("click", () => closeReviewEditor(false));
     reviewEditModal.addEventListener("click", (event) => {
@@ -7061,11 +7235,8 @@
     });
     syncPlayerUi(true);
     buildGrid9Cells();
-    bindGrid9MobileFocus();
     buildQuickCells();
-    bindQuickMobileFocus();
     buildTrioCells();
-    bindTrioMobileFocus();
     void restoreState().then(() => {
       void migrateGrid9CoversToCompact();
       void migrateQuickCoversToCompact();

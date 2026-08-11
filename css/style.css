@@ -3855,7 +3855,7 @@
     .grid9-card.grid9-title-frost .grid9-e-wave {
       position: absolute;
       left: 50%;
-      top: 54px;
+      top: 49px;
       display: block;
       width: min(90%, 760px);
       height: 36px;
@@ -4095,7 +4095,7 @@
     .grid9-review-wrap {
       position: relative;
       min-height: 102px;
-      padding: 8px 10px 4px 19px;
+      padding: 8px 0 4px 19px;
       background: linear-gradient(90deg, color-mix(in srgb, var(--card-accent) 18%, transparent) 0 3px, transparent 3px 100%) 0 8px / 100% calc(100% - 8px) no-repeat;
     }
     .grid9-review-wrap::before {
@@ -4125,10 +4125,10 @@
       border: 0;
       border-bottom: 1.5px solid color-mix(in srgb, var(--card-accent) 38%, transparent);
       outline: 0;
-      padding: 0 2px 0 0;
+      padding: 0;
       color: var(--card-ink);
       background: transparent;
-      font-size: 18px;
+      font-size: 24px;
       line-height: 1.22;
       font-weight: 700;
       display: block;
@@ -5100,7 +5100,7 @@
 .trio-repo::before {
   content: "\2661";
   position: absolute;
-  left: 2px;
+  left: 6px;
   top: 0;
   color: color-mix(in srgb, var(--card-accent-deep) 50%, transparent);
   font-size: 15px;
