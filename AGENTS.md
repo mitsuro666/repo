@@ -118,22 +118,70 @@ deployed on GitHub Pages.
   dependencies before the first statement that uses or passes them. Never add
   a use-before-declaration dependency to page initialization.
 
-## Preview/export parity workflow for grid9 title styles
+## iOS mobile root-scroll reference
 
-- Treat work as three phases: (1) when creating a new style, implement the
-  preview and export together; (2) during the preview-tuning phase, assume the
-  user wants the export changed in parallel to match every preview adjustment;
-  (3) during the export-confirmation phase, compare export against the approved
-  preview and make export-only corrections.
-- If the phase or the intended reference is unclear before an edit, ask which
-  phase applies and whether the preview or export is the source to follow.
-- The live grid9 preview is the visual source of truth for export parity. For
-  every new or changed export drawing, compare the preview CSS/HTML with the
-  corresponding canvas code: structure, dimensions, spacing, colors, borders,
-  shadows, highlights, under-bars, text sizing, wrapping, and positions.
-- During export-only corrections, report any preview/export differences before
-  editing and confirm whether the preview should also change. Keep adjustments
-  scoped to the requested version and style.
-- New title styles must use the same palette-derived values and geometry in
-  preview and export wherever possible. Keep style-specific adjustments scoped
-  to that style only.
+- If iOS Safari can scroll far past the real content into a blank page, do not
+  first assume that a scaled `1080 x 1440` card still occupies its unscaled
+  height. `fitStage()` already assigns `.stage` the scaled layout height.
+- Measure `window.innerHeight`, `visualViewport.height/pageTop/offsetTop`,
+  `document.documentElement.scrollHeight/clientHeight`, `body.scrollHeight`,
+  and the actual bottoms/heights of `.app`, `.stage`, the active card, and
+  `.main-nav` before changing layout offsets.
+- A confirmed failure signature in this project was: `.app`, `.stage`, and the
+  real content ended at about `690px`, while the root layout viewport remained
+  about `665px`; during downward scrolling, iOS reported
+  `window.innerHeight` and `visualViewport.height` collapsing to nearly zero.
+  Safari then allowed the normal content to scroll completely out of view,
+  leaving a large blank area even though no content element was that tall.
+- The working mobile architecture is intentional: `html` and `body` have a
+  bounded height and `overflow: hidden`, while `.app` is the `100dvh` internal
+  vertical scroll container with `overflow-y: auto`,
+  `overscroll-behavior-y: contain`, and momentum scrolling. Do not restore
+  mobile root-page scrolling without first checking this iOS failure mode.
+- Fixed bottom-navigation padding can add a small, finite scroll distance, but
+  it is not evidence of the root viewport failure. Compare the exact
+  `.app`/`.stage` bottom difference before blaming padding or `100vh`.
+- Temporary diagnostics must not reposition an in-document element from
+  `scrollY`, `visualViewport.pageTop`, or `offsetTop`: doing so can extend
+  `scrollHeight` on every scroll event and create artificial infinite
+  scrolling. Prefer recording measurements without changing layout; remove
+  all diagnostic UI and listeners after the cause is confirmed.
+
+## Preview/export dual-render workflow
+
+- The intentional long-term architecture is two renderers: DOM/CSS for the live
+  preview and Canvas for exported images. Do not replace Canvas export with DOM
+  rasterization unless the user explicitly requests a new experiment. The
+  project font and iOS image/memory behavior make Canvas the stable export path.
+- New templates or visual modes normally begin as a standalone demo prepared by
+  the user or in a separate design chat. First embed that demo faithfully as the
+  live preview; the demo is the design reference during embedding. Once it is
+  embedded, the in-app live preview becomes the visual source of truth.
+- Treat implementation as three phases:
+  1. **Demo embedding:** reproduce the demo in the preview and create its Canvas
+     counterpart at the same time.
+  2. **Preview tuning:** while the user visually adjusts the embedded preview,
+     update the corresponding Canvas export in parallel for every requested
+     change. Unless the user explicitly says otherwise, a preview adjustment in
+     this phase also applies to export.
+  3. **Export confirmation:** after the user approves the preview, keep the
+     preview fixed. If export differs, correct Canvas directly from the approved
+     preview's DOM/CSS values and structure; do not redesign the preview.
+- During export confirmation, inspect the exact preview selectors, computed
+  geometry, and corresponding Canvas drawing before editing. Map each element
+  independently: dimensions, position, gap, font size/weight/line height,
+  wrapping width, colors, borders, radii, shadows, decorations, and layering.
+  Do not guess offsets from screenshots or make the user iteratively tune a
+  second visual design pixel by pixel.
+- Prefer sharing values rather than maintaining unrelated constants. When
+  practical, let Canvas read geometry from an unscaled `1080 x 1440` offscreen
+  DOM copy or shared semantic variables, as validated by the trio template.
+  When direct measurement is unsuitable, copy the approved preview values into
+  the explicitly mapped Canvas counterpart.
+- Preserve stable output dimensions: full-size card templates export at
+  `1080 x 1440` unless the user explicitly specifies another size.
+- If the current phase or source of truth is unclear, ask before editing. A
+  user-requested preview-only or export-only adjustment is an explicit exception
+  and must not change the other renderer.
+- Keep theme-dependent preview and Canvas colors palette-derived, and keep every
+  correction scoped to the named template, mode, style, and element.
