@@ -33,25 +33,29 @@ export default {
     }
 
     const url = new URL(request.url);
-    const useTranslatable = url.searchParams.get("endpoint") === "translatable";
+    const endpoint = url.searchParams.get("endpoint") || "product";
+    const useTranslatable = endpoint === "translatable";
+    const useDlwatcher = endpoint === "dlwatcher";
     const workno = normalizeWorkno(url.searchParams.get("workno") || url.searchParams.get("keyword") || url.searchParams.get("rj"));
     if (!workno) {
       return jsonResponse({ error: "missing_workno" }, 400);
     }
 
-    const dlsiteUrl = useTranslatable
-      ? "https://www.dlsite.com/maniax/api/=/translatableProducts.json?keyword=" + encodeURIComponent(workno)
-      : "https://www.dlsite.com/maniax/api/=/product.json?workno=" + encodeURIComponent(workno);
-    const upstream = await fetch(dlsiteUrl, {
+    const upstreamUrl = useDlwatcher
+      ? "https://dlwatcher.com/product/" + encodeURIComponent(workno) + ".json"
+      : useTranslatable
+        ? "https://www.dlsite.com/maniax/api/=/translatableProducts.json?keyword=" + encodeURIComponent(workno)
+        : "https://www.dlsite.com/maniax/api/=/product.json?workno=" + encodeURIComponent(workno);
+    const upstream = await fetch(upstreamUrl, {
       headers: {
         "Accept": "application/json,text/plain,*/*",
         "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
-        "Referer": "https://www.dlsite.com/maniax/"
+        "Referer": useDlwatcher ? "https://dlwatcher.com/" : "https://www.dlsite.com/maniax/"
       }
     });
 
     if (!upstream.ok) {
-      return jsonResponse({ error: "dlsite_error", status: upstream.status }, upstream.status);
+      return jsonResponse({ error: useDlwatcher ? "dlwatcher_error" : "dlsite_error", status: upstream.status }, upstream.status);
     }
 
     const text = await upstream.text();

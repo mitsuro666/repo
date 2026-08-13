@@ -23,6 +23,12 @@
     const menuTabs = Array.from(document.querySelectorAll(".menu-tab"));
     const menuPanels = Array.from(document.querySelectorAll("[data-menu-panel]"));
     const card = document.getElementById("recordCard");
+    const cvText = document.getElementById("cvText");
+    const circleText = document.getElementById("circleText");
+    const rjText = document.getElementById("rjText");
+    const durationText = document.getElementById("durationText");
+    const recordTitle = document.getElementById("recordTitle");
+    const reviewText = document.getElementById("reviewText");
     const coverInput = document.getElementById("coverInput");
     const coverBox = document.getElementById("coverBox");
     const coverImage = document.getElementById("coverImage");
@@ -184,6 +190,7 @@
     const quickExternalTools = document.getElementById("quickExternalTools");
     const quickShowRjButton = document.getElementById("quickShowRjButton");
     const quickImportAllButton = document.getElementById("quickImportAllButton");
+    const quickClearBkButton = document.getElementById("quickClearBkButton");
     const quickClearRepoButton = document.getElementById("quickClearRepoButton");
     let quickCellEditors = [];
     let activeQuickIndex = -1;
@@ -206,6 +213,19 @@
     const MAIN_PAGE_STORAGE_KEY = "otome-record-card-main-page";
     const DLSITE_PROXY_URL = "https://dlsite-rj-import.shuiyingsheng.workers.dev/";
     const DEFAULT_THEME_ID = "matcha-berry-cheese";
+    const FULL_FIELD_MAX_WIDTHS = new Map([
+      [cvText, 8],
+      [circleText, 16],
+      [rjText, 6],
+      [durationText, 8],
+      [recordTitle, 68]
+    ]);
+    const COMPACT_FIELD_MAX_LENGTHS = new Map([
+      [recordTitle, 78],
+      [cvText, 14],
+      [rjText, 12]
+    ]);
+    const FULL_REVIEW_MAX_WIDTH = 407;
     let stateRestoreComplete = false;
     let stateUsesIndexedDb = localStorage.getItem(STATE_STORAGE_MODE_KEY) === STATE_STORAGE_MODE_INDEXED_DB;
     let stateSaveQueue = Promise.resolve(true);
@@ -215,7 +235,9 @@
         accent: "#f4abb9",
         accentDeep: "#b84f78",
         line: "#fec9d4",
+        lineSoftAlpha: .56,
         dash: "#9bc4b2",
+        dashAlpha: .62,
         mint: "#9bc4b2",
         ink: "#684957",
         muted: "#9b6f7d",
@@ -231,7 +253,9 @@
         accent: "#ff9ac6",
         accentDeep: "#8f78df",
         line: "#ffbdd6",
+        lineSoftAlpha: .58,
         dash: "#b0ddfe",
+        dashAlpha: .6,
         mint: "#b0ddfe",
         ink: "#55415c",
         muted: "#91758a",
@@ -241,14 +265,18 @@
         reviewBg: "#ffffff",
         bgStops: ["#fff7fb", "#fffdfd", "#f4fbff"],
         playDeep: "#8f78df",
-        starFill: "#8f78df"
+        starFill: "#8f78df",
+        compactProgress: ["rgba(176, 221, 254, 0.95)", "rgba(183, 182, 255, 0.92)"],
+        compactProgressDot: "rgba(176, 221, 254, 0.95)"
       },
       "dirty-berry-coffee": {
         id: "dirty-berry-coffee",
         accent: "#e59a9b",
         accentDeep: "#6d6975",
         line: "#ffb4a1",
+        lineSoftAlpha: .5,
         dash: "#6d6975",
+        dashAlpha: .38,
         mint: "#6d6975",
         ink: "#6d6975",
         muted: "#8a7380",
@@ -264,7 +292,9 @@
         accent: "#b92c2c",
         accentDeep: "#6c1a21",
         line: "#d1bf9a",
+        lineSoftAlpha: .64,
         dash: "#e5e0cd",
+        dashAlpha: .78,
         mint: "#cea257",
         ink: "#4f3d3b",
         muted: "#8d6f61",
@@ -280,7 +310,9 @@
         accent: "#edaef2",
         accentDeep: "#7b5293",
         line: "#bbedef",
+        lineSoftAlpha: .66,
         dash: "#f1d77f",
+        dashAlpha: .64,
         mint: "#bbedef",
         ink: "#51475f",
         muted: "#7e7192",
@@ -297,7 +329,9 @@
         accent: "#8ed6de",
         accentDeep: "#4ca8b8",
         line: "#8ed6de",
+        lineSoftAlpha: .66,
         dash: "#bcf1e0",
+        dashAlpha: .82,
         mint: "#65bdb5",
         ink: "#3f6870",
         muted: "#6a8f92",
@@ -314,7 +348,9 @@
         accent: "#5ebfe0",
         accentDeep: "#0097d0",
         line: "#a4cdd1",
+        lineSoftAlpha: .68,
         dash: "#a6b7dd",
+        dashAlpha: .62,
         mint: "#4daec1",
         ink: "#41586e",
         muted: "#6f8496",
@@ -331,7 +367,9 @@
         accent: "#e4a273",
         accentDeep: "#c08a5c",
         line: "#96b9b9",
+        lineSoftAlpha: .68,
         dash: "#b3beaf",
+        dashAlpha: .72,
         mint: "#789f9f",
         ink: "#5f6058",
         muted: "#7d8276",
@@ -348,7 +386,9 @@
         accent: "#5990c0",
         accentDeep: "#102a6b",
         line: "#5990c0",
+        lineSoftAlpha: .56,
         dash: "#005185",
+        dashAlpha: .34,
         mint: "#005185",
         ink: "#17345a",
         muted: "#5e6f82",
@@ -365,7 +405,9 @@
         accent: "#ffad76",
         accentDeep: "#e87955",
         line: "#ffbd8a",
+        lineSoftAlpha: .64,
         dash: "#ffdd8f",
+        dashAlpha: .78,
         mint: "#e7a04f",
         ink: "#704c48",
         muted: "#a46f62",
@@ -475,14 +517,9 @@
     const UI_IMPORT_INFO = String.fromCharCode(0x5bfc, 0x5165, 0x4fe1, 0x606f);
     const UI_IMPORT_HELP = [
       String.fromCharCode(0x5bfc, 0x5165, 0x4fe1, 0x606f, 0x4f1a, 0x5c1d, 0x8bd5, 0x586b, 0x5165, 0xff1a),
-      "BK",
-      String.fromCharCode(0x6807, 0x9898),
-      "CV",
-      String.fromCharCode(0x793e, 0x56e2),
-      String.fromCharCode(0x73b0, 0x4ef7),
-      String.fromCharCode(0x5173, 0x952e, 0x8bcd),
-      String.fromCharCode(0x4e2d, 0x6587, 0x7248, 0x672c),
+      String.fromCharCode(0x42, 0x4b, 0x3001, 0x6807, 0x9898, 0x3001, 0x43, 0x56, 0x3001, 0x793e, 0x56e2, 0x3001, 0x4e2d, 0x6587, 0x7248, 0x672c, 0x3001, 0x5173, 0x952e, 0x8bcd, 0x3001, 0x539f, 0x4ef7, 0x3001, 0x73b0, 0x4ef7, 0x3001, 0x73b0, 0x6298, 0x6263, 0x3001, 0x53f2, 0x4f4e, 0x7b49, 0x4fe1, 0x606f, 0x3002),
       "",
+      String.fromCharCode(0x90e8, 0x5206, 0x4fe1, 0x606f, 0x53ef, 0x80fd, 0x4f1a, 0x5bfc, 0x5165, 0x5931, 0x8d25, 0xff0c, 0x5bfc, 0x5165, 0x7ed3, 0x679c, 0x4ecd, 0x5efa, 0x8bae, 0x624b, 0x52a8, 0x68c0, 0x67e5, 0x3002),
       "BK " + String.fromCharCode(0x5efa, 0x8bae, 0x4f7f, 0x7528, 0x3010, 0x7f16, 0x8f91, 0x3011, 0x529f, 0x80fd, 0x624b, 0x52a8, 0x5904, 0x7406, 0x5230, 0x9002, 0x5408, 0x20, 0x53, 0x4e, 0x53, 0x20, 0x5c55, 0x793a, 0x3002),
       String.fromCharCode(0x5173, 0x952e, 0x8bcd, 0x53ea, 0x5c55, 0x793a, 0x20, 0x53, 0x46, 0x57, 0x20, 0x5173, 0x952e, 0x8bcd, 0x3002),
       String.fromCharCode(0x6709, 0x4e2d, 0x6587, 0x7248, 0x672c, 0x65f6, 0xff0c, 0x9ed8, 0x8ba4, 0x9009, 0x4e2d, 0x3010, 0x5b57, 0x5e55, 0x3011, 0x72b6, 0x6001, 0x3002)
@@ -493,6 +530,16 @@
     const UI_IMPORT_FAILED = String.fromCharCode(0x6ca1, 0x6709, 0x8bfb, 0x53d6, 0x5230, 0x8d44, 0x6599, 0xff0c, 0x53ef, 0x80fd, 0x662f, 0x20, 0x44, 0x4c, 0x73, 0x69, 0x74, 0x65, 0x20, 0x6682, 0x65f6, 0x4e0d, 0x5141, 0x8bb8, 0x8de8, 0x57df, 0x8bfb, 0x53d6, 0x3002, 0x53ef, 0x4ee5, 0x5148, 0x624b, 0x52a8, 0x586b, 0x5199, 0x3002);
     const UI_IMPORT_COVER_FAILED = "BK " + String.fromCharCode(0x81ea, 0x52a8, 0x5bfc, 0x5165, 0x5931, 0x8d25, 0xff0c, 0x53ef, 0x4ee5, 0x624b, 0x52a8, 0x4e0a, 0x4f20, 0x3002);
     const UI_IMPORT_OVERWRITE_CONFIRM = String.fromCharCode(0x5df2, 0x586b, 0x5199, 0x90e8, 0x5206, 0x4fe1, 0x606f, 0xff0c, 0x662f, 0x5426, 0x8986, 0x76d6, 0xff1f);
+    const UI_IMPORT_RESULT_DONE = String.fromCharCode(0x5bfc, 0x5165, 0x5b8c, 0x6210, 0x3002);
+    const UI_IMPORT_RESULT_PARTIAL = String.fromCharCode(0x5bfc, 0x5165, 0x5b8c, 0x6210, 0xff0c, 0x4f46, 0x4ee5, 0x4e0b, 0x5185, 0x5bb9, 0x5bfc, 0x5165, 0x5931, 0x8d25, 0xff1a);
+    const UI_IMPORT_RESULT_FAILED = String.fromCharCode(0x5bfc, 0x5165, 0x5931, 0x8d25);
+    const UI_IMPORT_LOWEST_LABEL = String.fromCharCode(0x53f2, 0x4f4e);
+    const UI_IMPORT_CHINESE_LABEL = String.fromCharCode(0x4e2d, 0x6587, 0x60c5, 0x51b5);
+    const UI_IMPORT_DLSITE_NO_DATA = "DLsite " + String.fromCharCode(0x6ca1, 0x6709, 0x8fd4, 0x56de, 0x53ef, 0x5bfc, 0x5165, 0x7684, 0x8d44, 0x6599, 0x3002);
+    const UI_IMPORT_DLWATCHER_NO_DATA = "dlwatcher " + String.fromCharCode(0x672a, 0x8fd4, 0x56de, 0x8be5, 0x4f5c, 0x54c1, 0x7684, 0x53f2, 0x4f4e, 0x6298, 0x6263, 0x3002);
+    const UI_IMPORT_REQUEST_TIMEOUT = String.fromCharCode(0x8bf7, 0x6c42, 0x8d85, 0x65f6, 0x3002);
+    const UI_IMPORT_REQUEST_NETWORK = String.fromCharCode(0x65e0, 0x6cd5, 0x8fde, 0x63a5, 0x63a5, 0x53e3, 0xff0c, 0x8bf7, 0x68c0, 0x67e5, 0x20, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x20, 0x662f, 0x5426, 0x5df2, 0x90e8, 0x7f72, 0x5e76, 0x53ef, 0x8bbf, 0x95ee, 0x3002);
+    const UI_IMPORT_HTTP_PREFIX = String.fromCharCode(0x63a5, 0x53e3, 0x8fd4, 0x56de, 0x20);
     const UI_REVIEW_EDIT_TITLE = String.fromCharCode(0x7f16, 0x8f91, 0x8bc4, 0x4ef7);
     const UI_REVIEW_CONFIRM = String.fromCharCode(0x786e, 0x5b9a);
     const UI_REVIEW_CANCEL = String.fromCharCode(0x53d6, 0x6d88);
@@ -517,6 +564,173 @@
       if (card.classList.contains("trio")) return "trio";
       return card.classList.contains("compact") ? "compact" : "full";
     }
+
+    const fullFieldComposing = new WeakSet();
+
+    function fullWidthUnits(character) {
+      const codePoint = character.codePointAt(0) || 0;
+      if (/^[\u0000-\u007f]$/.test(character)) return 1;
+      if ((codePoint >= 0xff61 && codePoint <= 0xffdc) || (codePoint >= 0xffe8 && codePoint <= 0xffee)) return 1;
+      return 2;
+    }
+
+    function limitedByFullWidth(value, maxWidth, ellipsis = false) {
+      const characters = Array.from(value || "");
+      const maxUnits = maxWidth * 2;
+      const totalUnits = characters.reduce((sum, character) => sum + fullWidthUnits(character), 0);
+      if (totalUnits <= maxUnits) return characters.join("");
+      const contentUnits = ellipsis ? maxUnits - 2 : maxUnits;
+      let usedUnits = 0;
+      let limited = "";
+      for (const character of characters) {
+        const units = fullWidthUnits(character);
+        if (usedUnits + units > contentUnits) break;
+        limited += character;
+        usedUnits += units;
+      }
+      return limited + (ellipsis ? "\u2026" : "");
+    }
+
+    function limitedFullFieldText(node, value = node?.textContent || "") {
+      const maxWidth = FULL_FIELD_MAX_WIDTHS.get(node);
+      if (!maxWidth) return value;
+      return limitedByFullWidth(value, maxWidth, node === recordTitle);
+    }
+
+    function limitedCompactFieldText(node, value = node?.textContent || "") {
+      const maxLength = COMPACT_FIELD_MAX_LENGTHS.get(node);
+      if (!maxLength) return value;
+      const characters = Array.from(value);
+      if (node === rjText) {
+        const raw = characters.join("").toUpperCase();
+        if (!raw) return "";
+        if (raw === "R") return raw;
+        const digits = (raw.startsWith("RJ") ? raw.slice(2) : raw).replace(/\D/g, "").slice(0, 10);
+        return "RJ" + digits;
+      }
+      if (characters.length <= maxLength) return characters.join("");
+      return characters.slice(0, maxLength - 1).join("") + "\u2026";
+    }
+
+    function limitedCurrentFieldText(node, value = node?.textContent || "") {
+      if (currentTemplate() === "compact") return limitedCompactFieldText(node, value);
+      if (currentTemplate() === "full") return limitedFullFieldText(node, value);
+      return value;
+    }
+
+    function placeCaretAtFullFieldEnd(node) {
+      if (document.activeElement !== node) return;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      range.collapse(false);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    function applyLimitedFullFieldText(node, limited) {
+      if (limited === node.textContent) return false;
+      node.textContent = limited;
+      placeCaretAtFullFieldEnd(node);
+      return true;
+    }
+
+    function limitCurrentField(node) {
+      if (!node || !["full", "compact"].includes(currentTemplate())) return false;
+      return applyLimitedFullFieldText(node, limitedCurrentFieldText(node));
+    }
+
+    function fullFieldSelectionOffsets(node) {
+      const selection = window.getSelection();
+      const textLength = node.textContent.length;
+      if (!selection || !selection.rangeCount || !node.contains(selection.anchorNode) || !node.contains(selection.focusNode)) {
+        return { start: textLength, end: textLength };
+      }
+      const offsetFor = (selectionNode, selectionOffset) => {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        range.setEnd(selectionNode, selectionOffset);
+        return range.toString().length;
+      };
+      const anchor = offsetFor(selection.anchorNode, selection.anchorOffset);
+      const focus = offsetFor(selection.focusNode, selection.focusOffset);
+      return { start: Math.min(anchor, focus), end: Math.max(anchor, focus) };
+    }
+
+    function limitAllCurrentFields() {
+      FULL_FIELD_MAX_WIDTHS.forEach((maxWidth, node) => limitCurrentField(node));
+      if (currentTemplate() === "full") limitFullReviewInput(reviewText);
+    }
+
+    FULL_FIELD_MAX_WIDTHS.forEach((maxWidth, node) => {
+      node?.addEventListener("beforeinput", (event) => {
+        if (!["full", "compact"].includes(currentTemplate()) || fullFieldComposing.has(node) || event.isComposing) return;
+        if (!event.inputType.startsWith("insert") || typeof event.data !== "string") return;
+        const current = node.textContent || "";
+        const selection = fullFieldSelectionOffsets(node);
+        const next = current.slice(0, selection.start) + event.data + current.slice(selection.end);
+        const limited = limitedCurrentFieldText(node, next);
+        if (limited === next) return;
+        event.preventDefault();
+        applyLimitedFullFieldText(node, limited);
+        node.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: event.inputType, data: event.data }));
+      });
+      node?.addEventListener("compositionstart", () => {
+        fullFieldComposing.add(node);
+      });
+      node?.addEventListener("compositionend", () => {
+        fullFieldComposing.delete(node);
+        limitCurrentField(node);
+        scheduleSave();
+      });
+      node?.addEventListener("input", () => {
+        if (!fullFieldComposing.has(node)) limitCurrentField(node);
+      });
+    });
+
+    const fullReviewComposing = new WeakSet();
+
+    function limitedFullReviewText(value) {
+      return limitedByFullWidth(value, FULL_REVIEW_MAX_WIDTH);
+    }
+
+    function limitFullReviewInput(input) {
+      if (!input || currentTemplate() !== "full") return false;
+      const limited = limitedFullReviewText(input.value);
+      if (limited === input.value) return false;
+      const caret = Math.min(limited.length, input.selectionStart ?? limited.length);
+      input.value = limited;
+      input.setSelectionRange(caret, caret);
+      return true;
+    }
+
+    function bindFullReviewLimit(input) {
+      input?.addEventListener("beforeinput", (event) => {
+        if (currentTemplate() !== "full" || fullReviewComposing.has(input) || event.isComposing) return;
+        if (!event.inputType.startsWith("insert") || typeof event.data !== "string") return;
+        const start = input.selectionStart ?? input.value.length;
+        const end = input.selectionEnd ?? input.value.length;
+        const next = input.value.slice(0, start) + event.data + input.value.slice(end);
+        const limited = limitedFullReviewText(next);
+        if (limited === next) return;
+        event.preventDefault();
+        input.value = limited;
+        input.setSelectionRange(limited.length, limited.length);
+        input.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: event.inputType, data: event.data }));
+      });
+      input?.addEventListener("compositionstart", () => fullReviewComposing.add(input));
+      input?.addEventListener("compositionend", () => {
+        fullReviewComposing.delete(input);
+        limitFullReviewInput(input);
+        scheduleSave();
+      });
+      input?.addEventListener("input", () => {
+        if (!fullReviewComposing.has(input)) limitFullReviewInput(input);
+      });
+    }
+
+    bindFullReviewLimit(reviewText);
+    bindFullReviewLimit(reviewEditArea);
 
     function setActiveMenu(menuName, persist = true) {
       const allowedMenus = new Set(["template", "theme"]);
@@ -780,6 +994,7 @@
       card.classList.toggle("grid9", nextTemplate === "grid9");
       card.classList.toggle("quick", nextTemplate === "quick");
       card.classList.toggle("trio", nextTemplate === "trio");
+      if (nextTemplate === "full" || nextTemplate === "compact") limitAllCurrentFields();
       templateButtons.forEach((button) => button.classList.toggle("active", button.dataset.template === nextTemplate));
       mobileFocusTarget = null;
       mobileFocusBack?.classList.add("hidden");
@@ -1054,8 +1269,8 @@
       return "";
     }
 
-    function numericText(value) {
-      const text = firstText(value).replace(/[^0-9]/g, "");
+    function numericText(...values) {
+      const text = firstText(...values).replace(/[^0-9]/g, "");
       return text;
     }
 
@@ -1521,11 +1736,16 @@
       const chineseEditionWorkno = Array.isArray(product.language_editions)
         ? (product.language_editions.find((edition) => isChineseLangCode(edition && edition.lang)) || {}).workno || ""
         : "";
+      const originalPriceText = numericText(product.official_price, product.regular_price, product.price);
+      const currentPriceText = numericText(product.price, product.sales_price, product.price_str, product.work_price);
+      const currentDiscountText = numericText(product.discount_rate, product.discount?.discount_rate) || calculateDiscountPercent(originalPriceText, currentPriceText);
       return {
         title: firstText(product.work_name, product.title, product.name, product.work?.work_name),
         cv: firstText(findVoiceText(creators), findVoiceText(product), creatorText(creators, "voice_by"), product.voice_by, product.voice),
         circle: firstText(product.maker_name, product.circle, product.maker?.name, product.brand?.name),
-        originalPrice: numericText(product.official_price, product.price, product.price_str, product.work_price),
+        originalPrice: originalPriceText,
+        currentPrice: currentPriceText,
+        currentDiscount: currentDiscountText,
         coverUrl: productImageMainUrl(product),
         hasChineseVersion: hasChineseVersionInfo(product),
         chineseEditionWorkno: chineseEditionWorkno,
@@ -1547,6 +1767,7 @@
         url.searchParams.set("endpoint", "translatable");
       } else {
         url.searchParams.set("workno", workno);
+        if (endpoint) url.searchParams.set("endpoint", endpoint);
       }
       return url.toString();
     }
@@ -1599,6 +1820,45 @@
       throw lastError || new Error("DLsite translatable fetch failed");
     }
 
+    function parseDlwatcherLowestDiscount(raw, workno) {
+      const product = raw && typeof raw === "object" ? raw : null;
+      if (!product) return "";
+      const responseWorkno = normalizeWorkno(firstText(product.productId, product.product_id, product.workno, product.id));
+      if (responseWorkno && responseWorkno !== normalizeWorkno(workno)) return "";
+      const lowest = product.lowestPrice || product.lowest_price || product.lowest;
+      const discount = numericText(
+        lowest?.priceInfo?.discountRate,
+        lowest?.price_info?.discount_rate,
+        lowest?.discountRate,
+        lowest?.discount_rate
+      );
+      return discount !== "" && Number(discount) <= 100 ? discount : "";
+    }
+
+    async function fetchDlwatcherLowestDiscount(workno) {
+      const directUrl = "https://dlwatcher.com/product/" + encodeURIComponent(workno) + ".json";
+      const proxyUrl = buildProxyUrl(dlsiteProxyUrl(), workno, "dlwatcher");
+      const attempts = proxyUrl ? [proxyUrl, directUrl] : [directUrl];
+      let lastError;
+      let httpError;
+      let receivedWithoutDiscount = false;
+      for (const url of attempts) {
+        try {
+          const response = await fetchWithTimeout(url, { mode: "cors", credentials: "omit" }, 12000);
+          if (!response.ok) throw new Error("HTTP " + response.status);
+          const discount = parseDlwatcherLowestDiscount(await response.json(), workno);
+          if (discount !== "") return discount;
+          receivedWithoutDiscount = true;
+        } catch (error) {
+          lastError = error;
+          if (!httpError && /^HTTP \d+/.test(String(error && error.message))) httpError = error;
+          console.warn("DLwatcher import attempt failed", url, error);
+        }
+      }
+      if (receivedWithoutDiscount) throw new Error("empty lowest discount");
+      throw httpError || lastError || new Error("empty lowest discount");
+    }
+
     function parseTranslatableChinese(raw, workno) {
       const products = raw && raw.data && Array.isArray(raw.data.products) ? raw.data.products : null;
       if (!products) return null;
@@ -1614,10 +1874,19 @@
       if (product.title && (mode === "overwrite" || !editableText("recordTitle").trim())) setEditableText("recordTitle", product.title);
       if (product.cv && (mode === "overwrite" || !editableText("cvText").trim())) setEditableText("cvText", product.cv);
       if (product.circle && (mode === "overwrite" || !editableText("circleText").trim())) setEditableText("circleText", product.circle);
-      if (product.originalPrice && (mode === "overwrite" || !originalPrice.value.trim())) originalPrice.value = product.originalPrice;
-      setChineseChoice(chineseChoice);
+      if (product.originalPrice !== "" && (mode === "overwrite" || !originalPrice.value.trim())) originalPrice.value = product.originalPrice;
+      if (product.currentPrice !== "" && (mode === "overwrite" || !currentPrice.value.trim())) currentPrice.value = product.currentPrice;
+      const importedCurrentDiscount = product.currentDiscount !== "" && (mode === "overwrite" || !currentDiscount.value.trim());
+      if (importedCurrentDiscount) {
+        currentDiscount.value = product.currentDiscount;
+        currentDiscountManual = false;
+      }
+      if (product.lowestDiscount !== "" && (mode === "overwrite" || !lowestPrice.value.trim())) lowestPrice.value = product.lowestDiscount;
+      const currentChineseChoice = document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE;
+      if (mode === "overwrite" || currentChineseChoice === CHOICE_SUBTITLE) setChineseChoice(chineseChoice);
       if (Array.isArray(product.keywords) && (mode === "overwrite" || !tags.querySelector(".tag"))) renderTags(product.keywords.slice(0, 8));
-      updateDiscount();
+      if (importedCurrentDiscount) syncDiscountColor();
+      else updateDiscount(mode === "overwrite");
       saveState();
     }
 
@@ -1647,11 +1916,50 @@
         editableText("cvText").trim() ||
         editableText("circleText").trim() ||
         originalPrice.value.trim() ||
+        currentPrice.value.trim() ||
+        currentDiscount.value.trim() ||
+        lowestPrice.value.trim() ||
+        (document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE) !== CHOICE_SUBTITLE ||
         Array.from(tags.querySelectorAll(".tag")).some((tag) => tag.textContent.trim()) ||
         coverOriginalSrc ||
         coverEditedSrc ||
         coverImage.getAttribute("src")
       );
+    }
+
+    function fullImportFailureReason(error, source) {
+      const message = String((error && error.message) || "");
+      if (source === "lowest" && message === "empty lowest discount") return UI_IMPORT_DLWATCHER_NO_DATA;
+      if (message === "empty product") return UI_IMPORT_DLSITE_NO_DATA;
+      if ((error && error.name === "AbortError") || /abort|timeout/i.test(message)) return UI_IMPORT_REQUEST_TIMEOUT;
+      const httpMatch = message.match(/^HTTP (\d+)/);
+      if (httpMatch) return UI_IMPORT_HTTP_PREFIX + "HTTP " + httpMatch[1] + String.fromCharCode(0x3002);
+      if (/failed to fetch|network|load failed/i.test(message)) return UI_IMPORT_REQUEST_NETWORK;
+      return message || UI_GRID9_UNKNOWN;
+    }
+
+    function showFullImportResult(success, failures) {
+      const failureList = Array.isArray(failures) ? failures : [];
+      grid9ImportTitle.textContent = success ? UI_GRID9_IMPORT_DONE_TITLE : UI_IMPORT_RESULT_FAILED;
+      grid9ImportBody.textContent = "";
+      const summary = document.createElement("p");
+      summary.style.margin = failureList.length ? "0 0 6px" : "0";
+      summary.textContent = success
+        ? (failureList.length ? UI_IMPORT_RESULT_PARTIAL : UI_IMPORT_RESULT_DONE)
+        : UI_IMPORT_RESULT_FAILED + String.fromCharCode(0x3002);
+      grid9ImportBody.appendChild(summary);
+      failureList.forEach((failure) => {
+        const line = document.createElement("p");
+        line.style.margin = "2px 0";
+        line.style.color = "var(--rose-deep)";
+        line.textContent = failure.label + String.fromCharCode(0xff1a) + failure.reason;
+        grid9ImportBody.appendChild(line);
+      });
+      grid9ImportOverwriteButton.hidden = true;
+      grid9ImportFillButton.hidden = true;
+      grid9ImportCancelButton.hidden = true;
+      grid9ImportDoneButton.hidden = false;
+      grid9ImportModal.hidden = false;
     }
 
     async function importProductInfo() {
@@ -1663,11 +1971,25 @@
       const importMode = await chooseBatchImportMode(hasImportOverwriteTarget());
       if (!importMode) return;
       importButton.disabled = true;
-      importButton.textContent = UI_IMPORT_LOADING;
+      showGrid9ImportLoading();
       try {
+        const failures = [];
+        const shouldImportLowest = importMode === "overwrite" || !lowestPrice.value.trim();
+        let lowestDiscountError = null;
+        const lowestDiscountPromise = shouldImportLowest
+          ? fetchDlwatcherLowestDiscount(workno).catch((error) => {
+            lowestDiscountError = error;
+            console.warn("DLwatcher lowest discount import failed", error);
+            return "";
+          })
+          : Promise.resolve("");
         const product = parseDlsiteProduct(await fetchProductJson(workno));
-        if (!product || (!product.title && !product.cv && !product.circle && !product.originalPrice)) {
+        if (!product || (!product.title && !product.cv && !product.circle && !product.originalPrice && !product.currentPrice)) {
           throw new Error("empty product");
+        }
+        product.lowestDiscount = await lowestDiscountPromise;
+        if (lowestDiscountError) {
+          failures.push({ label: UI_IMPORT_LOWEST_LABEL, reason: fullImportFailureReason(lowestDiscountError, "lowest") });
         }
         let chineseChoice = product.hasChineseVersion || product.chineseEditionWorkno ? CHOICE_SUBTITLE : CHOICE_NONE;
         if (chineseChoice === CHOICE_NONE) {
@@ -1676,23 +1998,26 @@
             if (translatable) chineseChoice = translatable.hasChinese ? CHOICE_SUBTITLE : CHOICE_NONE;
           } catch (translatableError) {
             console.warn("Chinese edition detection failed, keep fallback", translatableError);
+            failures.push({ label: UI_IMPORT_CHINESE_LABEL, reason: fullImportFailureReason(translatableError, "translatable") });
           }
         }
         applyImportedProduct(product, chineseChoice, importMode);
-        if (product.coverUrl && (importMode === "overwrite" || !coverImage.getAttribute("src"))) {
-          try {
-            await importCoverFromUrl(product.coverUrl);
-          } catch (coverError) {
-            console.warn("cover import failed", coverError);
-            alert(UI_IMPORT_COVER_FAILED);
+        if (importMode === "overwrite" || !coverImage.getAttribute("src")) {
+          if (product.coverUrl) {
+            try {
+              await importCoverFromUrl(product.coverUrl);
+            } catch (coverError) {
+              console.warn("cover import failed", coverError);
+              failures.push({ label: "BK", reason: fullImportFailureReason(coverError, "cover") });
+            }
+          } else {
+            failures.push({ label: "BK", reason: UI_GRID9_NO_COVER + String.fromCharCode(0x3002) });
           }
         }
-        importButton.textContent = UI_IMPORT_DONE;
-        window.setTimeout(() => { importButton.textContent = UI_IMPORT_INFO; }, 1200);
+        showFullImportResult(true, failures);
       } catch (error) {
         console.warn("import failed", error);
-        alert(UI_IMPORT_FAILED);
-        importButton.textContent = UI_IMPORT_INFO;
+        showFullImportResult(false, [{ label: "DLsite", reason: fullImportFailureReason(error, "dlsite") }]);
       } finally {
         importButton.disabled = false;
       }
@@ -1702,20 +2027,30 @@
       const wrap = row.querySelector(".stars");
       for (let index = 1; index <= 5; index += 1) {
         const star = document.createElement("button");
-        star.className = `star${index <= value ? " active" : ""}`;
+        star.className = "star";
         star.type = "button";
         star.textContent = "★";
         star.setAttribute("aria-label", `${index} 星`);
-        star.addEventListener("click", () => {
-          wrap.querySelectorAll(".star").forEach((item, itemIndex) => {
-            item.classList.toggle("active", itemIndex < index);
-          });
+        star.addEventListener("click", (event) => {
+          const rect = event.currentTarget.getBoundingClientRect();
+          const isHalf = event.clientX - rect.left < rect.width / 2;
+          setRating(row, isHalf ? index - 0.5 : index);
         });
         wrap.appendChild(star);
       }
+      setRating(row, value);
     }
 
     document.querySelectorAll(".rating-row").forEach((row) => makeStars(row));
+    document.querySelectorAll(".rating-adjust-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const row = button.closest(".rating-row");
+        if (!row) return;
+        const change = button.dataset.ratingAdjust === "up" ? 0.5 : -0.5;
+        setRating(row, ratingValue(row) + change);
+        scheduleSave();
+      });
+    });
     function insertPlainText(text) {
       const selection = window.getSelection();
       if (!selection || !selection.rangeCount) return;
@@ -1741,6 +2076,7 @@
     document.addEventListener("input", (event) => {
       const target = event.target;
       if (target instanceof HTMLElement && target.isContentEditable) {
+        if (fullFieldComposing.has(target)) return;
         normalizeEditableNode(target);
         const isEmpty = target.textContent.trim() === "";
         target.classList.toggle("is-empty", isEmpty);
@@ -1771,6 +2107,7 @@
         target.dispatchEvent(new Event("input", { bubbles: true }));
       } else {
         insertPlainText(text);
+        if (FULL_FIELD_MAX_WIDTHS.has(target)) target.dispatchEvent(new Event("input", { bubbles: true }));
       }
     });
 
@@ -3064,6 +3401,7 @@
     function setEditableText(id, value) {
       const node = document.getElementById(id);
       if (node) node.textContent = value || "";
+      if (FULL_FIELD_MAX_WIDTHS.has(node) && !fullFieldComposing.has(node)) limitCurrentField(node);
       if (id === "circleText") syncCircleTextLayout();
     }
 
@@ -3072,9 +3410,14 @@
     }
 
     function setRating(row, value) {
+      const numeric = Math.max(0, Math.min(5, Number(value) || 0));
       row.querySelectorAll(".star").forEach((star, index) => {
-        star.classList.toggle("active", index < value);
+        const position = index + 1;
+        star.classList.toggle("active", numeric >= position);
+        star.classList.toggle("half", numeric > index && numeric < position);
       });
+      const valueNode = row.querySelector(".rating-value");
+      if (valueNode) valueNode.textContent = String(numeric);
     }
 
     function collectState() {
@@ -3096,7 +3439,7 @@
         cnChoice: document.querySelector(".choice-button.active")?.textContent.trim() || "",
         ratings: currentRatings(),
         tags: Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean),
-        reviewText: valueOf("#reviewText"),
+        reviewText: currentTemplate() === "full" ? limitedFullReviewText(valueOf("#reviewText")) : valueOf("#reviewText"),
         coverSrc: templateEditorState.coverSrc || coverImage.getAttribute("src") || "",
         coverOriginalSrc: templateEditorState.coverOriginalSrc || "",
         coverEditedSrc: templateEditorState.coverEditedSrc || "",
@@ -3252,7 +3595,7 @@
       });
       document.querySelectorAll(".rating-row").forEach((row, index) => setRating(row, state.ratings?.[index] ?? 4));
       renderTags(state.tags);
-      document.getElementById("reviewText").value = state.reviewText || "";
+      reviewText.value = currentTemplate() === "full" ? limitedFullReviewText(state.reviewText || "") : (state.reviewText || "");
       coverOriginalSrc = state.coverOriginalSrc || "";
       coverEditedSrc = state.coverEditedSrc || "";
       coverMosaicMaskSrc = state.coverMosaicMaskSrc || "";
@@ -3534,7 +3877,12 @@
     }
 
     function ratingValue(row) {
-      return row.querySelectorAll(".star.active").length;
+      let value = 0;
+      row.querySelectorAll(".star").forEach((star, index) => {
+        if (star.classList.contains("active")) value = Math.max(value, index + 1);
+        else if (star.classList.contains("half")) value = Math.max(value, index + 0.5);
+      });
+      return value;
     }
 
 
@@ -3549,12 +3897,12 @@
       ctx.closePath();
     }
 
-    function strokeRound(ctx, x, y, w, h, r, stroke, width = 2, dashed = false) {
+    function strokeRound(ctx, x, y, w, h, r, stroke, width = 2, dashed = false, dashPattern = [10, 10]) {
       ctx.save();
       roundRect(ctx, x, y, w, h, r);
       ctx.strokeStyle = stroke;
       ctx.lineWidth = width;
-      if (dashed) ctx.setLineDash([10, 10]);
+      if (dashed) ctx.setLineDash(dashPattern);
       ctx.stroke();
       ctx.restore();
     }
@@ -3766,12 +4114,19 @@
       ctx.save();
       ctx.font = canvasFont('900', 24);
       const w = Math.ceil(ctx.measureText(text).width) + 44;
-      const grad = ctx.createLinearGradient(x, y, x + w, y + 34);
+      const h = 39;
+      const grad = ctx.createLinearGradient(x, y, x + w, y + h);
       grad.addColorStop(0, currentCardTheme().accent);
       grad.addColorStop(1, currentCardTheme().accentDeep);
-      fillRound(ctx, x, y, w, 34, 17, grad);
+      ctx.shadowColor = themeAlpha("accentDeep", .18);
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetY = 6;
+      fillRound(ctx, x, y, w, h, h / 2, grad);
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
       ctx.fillStyle = "#fff";
-      ctx.fillText(text, x + 22, y + 25);
+      ctx.fillText(text, x + 22, y + 28);
       ctx.restore();
     }
 
@@ -3836,31 +4191,45 @@
 
     function drawPreviewChoiceField(ctx, activeText, x, top, w) {
       const labels = [CHOICE_SUBTITLE, CHOICE_VIDEO, CHOICE_SCRIPT, CHOICE_NONE];
-      const bw = 74;
+      const gap = 4;
+      const bw = (w - gap * (labels.length - 1)) / labels.length;
       labels.forEach((label, index) => {
-        const bx = x + index * (bw + 12);
+        const bx = x + index * (bw + gap);
         const by = top;
         const active = label === activeText;
-        fillRound(ctx, bx, by, bw, 34, 17, active ? currentCardTheme().accent : "rgba(255,255,255,.62)");
+        if (active) {
+          ctx.save();
+          ctx.shadowColor = themeAlpha("accentDeep", .16);
+          ctx.shadowBlur = 13;
+          ctx.shadowOffsetY = 6;
+          fillRound(ctx, bx, by, bw, 34, 17, themeGradient(ctx, bx, by, bx + bw, by + 34));
+          ctx.restore();
+        } else {
+          fillRound(ctx, bx, by, bw, 34, 17, "rgba(255,255,255,.62)");
+        }
         strokeRound(ctx, bx, by, bw, 34, 17, active ? "transparent" : themeAlpha("accent", .26), 1);
         ctx.fillStyle = active ? "#fff" : currentCardTheme().muted;
-        ctx.font = canvasFont('900', 17);
+        ctx.font = canvasFont('900', 15);
         ctx.textAlign = "center";
         ctx.fillText(label, bx + bw / 2, by + 23);
         ctx.textAlign = "left";
       });
     }
 
-    function drawMetric(ctx, label, value, x, y, w, h, suffix = "", textOffsetX = 0, options = {}) {
+    function drawMetric(ctx, label, value, x, y, w, h, suffix = "", options = {}) {
       fillRound(ctx, x, y, w, h, 18, "rgba(255,255,255,.66)");
       strokeRound(ctx, x, y, w, h, 18, themeAlpha("mint", .28), 2);
       ctx.fillStyle = currentCardTheme().mint;
       ctx.font = canvasFont('800', 18);
-      ctx.fillText(label, x + 10 + textOffsetX, y + 24);
+      ctx.fillText(label, x + 13, y + 24);
       ctx.fillStyle = options.highDiscount ? "#d7192f" : currentCardTheme().ink;
       ctx.font = canvasFont('900', 26);
-      const text = value ? value + suffix : "";
-      ctx.fillText(text, x + 10 + textOffsetX, y + 56);
+      if (!value) return;
+      ctx.fillText(value, x + 13, y + 64);
+      if (suffix) {
+        ctx.font = canvasFont('900', 22);
+        ctx.fillText(suffix, x + 59, y + 64);
+      }
     }
 
     function drawPlayerSvgPaths(ctx, x, y, size, color, paths) {
@@ -3939,11 +4308,23 @@
       const remaining = Math.max(0, playerTotalSeconds - elapsed);
       const leftTime = formatPlayerTime(elapsed);
       const rightTime = progress === 0 ? formatPlayerTime(playerTotalSeconds) : "-" + formatPlayerTime(remaining);
+      const progressWidth = 484 * progress;
       fillRound(ctx, x, y + 4, 484, 8, 4, themeAlpha("line", .34));
-      fillRound(ctx, x, y + 4, 484 * progress, 8, 4, themeAlpha("accent", .88));
+      let progressFill = themeAlpha("accent", .88);
+      if (theme.compactProgress) {
+        progressFill = ctx.createLinearGradient(x, y + 4, x + Math.max(progressWidth, 1), y + 4);
+        progressFill.addColorStop(0, theme.compactProgress[0]);
+        progressFill.addColorStop(1, theme.compactProgress[1]);
+      }
+      fillRound(ctx, x, y + 4, progressWidth, 8, 4, progressFill);
       const dotX = x + (484 - 16) * progress;
+      ctx.save();
+      ctx.shadowColor = "rgba(184, 69, 112, 0.16)";
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 4;
       fillRound(ctx, dotX, y, 16, 16, 8, "#fff");
-      strokeRound(ctx, dotX, y, 16, 16, 8, themeAlpha("accent", .7), 3);
+      ctx.restore();
+      strokeRound(ctx, dotX, y, 16, 16, 8, theme.compactProgressDot || themeAlpha("accent", .7), 3);
 
       ctx.fillStyle = themeAlpha("ink", .68);
       ctx.font = canvasFont('800', 14);
@@ -3960,7 +4341,12 @@
       const grad = ctx.createLinearGradient(x + 210, y + 42, x + 274, y + 106);
       grad.addColorStop(0, theme.accent);
       grad.addColorStop(1, theme.playDeep);
+      ctx.save();
+      ctx.shadowColor = "rgba(184, 69, 112, 0.24)";
+      ctx.shadowBlur = 22;
+      ctx.shadowOffsetY = 10;
       fillRound(ctx, x + 210, y + 42, 64, 64, 32, grad);
+      ctx.restore();
       drawPlayerPlayState(ctx, x + 210, y + 42, playerPlaying);
     }
 
@@ -3985,22 +4371,77 @@
     }
 
     function drawStars(ctx, label, count, x, y) {
-      ctx.fillStyle = currentCardTheme().accentDeep;
+      const theme = currentCardTheme();
+      const starGradient = (sx) => {
+        const gradient = ctx.createLinearGradient(sx, y, sx + 34, y + 34);
+        if (currentThemeId === "sakura-ice") {
+          gradient.addColorStop(0, "#b7b6ff");
+          gradient.addColorStop(1, theme.accentDeep);
+        } else {
+          gradient.addColorStop(0, themeTint("line", .18));
+          gradient.addColorStop(1, theme.accent);
+        }
+        return gradient;
+      };
+      ctx.fillStyle = theme.accentDeep;
       ctx.font = canvasFont('900', 24);
       ctx.fillText(label, x, y + 27);
       for (let i = 0; i < 5; i += 1) {
-        const sx = x + 92 + i * 48;
-        fillRound(ctx, sx, y, 34, 34, 17, i < count ? (currentCardTheme().starFill || currentCardTheme().accent) : "rgba(255,255,255,.7)");
-        strokeRound(ctx, sx, y, 34, 34, 17, themeAlpha("line", .32), 2);
-        ctx.fillStyle = i < count ? "#fff" : themeAlpha("accent", .32);
+        const sx = x + 78 + i * 48;
+        const remaining = count - i;
+        const isActive = remaining >= 1;
+        const isHalf = remaining > 0 && remaining < 1;
+        if (isActive) {
+          ctx.save();
+          ctx.shadowColor = themeAlpha("accentDeep", currentThemeId === "sakura-ice" ? .2 : .18);
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetY = 5;
+          fillRound(ctx, sx, y, 34, 34, 17, starGradient(sx));
+          ctx.restore();
+          ctx.save();
+          roundRect(ctx, sx, y, 34, 34, 17);
+          ctx.clip();
+          ctx.fillStyle = themeAlpha("accentDeep", .16);
+          ctx.fillRect(sx, y + 31, 34, 3);
+          ctx.restore();
+        } else {
+          fillRound(ctx, sx, y, 34, 34, 17, "rgba(255,255,255,.7)");
+          strokeRound(ctx, sx + 1, y + 1, 32, 32, 16, themeAlpha("line", .32), 2);
+        }
+        ctx.fillStyle = isActive ? "#fff" : themeAlpha("accent", .32);
         ctx.font = canvasFont('900', 24);
         ctx.textAlign = "center";
+        if (isActive) {
+          ctx.shadowColor = "rgba(160,59,98,.25)";
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetY = 1;
+        }
         ctx.fillText(STAR_CHAR, sx + 17, y + 26);
+        ctx.shadowColor = "transparent";
+        ctx.shadowOffsetY = 0;
+        if (isHalf) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(sx, y, 17, 34);
+          ctx.clip();
+          fillRound(ctx, sx, y, 34, 34, 17, starGradient(sx));
+          ctx.fillStyle = "#fff";
+          ctx.shadowColor = "rgba(160,59,98,.25)";
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetY = 1;
+          ctx.fillText(STAR_CHAR, sx + 17, y + 26);
+          ctx.restore();
+        }
         ctx.textAlign = "left";
       }
+      ctx.fillStyle = theme.mint;
+      ctx.font = canvasFont('900', 22);
+      ctx.textAlign = "center";
+      ctx.fillText(String(count), x + 349, y + 27);
+      ctx.textAlign = "left";
     }
 
-    async function drawCover(ctx, x = 90, y = 110, w = 420, h = 315, r = 24, frame = true, fitMode = null, shadow = frame) {
+    async function drawCover(ctx, x = 90, y = 110, w = 420, h = 315, r = 24, frame = true, fitMode = null, shadow = frame, contentInset = 0) {
       if (shadow) {
         ctx.save();
         ctx.shadowColor = "rgba(128, 76, 95, 0.16)";
@@ -4012,7 +4453,7 @@
         ctx.restore();
       }
       fillRound(ctx, x, y, w, h, r, currentCardTheme().coverBg);
-      if (frame) strokeRound(ctx, x, y, w, h, r, "#fff", 4);
+      if (frame) strokeRound(ctx, x + 2, y + 2, w - 4, h - 4, Math.max(0, r - 2), "#fff", 4);
       if (!coverImage.src || !coverBox.classList.contains("has-image")) {
         ctx.fillStyle = currentCardTheme().accentDeep;
         ctx.font = canvasFont('800', 24);
@@ -4024,22 +4465,26 @@
         return;
       }
       if (!coverImage.complete) await coverImage.decode().catch(() => {});
+      const contentX = x + contentInset;
+      const contentY = y + contentInset;
+      const contentW = w - contentInset * 2;
+      const contentH = h - contentInset * 2;
       ctx.save();
-      roundRect(ctx, x, y, w, h, r);
+      roundRect(ctx, contentX, contentY, contentW, contentH, Math.max(0, r - contentInset));
       ctx.clip();
       const mode = fitMode || (coverImage.style.objectFit === "cover" ? "cover" : "contain");
       const iw = coverImage.naturalWidth || coverImage.width;
       const ih = coverImage.naturalHeight || coverImage.height;
-      const scale = mode === "cover" ? Math.max(w / iw, h / ih) : Math.min(w / iw, h / ih);
+      const scale = mode === "cover" ? Math.max(contentW / iw, contentH / ih) : Math.min(contentW / iw, contentH / ih);
       const dw = iw * scale;
       const dh = ih * scale;
-      const dx = x + (w - dw) / 2;
-      const dy = y + (h - dh) / 2;
+      const dx = contentX + (contentW - dw) / 2;
+      const dy = contentY + (contentH - dh) / 2;
       ctx.fillStyle = "rgba(255,255,255,.52)";
-      ctx.fillRect(x, y, w, h);
+      ctx.fillRect(contentX, contentY, contentW, contentH);
       ctx.drawImage(coverImage, dx, dy, dw, dh);
       ctx.restore();
-      if (frame) strokeRound(ctx, x, y, w, h, r, "#fff", 4);
+      if (frame) strokeRound(ctx, x + 2, y + 2, w - 4, h - 4, Math.max(0, r - 2), "#fff", 4);
     }
 
     function dataFileName() {
@@ -4138,7 +4583,7 @@
       drawCenteredWrappedText(ctx, textOf('#recordTitle'), 20, 470, 560, 29, 3);
 
       drawCompactInfoField(ctx, LABEL_RJ, textOf('#rjText'), 32, 542, 162.67);
-      drawCompactInfoField(ctx, "CV", textOf('#cvText'), 218.67, 542, 162.66);
+      drawCompactInfoField(ctx, "CV", textOf('#cvText'), 218.67, 542, 162.66, { longText: true });
       drawCompactInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 405.33, 542, 162.67, { longText: true });
 
       drawPlayerDecoration(ctx);
@@ -4166,7 +4611,6 @@
           await downloadCompactCard();
           return;
         }
-        const exportTextOffsetX = isMobileView() ? 8 : 0;
         const canvas = document.createElement("canvas");
         canvas.width = 1080;
         canvas.height = 1440;
@@ -4181,34 +4625,35 @@
         ctx.fillRect(0, 0, 1080, 1440);
         ctx.fillStyle = "rgba(255,255,255,.36)";
         for (let x = 0; x <= 1080; x += 36) ctx.fillRect(x, 0, 1, 1440);
+        ctx.fillStyle = "rgba(255,255,255,.32)";
         for (let y = 0; y <= 1440; y += 36) ctx.fillRect(0, y, 1080, 1);
         strokeRound(ctx, 16, 16, 1048, 1408, 30, themeAlpha("line", .78), 3);
-        strokeRound(ctx, 30, 30, 1020, 1380, 22, themeAlpha("dash", .42), 2, true);
+        strokeRound(ctx, 30, 30, 1020, 1380, 22, themeAlpha("dash", theme.dashAlpha), 2, true, [6, 6]);
 
-        await drawCover(ctx, 62, 87);
+        await drawCover(ctx, 64, 83.5, 420, 315, 24, true, null, true, 4);
 
-        fillRound(ctx, 508, 85, 508, 315, 26, theme.panelBg);
-        strokeRound(ctx, 508, 85, 508, 315, 26, themeAlpha("line", .6), 2);
-        drawStickerLabel(ctx, LABEL_BASIC, 526, 64);
-        drawPreviewInfoField(ctx, "CV", textOf('#cvText'), 532, 134, 221);
-        drawPreviewInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 771, 134, 221, { twoLine: true });
-        drawPreviewInfoField(ctx, LABEL_RJ, textOf('#rjText'), 532, 247, 221);
-        drawPreviewInfoField(ctx, LABEL_DURATION, textOf('#durationText'), 771, 247, 221);
-        drawPreviewChoiceField(ctx, document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE, 532, 347, 424);
+        fillRound(ctx, 508, 83.5, 508, 315, 26, theme.panelBg);
+        strokeRound(ctx, 508, 83.5, 508, 315, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
+        drawStickerLabel(ctx, LABEL_BASIC, 526, 62.5);
+        drawPreviewInfoField(ctx, "CV", limitedFullFieldText(cvText, textOf('#cvText')), 532, 127.5, 221);
+        drawPreviewInfoField(ctx, LABEL_CIRCLE, limitedFullFieldText(circleText, textOf('#circleText')), 771, 127.5, 221, { twoLine: true });
+        drawPreviewInfoField(ctx, LABEL_RJ, limitedFullFieldText(rjText, textOf('#rjText')), 532, 240.5, 221);
+        drawPreviewInfoField(ctx, LABEL_DURATION, limitedFullFieldText(durationText, textOf('#durationText')), 771, 240.5, 221);
+        drawPreviewChoiceField(ctx, document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE, 534, 340.5, 366);
 
-        fillRound(ctx, 62, 440, 952, 112, 26, theme.panelBg);
-        strokeRound(ctx, 62, 440, 952, 112, 26, themeAlpha("line", .54), 2);
-        drawStickerLabel(ctx, LABEL_TITLE, 80, 419);
+        fillRound(ctx, 64, 438.5, 952, 112, 26, theme.panelBg);
+        strokeRound(ctx, 64, 438.5, 952, 112, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
+        drawStickerLabel(ctx, LABEL_TITLE, 82, 417.5);
         ctx.fillStyle = currentCardTheme().ink;
         ctx.font = canvasFont('900', 26);
-        drawWrappedText(ctx, textOf('#recordTitle'), 84, 492, 908, 33, 2);
+        drawWrappedText(ctx, limitedFullFieldText(recordTitle, textOf('#recordTitle')), 88, 490.5, 904, 33, 2);
 
-        fillRound(ctx, 62, 592, 952, 105, 26, theme.panelBg);
-        strokeRound(ctx, 62, 592, 952, 105, 26, themeAlpha("line", .54), 2);
-        drawStickerLabel(ctx, LABEL_TAGS, 80, 571);
+        fillRound(ctx, 64, 590.5, 952, 105, 26, theme.panelBg);
+        strokeRound(ctx, 64, 590.5, 952, 105, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
+        drawStickerLabel(ctx, LABEL_TAGS, 82, 569.5);
         const tagTexts = Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean);
         let tx = 84;
-        const ty = 628;
+        const ty = 626.5;
         ctx.font = canvasFont('900', 21);
         tagTexts.forEach((tag) => {
           const tw = ctx.measureText(tag).width + 26;
@@ -4220,29 +4665,29 @@
           tx += tw + 9;
         });
 
-        fillRound(ctx, 62, 737, 468, 220, 26, theme.panelBg);
-        strokeRound(ctx, 62, 737, 468, 220, 26, themeAlpha("line", .54), 2);
-        drawStickerLabel(ctx, LABEL_PURCHASE, 80, 720);
-        drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 80, 779, 210, 64, "", exportTextOffsetX);
-        drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 302, 779, 210, 64, "", exportTextOffsetX);
-        drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 80, 862, 210, 64, "%off", exportTextOffsetX, { highDiscount: isHighDiscountValue(valueOf("#currentDiscount")) });
-        drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 302, 862, 210, 64, "%off", exportTextOffsetX, { highDiscount: isHighDiscountValue(valueOf("#lowestPrice")) });
+        fillRound(ctx, 64, 735.5, 468, 220, 26, theme.panelBg);
+        strokeRound(ctx, 64, 735.5, 468, 220, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
+        drawStickerLabel(ctx, LABEL_PURCHASE, 82, 714.5);
+        drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 84, 771.5, 208, 77.5);
+        drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 304, 771.5, 208, 77.5);
+        drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 84, 860, 208, 77.5, "%off", { highDiscount: isHighDiscountValue(valueOf("#currentDiscount")) });
+        drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 304, 860, 208, 77.5, "%off", { highDiscount: isHighDiscountValue(valueOf("#lowestPrice")) });
 
-        fillRound(ctx, 546, 737, 468, 220, 26, theme.panelBg);
-        strokeRound(ctx, 546, 737, 468, 220, 26, themeAlpha("line", .54), 2);
-        drawStickerLabel(ctx, LABEL_RATING, 564, 720);
+        fillRound(ctx, 548, 735.5, 468, 220, 26, theme.panelBg);
+        strokeRound(ctx, 548, 735.5, 468, 220, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
+        drawStickerLabel(ctx, LABEL_RATING, 566, 714.5);
         const rows = Array.from(document.querySelectorAll(".rating-row"));
-        drawStars(ctx, LABEL_OVERALL, ratingValue(rows[0]), 564, 776);
-        drawStars(ctx, "CV", ratingValue(rows[1]), 564, 818);
-        drawStars(ctx, LABEL_STORY, ratingValue(rows[2]), 564, 860);
-        drawStars(ctx, "SE", ratingValue(rows[3]), 564, 902);
+        drawStars(ctx, LABEL_OVERALL, ratingValue(rows[0]), 574, 770.5);
+        drawStars(ctx, "CV", ratingValue(rows[1]), 574, 813.5);
+        drawStars(ctx, LABEL_STORY, ratingValue(rows[2]), 574, 856.5);
+        drawStars(ctx, "SE", ratingValue(rows[3]), 574, 899.5);
 
-        fillRound(ctx, 62, 997, 952, 382, 28, theme.reviewBg);
-        strokeRound(ctx, 62, 997, 952, 382, 28, themeAlpha("line", .54), 2);
-        drawStickerLabel(ctx, LABEL_REVIEW, 80, 980);
+        fillRound(ctx, 64, 995.5, 952, 382, 28, theme.reviewBg);
+        strokeRound(ctx, 64, 995.5, 952, 382, 28, themeAlpha("line", theme.lineSoftAlpha), 2);
+        drawStickerLabel(ctx, LABEL_REVIEW, 82, 974.5);
         ctx.fillStyle = currentCardTheme().ink;
         ctx.font = canvasFont('400', 24);
-        drawWrappedText(ctx, valueOf("#reviewText"), 84, 1053, 908, 31, 11);
+        drawWrappedText(ctx, limitedFullReviewText(valueOf("#reviewText")), 88, 1051.5, 904, 31, 11);
 
         handleExportBlob(await canvasToBlob(canvas), templateExportFileName("full"));
       } catch (error) {
@@ -4255,7 +4700,7 @@
 
     const UI_GRID9_UPLOAD = String.fromCharCode(0x70b9, 0x51fb, 0x4e0a, 0x4f20, 0x20, 0x42, 0x4b);
     const UI_GRID9_TAG_PLACEHOLDER = String.fromCharCode(0x77ed, 0x6807, 0x9898);
-    const UI_GRID9_REVIEW_PLACEHOLDER = String.fromCharCode(0x77ed, 0x8bc4, 0xff0c, 0x6700, 0x591a, 0x4e09, 0x884c);
+    const UI_GRID9_REVIEW_PLACEHOLDER = String.fromCharCode(0x77ed, 0x8bc4);
     const UI_GRID9_RJ_PLACEHOLDER = String.fromCharCode(0x52, 0x4a, 0x53f7);
     const UI_GRID9_UPLOAD_FAILED = String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x9009, 0x62e9, 0x56fe, 0x7247, 0x3002);
     const UI_GRID9_WATERMARK = "OTOME SITUATION VOICE";
@@ -4295,15 +4740,15 @@
       String.fromCharCode(0x6700, 0x60f3, 0x5b89, 0x5229)
     ];
     const GRID9_PRESET_VOICE = [
-      String.fromCharCode(0x6700, 0x559c, 0x6b22),
+      String.fromCharCode(0x6700, 0x8fd1, 0x5728, 0x542c),
+      String.fromCharCode(0x6700, 0x4f73, 0x9e21, 0x86cb),
+      String.fromCharCode(0x6700, 0x4f73, 0x5267, 0x60c5),
+      String.fromCharCode(0x6700, 0x751c, 0x871c),
+      String.fromCharCode(0x6700, 0x641e, 0x7b11),
       String.fromCharCode(0x6700, 0x6e29, 0x67d4),
-      String.fromCharCode(0x6700, 0x50ac, 0x7720),
-      String.fromCharCode(0x6700, 0x53cd, 0x5dee),
-      String.fromCharCode(0x6700, 0x8010, 0x542c),
-      String.fromCharCode(0x6700, 0x4e0a, 0x5934),
-      String.fromCharCode(0x6700, 0x4f1a, 0x64a9),
-      String.fromCharCode(0x6700, 0x6709, 0x8bb0, 0x5fc6, 0x70b9),
-      String.fromCharCode(0x6700, 0x63a8, 0x8350)
+      String.fromCharCode(0x6700, 0x9ed1, 0x8f66),
+      String.fromCharCode(0x6700, 0x53ef, 0x7231),
+      String.fromCharCode(0x6700, 0x7f8e, 0x42, 0x4b)
     ];
 
     function buildGrid9Cells() {
@@ -4621,7 +5066,7 @@
     }
 
     async function importAllGrid9Covers() {
-      const mode = await chooseBatchImportMode(grid9CellEditors.some((cell) => cell.querySelector(".grid9-cell-rj-input").value.trim() || grid9HasCover(Number(cell.dataset.grid9Index))));
+      const mode = await chooseBatchImportMode(grid9CellEditors.some((cell) => grid9HasCover(Number(cell.dataset.grid9Index))));
       if (!mode) return;
       const jobs = [];
       let emptyCount = 0;
@@ -5207,7 +5652,14 @@
         const grad = ctx.createLinearGradient(tagX, ty, tagX + tagWidth, ty + tagHeight);
         grad.addColorStop(0, theme.accent);
         grad.addColorStop(1, theme.accentDeep);
-        fillRound(ctx, tagX, ty, tagWidth, tagHeight, tagHeight / 2, grad);
+        ctx.save();
+        roundRect(ctx, tagX, ty, tagWidth, tagHeight, tagHeight / 2);
+        ctx.fillStyle = grad;
+        ctx.shadowColor = themeAlpha("accentDeep", .15);
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetY = 5;
+        ctx.fill();
+        ctx.restore();
         ctx.fillStyle = "#fff";
         ctx.textAlign = "center";
         ctx.font = canvasFont('900', 26);
@@ -5220,7 +5672,15 @@
       }
 
       if (cell.cover) {
-        fillRound(ctx, coverX, coverY, coverWidth, coverHeight, radius, theme.coverBg);
+        ctx.save();
+        roundRect(ctx, coverX, coverY, coverWidth, coverHeight, radius);
+        ctx.fillStyle = theme.coverBg;
+        ctx.shadowColor = "rgba(104,73,87,.13)";
+        ctx.shadowBlur = 18;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 8;
+        ctx.fill();
+        ctx.restore();
         const imgElement = grid9CellEditors[index] ? grid9CellEditors[index].querySelector(".grid9-cover-image") : null;
         if (imgElement && imgElement.complete && imgElement.naturalWidth) {
           ctx.save();
@@ -5235,13 +5695,7 @@
           ctx.drawImage(imgElement, coverX + (coverWidth - dw) / 2, coverY + (coverHeight - dh) / 2, dw, dh);
           ctx.restore();
         }
-        ctx.save();
-        ctx.shadowColor = "rgba(104,73,87,.13)";
-        ctx.shadowBlur = 18;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 8;
         strokeRound(ctx, coverX, coverY, coverWidth, coverHeight, radius, "rgba(255,255,255,.96)", 3);
-        ctx.restore();
         strokeRound(ctx, coverX, coverY, coverWidth, coverHeight, radius, themeAlpha("line", .78), 1);
       } else {
         fillRound(ctx, coverX, coverY, coverWidth, coverHeight, radius, themeAlpha("coverBg", .52));
@@ -5402,32 +5856,37 @@
     const UI_QUICK_REMOVE = String.fromCharCode(0x79fb, 0x9664);
     const UI_QUICK_UPLOAD_FAILED = String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x9009, 0x62e9, 0x56fe, 0x7247, 0x3002);
     const UI_QUICK_WATERMARK = String.fromCharCode(0x4e59, 0x6293, 0x8bb0, 0x5f55) + " \u00b7 QUICK VOICE NOTES";
-    const QUICK_REVIEW_MAX_LENGTH = 44;
+    const QUICK_CV_MAX_WIDTH = 12;
+    const QUICK_REVIEW_MAX_WIDTH = 44;
     const QUICK_REVIEW_LINE_WIDTH = 22 * 11;
-    const quickReviewComposing = new WeakSet();
+    const quickFieldComposing = new WeakSet();
 
     function limitedQuickReviewText(value) {
-      return Array.from(String(value || "")).slice(0, QUICK_REVIEW_MAX_LENGTH).join("");
+      return limitedByFullWidth(value, QUICK_REVIEW_MAX_WIDTH);
     }
 
-    function clampQuickReviewInput(input) {
-      const limited = limitedQuickReviewText(input.value);
+    function limitedQuickCvText(value) {
+      return limitedByFullWidth(value, QUICK_CV_MAX_WIDTH, true);
+    }
+
+    function clampTextInput(input, limiter) {
+      const limited = limiter(input.value);
       if (limited === input.value) return;
       input.value = limited;
       input.setSelectionRange(limited.length, limited.length);
     }
 
-    function bindQuickReviewLimit(input) {
+    function bindTextInputLimit(input, limiter) {
       input.addEventListener("compositionstart", () => {
-        quickReviewComposing.add(input);
+        quickFieldComposing.add(input);
       });
       input.addEventListener("compositionend", () => {
-        quickReviewComposing.delete(input);
-        clampQuickReviewInput(input);
+        quickFieldComposing.delete(input);
+        clampTextInput(input, limiter);
         saveState();
       });
       input.addEventListener("input", () => {
-        if (!quickReviewComposing.has(input)) clampQuickReviewInput(input);
+        if (!quickFieldComposing.has(input)) clampTextInput(input, limiter);
       });
     }
 
@@ -5509,8 +5968,8 @@
         const cvInput = document.createElement("input");
         cvInput.className = "quick-cv";
         cvInput.type = "text";
-        cvInput.maxLength = 24;
         cvInput.placeholder = UI_QUICK_CV_PLACEHOLDER;
+        bindTextInputLimit(cvInput, limitedQuickCvText);
         cvRow.append(cvLabel, cvInput);
         const divider = document.createElement("div");
         divider.className = "quick-cv-divider";
@@ -5520,7 +5979,7 @@
         reviewArea.className = "quick-review";
         reviewArea.rows = 5;
         reviewArea.placeholder = UI_QUICK_REVIEW_PLACEHOLDER;
-        bindQuickReviewLimit(reviewArea);
+        bindTextInputLimit(reviewArea, limitedQuickReviewText);
         reviewWrap.appendChild(reviewArea);
         content.append(cvRow, divider, reviewWrap);
 
@@ -5630,7 +6089,7 @@
       const next = data || {};
       applyQuickCover(index, next.cover || "");
       cell.querySelector(".quick-cover img").style.objectFit = next.coverFit === "contain" ? "contain" : "cover";
-      cell.querySelector(".quick-cv").value = next.cv || "";
+      cell.querySelector(".quick-cv").value = limitedQuickCvText(next.cv);
       cell.querySelector(".quick-review").value = limitedQuickReviewText(next.review);
       const rjInput = cell.querySelector(".quick-rj");
       rjInput.value = next.rj || "";
@@ -5708,7 +6167,7 @@
     }
 
     async function importAllQuickCovers() {
-      const mode = await chooseBatchImportMode(quickCellEditors.some((cell) => cell.querySelector(".quick-rj").value.trim() || quickHasCover(Number(cell.dataset.quickIndex)) || cell.querySelector(".quick-cv").value.trim()));
+      const mode = await chooseBatchImportMode(quickCellEditors.some((cell) => quickHasCover(Number(cell.dataset.quickIndex)) || cell.querySelector(".quick-cv").value.trim()));
       if (!mode) return;
       const jobs = [];
       let emptyCount = 0;
@@ -5719,11 +6178,18 @@
           emptyCount += 1;
           return;
         }
-        if (mode === "fill" && quickHasCover(index)) {
+        const hasCover = quickHasCover(index);
+        const hasCv = Boolean(cell.querySelector(".quick-cv").value.trim());
+        if (mode === "fill" && hasCover && hasCv) {
           skipCount += 1;
           return;
         }
-        jobs.push({ index, rj });
+        jobs.push({
+          index,
+          rj,
+          importCover: mode === "overwrite" || !hasCover,
+          importCv: mode === "overwrite" || !hasCv
+        });
       });
       if (!jobs.length) {
         grid9ImportTitle.textContent = UI_GRID9_IMPORT_DONE_TITLE;
@@ -5744,15 +6210,31 @@
           cursor += 1;
           try {
             const product = parseDlsiteProduct(await fetchProductJson(job.rj));
-            const coverUrl = product && product.coverUrl;
-            if (!coverUrl) throw new Error("no cover url");
-            const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(coverUrl));
-            applyQuickCover(job.index, pngDataUrl);
+            if (!product) throw new Error("empty product");
+            let importedField = false;
             const rjInput = quickCellEditors[job.index].querySelector(".quick-rj");
             rjInput.value = job.rj;
             fitQuickRjWidth(rjInput);
             const cvInput = quickCellEditors[job.index].querySelector(".quick-cv");
-            if ((mode === "overwrite" || !cvInput.value.trim()) && product.cv) cvInput.value = product.cv;
+            if (job.importCv && product.cv) {
+              cvInput.value = limitedQuickCvText(product.cv);
+              importedField = true;
+            }
+            let coverError = null;
+            if (job.importCover) {
+              if (product.coverUrl) {
+                try {
+                  const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl));
+                  applyQuickCover(job.index, pngDataUrl);
+                  importedField = true;
+                } catch (error) {
+                  coverError = error;
+                }
+              } else {
+                coverError = new Error("no cover url");
+              }
+            }
+            if (!importedField) throw coverError || new Error("empty product");
             imported += 1;
           } catch (error) {
             console.warn("Quick batch import failed", job.rj, error);
@@ -5863,7 +6345,15 @@
       const cell = state.cells[index] || {};
       const radius = 23;
 
-      fillRound(ctx, x, y, w, h, radius, "rgba(255,255,255,.9)");
+      ctx.save();
+      roundRect(ctx, x, y, w, h, radius);
+      ctx.fillStyle = "rgba(255,255,255,.9)";
+      ctx.shadowColor = "rgba(104,73,87,.085)";
+      ctx.shadowBlur = 17;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 7;
+      ctx.fill();
+      ctx.restore();
       strokeRound(ctx, x, y, w, h, radius, themeAlpha("line", .5), 1);
 
       const cx = x + w / 2;
@@ -5885,7 +6375,15 @@
       const coverY = bodyTop + 12.2;
 
       if (cell.cover) {
-        fillRound(ctx, coverX, coverY, coverWidth, coverHeight, 17, theme.coverBg);
+        ctx.save();
+        roundRect(ctx, coverX, coverY, coverWidth, coverHeight, 17);
+        ctx.fillStyle = theme.coverBg;
+        ctx.shadowColor = "rgba(104,73,87,.13)";
+        ctx.shadowBlur = 16;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 8;
+        ctx.fill();
+        ctx.restore();
         const imgElement = quickCellEditors[index] ? quickCellEditors[index].querySelector(".quick-cover img") : null;
         if (imgElement && imgElement.complete && imgElement.naturalWidth) {
           ctx.save();
@@ -5900,11 +6398,7 @@
           ctx.drawImage(imgElement, coverX + (coverWidth - dw) / 2, coverY + (coverHeight - dh) / 2, dw, dh);
           ctx.restore();
         }
-        ctx.save();
-        ctx.shadowColor = "rgba(104,73,87,.13)";
-        ctx.shadowBlur = 12;
         strokeRound(ctx, coverX, coverY, coverWidth, coverHeight, 17, "rgba(255,255,255,.98)", 3);
-        ctx.restore();
         strokeRound(ctx, coverX, coverY, coverWidth, coverHeight, 17, themeAlpha("line", .78), 1);
       } else {
         fillRound(ctx, coverX, coverY, coverWidth, coverHeight, 17, themeAlpha("coverBg", .52));
@@ -5942,7 +6436,7 @@
       const cvLabelWidth = Math.ceil(ctx.measureText("CV").width);
       ctx.fillStyle = theme.ink;
       ctx.font = canvasFont('900', 18);
-      ctx.fillText(cell.cv || "", contentX - 2 + cvLabelWidth + 8, cvBaseline + 7);
+      ctx.fillText(limitedQuickCvText(cell.cv), contentX - 2 + cvLabelWidth + 8, cvBaseline + 7);
 
       const dividerY = bodyTop + 37.9;
       ctx.save();
@@ -5975,6 +6469,12 @@
       saveState();
     });
     quickImportAllButton.addEventListener("click", importAllQuickCovers);
+    quickClearBkButton.addEventListener("click", () => {
+      quickCellEditors.forEach((cell, index) => {
+        applyQuickCover(index, "");
+      });
+      saveState();
+    });
     quickClearRepoButton.addEventListener("click", () => {
       quickCellEditors.forEach((cell) => {
         cell.querySelector(".quick-review").value = "";
@@ -6006,6 +6506,28 @@
     const UI_TRIO_PRICE = String.fromCharCode(0x73b0, 0x4ef7);
     const UI_TRIO_RATING = String.fromCharCode(0x8bc4, 0x5206);
     const UI_TRIO_REPO_LABEL = "REPO";
+    const TRIO_CV_MAX_WIDTH = 7;
+    const TRIO_REPO_MAX_WIDTH = 152;
+
+    function limitedTrioCvText(value) {
+      return limitedByFullWidth(value, TRIO_CV_MAX_WIDTH, true);
+    }
+
+    function limitedTrioRjText(value) {
+      const raw = String(value || "").toUpperCase();
+      if (!raw) return "";
+      if (raw === "R") return raw;
+      const digits = (raw.startsWith("RJ") ? raw.slice(2) : raw).replace(/\D/g, "").slice(0, 10);
+      return "RJ" + digits;
+    }
+
+    function limitedTrioPriceText(value) {
+      return String(value || "").replace(/\D/g, "").slice(0, 6);
+    }
+
+    function limitedTrioRepoText(value) {
+      return limitedByFullWidth(value, TRIO_REPO_MAX_WIDTH);
+    }
 
     function trioIsCoarse() {
       return window.matchMedia("(hover: none), (pointer: coarse), (max-width: 780px)").matches;
@@ -6066,8 +6588,8 @@
         const cvInput = document.createElement("input");
         cvInput.className = "trio-field-input trio-cv";
         cvInput.type = "text";
-        cvInput.maxLength = 30;
         cvInput.placeholder = UI_TRIO_CV_PLACEHOLDER;
+        bindTextInputLimit(cvInput, limitedTrioCvText);
         cvField.append(cvLabel, cvInput);
         const rjField = document.createElement("label");
         rjField.className = "trio-inline-field";
@@ -6077,9 +6599,9 @@
         const rjInput = document.createElement("input");
         rjInput.className = "trio-rj-input";
         rjInput.type = "text";
-        rjInput.maxLength = 12;
         rjInput.placeholder = "RJ00000000";
         rjInput.addEventListener("pointerdown", (event) => event.stopPropagation());
+        bindTextInputLimit(rjInput, limitedTrioRjText);
         rjField.append(rjLabel, rjInput);
         const topDivider = document.createElement("div");
         topDivider.className = "trio-top-divider";
@@ -6099,8 +6621,8 @@
         priceInput.className = "trio-price-input";
         priceInput.type = "text";
         priceInput.inputmode = "numeric";
-        priceInput.maxLength = 8;
         priceInput.placeholder = "0";
+        bindTextInputLimit(priceInput, limitedTrioPriceText);
         priceBlock.append(priceLabel, pricePrefix, priceInput);
 
         const ratingBlock = document.createElement("div");
@@ -6128,8 +6650,8 @@
         repo.className = "trio-repo";
         const reviewArea = document.createElement("textarea");
         reviewArea.className = "trio-repo-input";
-        reviewArea.maxLength = 240;
         reviewArea.placeholder = UI_TRIO_REPO_PLACEHOLDER;
+        bindTextInputLimit(reviewArea, limitedTrioRepoText);
         repo.append(reviewArea);
 
         info.append(infoRow, summary, repo);
@@ -6255,9 +6777,9 @@
       const next = data || {};
       applyTrioCover(index, next.cover || "");
       cell.querySelector(".trio-cover img").style.objectFit = next.coverFit === "contain" ? "contain" : "cover";
-      cell.querySelector(".trio-cv").value = next.cv || "";
-      cell.querySelector(".trio-rj-input").value = next.rj || "";
-      cell.querySelector(".trio-price-input").value = next.price || "";
+      cell.querySelector(".trio-cv").value = limitedTrioCvText(next.cv);
+      cell.querySelector(".trio-rj-input").value = limitedTrioRjText(next.rj);
+      cell.querySelector(".trio-price-input").value = limitedTrioPriceText(next.price);
       const rating = Math.max(0, Math.min(5, Math.round((Number(next.rating) || 0) * 2) / 2));
       cell.querySelectorAll(".trio-star").forEach((star, idx) => {
         const starValue = idx + 1;
@@ -6265,7 +6787,7 @@
         star.classList.toggle("off", rating < starValue - 0.5);
       });
       cell.querySelector(".trio-score").textContent = rating.toFixed(1);
-      cell.querySelector(".trio-repo-input").value = next.repo || "";
+      cell.querySelector(".trio-repo-input").value = limitedTrioRepoText(next.repo);
     }
 
     function collectTrioState() {
@@ -6327,17 +6849,30 @@
     }
 
     async function importAllTrioCells() {
-      const mode = await chooseBatchImportMode(trioCellEditors.some((cell) => cell.querySelector(".trio-rj-input").value.trim() || trioHasCover(Number(cell.dataset.trioIndex)) || cell.querySelector(".trio-cv").value.trim() || cell.querySelector(".trio-price-input").value.trim()));
+      const mode = await chooseBatchImportMode(trioCellEditors.some((cell) => trioHasCover(Number(cell.dataset.trioIndex)) || cell.querySelector(".trio-cv").value.trim()));
       if (!mode) return;
       const jobs = [];
       let emptyCount = 0;
+      let skipCount = 0;
       trioCellEditors.forEach((cell, index) => {
         const rj = normalizeWorkno(cell.querySelector(".trio-rj-input").value);
         if (!rj) {
           emptyCount += 1;
           return;
         }
-        jobs.push({ index, rj });
+        const hasCover = trioHasCover(index);
+        const hasCv = Boolean(cell.querySelector(".trio-cv").value.trim());
+        if (mode === "fill" && hasCover && hasCv) {
+          skipCount += 1;
+          return;
+        }
+        jobs.push({
+          index,
+          rj,
+          importCover: mode === "overwrite" || !hasCover,
+          importCv: mode === "overwrite" || !hasCv,
+          importPrice: mode === "overwrite" || !cell.querySelector(".trio-price-input").value.trim()
+        });
       });
       if (!jobs.length) {
         grid9ImportTitle.textContent = UI_GRID9_IMPORT_DONE_TITLE;
@@ -6360,16 +6895,33 @@
             const product = parseDlsiteProduct(await fetchProductJson(job.rj));
             if (!product) throw new Error("empty product");
             const cell = trioCellEditors[job.index];
-            if ((mode === "overwrite" || !trioHasCover(job.index)) && product.coverUrl) {
-              const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl));
-              applyTrioCover(job.index, pngDataUrl);
-            }
+            let importedField = false;
             const cvInput = cell.querySelector(".trio-cv");
-            if ((mode === "overwrite" || !cvInput.value.trim()) && product.cv) cvInput.value = product.cv;
-            const priceInput = cell.querySelector(".trio-price-input");
-            if ((mode === "overwrite" || !priceInput.value.trim()) && product.originalPrice) priceInput.value = product.originalPrice;
+            if (job.importCv && product.cv) {
+              cvInput.value = limitedTrioCvText(product.cv);
+              importedField = true;
+            }
+            if (job.importPrice && product.currentPrice !== "") {
+              cell.querySelector(".trio-price-input").value = limitedTrioPriceText(product.currentPrice);
+              importedField = true;
+            }
             const rjInput = cell.querySelector(".trio-rj-input");
-            rjInput.value = job.rj;
+            rjInput.value = limitedTrioRjText(job.rj);
+            let coverError = null;
+            if (job.importCover) {
+              if (product.coverUrl) {
+                try {
+                  const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl));
+                  applyTrioCover(job.index, pngDataUrl);
+                  importedField = true;
+                } catch (error) {
+                  coverError = error;
+                }
+              } else {
+                coverError = new Error("no cover url");
+              }
+            }
+            if (!importedField) throw coverError || new Error("empty product");
             imported += 1;
           } catch (error) {
             console.warn("Trio batch import failed", job.rj, error);
@@ -6382,7 +6934,7 @@
       for (let i = 0; i < Math.min(concurrency, jobs.length); i += 1) workers.push(worker());
       await Promise.all(workers);
       saveState();
-      showGrid9ImportResult(imported, failed, 0, emptyCount, failures);
+      showGrid9ImportResult(imported, failed, skipCount, emptyCount, failures);
     }
 
     function trioEditorGlobals(index) {
@@ -6671,7 +7223,15 @@
 
       const coverRadius = 20;
       if (cell.cover) {
-        fillRound(ctx, cover.x, cover.y, cover.width, cover.height, coverRadius, theme.coverBg);
+        ctx.save();
+        roundRect(ctx, cover.x, cover.y, cover.width, cover.height, coverRadius);
+        ctx.fillStyle = theme.coverBg;
+        ctx.shadowColor = "rgba(104,73,87,.13)";
+        ctx.shadowBlur = 22;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 10;
+        ctx.fill();
+        ctx.restore();
         const imgElement = trioCellEditors[index] ? trioCellEditors[index].querySelector(".trio-cover img") : null;
         if (imgElement && imgElement.complete && imgElement.naturalWidth) {
           ctx.save();
@@ -6686,11 +7246,7 @@
           ctx.drawImage(imgElement, cover.x + (cover.width - dw) / 2, cover.y + (cover.height - dh) / 2, dw, dh);
           ctx.restore();
         }
-        ctx.save();
-        ctx.shadowColor = "rgba(104,73,87,.13)";
-        ctx.shadowBlur = 22;
         strokeRound(ctx, cover.x, cover.y, cover.width, cover.height, coverRadius, "rgba(255,255,255,.98)", 3);
-        ctx.restore();
         strokeRound(ctx, cover.x, cover.y, cover.width, cover.height, coverRadius, themeAlpha("line", .78), 1);
       } else {
         fillRound(ctx, cover.x, cover.y, cover.width, cover.height, coverRadius, themeAlpha("coverBg", .52));
@@ -6700,9 +7256,9 @@
       }
 
       drawTrioMeasuredText(ctx, "CV", layout.cvLabel, theme.accent);
-      drawTrioMeasuredText(ctx, cell.cv || "", layout.cvInput, theme.ink);
+      drawTrioMeasuredText(ctx, limitedTrioCvText(cell.cv), layout.cvInput, theme.ink);
       drawTrioMeasuredText(ctx, String.fromCharCode(0x52, 0x4a, 0x53f7), layout.rjLabel, theme.accent);
-      drawTrioMeasuredText(ctx, cell.rj || "", layout.rjInput, theme.ink);
+      drawTrioMeasuredText(ctx, limitedTrioRjText(cell.rj), layout.rjInput, theme.ink);
 
       ctx.save();
       ctx.strokeStyle = themeAlpha("accent", .3);
@@ -6719,7 +7275,7 @@
       fillRound(ctx, layout.summary.x, layout.summary.y, layout.summary.width, layout.summary.height, 14, summaryGrad);
       drawTrioMeasuredText(ctx, UI_TRIO_PRICE, layout.priceLabel, theme.muted);
       drawTrioMeasuredText(ctx, "\u00a5", layout.pricePrefix, theme.accentDeep);
-      drawTrioMeasuredText(ctx, cell.price || "", layout.priceInput, theme.accentDeep);
+      drawTrioMeasuredText(ctx, limitedTrioPriceText(cell.price), layout.priceInput, theme.accentDeep);
       drawTrioMeasuredText(ctx, UI_TRIO_RATING, layout.ratingLabel, theme.muted);
 
       const rating = Math.max(0, Math.min(5, Number(cell.rating) || 0));
@@ -6752,7 +7308,7 @@
         letterSpacing: "normal"
       };
       drawTrioMeasuredText(ctx, "\u2661", heartMetric, themeAlpha("accentDeep", .5));
-      drawTrioMeasuredRepo(ctx, cell.repo || "", layout.repoInput, theme.ink);
+      drawTrioMeasuredRepo(ctx, limitedTrioRepoText(cell.repo), layout.repoInput, theme.ink);
     }
 
     function drawTrioCell(ctx, state, index, x, y, w, h) {
@@ -6784,7 +7340,15 @@
       const coverRadius = 20;
 
       if (cell.cover) {
-        fillRound(ctx, coverX, coverY, coverW, coverH, coverRadius, theme.coverBg);
+        ctx.save();
+        roundRect(ctx, coverX, coverY, coverW, coverH, coverRadius);
+        ctx.fillStyle = theme.coverBg;
+        ctx.shadowColor = "rgba(104,73,87,.13)";
+        ctx.shadowBlur = 22;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 10;
+        ctx.fill();
+        ctx.restore();
         const imgElement = trioCellEditors[index] ? trioCellEditors[index].querySelector(".trio-cover img") : null;
         if (imgElement && imgElement.complete && imgElement.naturalWidth) {
           ctx.save();
@@ -6799,11 +7363,7 @@
           ctx.drawImage(imgElement, coverX + (coverW - dw) / 2, coverY + (coverH - dh) / 2, dw, dh);
           ctx.restore();
         }
-        ctx.save();
-        ctx.shadowColor = "rgba(104,73,87,.13)";
-        ctx.shadowBlur = 22;
         strokeRound(ctx, coverX, coverY, coverW, coverH, coverRadius, "rgba(255,255,255,.98)", 3);
-        ctx.restore();
         strokeRound(ctx, coverX, coverY, coverW, coverH, coverRadius, themeAlpha("line", .78), 1);
       } else {
         fillRound(ctx, coverX, coverY, coverW, coverH, coverRadius, themeAlpha("coverBg", .52));
@@ -6834,9 +7394,9 @@
       ctx.fillStyle = theme.accent;
       ctx.fillText("CV", cvX, row1Baseline);
       ctx.fillStyle = theme.ink;
-      ctx.fillText(cell.cv || "", cvX + cvLabelW + 9, row1Baseline);
+      ctx.fillText(limitedTrioCvText(cell.cv), cvX + cvLabelW + 9, row1Baseline);
 
-      const rjText = cell.rj || "";
+      const rjText = limitedTrioRjText(cell.rj);
       ctx.font = canvasFont('900', 22);
       ctx.textAlign = "right";
       ctx.fillStyle = theme.ink;
@@ -6873,7 +7433,7 @@
       ctx.font = canvasFont('900', 23);
       ctx.fillText("\u00a5", summaryX + summaryPadX + priceLabelW + 9, summaryBaseline + 1);
       const yenW = ctx.measureText("\u00a5").width;
-      ctx.fillText(cell.price || "", summaryX + summaryPadX + priceLabelW + 9 + yenW + 5, summaryBaseline + 1);
+      ctx.fillText(limitedTrioPriceText(cell.price), summaryX + summaryPadX + priceLabelW + 9 + yenW + 5, summaryBaseline + 1);
 
       ctx.font = canvasFont('900', 14);
       ctx.fillStyle = theme.muted;
@@ -6914,7 +7474,7 @@
       ctx.fillText("\u2661", repoLeftX + 6, repoTop + 18);
       ctx.fillStyle = themeAlpha("ink", .9);
       ctx.font = canvasFont('600', 22);
-      drawWrappedText(ctx, cell.repo || "", repoTextX, repoTop + 18, infoW - 22 - 20, 29, 8);
+      drawWrappedText(ctx, limitedTrioRepoText(cell.repo), repoTextX, repoTop + 18, infoW - 22 - 20, 29, 8);
     }
 
     trioImportAllButton?.addEventListener("click", importAllTrioCells);
@@ -7289,6 +7849,7 @@
     downloadButton.addEventListener("click", downloadCard);
     document.addEventListener("input", (event) => {
       if (event.target && event.target.id === "circleText") syncCircleTextLayout();
+      if (fullFieldComposing.has(event.target)) return;
       scheduleSave();
     });
     document.addEventListener("click", (event) => {
@@ -7302,6 +7863,7 @@
       void migrateGrid9CoversToCompact();
       void migrateQuickCoversToCompact();
       void migrateTrioCoversToCompact();
+      restoreMainPage();
       fitStage();
       updateDiscount();
       syncDiscountColor();
@@ -7343,6 +7905,17 @@
       const collectionRjImportFill = document.getElementById("collectionRjImportFill");
       const collectionRjImportOverwrite = document.getElementById("collectionRjImportOverwrite");
       const collectionRjImportDone = document.getElementById("collectionRjImportDone");
+      const collectionMobileTagSelect = document.getElementById("collectionMobileTagSelect");
+      const collectionManageTagsButton = document.getElementById("collectionManageTagsButton");
+      const collectionTagManageModal = document.getElementById("collectionTagManageModal");
+      const collectionTagManageList = document.getElementById("collectionTagManageList");
+      const collectionTagManageCancel = document.getElementById("collectionTagManageCancel");
+      const collectionTagManageDone = document.getElementById("collectionTagManageDone");
+      const collectionTagManageAdd = document.getElementById("collectionTagManageAdd");
+      const collectionMobileGridBtn = document.getElementById("collectionMobileGridBtn");
+      const collectionMobileListBtn = document.getElementById("collectionMobileListBtn");
+      const collectionSort = document.getElementById("collectionSort");
+      const collectionMobileSort = document.getElementById("collectionMobileSort");
       document.getElementById("collectionDetailTitle").dataset.placeholder = String.fromCharCode(0x6807, 0x9898);
       document.getElementById("collectionDetailPrice").previousElementSibling.textContent = String.fromCharCode(0x539f, 0x4ef7);
       const COLLECTION_TAGS_KEY = "otome-record-card-collection-tags-v1";
@@ -7352,13 +7925,71 @@
       const COLLECTION_BACKUP_VERSION = 2;
       const COLLECTION_NEW_KEYWORD_TEXT = String.fromCharCode(0x65b0, 0x5173, 0x952e, 0x8bcd);
       const COLLECTION_NEW_TAG_TEXT = String.fromCharCode(0x65b0, 0x6807, 0x7b7e);
+      const COLLECTION_ALL_TAG_TEXT = String.fromCharCode(0x5168, 0x90e8);
+      const COLLECTION_RENAME_TAG_TEXT = String.fromCharCode(0x91cd, 0x547d, 0x540d);
+      const COLLECTION_DELETE_TAG_TEXT = String.fromCharCode(0x5220, 0x9664);
+      const COLLECTION_TAG_COUNT_SUFFIX = String.fromCharCode(0x6761);
       let customCollectionTags = [];
       let removedCollectionTags = [];
+      let collectionTagManageDraft = null;
       try { customCollectionTags = JSON.parse(localStorage.getItem(COLLECTION_TAGS_KEY) || "[]"); } catch { customCollectionTags = []; }
       try { removedCollectionTags = JSON.parse(localStorage.getItem(COLLECTION_REMOVED_TAGS_KEY) || "[]"); } catch { removedCollectionTags = []; }
       const defaultCollectionTags = [];
       function escapeCollectionText(value) { return String(value ?? "").replace(/[&<>"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[character]); }
       function collectionTagNames() { return Array.from(new Set(defaultCollectionTags.concat(customCollectionTags).concat(records.flatMap(work => work.tags || [])))).filter(name => !removedCollectionTags.includes(name)); }
+      function renderMobileTagSelect() {
+        if (!collectionMobileTagSelect) return;
+        const options = [{ name: "all", label: COLLECTION_ALL_TAG_TEXT }].concat(collectionTagNames().map(name => ({ name, label: name })));
+        collectionMobileTagSelect.innerHTML = options.map(item => `<option value="${escapeCollectionText(item.name)}">${escapeCollectionText(item.label)}</option>`).join("");
+        collectionMobileTagSelect.value = tag;
+        if (collectionMobileTagSelect.value !== tag) collectionMobileTagSelect.value = "all";
+      }
+      function collectionMobileTagsMarkup(tags) {
+        const names = Array.from(new Set((Array.isArray(tags) ? tags : []).map(name => String(name || "").trim()).filter(Boolean)));
+        if (!names.length) return "";
+        return `<div class="collection-mobile-tags">${names.map(name => `<i class="collection-tag-mini" data-mobile-tag-chip>${escapeCollectionText(name)}</i>`).join("")}<i class="collection-tag-mini collection-tag-overflow" data-mobile-tag-overflow hidden></i></div>`;
+      }
+      function fitCollectionMobileTags() {
+        if (!window.matchMedia("(max-width: 780px)").matches) return;
+        grid.querySelectorAll(".collection-mobile-tags").forEach(wrap => {
+          const chips = Array.from(wrap.querySelectorAll("[data-mobile-tag-chip]"));
+          const overflow = wrap.querySelector("[data-mobile-tag-overflow]");
+          if (!chips.length || !overflow) return;
+          chips.forEach(chip => { chip.hidden = false; });
+          overflow.hidden = true;
+          const available = wrap.clientWidth;
+          const gap = 4;
+          const chipWidths = chips.map(chip => chip.getBoundingClientRect().width);
+          const allWidth = chipWidths.reduce((sum, width) => sum + width, 0) + gap * Math.max(0, chips.length - 1);
+          if (!available || allWidth <= available) return;
+          let visibleCount = 0;
+          let visibleWidth = 0;
+          for (let index = 0; index < chips.length; index += 1) {
+            const hiddenCount = chips.length - index;
+            overflow.textContent = "+" + hiddenCount;
+            overflow.hidden = false;
+            const overflowWidth = overflow.getBoundingClientRect().width;
+            const required = visibleWidth + (index > 0 ? gap : 0) + overflowWidth;
+            if (required > available) break;
+            visibleCount = index;
+            const nextVisibleWidth = visibleWidth + (index > 0 ? gap : 0) + chipWidths[index];
+            const nextHiddenCount = chips.length - index - 1;
+            if (nextHiddenCount <= 0) {
+              visibleCount = chips.length;
+              break;
+            }
+            overflow.textContent = "+" + nextHiddenCount;
+            const nextRequired = nextVisibleWidth + gap + overflow.getBoundingClientRect().width;
+            if (nextRequired > available) break;
+            visibleCount = index + 1;
+            visibleWidth = nextVisibleWidth;
+          }
+          chips.forEach((chip, index) => { chip.hidden = index >= visibleCount; });
+          const hiddenCount = chips.length - visibleCount;
+          overflow.textContent = "+" + hiddenCount;
+          overflow.hidden = hiddenCount <= 0;
+        });
+      }
       function renderCollectionTags() {
         const links = document.getElementById("collectionTagLinks");
         links.classList.toggle("remove-mode", collectionTagRemoveMode);
@@ -7369,9 +8000,10 @@
       }
       function render() {
         renderCollectionTags();
+        renderMobileTagSelect();
         const q = document.getElementById("collectionSearch").value.trim().toLowerCase();
         let a = records.filter(r => tag === "all" || (r.tags || []).includes(tag)).filter(r => !q || [r.title,r.cn,r.cv,r.rj,r.circle,r.keywords,...(r.tags || [])].join(" ").toLowerCase().includes(q));
-        const s = document.getElementById("collectionSort").value;
+        const s = collectionSort.value;
         if (s === "recent") a.sort((x,y) => (y.editedAt || 0) - (x.editedAt || 0));
         if (s === "added") a.sort((x,y) => (y.addedAt || 0) - (x.addedAt || 0));
         if (s === "rating") a.sort((x,y) => (y.rating || 0) - (x.rating || 0));
@@ -7384,13 +8016,58 @@
         const visible = a.slice(collectionPageIndex * pageSize, (collectionPageIndex + 1) * pageSize);
         grid.classList.toggle("list-mode", listMode);
         page.classList.toggle("collection-list-mode", listMode);
-        grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"${r.cover ? ` style="background-image:url('${r.cover}')"` : ""}><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><strong class="collection-list-title">${escapeCollectionText(r.title || "未填写标题")}</strong><b class="collection-list-cv">${escapeCollectionText(r.cv || "未填写 CV")}</b><div class="collection-list-bottom"><small>${escapeCollectionText(r.rj || "无 RJ")}</small>${r.tags?.[0] ? `<i class="collection-tag-mini">${escapeCollectionText(r.tags[0])}</i>` : ""}</div><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "未填写 CV")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div><i class="collection-tag-mini${r.tags?.[0] ? "" : " is-empty"}">${escapeCollectionText(r.tags?.[0] || "占位")}</i></div></article>`).join("") : "<div class=\"collection-empty\">暂无收藏记录</div>";
+        grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"${r.cover ? ` style="background-image:url('${r.cover}')"` : ""}><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><strong class="collection-list-title">${escapeCollectionText(r.title || "未填写标题")}</strong><b class="collection-list-cv">${escapeCollectionText(r.cv || "未填写 CV")}</b><div class="collection-list-bottom"><small>${escapeCollectionText(r.rj || "无 RJ")}</small>${r.tags?.[0] ? `<i class="collection-tag-mini">${escapeCollectionText(r.tags[0])}</i>` : ""}</div><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "未填写 CV")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div><i class="collection-tag-mini${r.tags?.[0] ? "" : " is-empty"}">${escapeCollectionText(r.tags?.[0] || "占位")}</i>${collectionMobileTagsMarkup(r.tags)}</div></article>`).join("") : "<div class=\"collection-empty\">暂无收藏记录</div>";
+        requestAnimationFrame(fitCollectionMobileTags);
         document.getElementById("collectionCount").textContent = a.length + " 条记录";
         const pager = document.getElementById("collectionPager");
         pager.hidden = a.length <= pageSize;
         document.getElementById("collectionPageText").textContent = (collectionPageIndex + 1) + " / " + pageCount;
         document.getElementById("collectionPrevPage").disabled = collectionPageIndex === 0;
         document.getElementById("collectionNextPage").disabled = collectionPageIndex >= pageCount - 1;
+      }
+      function renderCollectionTagManageDraft() {
+        if (!collectionTagManageList || !collectionTagManageDraft) return;
+        collectionTagManageList.innerHTML = collectionTagManageDraft.filter(item => !item.deleted).map(item => {
+          const count = item.isNew ? 0 : records.filter(work => (work.tags || []).includes(item.original)).length;
+          return `<div class="collection-tag-manage-row" data-original-tag="${escapeCollectionText(item.original)}"><input value="${escapeCollectionText(item.name)}" aria-label="${escapeCollectionText(item.name)}" ${item.isNew ? "" : "readonly"} /><span>${count}${COLLECTION_TAG_COUNT_SUFFIX}</span><button type="button" data-manage-tag-rename>${COLLECTION_RENAME_TAG_TEXT}</button><button type="button" data-manage-tag-delete>${COLLECTION_DELETE_TAG_TEXT}</button></div>`;
+        }).join("") || `<p class="collection-tag-manage-empty">${COLLECTION_ALL_TAG_TEXT}</p>`;
+      }
+      function closeCollectionTagManage() {
+        collectionTagManageDraft = null;
+        if (collectionTagManageModal) collectionTagManageModal.hidden = true;
+      }
+      function openCollectionTagManage() {
+        collectionTagManageDraft = collectionTagNames().map(name => ({ original: name, name, deleted: false }));
+        renderCollectionTagManageDraft();
+        collectionTagManageModal.hidden = false;
+      }
+      async function saveCollectionTagManage() {
+        if (!collectionTagManageDraft) return;
+        const active = collectionTagManageDraft.filter(item => !item.deleted && String(item.name || "").trim());
+        const names = new Set();
+        active.forEach(item => {
+          const requested = String(item.name || "").trim();
+          item.name = requested && !names.has(requested) ? requested : (item.isNew ? "" : item.original);
+          if (item.name) names.add(item.name);
+        });
+        const deleted = new Set(collectionTagManageDraft.filter(item => item.deleted && !item.isNew).map(item => item.original));
+        const renames = new Map(active.map(item => [item.original, item.name]));
+        const now = Date.now();
+        records = records.map(work => {
+          const nextTags = Array.from(new Set((work.tags || []).filter(name => !deleted.has(name)).map(name => renames.get(name) || name)));
+          const changed = nextTags.length !== (work.tags || []).length || nextTags.some((name, index) => name !== (work.tags || [])[index]);
+          return changed ? { ...work, tags: nextTags, editedAt: now } : work;
+        });
+        customCollectionTags = Array.from(new Set(customCollectionTags.filter(name => !deleted.has(name)).map(name => renames.get(name) || name).concat(active.filter(item => item.isNew && item.name).map(item => item.name))));
+        removedCollectionTags = Array.from(new Set(removedCollectionTags.filter(name => !Array.from(renames.values()).includes(name)).concat(Array.from(deleted))));
+        if (deleted.has(tag)) tag = "all";
+        else if (renames.has(tag)) tag = renames.get(tag);
+        localStorage.setItem(COLLECTION_TAGS_KEY, JSON.stringify(customCollectionTags));
+        localStorage.setItem(COLLECTION_REMOVED_TAGS_KEY, JSON.stringify(removedCollectionTags));
+        await putWorks(records);
+        closeCollectionTagManage();
+        collectionPageIndex = 0;
+        render();
       }
       function renderDetailChips(id, values) {
         const element = document.getElementById(id);
@@ -7521,7 +8198,58 @@
         openDetail(record.dataset.id);
       });
       document.getElementById("collectionSearch").oninput = () => { collectionPageIndex = 0; render(); };
-      document.getElementById("collectionSort").onchange = () => { collectionPageIndex = 0; render(); };
+      collectionSort.onchange = () => {
+        if (collectionMobileSort) collectionMobileSort.value = collectionSort.value;
+        collectionPageIndex = 0;
+        render();
+      };
+      collectionMobileSort?.addEventListener("change", () => {
+        collectionSort.value = collectionMobileSort.value;
+        collectionPageIndex = 0;
+        render();
+      });
+      collectionMobileTagSelect?.addEventListener("change", () => {
+        tag = collectionMobileTagSelect.value || "all";
+        collectionPageIndex = 0;
+        render();
+      });
+      collectionManageTagsButton?.addEventListener("click", openCollectionTagManage);
+      collectionTagManageAdd?.addEventListener("click", () => {
+        if (!collectionTagManageDraft) return;
+        const original = "new-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+        collectionTagManageDraft.unshift({ original, name: "", deleted: false, isNew: true });
+        renderCollectionTagManageDraft();
+        const input = collectionTagManageList?.querySelector(".collection-tag-manage-row input");
+        input?.focus();
+      });
+      collectionTagManageList?.addEventListener("click", event => {
+        const row = event.target.closest(".collection-tag-manage-row");
+        if (!row || !collectionTagManageDraft) return;
+        const item = collectionTagManageDraft.find(entry => entry.original === row.dataset.originalTag);
+        if (!item) return;
+        const input = row.querySelector("input");
+        if (event.target.closest("[data-manage-tag-rename]")) {
+          input.readOnly = false;
+          input.focus();
+          input.select();
+          return;
+        }
+        if (event.target.closest("[data-manage-tag-delete]")) {
+          item.deleted = true;
+          renderCollectionTagManageDraft();
+        }
+      });
+      collectionTagManageList?.addEventListener("input", event => {
+        const input = event.target.closest(".collection-tag-manage-row input");
+        if (!input || !collectionTagManageDraft) return;
+        const item = collectionTagManageDraft.find(entry => entry.original === input.closest(".collection-tag-manage-row")?.dataset.originalTag);
+        if (item) item.name = input.value;
+      });
+      collectionTagManageCancel?.addEventListener("click", closeCollectionTagManage);
+      collectionTagManageDone?.addEventListener("click", () => { void saveCollectionTagManage(); });
+      collectionTagManageModal?.addEventListener("click", event => {
+        if (event.target === collectionTagManageModal) closeCollectionTagManage();
+      });
       document.getElementById("collectionTagLinks").onclick = async event => {
         const finishButton = event.target.closest("[data-finish-collection-tag]");
         if (finishButton) {
@@ -7613,8 +8341,19 @@
         event.currentTarget.setAttribute("aria-pressed", String(collectionTagRemoveMode));
         renderCollectionTags();
       };
-      document.getElementById("collectionGridBtn").onclick = () => { listMode = false; document.getElementById("collectionGridBtn").classList.add("active"); document.getElementById("collectionListBtn").classList.remove("active"); render(); };
-      document.getElementById("collectionListBtn").onclick = () => { listMode = true; document.getElementById("collectionListBtn").classList.add("active"); document.getElementById("collectionGridBtn").classList.remove("active"); render(); };
+      function setCollectionListMode(nextListMode) {
+        listMode = nextListMode;
+        document.getElementById("collectionGridBtn").classList.toggle("active", !listMode);
+        document.getElementById("collectionListBtn").classList.toggle("active", listMode);
+        collectionMobileGridBtn?.classList.toggle("active", !listMode);
+        collectionMobileListBtn?.classList.toggle("active", listMode);
+        collectionPageIndex = 0;
+        render();
+      }
+      document.getElementById("collectionGridBtn").onclick = () => setCollectionListMode(false);
+      document.getElementById("collectionListBtn").onclick = () => setCollectionListMode(true);
+      collectionMobileGridBtn?.addEventListener("click", () => setCollectionListMode(false));
+      collectionMobileListBtn?.addEventListener("click", () => setCollectionListMode(true));
       function returnToCollectionList() {
         localStorage.removeItem(COLLECTION_DETAIL_KEY);
         if (collectionDetailPage) collectionDetailPage.hidden = true;

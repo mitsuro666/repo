@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>&#20057;&#25235;&#35760;&#24405;&#27169;&#26495;</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20260813-1330">
 </head>
 <body>
   <main class="app">
@@ -56,6 +56,7 @@
       <div class="sidebar-section-label">&#20851;&#20110;</div>
       <button class="main-nav-button usage-nav-button" id="usageGuideButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg><span>&#20351;&#29992;&#35828;&#26126;</span></button>
       <button class="main-nav-button usage-nav-button" id="usageInfoButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01"/><path d="M11 12h1v4h1"/></svg><span>&#20851;&#20110;&#26412;&#31449;</span></button>
+      <a class="main-nav-button usage-nav-button feedback-link" href="https://my.feishu.cn/share/base/form/shrcnvDLpPTTePe4avmEom5TgUg" target="_blank" rel="noopener noreferrer"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg><span>&#21453;&#39304;&#24314;&#35758;</span></a>
     </nav>
     </aside>
     <section class="app-workspace">
@@ -74,6 +75,7 @@
             <button class="mobile-data-option" id="mobileSaveToCollectionButton" type="button"><span>♡</span><span>&#23384;&#20837;&#25910;&#34255;</span></button>
             <button class="mobile-data-option" id="mobileUsageGuideButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg><span>&#20351;&#29992;&#35828;&#26126;</span></button>
             <button class="mobile-data-option" id="mobileUsageInfoButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01"/><path d="M11 12h1v4h1"/></svg><span>&#20851;&#20110;&#26412;&#31449;</span></button>
+            <a class="mobile-data-option feedback-link" href="https://my.feishu.cn/share/base/form/shrcnvDLpPTTePe4avmEom5TgUg" target="_blank" rel="noopener noreferrer"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg><span>&#21453;&#39304;&#24314;&#35758;</span></a>
           </div>
         </div>
         <nav class="menu-tabs" data-template-tool aria-label="toolbar menu">
@@ -195,10 +197,10 @@
 
         <section class="ratings" aria-label="评价">
           <div class="section-label rating-section-label">评分</div>
-          <div class="rating-row" data-rating="overall"><div class="rating-label">总体</div><div class="stars" aria-label="总体评分"></div></div>
-          <div class="rating-row" data-rating="cv"><div class="rating-label">CV</div><div class="stars" aria-label="CV评分"></div></div>
-          <div class="rating-row" data-rating="story"><div class="rating-label">剧本</div><div class="stars" aria-label="剧本评分"></div></div>
-          <div class="rating-row" data-rating="se"><div class="rating-label">SE</div><div class="stars" aria-label="SE评分"></div></div>
+          <div class="rating-row" data-rating="overall"><div class="rating-label">总体</div><div class="stars" aria-label="总体评分"></div><div class="rating-controls"><span class="rating-value"></span><button class="rating-adjust-button" type="button" data-rating-adjust="up" aria-label="&#22686;&#21152; 0.5 &#20998;" title="&#22686;&#21152; 0.5 &#20998;">&#8593;</button><button class="rating-adjust-button" type="button" data-rating-adjust="down" aria-label="&#20943;&#23569; 0.5 &#20998;" title="&#20943;&#23569; 0.5 &#20998;">&#8595;</button></div></div>
+          <div class="rating-row" data-rating="cv"><div class="rating-label">CV</div><div class="stars" aria-label="CV评分"></div><div class="rating-controls"><span class="rating-value"></span><button class="rating-adjust-button" type="button" data-rating-adjust="up" aria-label="&#22686;&#21152; 0.5 &#20998;" title="&#22686;&#21152; 0.5 &#20998;">&#8593;</button><button class="rating-adjust-button" type="button" data-rating-adjust="down" aria-label="&#20943;&#23569; 0.5 &#20998;" title="&#20943;&#23569; 0.5 &#20998;">&#8595;</button></div></div>
+          <div class="rating-row" data-rating="story"><div class="rating-label">剧本</div><div class="stars" aria-label="剧本评分"></div><div class="rating-controls"><span class="rating-value"></span><button class="rating-adjust-button" type="button" data-rating-adjust="up" aria-label="&#22686;&#21152; 0.5 &#20998;" title="&#22686;&#21152; 0.5 &#20998;">&#8593;</button><button class="rating-adjust-button" type="button" data-rating-adjust="down" aria-label="&#20943;&#23569; 0.5 &#20998;" title="&#20943;&#23569; 0.5 &#20998;">&#8595;</button></div></div>
+          <div class="rating-row" data-rating="se"><div class="rating-label">SE</div><div class="stars" aria-label="SE评分"></div><div class="rating-controls"><span class="rating-value"></span><button class="rating-adjust-button" type="button" data-rating-adjust="up" aria-label="&#22686;&#21152; 0.5 &#20998;" title="&#22686;&#21152; 0.5 &#20998;">&#8593;</button><button class="rating-adjust-button" type="button" data-rating-adjust="down" aria-label="&#20943;&#23569; 0.5 &#20998;" title="&#20943;&#23569; 0.5 &#20998;">&#8595;</button></div></div>
         </section>
 
         <section class="tags-panel">
@@ -266,20 +268,21 @@
     </div>
     <div class="grid9-external-tools" id="grid9ExternalTools" hidden>
       <button class="tool-button primary" id="grid9ImportAllButton" type="button">&#25353;RJ&#21495;&#23548;&#20837;&#20449;&#24687;</button>
-      <button class="tool-button" id="grid9ClearBkButton" type="button">&#28165;&#31354;BK</button>
       <div class="preset-wrap">
         <button class="tool-button" id="grid9PresetButton" type="button">&#30701;&#26631;&#39064;&#39044;&#35774; &#9662;</button>
         <div class="preset-menu" id="grid9PresetMenu" hidden>
-          <button class="preset-item" type="button" data-preset="summary">&#24635;&#32467;&#22411;</button>
-          <button class="preset-item" type="button" data-preset="voice">&#22768;&#20248; BEST9</button>
+          <button class="preset-item" type="button" data-preset="summary">&#39044;&#35774;1</button>
+          <button class="preset-item" type="button" data-preset="voice">&#39044;&#35774;2</button>
           <button class="preset-item" type="button" data-preset="clear">&#28165;&#31354;&#30701;&#26631;&#39064;</button>
         </div>
       </div>
+      <button class="tool-button" id="grid9ClearBkButton" type="button">&#28165;&#31354;BK</button>
       <button class="tool-button" id="grid9ClearRepoButton" type="button">&#28165;&#31354;repo</button>
     </div>
     <div class="quick-external-tools" id="quickExternalTools" hidden>
       <button class="tool-button" id="quickShowRjButton" type="button">&#9745; &#26174;&#31034; RJ &#21495;</button>
       <button class="tool-button primary" id="quickImportAllButton" type="button">&#25353;RJ&#21495;&#23548;&#20837;&#20449;&#24687;</button>
+      <button class="tool-button" id="quickClearBkButton" type="button">&#28165;&#31354; BK</button>
       <button class="tool-button" id="quickClearRepoButton" type="button">&#28165;&#31354; repo</button>
     </div>
     <div class="trio-external-tools" id="trioExternalTools" hidden>
@@ -295,9 +298,17 @@
       <div class="collection-mobile-toolbar"><button class="action-button primary" id="collectionMobileNewRecordButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>&#26032;&#24314;&#35760;&#24405;</span></button><div class="collection-mobile-data"><button class="action-button" id="collectionMobileDataMenuButton" type="button" aria-expanded="false" aria-controls="collectionMobileDataDropdown"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5"/><path d="M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>&#25968;&#25454;&#31649;&#29702;</span><svg class="menu-icon chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="collection-mobile-data-dropdown" id="collectionMobileDataDropdown" hidden><button class="collection-mobile-data-option" id="collectionMobileRjImportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg><span>&#25353;RJ&#21495;&#23548;&#20837;&#20449;&#24687;</span></button><button class="collection-mobile-data-option" id="collectionMobileImportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg><span>&#23548;&#20837;&#22791;&#20221;</span></button><button class="collection-mobile-data-option" id="collectionMobileExportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span>&#23548;&#20986;&#22791;&#20221;</span></button></div></div></div>
       <div class="collection-toolbar"><div class="collection-head"><div></div><div class="toolbar-actions"><button class="action-button" id="collectionRjImportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg><span>按RJ号导入信息</span></button><button class="action-button" id="collectionImportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg><span>导入备份</span></button><button class="action-button" id="collectionExportButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span>导出备份</span></button><button class="action-button primary" id="collectionNewRecordButton" type="button"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>新建记录</span></button><input class="hidden" id="collectionImportInput" type="file" accept="application/json,.json" /></div></div></div>
       <div class="collection-library-workspace">
-      <div class="collection-controls"><label class="collection-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="collectionSearch" placeholder="搜索标题 / RJ / CV / 社团 / 标签…" /></label><select id="collectionSort"><option value="recent">最近编辑</option><option value="added">添加日期</option><option value="cv">CV名</option><option value="title">标题</option><option value="rating">评分 高→低</option><option value="originalPrice">原价 高→低</option><option value="price">现价 高→低</option><option value="lowestPrice">史低 高→低</option></select><div class="collection-view-toggle"><button id="collectionGridBtn" class="collection-icon active" type="button" title="网格视图"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/></svg></button><button id="collectionListBtn" class="collection-icon" type="button" title="列表视图"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></button></div></div>
+      <div class="collection-controls"><label class="collection-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="collectionSearch" placeholder="搜索标题 / RJ / CV / 社团 / 标签…" /></label><select id="collectionSort"><option value="recent">最近编辑</option><option value="added">添加日期</option><option value="cv">CV名</option><option value="title">标题</option><option value="rating">评分 高→低</option><option value="originalPrice">原价 高→低</option><option value="price">现价 高→低</option><option value="lowestPrice">史低 高→低</option></select><div class="collection-view-toggle"><button id="collectionGridBtn" class="collection-icon active" type="button" title="网格视图"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/></svg></button><button id="collectionListBtn" class="collection-icon" type="button" title="列表视图"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></button></div><div class="collection-mobile-view-toggle" aria-label="&#20999;&#25442;&#25910;&#34255;&#35270;&#22270;"><button id="collectionMobileGridBtn" class="active" type="button" title="&#32593;&#26684;&#35270;&#22270;"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/></svg></button><button id="collectionMobileListBtn" type="button" title="&#21015;&#34920;&#35270;&#22270;"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></button></div></div>
+      <div class="collection-mobile-tag-tools"><select id="collectionMobileSort" aria-label="&#25910;&#34255;&#25490;&#24207;"><option value="recent">&#26368;&#36817;&#32534;&#36753;</option><option value="added">&#28155;&#21152;&#26085;&#26399;</option><option value="cv">CV&#21517;</option><option value="title">&#26631;&#39064;</option><option value="rating">&#35780;&#20998; &#39640;&#8594;&#20302;</option><option value="originalPrice">&#21407;&#20215; &#39640;&#8594;&#20302;</option><option value="price">&#29616;&#20215; &#39640;&#8594;&#20302;</option><option value="lowestPrice">&#21490;&#20302; &#39640;&#8594;&#20302;</option></select><select id="collectionMobileTagSelect" aria-label="&#36873;&#25321;&#25910;&#34255;&#26631;&#31614;"></select><button id="collectionManageTagsButton" type="button">&#31649;&#29702;&#26631;&#31614;</button></div>
       <div class="collection-layout"><aside class="collection-tags" id="collectionTagPanel"><b>收藏标签</b><div id="collectionTagLinks"></div><div class="collection-tag-actions"><button class="collection-add-tag" id="collectionAddTagButton" type="button">＋ 新建</button><button class="collection-edit-tag" id="collectionEditTagButton" type="button" aria-pressed="false">编辑</button><button class="collection-remove-tag" id="collectionRemoveTagButton" type="button" aria-pressed="false">× 移除</button></div></aside><div id="collectionGrid" class="collection-grid"></div></div>
       <div class="collection-list-footer"><nav class="collection-pager" id="collectionPager" aria-label="收藏分页" hidden><button id="collectionPrevPage" type="button" aria-label="上一页"></button><span id="collectionPageText">1 / 1</span><button id="collectionNextPage" type="button" aria-label="下一页"></button></nav><div class="collection-footer-count"><span id="collectionCount"></span></div></div>
+      </div>
+      <div class="collection-tag-manage-modal" id="collectionTagManageModal" hidden>
+        <div class="collection-tag-manage-sheet" role="dialog" aria-modal="true" aria-labelledby="collectionTagManageTitle">
+          <div class="collection-tag-manage-heading"><h2 id="collectionTagManageTitle">&#31649;&#29702;&#26631;&#31614;</h2><button id="collectionTagManageAdd" type="button">＋ &#26032;&#24314;&#26631;&#31614;</button></div>
+          <div class="collection-tag-manage-list" id="collectionTagManageList"></div>
+          <div class="collection-tag-manage-actions"><button id="collectionTagManageCancel" type="button">&#21462;&#28040;</button><button class="primary" id="collectionTagManageDone" type="button">&#23436;&#25104;</button></div>
+        </div>
       </div>
     </section>
 
@@ -370,8 +381,7 @@
         <div class="image-edit-workspace">
           <div class="image-edit-canvas-wrap">
             <div class="image-tool-empty" id="imageToolEmpty" hidden>
-              <div>&#19978;&#20256;&#19968;&#24352;&#22270;&#29255;&#65292;&#21333;&#29420;&#20570;&#27169;&#31946;&#12289;&#39532;&#36187;&#20811;&#21644;&#36148;&#32440;&#22788;&#29702;</div>
-              <div class="image-tool-note">&#25512;&#33616;&#29992;&#20110;&#20057;&#25235; BK / &#25509;&#36817;&#26041;&#24418;&#30340;&#23553;&#38754;&#22270;&#29255;&#12290;&#20854;&#20182;&#27604;&#20363;&#20063;&#21487;&#22788;&#29702;&#65292;&#20294;&#25163;&#26426;&#31471;&#32534;&#36753;&#21306;&#22495;&#21487;&#33021;&#36739;&#23567;&#12290;</div>
+              <div class="image-tool-note">&#25512;&#33616;&#29992;&#20110;4:3&#27604;&#20363;&#22270;&#29255;</div>
               <button class="action-button primary" id="standaloneImageUploadButton" type="button">&#19978;&#20256;&#22270;&#29255;</button>
             </div>
             <canvas id="imageEditCanvas"></canvas>
@@ -418,7 +428,7 @@
           <section class="usage-info-section">
             <h3>&#25968;&#25454;&#19982;&#38544;&#31169;</h3>
             <p>&#20320;&#22635;&#20889;&#30340;&#21345;&#29255;&#20869;&#23481;&#21644;&#19978;&#20256;&#30340;&#22270;&#29255;&#20165;&#22312;&#24403;&#21069;&#27983;&#35272;&#22120;&#26412;&#22320;&#22788;&#29702;&#19982;&#20445;&#23384;&#65292;&#19981;&#20250;&#19978;&#20256;&#33267;&#20316;&#32773;&#26381;&#21153;&#22120;&#65307;&#28165;&#38500;&#27983;&#35272;&#22120;&#25968;&#25454;&#25110;&#26356;&#25442;&#35774;&#22791;&#21487;&#33021;&#23548;&#33268;&#20869;&#23481;&#20002;&#22833;&#65292;&#35831;&#21450;&#26102;&#23548;&#20986;&#22791;&#20221;&#12290;</p>
-            <p>&#20351;&#29992; RJ &#21495;&#23548;&#20837;&#26102;&#65292;&#20316;&#21697;&#20449;&#24687;&#20250;&#32463;&#20316;&#32773;&#37096;&#32626;&#30340; Cloudflare Worker &#36716;&#21457;&#35831;&#27714; DLsite &#20844;&#24320;&#21830;&#21697;&#20449;&#24687;&#25509;&#21475;&#65292;Worker &#20165;&#36716;&#21457;&#12289;&#19981;&#23384;&#20648;&#20869;&#23481;&#12290;</p>
+            <p>&#20351;&#29992; RJ &#21495;&#23548;&#20837;&#26102;&#65292;&#27983;&#35272;&#22120;&#20250;&#26681;&#25454; RJ &#21495;&#35831;&#27714; DLsite &#30340;&#20844;&#24320;&#21830;&#21697;&#20449;&#24687;&#25509;&#21475;&#65292;&#24182;&#36890;&#36807;&#20316;&#32773;&#37096;&#32626;&#30340; Cloudflare Worker &#35831;&#27714; dlwatcher &#30340;&#20844;&#24320;&#21830;&#21697;&#20215;&#26684;&#35760;&#24405;&#65292;&#29992;&#20110;&#34917;&#20805;&#21490;&#20302;&#25240;&#25187;&#65307;&#21463;&#36328;&#22495;&#38480;&#21046;&#30340;&#35831;&#27714;&#20063;&#20250;&#30001; Worker &#36716;&#21457;&#12290;Worker &#20165;&#36127;&#36131;&#36716;&#21457;&#35831;&#27714;&#65292;&#19981;&#20027;&#21160;&#20445;&#23384;&#23548;&#20837;&#20869;&#23481;&#12290;</p>
           </section>
           <section class="usage-info-section">
             <h3>&#29992;&#25143;&#19978;&#20256;&#20869;&#23481;</h3>
@@ -431,6 +441,10 @@
           <section class="usage-info-section">
             <h3>&#23383;&#20307;&#19982;&#32032;&#26448;</h3>
             <p>&#26412;&#31449;&#20351;&#29992;&#30340;&#26174;&#31034;&#23383;&#20307;&#19982;&#20869;&#32622;&#32032;&#26448;&#36981;&#24490;&#21508;&#33258;&#35768;&#21487;&#65292;&#35814;&#24773;&#35265;&#20179;&#24211; THIRD_PARTY_NOTICES.md&#12290;</p>
+          </section>
+          <section class="usage-info-section">
+            <h3>&#33394;&#21345;&#26469;&#28304;</h3>
+            <p>&#34180;&#33655;&#27668;&#27873;&#65306;&#64;&#24215;&#38138;&#35774;&#35745;&#23567;&#24352;<br>&#25273;&#33590;&#33683;&#37226;&#12289;&#27185;&#33457;&#26143;&#20912;&#12289;&#33039;&#33039;&#33683;&#21654;&#65306;&#64;&#26691;&#33437;&#33437;<br>&#26447;&#26691;&#33298;&#33433;&#65306;&#64;&#26691;&#21553;<br>&#21320;&#21518;&#23453;&#30707;&#12289;&#26376;&#20809;&#30862;&#29255;&#12289;&#29627;&#29827;&#24494;&#20809;&#12289;&#28342;&#20110;&#33564;&#33394;&#12289;&#32676;&#38738;&#27785;&#30496;&#65306;&#64;&#48;&#56;&#108;&#117;&#120;&#95;&#100;&#101;&#115;&#105;&#103;&#110;</p>
           </section>
         </div>
       </div>
@@ -448,17 +462,17 @@
           <section class="usage-info-section">
             <h3>2. &#25353;&#29256;&#24335;&#22635;&#20889;&#20316;&#21697;&#20449;&#24687;</h3>
             <p>&#23436;&#25972; / &#31616;&#30053;&#65306;&#28857;&#20987;&#21345;&#29255;&#19978;&#30340;&#25991;&#23383;&#21306;&#22495;&#65292;&#22635;&#20889;&#26631;&#39064;&#12289;CV&#12289;&#31038;&#22242;&#12289;RJ &#21495;&#12289;&#26102;&#38271;&#12289;&#20215;&#26684;&#12289;&#35780;&#20998;&#12289;&#20851;&#38190;&#35789;&#21644;&#30701;&#35780;&#12290;&#31616;&#30053;&#29256;&#20250;&#25910;&#36215;&#19968;&#37096;&#20998;&#23637;&#31034;&#31354;&#38388;&#65292;&#26356;&#36866;&#21512;&#36731;&#37327;&#35760;&#24405;&#12290;</p>
-            <p>&#20061;&#23467;&#26684;&#65306;&#36866;&#21512;&#20570;&#27036;&#21333;&#25110;&#20027;&#39064;&#25972;&#29702;&#12290;&#27599;&#26684;&#21487;&#22635;&#20889; BK&#12289;RJ &#21495;&#12289;&#30701;&#26631;&#39064;&#21644;&#30701;&#35780;&#65292;&#39030;&#37096;&#36824;&#21487;&#20197;&#32534;&#36753;&#20027;&#26631;&#39064;&#12289;&#21103;&#26631;&#39064;&#65292;&#24182;&#36873;&#25321;&#26159;&#21542;&#26174;&#31034;&#32534;&#21495;&#21644; RJ &#21495;&#12290;</p>
+            <p>&#20061;&#23467;&#26684;&#65306;&#36866;&#21512;&#20570;&#27036;&#21333;&#25110;&#20027;&#39064;&#25972;&#29702;&#12290;&#27599;&#26684;&#21487;&#22635;&#20889;&#32;&#66;&#75;&#12289;&#82;&#74;&#32;&#21495;&#12289;&#30701;&#26631;&#39064;&#21644;&#30701;&#35780;&#65292;&#39030;&#37096;&#36824;&#21487;&#20197;&#32534;&#36753;&#20027;&#26631;&#39064;&#21644;&#36873;&#25321;&#20027;&#26631;&#39064;&#30340;&#26679;&#24335;&#65292;&#24182;&#36873;&#25321;&#26159;&#21542;&#26174;&#31034;&#32534;&#21495;&#21644;&#32;&#82;&#74;&#32;&#21495;&#12290;</p>
             <p>&#36895;&#35780;&#29256;&#65306;&#36866;&#21512;&#24555;&#36895;&#35760;&#24405;&#22810;&#37096;&#20316;&#21697;&#12290;&#27599;&#26684;&#37325;&#28857;&#23637;&#31034; BK&#12289;CV &#21644;&#19968;&#21477;&#35805; Repo&#65292;&#20063;&#21487;&#20197;&#25353;&#38656;&#35201;&#26174;&#31034;&#25110;&#38544;&#34255; RJ &#21495;&#12290;</p>
             <p>&#19977;&#23467;&#26684;&#65306;&#36866;&#21512;&#23569;&#37327;&#20316;&#21697;&#23545;&#27604;&#25110;&#38454;&#27573;&#24635;&#32467;&#12290;&#27599;&#26684;&#21487;&#22635;&#20889; BK&#12289;CV&#12289;Repo&#12289;&#29616;&#20215;&#21644;&#24635;&#35780;&#65292;&#29256;&#38754;&#30041;&#32473;&#30701;&#35780;&#30340;&#31354;&#38388;&#26356;&#23485;&#26494;&#12290;</p>
           </section>
           <section class="usage-info-section">
             <h3>3. &#29992; RJ &#21495;&#23548;&#20837;</h3>
-            <p>&#22635;&#20889; RJ &#21495;&#21518;&#28857;&#20987;&#12300;&#23548;&#20837;&#20449;&#24687;&#12301;&#65292;&#21487;&#23581;&#35797;&#33258;&#21160;&#22635;&#20837;&#26631;&#39064;&#12289;&#31038;&#22242;&#12289;&#29616;&#20215;&#12289;&#20851;&#38190;&#35789;&#12289;&#20013;&#25991;&#29256;&#26412;&#21644; BK&#12290;&#20061;&#23467;&#26684;&#12289;&#36895;&#35780;&#29256;&#12289;&#19977;&#23467;&#26684;&#20063;&#25903;&#25345;&#25353; RJ &#21495;&#25209;&#37327;&#23548;&#20837; BK &#25110;&#20316;&#21697;&#20449;&#24687;&#65307;&#23548;&#20837;&#32467;&#26524;&#20173;&#24314;&#35758;&#25163;&#21160;&#26816;&#26597;&#12290;</p>
+            <p>&#22635;&#20889; RJ &#21495;&#21518;&#28857;&#20987;&#12300;&#23548;&#20837;&#20449;&#24687;&#12301;&#65292;&#21487;&#23581;&#35797;&#33258;&#21160;&#22635;&#20837;&#35813;&#27169;&#26495;&#38656;&#35201;&#23637;&#31034;&#30340;BK&#12289;&#26631;&#39064;&#12289;CV&#12289;&#31038;&#22242;&#12289;&#20013;&#25991;&#29256;&#26412;&#12289;&#20851;&#38190;&#35789;&#12289;&#21407;&#20215;&#12289;&#29616;&#20215;&#12289;&#29616;&#25240;&#25187;&#12289;&#21490;&#20302;&#31561;&#20449;&#24687;&#12290;&#23548;&#20837;&#32467;&#26524;&#20173;&#24314;&#35758;&#25163;&#21160;&#26816;&#26597;&#12290;</p>
           </section>
           <section class="usage-info-section">
             <h3>4. &#19978;&#20256;&#21644;&#32534;&#36753;&#23553;&#38754;</h3>
-            <p>&#28857;&#20987; BK &#21306;&#22495;&#19978;&#20256;&#22270;&#29255;&#65292;&#21487;&#36873;&#25321;&#23436;&#25972;&#26174;&#31034;&#12289;&#38138;&#28385;&#35009;&#20999;&#65292;&#25110;&#36827;&#20837;&#20462;&#22270;&#24037;&#20855;&#20570;&#39532;&#36187;&#20811;&#12289;&#27169;&#31946;&#12289;&#27233;&#30382;&#25830;&#12289;&#36148;&#32440;&#22788;&#29702;&#12290;&#20462;&#22270;&#24037;&#20855;&#20063;&#21487;&#20197;&#21333;&#29420;&#20351;&#29992;&#65292;&#29992;&#26469;&#22788;&#29702;&#25509;&#36817;&#26041;&#24418;&#30340;&#23553;&#38754;&#22270;&#12290;</p>
+            <p>&#28857;&#20987;&#32;&#66;&#75;&#32;&#21306;&#22495;&#19978;&#20256;&#22270;&#29255;&#65292;&#21487;&#36873;&#25321;&#23436;&#25972;&#26174;&#31034;&#12289;&#38138;&#28385;&#35009;&#20999;&#65292;&#25110;&#36827;&#20837;&#20462;&#22270;&#24037;&#20855;&#20570;&#39532;&#36187;&#20811;&#12289;&#27169;&#31946;&#12289;&#27233;&#30382;&#25830;&#12289;&#36148;&#32440;&#22788;&#29702;&#12290;&#20462;&#22270;&#24037;&#20855;&#20063;&#21487;&#20197;&#21333;&#29420;&#20351;&#29992;&#65292;&#36866;&#21512;&#29992;&#26469;&#22788;&#29702;&#27604;&#20363;&#52;&#58;&#51;&#30340;&#23553;&#38754;&#22270;&#12290;</p>
           </section>
           <section class="usage-info-section">
             <h3>5. &#23548;&#20986;&#22270;&#29255;</h3>
@@ -471,6 +485,6 @@
         </div>
       </div>
     </div>
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=20260813-1350"></script>
 </body>
 </html>
