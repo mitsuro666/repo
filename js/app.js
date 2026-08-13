@@ -213,6 +213,69 @@
     const MAIN_PAGE_STORAGE_KEY = "otome-record-card-main-page";
     const DLSITE_PROXY_URL = "https://dlsite-rj-import.shuiyingsheng.workers.dev/";
     const DEFAULT_THEME_ID = "matcha-berry-cheese";
+    const IS_USAGE_TRACKING_PRODUCTION = window.location.hostname === "mitsuro666.github.io"
+      && window.location.pathname.startsWith("/repo/");
+    const TEMPLATE_USAGE_LABELS = Object.freeze({
+      full: String.fromCharCode(0x5b8c, 0x6574, 0x7248),
+      compact: String.fromCharCode(0x7b80, 0x7565, 0x7248),
+      grid9: String.fromCharCode(0x4e5d, 0x5bab, 0x683c),
+      quick: String.fromCharCode(0x901f, 0x8bc4, 0x7248),
+      trio: String.fromCharCode(0x4e09, 0x5bab, 0x683c)
+    });
+    const THEME_USAGE_LABELS = Object.freeze({
+      "matcha-berry-cheese": String.fromCharCode(0x62b9, 0x8336, 0x8393, 0x916a),
+      "sakura-ice": String.fromCharCode(0x6a31, 0x82b1, 0x661f, 0x51b0),
+      "dirty-berry-coffee": String.fromCharCode(0x810f, 0x810f, 0x8393, 0x5496),
+      "afternoon-jewel": String.fromCharCode(0x5348, 0x540e, 0x5b9d, 0x77f3),
+      "moon-shards": String.fromCharCode(0x6708, 0x5149, 0x788e, 0x7247),
+      "mint-bubble": String.fromCharCode(0x8584, 0x8377, 0x6c14, 0x6ce1),
+      "glass-glimmer": String.fromCharCode(0x73bb, 0x7483, 0x5fae, 0x5149),
+      "madder-melt": String.fromCharCode(0x6eb6, 0x4e8e, 0x831c, 0x8272),
+      "ultramarine-sleep": String.fromCharCode(0x7fa4, 0x9752, 0x6c89, 0x7720),
+      "apricot-souffle": String.fromCharCode(0x674f, 0x6843, 0x8212, 0x8299)
+    });
+    const USAGE_EVENT_TITLES = (() => {
+      const titles = Object.create(null);
+      const exportTemplatePrefix = String.fromCharCode(0x5bfc, 0x51fa, 0x6a21, 0x677f, 0xff5c);
+      const exportThemePrefix = String.fromCharCode(0x5bfc, 0x51fa, 0x8272, 0x5361, 0xff5c);
+      const exportComboPrefix = String.fromCharCode(0x5bfc, 0x51fa, 0x7ec4, 0x5408, 0xff5c);
+      const comboSeparator = String.fromCharCode(0x20, 0xd7, 0x20);
+      Object.entries(TEMPLATE_USAGE_LABELS).forEach(([templateId, templateLabel]) => {
+        titles["export-template-" + templateId] = exportTemplatePrefix + templateLabel;
+        Object.entries(THEME_USAGE_LABELS).forEach(([themeId, themeLabel]) => {
+          titles["export-combo-" + templateId + "--" + themeId] = exportComboPrefix + templateLabel + comboSeparator + themeLabel;
+        });
+      });
+      Object.entries(THEME_USAGE_LABELS).forEach(([themeId, themeLabel]) => {
+        titles["export-theme-" + themeId] = exportThemePrefix + themeLabel;
+      });
+      titles["feature-rj-import-success"] = String.fromCharCode(0x529f, 0x80fd, 0x4f7f, 0x7528, 0xff5c, 0x52, 0x4a, 0x5bfc, 0x5165, 0x6210, 0x529f);
+      titles["feature-open-collection"] = String.fromCharCode(0x529f, 0x80fd, 0x4f7f, 0x7528, 0xff5c, 0x6211, 0x7684, 0x6536, 0x85cf);
+      titles["feature-open-feedback"] = String.fromCharCode(0x529f, 0x80fd, 0x4f7f, 0x7528, 0xff5c, 0x53cd, 0x9988, 0x5efa, 0x8bae);
+      return Object.freeze(titles);
+    })();
+
+    function trackUsageEvent(eventName, title) {
+      if (!IS_USAGE_TRACKING_PRODUCTION || !Object.prototype.hasOwnProperty.call(USAGE_EVENT_TITLES, eventName) || USAGE_EVENT_TITLES[eventName] !== title) return;
+      if (typeof window.goatcounter?.count !== "function") return;
+      try {
+        window.goatcounter.count({ path: eventName, title, event: true, no_session: true, referrer: "" });
+      } catch (_) {
+        // Usage statistics must never affect the local-first application flow.
+      }
+    }
+
+    function trackFixedUsageEvent(eventName) {
+      trackUsageEvent(eventName, USAGE_EVENT_TITLES[eventName]);
+    }
+
+    function trackSuccessfulExport(templateId, themeId) {
+      if (!Object.prototype.hasOwnProperty.call(TEMPLATE_USAGE_LABELS, templateId)
+        || !Object.prototype.hasOwnProperty.call(THEME_USAGE_LABELS, themeId)) return;
+      trackFixedUsageEvent("export-template-" + templateId);
+      trackFixedUsageEvent("export-theme-" + themeId);
+      trackFixedUsageEvent("export-combo-" + templateId + "--" + themeId);
+    }
     const FULL_FIELD_MAX_WIDTHS = new Map([
       [cvText, 8],
       [circleText, 16],
@@ -777,6 +840,7 @@
     function setMainPage(pageName, persist = true) {
       const allowedPages = new Set(["template", "image-tool", "collection"]);
       const nextPage = allowedPages.has(pageName) ? pageName : "template";
+      const previousPage = mainNavButtons.find((button) => button.classList.contains("active"))?.dataset.page || "";
       mainNavButtons.forEach((button) => button.classList.toggle("active", button.dataset.page === nextPage));
       if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES[nextPage] || PAGE_TITLES.template;
       if (templateToolbar) templateToolbar.hidden = nextPage !== "template";
@@ -789,6 +853,9 @@
       }
       if (persist) localStorage.setItem(MAIN_PAGE_STORAGE_KEY, nextPage);
       fitStage();
+      if (persist && nextPage === "collection" && previousPage !== "collection") {
+        trackFixedUsageEvent("feature-open-collection");
+      }
     }
 
     function restoreMainPage() {
@@ -1013,22 +1080,34 @@
     function safeFilePart(value, fallback = "otome") {
       const clean = String(value || "")
         .trim()
-        .replace(/s+/g, "-")
+        .replace(/\s+/g, "-")
         .replace(/[^a-zA-Z0-9_-]+/g, "")
         .replace(/^-+|-+$/g, "");
       return clean || fallback;
     }
 
-    function currentRjFilePart() {
-      const raw = editableText("rjText");
+    function rjFilePart(raw) {
       const clean = String(raw || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
       if (!clean) return "otome";
       return clean.startsWith("RJ") ? clean : "RJ" + clean;
     }
 
+    function firstTemplateRjFilePart(template = currentTemplate()) {
+      if (template === "grid9") {
+        return rjFilePart(grid9CellEditors.map((cell) => cell.querySelector(".grid9-cell-rj-input").value).find((value) => value.trim()));
+      }
+      if (template === "quick") {
+        return rjFilePart(quickCellEditors.map((cell) => cell.querySelector(".quick-rj").value).find((value) => value.trim()));
+      }
+      if (template === "trio") {
+        return rjFilePart(trioCellEditors.map((cell) => cell.querySelector(".trio-rj-input").value).find((value) => value.trim()));
+      }
+      return rjFilePart(editableText("rjText"));
+    }
+
     function templateExportFileName(template = currentTemplate()) {
       return [
-        safeFilePart(currentRjFilePart()),
+        safeFilePart(firstTemplateRjFilePart(template)),
         "repo",
         safeFilePart(template),
         safeFilePart(currentThemeId, DEFAULT_THEME_ID)
@@ -1060,12 +1139,13 @@
       exportModal.hidden = false;
     }
 
-    function handleExportBlob(blob, fileName = "record-card.png") {
+    function handleExportBlob(blob, fileName = "record-card.png", templateId = "", themeId = currentThemeId) {
       if (isMobileView()) {
         showExportPreview(blob, fileName);
       } else {
         downloadBlob(blob, fileName);
       }
+      if (templateId) trackSuccessfulExport(templateId, themeId);
     }
 
     function sanitizeNumericInput(input) {
@@ -2015,6 +2095,7 @@
           }
         }
         showFullImportResult(true, failures);
+        trackFixedUsageEvent("feature-rj-import-success");
       } catch (error) {
         console.warn("import failed", error);
         showFullImportResult(false, [{ label: "DLsite", reason: fullImportFailureReason(error, "dlsite") }]);
@@ -4488,9 +4569,8 @@
     }
 
     function dataFileName() {
-      const rj = editableText("rjText").trim().replace(/[^A-Za-z0-9_-]+/g, "");
       const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-      return (rj || "otome-record") + "-data-" + stamp + ".json";
+      return safeFilePart(firstTemplateRjFilePart()) + "_data_" + stamp + ".json";
     }
 
     function exportRecordData() {
@@ -4560,6 +4640,7 @@
     }
 
     async function downloadCompactCard() {
+      const exportThemeId = currentThemeId;
       const canvas = document.createElement("canvas");
       canvas.width = 600;
       canvas.height = 800;
@@ -4587,7 +4668,7 @@
       drawCompactInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 405.33, 542, 162.67, { longText: true });
 
       drawPlayerDecoration(ctx);
-      handleExportBlob(await canvasToBlob(canvas), templateExportFileName("compact"));
+      handleExportBlob(await canvasToBlob(canvas), templateExportFileName("compact"), "compact", exportThemeId);
     }
 
     async function downloadCard() {
@@ -4607,6 +4688,7 @@
           return;
         }
         await ensureCanvasFontReady();
+        const exportThemeId = currentThemeId;
         if (currentTemplate() === "compact") {
           await downloadCompactCard();
           return;
@@ -4689,7 +4771,7 @@
         ctx.font = canvasFont('400', 24);
         drawWrappedText(ctx, limitedFullReviewText(valueOf("#reviewText")), 88, 1051.5, 904, 31, 11);
 
-        handleExportBlob(await canvasToBlob(canvas), templateExportFileName("full"));
+        handleExportBlob(await canvasToBlob(canvas), templateExportFileName("full"), "full", exportThemeId);
       } catch (error) {
         console.error(error);
         alert("导出失败：请告诉我你看到这条弹窗，我再继续修。");
@@ -5122,6 +5204,7 @@
       await Promise.all(workers);
       saveState();
       showGrid9ImportResult(imported, failed, skipCount, emptyCount, failures);
+      if (imported > 0) trackFixedUsageEvent("feature-rj-import-success");
     }
 
     function applyGrid9Preset(key) {
@@ -5135,7 +5218,7 @@
     }
 
     function grid9ExportFileName() {
-      return ["otome", "grid9", safeFilePart(currentThemeId, DEFAULT_THEME_ID)].join("_") + ".png";
+      return templateExportFileName("grid9");
     }
 
     let grid9ExportCssPromise = null;
@@ -5308,11 +5391,12 @@
       } catch (imageError) {
         console.warn("Grid9 export image wait failed", imageError);
       }
+      const exportThemeId = currentThemeId;
       const canvas = document.createElement("canvas");
       canvas.width = 1080;
       canvas.height = 1440;
       drawGrid9Card(canvas.getContext("2d"));
-      handleExportBlob(await canvasToBlob(canvas), grid9ExportFileName());
+      handleExportBlob(await canvasToBlob(canvas), grid9ExportFileName(), "grid9", exportThemeId);
     }
 
     async function downloadGrid9Card() {
@@ -6248,10 +6332,16 @@
       await Promise.all(workers);
       saveState();
       showGrid9ImportResult(imported, failed, skipCount, emptyCount, failures);
+      if (imported > 0) trackFixedUsageEvent("feature-rj-import-success");
     }
 
     function quickExportFileName() {
-      return ["otome", "quick", safeFilePart(currentThemeId, DEFAULT_THEME_ID)].join("_") + ".png";
+      return [
+        safeFilePart(firstTemplateRjFilePart("quick")),
+        "repo",
+        "quick12",
+        safeFilePart(currentThemeId, DEFAULT_THEME_ID)
+      ].join("_") + ".png";
     }
 
     async function downloadQuickCard() {
@@ -6261,11 +6351,12 @@
       } catch (imageError) {
         console.warn("Quick export image wait failed", imageError);
       }
+      const exportThemeId = currentThemeId;
       const canvas = document.createElement("canvas");
       canvas.width = 1080;
       canvas.height = 1440;
       drawQuickCard(canvas.getContext("2d"));
-      handleExportBlob(await canvasToBlob(canvas), quickExportFileName());
+      handleExportBlob(await canvasToBlob(canvas), quickExportFileName(), "quick", exportThemeId);
     }
 
     function drawQuickStar(ctx, cx, cy, outerR, fill) {
@@ -6935,6 +7026,7 @@
       await Promise.all(workers);
       saveState();
       showGrid9ImportResult(imported, failed, skipCount, emptyCount, failures);
+      if (imported > 0) trackFixedUsageEvent("feature-rj-import-success");
     }
 
     function trioEditorGlobals(index) {
@@ -6974,7 +7066,7 @@
     }
 
     function trioExportFileName() {
-      return ["otome", "trio", safeFilePart(currentThemeId, DEFAULT_THEME_ID)].join("_") + ".png";
+      return templateExportFileName("trio");
     }
 
     function trioMeasuredBox(node, cardRect) {
@@ -7065,8 +7157,9 @@
       } catch (error) {
         console.warn("Trio DOM layout measurement failed, using legacy coordinates", error);
       }
+      const exportThemeId = currentThemeId;
       drawTrioCard(canvas.getContext("2d"), measuredLayout);
-      handleExportBlob(await canvasToBlob(canvas), trioExportFileName());
+      handleExportBlob(await canvasToBlob(canvas), trioExportFileName(), "trio", exportThemeId);
     }
 
     function drawTrioStar(ctx, cx, cy, outerR, fill) {
@@ -7257,7 +7350,6 @@
 
       drawTrioMeasuredText(ctx, "CV", layout.cvLabel, theme.accent);
       drawTrioMeasuredText(ctx, limitedTrioCvText(cell.cv), layout.cvInput, theme.ink);
-      drawTrioMeasuredText(ctx, String.fromCharCode(0x52, 0x4a, 0x53f7), layout.rjLabel, theme.accent);
       drawTrioMeasuredText(ctx, limitedTrioRjText(cell.rj), layout.rjInput, theme.ink);
 
       ctx.save();
@@ -7831,6 +7923,9 @@
     mainNavButtons.forEach((button) => {
       if (!button.dataset.page) return;
       button.addEventListener("click", () => setMainPage(button.dataset.page || "template"));
+    });
+    document.querySelectorAll(".feedback-link").forEach((link) => {
+      link.addEventListener("click", () => trackFixedUsageEvent("feature-open-feedback"));
     });
 
     templateButtons.forEach((button) => {
@@ -8507,7 +8602,8 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = "otome-collection-backup.json";
+        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+        link.download = "my_collection_backup_" + stamp + ".json";
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -8616,6 +8712,7 @@
             const updateMap = new Map(updates.map(work => [String(work.id), work]));
             records = records.map(work => updateMap.get(String(work.id)) || work);
             render();
+            trackFixedUsageEvent("feature-rj-import-success");
           }
           const parts = ["成功 " + updates.length + " 条"];
           if (failed) parts.push("失败 " + failed + " 条");
