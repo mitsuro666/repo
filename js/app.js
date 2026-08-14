@@ -276,16 +276,19 @@
       trackFixedUsageEvent("export-theme-" + themeId);
       trackFixedUsageEvent("export-combo-" + templateId + "--" + themeId);
     }
+    const FULL_CV_LINE_WIDTH = 8;
+    const FULL_CIRCLE_LINE_WIDTH = 8;
+    const COMPACT_CV_CIRCLE_LINE_WIDTH = 7;
+    const TWO_LINE_FIELD_MAX_LINES = 2;
     const FULL_FIELD_MAX_WIDTHS = new Map([
-      [cvText, 8],
-      [circleText, 16],
+      [cvText, FULL_CV_LINE_WIDTH * TWO_LINE_FIELD_MAX_LINES],
+      [circleText, FULL_CIRCLE_LINE_WIDTH * TWO_LINE_FIELD_MAX_LINES],
       [rjText, 6],
       [durationText, 8],
       [recordTitle, 68]
     ]);
     const COMPACT_FIELD_MAX_LENGTHS = new Map([
       [recordTitle, 78],
-      [cvText, 14],
       [rjText, 12]
     ]);
     const FULL_REVIEW_MAX_WIDTH = 407;
@@ -654,13 +657,38 @@
       return limited + (ellipsis ? "\u2026" : "");
     }
 
+    function fullWidthWrappedLines(value, lineWidth, maxLines) {
+      const lines = [];
+      const maxUnits = lineWidth * 2;
+      let line = "";
+      let lineUnits = 0;
+      for (const character of Array.from(value || "")) {
+        const units = fullWidthUnits(character);
+        if (line && lineUnits + units > maxUnits) {
+          lines.push(line);
+          if (lines.length >= maxLines) return lines;
+          line = "";
+          lineUnits = 0;
+        }
+        line += character;
+        lineUnits += units;
+      }
+      if (line || !lines.length) lines.push(line);
+      return lines;
+    }
+
     function limitedFullFieldText(node, value = node?.textContent || "") {
       const maxWidth = FULL_FIELD_MAX_WIDTHS.get(node);
       if (!maxWidth) return value;
-      return limitedByFullWidth(value, maxWidth, node === recordTitle);
+      const normalizedValue = node === cvText || node === circleText ? String(value).replace(/[\r\n]+/g, "") : value;
+      return limitedByFullWidth(normalizedValue, maxWidth, node === recordTitle || node === cvText || node === circleText);
     }
 
     function limitedCompactFieldText(node, value = node?.textContent || "") {
+      if (node === cvText || node === circleText) {
+        const normalizedValue = String(value).replace(/[\r\n]+/g, "");
+        return limitedByFullWidth(normalizedValue, COMPACT_CV_CIRCLE_LINE_WIDTH * TWO_LINE_FIELD_MAX_LINES, true);
+      }
       const maxLength = COMPACT_FIELD_MAX_LENGTHS.get(node);
       if (!maxLength) return value;
       const characters = Array.from(value);
@@ -692,6 +720,30 @@
     }
 
     function applyLimitedFullFieldText(node, limited) {
+      const wrappedLineWidth = currentTemplate() === "full" && (node === cvText || node === circleText)
+        ? (node === cvText ? FULL_CV_LINE_WIDTH : FULL_CIRCLE_LINE_WIDTH)
+        : (currentTemplate() === "compact" && (node === cvText || node === circleText) ? COMPACT_CV_CIRCLE_LINE_WIDTH : 0);
+      if (wrappedLineWidth) {
+        const lines = fullWidthWrappedLines(limited, wrappedLineWidth, TWO_LINE_FIELD_MAX_LINES);
+        const currentLines = Array.from(node.childNodes).reduce((items, child) => {
+          if (child.nodeName === "BR") items.push("");
+          else items[items.length - 1] += child.textContent || "";
+          return items;
+        }, [""]);
+        if (currentLines.length === lines.length && currentLines.every((line, index) => line === lines[index])) return false;
+        node.replaceChildren();
+        lines.forEach((line, index) => {
+          if (index) node.appendChild(document.createElement("br"));
+          node.appendChild(document.createTextNode(line));
+        });
+        placeCaretAtFullFieldEnd(node);
+        return true;
+      }
+      if ((node === cvText || node === circleText) && node.querySelector("br")) {
+        node.textContent = limited;
+        placeCaretAtFullFieldEnd(node);
+        return true;
+      }
       if (limited === node.textContent) return false;
       node.textContent = limited;
       placeCaretAtFullFieldEnd(node);
@@ -4058,6 +4110,12 @@
       return lines.length * lineHeight;
     }
 
+    function drawFullWidthWrappedText(ctx, text, x, y, lineWidth = 7, lineHeight = 31, maxLines = 2) {
+      const lines = fullWidthWrappedLines(text, lineWidth, maxLines);
+      lines.forEach((item, index) => ctx.fillText(item, x, y + index * lineHeight));
+      return lines.length * lineHeight;
+    }
+
     function drawCenteredWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3) {
       const lines = [];
       const sourceLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
@@ -4249,9 +4307,9 @@
       ctx.fillText(label, x + w / 2, top + 19);
       drawFieldRule(ctx, x, top + 11, w);
       ctx.fillStyle = currentCardTheme().ink;
-      if (options.longText) {
+      if (options.fullWidthTwoLine) {
         ctx.font = canvasFont('900', 23);
-        drawFixedCharWrappedText(ctx, value, x + w / 2, top + 61, 7, 31, 2);
+        drawFullWidthWrappedText(ctx, value, x + w / 2, top + 61, COMPACT_CV_CIRCLE_LINE_WIDTH, 31, TWO_LINE_FIELD_MAX_LINES);
       } else {
         ctx.font = canvasFont('900', 26);
         drawCenteredWrappedText(ctx, value, x, top + 61, w, 31, 1);
@@ -4266,7 +4324,8 @@
       drawFieldRule(ctx, x, top + 11, w);
       ctx.fillStyle = currentCardTheme().ink;
       ctx.font = canvasFont('900', 26);
-      if (options.twoLine) drawFixedCharWrappedText(ctx, value, x, top + 61, Math.max(1, Math.floor(w / 26)), 31, 2);
+      if (options.fullWidthTwoLine) drawFullWidthWrappedText(ctx, value, x, top + 61, options.lineWidth, 31, TWO_LINE_FIELD_MAX_LINES);
+      else if (options.twoLine) drawFixedCharWrappedText(ctx, value, x, top + 61, Math.max(1, Math.floor(w / 26)), 31, 2);
       else drawWrappedText(ctx, value, x, top + 61, w, 31, 1);
     }
 
@@ -4664,8 +4723,8 @@
       drawCenteredWrappedText(ctx, textOf('#recordTitle'), 20, 470, 560, 29, 3);
 
       drawCompactInfoField(ctx, LABEL_RJ, textOf('#rjText'), 32, 542, 162.67);
-      drawCompactInfoField(ctx, "CV", textOf('#cvText'), 218.67, 542, 162.66, { longText: true });
-      drawCompactInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 405.33, 542, 162.67, { longText: true });
+      drawCompactInfoField(ctx, "CV", textOf('#cvText'), 218.67, 542, 162.66, { fullWidthTwoLine: true });
+      drawCompactInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 405.33, 542, 162.67, { fullWidthTwoLine: true });
 
       drawPlayerDecoration(ctx);
       handleExportBlob(await canvasToBlob(canvas), templateExportFileName("compact"), "compact", exportThemeId);
@@ -4717,8 +4776,8 @@
         fillRound(ctx, 508, 83.5, 508, 315, 26, theme.panelBg);
         strokeRound(ctx, 508, 83.5, 508, 315, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
         drawStickerLabel(ctx, LABEL_BASIC, 526, 62.5);
-        drawPreviewInfoField(ctx, "CV", limitedFullFieldText(cvText, textOf('#cvText')), 532, 127.5, 221);
-        drawPreviewInfoField(ctx, LABEL_CIRCLE, limitedFullFieldText(circleText, textOf('#circleText')), 771, 127.5, 221, { twoLine: true });
+        drawPreviewInfoField(ctx, "CV", limitedFullFieldText(cvText, textOf('#cvText')), 532, 127.5, 221, { fullWidthTwoLine: true, lineWidth: FULL_CV_LINE_WIDTH });
+        drawPreviewInfoField(ctx, LABEL_CIRCLE, limitedFullFieldText(circleText, textOf('#circleText')), 771, 127.5, 221, { fullWidthTwoLine: true, lineWidth: FULL_CIRCLE_LINE_WIDTH });
         drawPreviewInfoField(ctx, LABEL_RJ, limitedFullFieldText(rjText, textOf('#rjText')), 532, 240.5, 221);
         drawPreviewInfoField(ctx, LABEL_DURATION, limitedFullFieldText(durationText, textOf('#durationText')), 771, 240.5, 221);
         drawPreviewChoiceField(ctx, document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE, 534, 340.5, 366);

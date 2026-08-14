@@ -1995,7 +1995,7 @@
     .card.compact .info-panel .field label { font-size: 18px; transform: none; text-align: center; }
     .card.compact .info-panel .field .editable { width: 100%; max-width: 100%; font-size: 22px; min-height: 28px; line-height: 1.1; text-align: center; }
     .card.compact #cvText { min-height: 53px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
-    .card.compact #circleText { min-height: 28px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere; }
+    .card.compact #circleText { min-height: 53px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere; }
     .card.compact .info-panel .field:has(#rjText) { order: 1; transform: none; }
     .card.compact .info-panel .field:has(#cvText) { order: 2; }
     .card.compact .info-panel .field:has(#circleText) { order: 3; }
