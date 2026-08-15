@@ -11,6 +11,7 @@
     const imageToolPage = document.getElementById("imageToolPage");
     const collectionPage = document.getElementById("collectionPage");
     const collectionDetailPage = document.getElementById("collectionDetailPage");
+    let confirmCollectionDetailLeave = null;
     const collectionMobileNewRecordButton = document.getElementById("collectionMobileNewRecordButton");
     const collectionMobileDataMenuButton = document.getElementById("collectionMobileDataMenuButton");
     const collectionMobileDataDropdown = document.getElementById("collectionMobileDataDropdown");
@@ -7981,7 +7982,12 @@
     });
     mainNavButtons.forEach((button) => {
       if (!button.dataset.page) return;
-      button.addEventListener("click", () => setMainPage(button.dataset.page || "template"));
+      button.addEventListener("click", async () => {
+        if (confirmCollectionDetailLeave && collectionDetailPage && !collectionDetailPage.hidden) {
+          if (!await confirmCollectionDetailLeave()) return;
+        }
+        setMainPage(button.dataset.page || "template");
+      });
     });
     document.querySelectorAll(".feedback-link").forEach((link) => {
       link.addEventListener("click", () => trackFixedUsageEvent("feature-open-feedback"));
@@ -8031,7 +8037,9 @@
     scrollActivePickerIntoView();
     window.addEventListener("beforeunload", saveState);
     window.addEventListener("resize", () => {
-      setMainPage(localStorage.getItem(MAIN_PAGE_STORAGE_KEY) || "template", false);
+      const savedMainPage = localStorage.getItem(MAIN_PAGE_STORAGE_KEY) || "template";
+      const collectionDetailVisible = savedMainPage === "collection" && collectionDetailPage && !collectionDetailPage.hidden;
+      if (!collectionDetailVisible) setMainPage(savedMainPage, false);
       fitStage();
       updateThemePager();
       if (!imageEditModal.hidden && imageEditorMode === "template") layoutTemplateImageEditorActions();
@@ -8515,7 +8523,6 @@
         if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES.collection;
         requestAnimationFrame(() => { if (collectionScroller) collectionScroller.scrollTo({ top:scrollY, behavior:"instant" }); else window.scrollTo(0,scrollY); });
       }
-      document.querySelector('.main-nav-button[data-page="collection"]')?.addEventListener("click", () => localStorage.removeItem(COLLECTION_DETAIL_KEY));
       ["collectionDetailKeywords","collectionDetailLibraryTags"].forEach(id => {
         const element = document.getElementById(id);
         element.onclick = event => {
@@ -8584,11 +8591,16 @@
           return false;
         }
       }
-      document.getElementById("collectionBack").onclick = async () => {
+      confirmCollectionDetailLeave = async () => {
         if (collectionDetailSnapshot() !== collectionDetailInitialSnapshot) {
           const shouldSave = await requestCollectionDetailSave();
-          if (shouldSave && !await saveCollectionDetail(false)) return;
+          if (shouldSave && !await saveCollectionDetail(false)) return false;
         }
+        localStorage.removeItem(COLLECTION_DETAIL_KEY);
+        return true;
+      };
+      document.getElementById("collectionBack").onclick = async () => {
+        if (!await confirmCollectionDetailLeave()) return;
         returnToCollectionList();
       };
       document.getElementById("collectionDetailSaveButton").onclick = () => saveCollectionDetail(true);
@@ -8606,7 +8618,8 @@
           alert("删除条目失败，请稍后重试。");
         }
       };
-      document.getElementById("collectionEditRecordButton").onclick = () => {
+      document.getElementById("collectionEditRecordButton").onclick = async () => {
+        if (!await confirmCollectionDetailLeave()) return;
         const work = records.find(item => String(item.id) === String(activeCollectionRecordId));
         if (!work) return;
         const state = collectState();
