@@ -77,9 +77,14 @@
     const mobileUsageInfoButton = document.getElementById("mobileUsageInfoButton");
     const usageInfoModal = document.getElementById("usageInfoModal");
     const usageInfoCloseButton = document.getElementById("usageInfoCloseButton");
+    const updateLogButton = document.getElementById("updateLogButton");
+    const mobileUpdateLogButton = document.getElementById("mobileUpdateLogButton");
+    const updateLogModal = document.getElementById("updateLogModal");
+    const updateLogCloseButton = document.getElementById("updateLogCloseButton");
     const appDialogModal = document.getElementById("appDialogModal");
     const appDialogTitle = document.getElementById("appDialogTitle");
     const appDialogMessage = document.getElementById("appDialogMessage");
+    const appDialogScrollHint = document.getElementById("appDialogScrollHint");
     const appDialogCancelButton = document.getElementById("appDialogCancelButton");
     const appDialogConfirmButton = document.getElementById("appDialogConfirmButton");
 
@@ -630,6 +635,20 @@
     const UI_DIALOG_CANCEL = String.fromCharCode(0x53d6, 0x6d88);
     const UI_DIALOG_OK = String.fromCharCode(0x786e, 0x5b9a);
     const UI_DIALOG_GOT_IT = String.fromCharCode(0x77e5, 0x9053, 0x5566);
+    const UPDATE_NOTICE_STORAGE_KEY = "otome-record-card-update-notice-20260817-v2";
+    const UPDATE_NOTICE_START_AT = Date.UTC(2026, 7, 17, 0, 0, 0);
+    const UPDATE_NOTICE_TITLE = String.fromCharCode(0x8fd1, 0x671f, 0x66f4, 0x65b0, 0x8bf4, 0x660e);
+    const UPDATE_NOTICE_MESSAGE = [
+      String.fromCharCode(0x8fd9, 0x51e0, 0x5929, 0x5bf9, 0x7f51, 0x7ad9, 0x8fdb, 0x884c, 0x4e86, 0x4e00, 0x6279, 0x4fee, 0x590d, 0x548c, 0x4f18, 0x5316, 0xff0c, 0x4e3b, 0x8981, 0x66f4, 0x65b0, 0x5982, 0x4e0b, 0xff1a),
+      String.fromCharCode(0x672c, 0x6b21, 0x66f4, 0x65b0, 0x5171, 0x20, 0x36, 0x20, 0x9879, 0xff0c, 0x8bf7, 0x4e0b, 0x6ed1, 0x67e5, 0x770b, 0x5168, 0x90e8, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x4fee, 0x590d, 0x5b8c, 0x6574, 0x7248, 0x6a21, 0x677f, 0x4e2d, 0x793e, 0x56e2, 0x540d, 0x79f0, 0x5f02, 0x5e38, 0x6362, 0x884c, 0x7684, 0x95ee, 0x9898, 0xff0c, 0x8f83, 0x957f, 0x540d, 0x79f0, 0x73b0, 0x5728, 0x4f1a, 0x66f4, 0x81ea, 0x7136, 0x5730, 0x5206, 0x884c, 0x663e, 0x793a, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x4fee, 0x590d, 0x5b89, 0x5353, 0x20, 0x45, 0x64, 0x67, 0x65, 0x20, 0x6d4f, 0x89c8, 0x5668, 0x4e2d, 0xff0c, 0x64cd, 0x4f5c, 0x300c, 0x6211, 0x7684, 0x6536, 0x85cf, 0x300d, 0x8be6, 0x60c5, 0x9875, 0x65f6, 0x53ef, 0x80fd, 0x51fa, 0x73b0, 0x7684, 0x5f02, 0x5e38, 0x8fd4, 0x56de, 0x53ca, 0x5185, 0x5bb9, 0x5904, 0x7406, 0x95ee, 0x9898, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x4fee, 0x590d, 0x20, 0x42, 0x4a, 0x20, 0x53f7, 0x65e0, 0x6cd5, 0x6b63, 0x5e38, 0x5bfc, 0x5165, 0x7684, 0x95ee, 0x9898, 0xff0c, 0x73b0, 0x5728, 0x5df2, 0x652f, 0x6301, 0x4f7f, 0x7528, 0x20, 0x42, 0x4a, 0x20, 0x53f7, 0x83b7, 0x53d6, 0x4f5c, 0x54c1, 0x4fe1, 0x606f, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x7edf, 0x4e00, 0x7f51, 0x7ad9, 0x5185, 0x786e, 0x8ba4, 0x3001, 0x8b66, 0x544a, 0x548c, 0x63d0, 0x793a, 0x5bf9, 0x8bdd, 0x6846, 0x7684, 0x6837, 0x5f0f, 0xff0c, 0x51cf, 0x5c11, 0x4e0d, 0x540c, 0x8bbe, 0x5907, 0x4e0a, 0x7684, 0x663e, 0x793a, 0x5dee, 0x5f02, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x7ec6, 0x5316, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x5bfc, 0x5165, 0x5b8c, 0x6210, 0x540e, 0x7684, 0x63d0, 0x793a, 0x3002, 0x73b0, 0x5728, 0x4f1a, 0x5206, 0x522b, 0x663e, 0x793a, 0x5b8c, 0x6574, 0x5bfc, 0x5165, 0x3001, 0x90e8, 0x5206, 0x5bfc, 0x5165, 0x3001, 0x5931, 0x8d25, 0x53ca, 0x8df3, 0x8fc7, 0x7684, 0x6570, 0x91cf, 0xff0c, 0x5e76, 0x8bf4, 0x660e, 0x672a, 0x80fd, 0x5bfc, 0x5165, 0x7684, 0x5b57, 0x6bb5, 0xff1b, 0x5df2, 0x6709, 0x5185, 0x5bb9, 0x548c, 0x672a, 0x6210, 0x529f, 0x5bfc, 0x5165, 0x7684, 0x4f4d, 0x7f6e, 0x4f1a, 0x4fdd, 0x6301, 0x4e0d, 0x53d8, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x8865, 0x9f50, 0x300c, 0x6211, 0x7684, 0x6536, 0x85cf, 0x300d, 0x8be6, 0x60c5, 0x9875, 0x4e2d, 0x7684, 0x539f, 0x4ef7, 0x3001, 0x73b0, 0x4ef7, 0x3001, 0x73b0, 0x6298, 0x6263, 0x548c, 0x53f2, 0x4f4e, 0x6298, 0x6263, 0xff0c, 0x5e76, 0x589e, 0x52a0, 0x603b, 0x4f53, 0x3001, 0x43, 0x56, 0x3001, 0x5267, 0x672c, 0x548c, 0x20, 0x53, 0x45, 0x20, 0x8bc4, 0x5206, 0xff1b, 0x540c, 0x65f6, 0x4fee, 0x6b63, 0x76f8, 0x5173, 0x5b57, 0x6bb5, 0x7684, 0x663e, 0x793a, 0x4e0e, 0x4fdd, 0x5b58, 0x3002),
+      String.fromCharCode(0x611f, 0x8c22, 0x5927, 0x5bb6, 0x7684, 0x53cd, 0x9988, 0x4e0e, 0x4f7f, 0x7528, 0xff01, 0x5982, 0x679c, 0x66f4, 0x65b0, 0x540e, 0x4ecd, 0x9047, 0x5230, 0x95ee, 0x9898, 0xff0c, 0x6b22, 0x8fce, 0x901a, 0x8fc7, 0x7f51, 0x7ad9, 0x5185, 0x7684, 0x53cd, 0x9988, 0x5165, 0x53e3, 0x544a, 0x8bc9, 0x6211, 0x3002)
+    ].join("\n\n");
     let storageFullWarned = false;
     let appDialogQueue = Promise.resolve();
     mobileFocusBack.textContent = UI_BACK_FULL;
@@ -643,14 +662,23 @@
     reviewEditConfirm.textContent = UI_REVIEW_CONFIRM;
     reviewEditCancel.textContent = UI_REVIEW_CANCEL;
 
-    function openAppDialog(message, confirmMode) {
+    function openAppDialog(message, confirmMode, title = "") {
       const previousFocus = document.activeElement;
-      appDialogTitle.textContent = confirmMode ? UI_DIALOG_CONFIRM : UI_DIALOG_NOTICE;
+      const isUpdateNotice = title === UPDATE_NOTICE_TITLE;
+      appDialogTitle.textContent = title || (confirmMode ? UI_DIALOG_CONFIRM : UI_DIALOG_NOTICE);
       appDialogMessage.textContent = String(message || "");
+      appDialogScrollHint.hidden = !isUpdateNotice;
       appDialogCancelButton.textContent = UI_DIALOG_CANCEL;
       appDialogConfirmButton.textContent = confirmMode ? UI_DIALOG_OK : UI_DIALOG_GOT_IT;
       appDialogCancelButton.hidden = !confirmMode;
       appDialogModal.hidden = false;
+      const syncScrollHint = () => {
+        if (!isUpdateNotice) return;
+        const hasMore = appDialogMessage.scrollHeight > appDialogMessage.clientHeight + 1
+          && appDialogMessage.scrollTop + appDialogMessage.clientHeight < appDialogMessage.scrollHeight - 2;
+        appDialogScrollHint.hidden = !hasMore;
+      };
+      appDialogMessage.addEventListener("scroll", syncScrollHint);
 
       return new Promise((resolve) => {
         let settled = false;
@@ -658,6 +686,7 @@
           if (settled) return;
           settled = true;
           document.removeEventListener("keydown", handleKeydown);
+          appDialogMessage.removeEventListener("scroll", syncScrollHint);
           appDialogModal.hidden = true;
           appDialogCancelButton.onclick = null;
           appDialogConfirmButton.onclick = null;
@@ -676,22 +705,30 @@
           if (event.target === appDialogModal) finish(confirmMode ? false : true);
         };
         document.addEventListener("keydown", handleKeydown);
+        requestAnimationFrame(syncScrollHint);
         requestAnimationFrame(() => appDialogConfirmButton.focus());
       });
     }
 
-    function queueAppDialog(message, confirmMode) {
-      const result = appDialogQueue.then(() => openAppDialog(message, confirmMode));
+    function queueAppDialog(message, confirmMode, title = "") {
+      const result = appDialogQueue.then(() => openAppDialog(message, confirmMode, title));
       appDialogQueue = result.catch(() => false);
       return result;
     }
 
-    function showAppAlert(message) {
-      return queueAppDialog(message, false);
+    function showAppAlert(message, title = "") {
+      return queueAppDialog(message, false, title);
     }
 
     function showAppConfirm(message) {
       return queueAppDialog(message, true);
+    }
+
+    async function maybeShowUpdateNotice() {
+      if (Date.now() < UPDATE_NOTICE_START_AT) return;
+      if (localStorage.getItem(UPDATE_NOTICE_STORAGE_KEY)) return;
+      await showAppAlert(UPDATE_NOTICE_MESSAGE, UPDATE_NOTICE_TITLE);
+      localStorage.setItem(UPDATE_NOTICE_STORAGE_KEY, "seen");
     }
 
     function currentTemplate() {
@@ -2148,26 +2185,6 @@
       );
     }
 
-    function importErrorDiagnostic(error, source = "") {
-      const name = String((error && error.name) || "UnknownError");
-      const message = String((error && error.message) || error || "no message");
-      const status = error && (error.status ?? error.response?.status);
-      const stackLine = String((error && error.stack) || "")
-        .split("\n")
-        .slice(1)
-        .map((line) => line.trim())
-        .find(Boolean);
-      const parts = ["type=" + name, "message=" + message];
-      if (source) parts.push("stage=" + source);
-      if (status !== undefined && status !== null && status !== "") parts.push("status=" + status);
-      if (stackLine) parts.push("location=" + stackLine);
-      return parts.join(" | ");
-    }
-
-    function importFailureWithDiagnostic(message, error, source = "") {
-      return message + " [" + importErrorDiagnostic(error, source) + "]";
-    }
-
     function fullImportFailureReason(error, source) {
       const message = String((error && error.message) || "");
       let reason = "";
@@ -2178,7 +2195,7 @@
       if (!reason && httpMatch) reason = UI_IMPORT_HTTP_PREFIX + "HTTP " + httpMatch[1] + String.fromCharCode(0x3002);
       if (!reason && /failed to fetch|network|load failed/i.test(message)) reason = UI_IMPORT_REQUEST_NETWORK;
       if (!reason) reason = message || UI_GRID9_UNKNOWN;
-      return importFailureWithDiagnostic(reason, error, source);
+      return reason;
     }
 
     function unavailableImportField(label, reason = UI_IMPORT_API_MISSING) {
@@ -5289,7 +5306,7 @@
       if (message === "no cover url") reason = UI_GRID9_NO_COVER;
       else if (message === "empty product") reason = UI_GRID9_NO_DATA;
       else reason = message || UI_GRID9_UNKNOWN;
-      return importFailureWithDiagnostic(reason, error, "batch-import");
+      return reason;
     }
 
     function showGrid9ImportLoading() {
@@ -8081,6 +8098,17 @@
     usageInfoModal?.addEventListener("click", (event) => {
       if (event.target === usageInfoModal) usageInfoModal.hidden = true;
     });
+    function openUpdateLogModal() {
+      if (mobileDataDropdown) mobileDataDropdown.hidden = true;
+      mobileDataMenuButton?.setAttribute("aria-expanded", "false");
+      if (updateLogModal) updateLogModal.hidden = false;
+    }
+    updateLogButton?.addEventListener("click", openUpdateLogModal);
+    mobileUpdateLogButton?.addEventListener("click", openUpdateLogModal);
+    updateLogCloseButton?.addEventListener("click", () => { if (updateLogModal) updateLogModal.hidden = true; });
+    updateLogModal?.addEventListener("click", (event) => {
+      if (event.target === updateLogModal) updateLogModal.hidden = true;
+    });
     document.addEventListener("click", (event) => {
       if (!mobileDataDropdown || mobileDataDropdown.hidden) return;
       if (event.target.closest(".mobile-data-menu")) return;
@@ -8207,6 +8235,7 @@
     fitStage();
     updateDiscount();
     syncDiscountColor();
+    void maybeShowUpdateNotice();
 
     (() => {
       const page = document.getElementById("collectionPage");
@@ -8239,7 +8268,6 @@
       const collectionSort = document.getElementById("collectionSort");
       const collectionMobileSort = document.getElementById("collectionMobileSort");
       document.getElementById("collectionDetailTitle").dataset.placeholder = String.fromCharCode(0x6807, 0x9898);
-      document.getElementById("collectionDetailPrice").previousElementSibling.textContent = String.fromCharCode(0x539f, 0x4ef7);
       const COLLECTION_TAGS_KEY = "otome-record-card-collection-tags-v1";
       const COLLECTION_REMOVED_TAGS_KEY = "otome-record-card-collection-removed-tags-v1";
       const COLLECTION_DETAIL_KEY = "otome-record-card-collection-detail-v1";
@@ -8427,7 +8455,12 @@
       function requestCollectionRjImportMode() {
         return new Promise(resolve => {
           collectionRjImportPromptTitle.textContent = "按RJ号导入信息";
-          collectionRjImportPromptBody.textContent = "检测到已有信息，请选择导入方式。";
+          collectionRjImportPromptBody.textContent = "";
+          collectionRjImportPromptBody.append(
+            document.createTextNode(String.fromCharCode(0x586b, 0x5145, 0x7a7a, 0x4f4d, 0xff1a, 0x53ea, 0x8865, 0x5145, 0x5f53, 0x524d, 0x4e3a, 0x7a7a, 0x7684, 0x4fe1, 0x606f, 0x3002)),
+            document.createElement("br"),
+            document.createTextNode(String.fromCharCode(0x8986, 0x76d6, 0x5168, 0x90e8, 0xff1a, 0x8986, 0x76d6, 0x5df2, 0x6709, 0x7684, 0x6807, 0x9898, 0x3001, 0x43, 0x56, 0x3001, 0x793e, 0x56e2, 0x3001, 0x4ef7, 0x683c, 0x3001, 0x6298, 0x6263, 0x3001, 0x4e2d, 0x6587, 0x72b6, 0x6001, 0x3001, 0x4f5c, 0x54c1, 0x5173, 0x952e, 0x8bcd, 0x548c, 0x20, 0x42, 0x4b, 0x3002, 0x5982, 0x679c, 0x83b7, 0x53d6, 0x5931, 0x8d25, 0x5219, 0x7ef4, 0x6301, 0x539f, 0x503c, 0x3002))
+          );
           collectionRjImportOverwrite.hidden = false;
           collectionRjImportFill.hidden = false;
           collectionRjImportCancel.hidden = false;
@@ -8455,6 +8488,9 @@
         collectionRjImportDone.hidden = true;
         collectionRjImportPrompt.hidden = false;
       }
+      function collectionImportFieldIssueText(fields) {
+        return UI_IMPORT_MISSING_FIELDS + String.fromCharCode(0xff1a) + fields.join(String.fromCharCode(0x3001));
+      }
       function showCollectionRjImportResult(message, failed = false, details = []) {
         collectionRjImportPromptTitle.textContent = failed ? "导入失败" : "已根据RJ号导入信息";
         collectionRjImportPromptBody.textContent = "";
@@ -8469,6 +8505,12 @@
           line.textContent = detail.rj + String.fromCharCode(0xff1a) + detail.reason;
           collectionRjImportPromptBody.appendChild(line);
         });
+        if (details.length) {
+          const note = document.createElement("p");
+          note.style.margin = "8px 0 0";
+          note.textContent = UI_IMPORT_UNCHANGED_MANUAL;
+          collectionRjImportPromptBody.appendChild(note);
+        }
         collectionRjImportDone.hidden = false;
         collectionRjImportPrompt.hidden = false;
       }
@@ -8476,10 +8518,54 @@
       collectionRjImportPrompt.addEventListener("click", event => {
         if (event.target === collectionRjImportPrompt && !collectionRjImportDone.hidden) collectionRjImportPrompt.hidden = true;
       });
+      const collectionDetailTextIds = [
+        "collectionDetailTitle",
+        "collectionDetailCn",
+        "collectionDetailCv",
+        "collectionDetailCircle",
+        "collectionDetailRj",
+        "collectionDetailTime",
+        "collectionDetailOriginalPrice",
+        "collectionDetailCurrentPrice",
+        "collectionDetailCurrentDiscount",
+        "collectionDetailLowestDiscount",
+        "collectionDetailRating",
+        "collectionDetailCvRating",
+        "collectionDetailStoryRating",
+        "collectionDetailSeRating",
+        "collectionDetailSummary",
+        "collectionDetailCharacter",
+        "collectionDetailReview"
+      ];
+      const collectionDetailRatingFields = [
+        ["collectionDetailRating", "collectionDetailRatingStars", "rating"],
+        ["collectionDetailCvRating", "collectionDetailCvRatingStars", "cvRating"],
+        ["collectionDetailStoryRating", "collectionDetailStoryRatingStars", "storyRating"],
+        ["collectionDetailSeRating", "collectionDetailSeRatingStars", "seRating"]
+      ];
+      function collectionDetailNumberText(value, prefix = "", suffix = "") {
+        return value === "" || value == null ? "" : prefix + value + suffix;
+      }
+      function collectionRatingStars(value) {
+        if (value === "" || value == null || !Number.isFinite(Number(value))) return "\u2014";
+        const rating = Math.max(0, Math.min(5, Math.round(Number(value))));
+        return rating ? "\u2605".repeat(rating) + "\u2606".repeat(5 - rating) : "\u2014";
+      }
+      function renderCollectionDetailRatings(work) {
+        collectionDetailRatingFields.forEach(([valueId, starsId, key]) => {
+          const value = work?.[key];
+          document.getElementById(valueId).textContent = value === "" || value == null ? "" : Number(value).toFixed(1);
+          document.getElementById(starsId).textContent = collectionRatingStars(value);
+        });
+      }
+      collectionDetailRatingFields.forEach(([valueId, starsId]) => {
+        document.getElementById(valueId).addEventListener("input", () => {
+          document.getElementById(starsId).textContent = collectionRatingStars(detailText(valueId));
+        });
+      });
       function collectionDetailSnapshot() {
-        const textIds = ["collectionDetailTitle","collectionDetailCn","collectionDetailCv","collectionDetailCircle","collectionDetailRj","collectionDetailTime","collectionDetailPrice","collectionDetailRating","collectionDetailSummary","collectionDetailCharacter","collectionDetailReview"];
         const art = document.getElementById("collectionDetailArt");
-        return JSON.stringify({ text:textIds.map(detailText), keywords:detailChipValues("collectionDetailKeywords"), tags:detailChipValues("collectionDetailLibraryTags"), cover:art?.dataset.coverSrc || "", coverFit:art?.dataset.coverFit || "contain" });
+        return JSON.stringify({ text:collectionDetailTextIds.map(detailText), keywords:detailChipValues("collectionDetailKeywords"), tags:detailChipValues("collectionDetailLibraryTags"), cover:art?.dataset.coverSrc || "", coverFit:art?.dataset.coverFit || "contain" });
       }
       function openDetail(id) {
         const r = records.find(x => String(x.id) === String(id));
@@ -8491,15 +8577,16 @@
         document.getElementById("collectionDetailTitle").textContent = r.title || "";
         document.getElementById("collectionDetailCn").textContent = r.cn || "";
         ["Cv","Circle","Rj","Time"].forEach((key,index) => { document.getElementById("collectionDetail" + key).textContent = [r.cv,r.circle,r.rj,r.time][index] || ""; });
-        document.getElementById("collectionDetailPrice").textContent = r.price === "" || r.price == null ? "" : "¥" + r.price;
-        document.getElementById("collectionDetailRating").textContent = r.rating === "" || r.rating == null ? "" : Number(r.rating).toFixed(1);
+        document.getElementById("collectionDetailOriginalPrice").textContent = collectionDetailNumberText(r.originalPrice, "¥");
+        document.getElementById("collectionDetailCurrentPrice").textContent = collectionDetailNumberText(r.price, "¥");
+        document.getElementById("collectionDetailCurrentDiscount").textContent = collectionDetailNumberText(r.currentDiscount, "", "%off");
+        document.getElementById("collectionDetailLowestDiscount").textContent = collectionDetailNumberText(r.lowestPrice, "", "%off");
         document.getElementById("collectionDetailSummary").textContent = r.summary || "";
         document.getElementById("collectionDetailCharacter").textContent = r.character || "";
         document.getElementById("collectionDetailReview").textContent = r.review || "";
         renderDetailChips("collectionDetailKeywords", String(r.keywords || "").split(" / ").filter(Boolean));
         renderDetailChips("collectionDetailLibraryTags", r.tags || []);
-        const rating = r.rating === "" || r.rating == null ? 0 : Math.max(0,Math.min(5,Math.round(Number(r.rating))));
-        document.getElementById("collectionDetailRatingStars").textContent = rating ? "★".repeat(rating) + "☆".repeat(5-rating) : "—";
+        renderCollectionDetailRatings(r);
         setCollectionDetailCover(r.cover || "", r.coverFit || "contain");
         collectionDetailInitialSnapshot = collectionDetailSnapshot();
         page.hidden = true;
@@ -8513,10 +8600,10 @@
         document.getElementById("collectionDeleteRecordButton").hidden = true;
         localStorage.removeItem(COLLECTION_DETAIL_KEY);
         scrollY = collectionScroller ? collectionScroller.scrollTop : window.scrollY;
-        ["collectionDetailTitle","collectionDetailCn","collectionDetailCv","collectionDetailCircle","collectionDetailRj","collectionDetailTime","collectionDetailPrice","collectionDetailRating","collectionDetailSummary","collectionDetailCharacter","collectionDetailReview"].forEach(id => { document.getElementById(id).textContent = ""; });
+        collectionDetailTextIds.forEach(id => { document.getElementById(id).textContent = ""; });
         renderDetailChips("collectionDetailKeywords", []);
         renderDetailChips("collectionDetailLibraryTags", []);
-        document.getElementById("collectionDetailRatingStars").textContent = "—";
+        renderCollectionDetailRatings(null);
         setCollectionDetailCover("", "contain");
         collectionDetailInitialSnapshot = collectionDetailSnapshot();
         page.hidden = true;
@@ -8742,11 +8829,10 @@
         const nextRj = normalizeWorkno(detailText("collectionDetailRj"));
         const duplicate = nextRj && records.some(item => item !== work && item.rj === nextRj);
         if (duplicate) { showAppAlert("这个 RJ 号已经存在，不能保存为重复档案。"); return; }
-        const priceText = detailText("collectionDetailPrice").replace(/^¥\s*/, "");
-        const ratingText = detailText("collectionDetailRating");
+        const numericText = id => detailText(id).replace(/^¥\s*/, "").replace(/\s*%off$/i, "").trim();
         const optionalNumber = value => value === "" ? "" : Number(value);
         const now = Date.now();
-        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), price:optionalNumber(priceText), rating:optionalNumber(ratingText), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
+        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
         try {
           if (work && nextWork.id !== work.id) await deleteWork(work.id);
           await putWorks([nextWork]);
@@ -8794,9 +8880,8 @@
         const work = records.find(item => String(item.id) === String(activeCollectionRecordId));
         if (!work) return;
         const state = collectState();
-        const ratings = Array.isArray(state.ratings) ? state.ratings.slice() : [];
-        if (work.rating !== "" && work.rating != null) ratings[0] = Number(work.rating) || 0;
-        applyState({ ...state, template:"full", theme:"matcha-berry-cheese", recordTitle:work.title || "", cvText:work.cv || "", circleText:work.circle || "", rjText:work.rj || "", durationText:work.time || "", originalPrice:work.originalPrice === "" ? "" : work.originalPrice, currentPrice:work.price === "" ? "" : work.price, lowestPrice:work.lowestPrice === "" ? "" : work.lowestPrice, ratings, tags:String(work.keywords || "").split(" / ").filter(Boolean), reviewText:work.review || "", coverSrc:work.cover || "", coverOriginalSrc:work.cover || "", coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverStickers:[] }, true);
+        const ratings = [work.rating, work.cvRating, work.storyRating, work.seRating].map(value => value === "" || value == null ? 0 : Number(value) || 0);
+        applyState({ ...state, template:"full", theme:"matcha-berry-cheese", recordTitle:work.title || "", cvText:work.cv || "", circleText:work.circle || "", rjText:work.rj || "", durationText:work.time || "", originalPrice:work.originalPrice === "" || work.originalPrice == null ? "" : work.originalPrice, currentPrice:work.price === "" || work.price == null ? "" : work.price, currentDiscount:work.currentDiscount === "" || work.currentDiscount == null ? "" : work.currentDiscount, lowestPrice:work.lowestPrice === "" || work.lowestPrice == null ? "" : work.lowestPrice, cnChoice:work.cn || CHOICE_SUBTITLE, ratings, tags:String(work.keywords || "").split(" / ").filter(Boolean), reviewText:work.review || "", coverSrc:work.cover || "", coverOriginalSrc:work.cover || "", coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverStickers:[] }, true);
         setMainPage("template");
       };
       document.getElementById("collectionPrevPage").onclick = () => { if (collectionPageIndex > 0) { collectionPageIndex -= 1; render(); if (collectionScroller) collectionScroller.scrollTo({ top:0, behavior:"smooth" }); } };
@@ -8900,7 +8985,7 @@
           return;
         }
         const isEmpty = value => value == null || String(value).trim() === "";
-        const allImportTargetsEmpty = jobs.every(({ work }) => isEmpty(work.title) && isEmpty(work.cv) && isEmpty(work.cover) && isEmpty(work.circle) && isEmpty(work.originalPrice));
+        const allImportTargetsEmpty = jobs.every(({ work }) => [work.title, work.cv, work.cover, work.circle, work.originalPrice, work.price, work.currentDiscount, work.lowestPrice, work.cn, work.keywords].every(isEmpty));
         const mode = allImportTargetsEmpty ? "overwrite" : await requestCollectionRjImportMode();
         if (!mode) return;
         showCollectionRjImportLoading();
@@ -8918,19 +9003,48 @@
             const job = jobs[cursor];
             cursor += 1;
             try {
-              const product = parseDlsiteProduct(await fetchProductJson(job.rj));
-              if (!product || (!product.title && !product.cv && !product.circle && !product.originalPrice && !product.coverUrl)) throw new Error("empty product");
-              const nextWork = { ...job.work };
               const canWrite = value => mode === "overwrite" || isEmpty(value);
               const targetTitle = canWrite(job.work.title);
               const targetCv = canWrite(job.work.cv);
               const targetCircle = canWrite(job.work.circle);
               const targetOriginalPrice = canWrite(job.work.originalPrice);
+              const targetCurrentPrice = canWrite(job.work.price);
+              const targetCurrentDiscount = canWrite(job.work.currentDiscount);
+              const targetLowestDiscount = canWrite(job.work.lowestPrice);
+              const targetChinese = canWrite(job.work.cn);
+              const targetKeywords = canWrite(job.work.keywords);
               const targetCover = canWrite(job.work.cover);
-              if (!targetTitle && !targetCv && !targetCircle && !targetOriginalPrice && !targetCover) {
+              if (![targetTitle, targetCv, targetCircle, targetOriginalPrice, targetCurrentPrice, targetCurrentDiscount, targetLowestDiscount, targetChinese, targetKeywords, targetCover].some(Boolean)) {
                 skipped += 1;
                 continue;
               }
+              let lowestDiscountError = null;
+              const lowestDiscountPromise = targetLowestDiscount
+                ? fetchDlwatcherLowestDiscount(job.rj).catch(error => {
+                  lowestDiscountError = error;
+                  console.warn("Collection RJ lowest discount import failed", job.rj, error);
+                  return "";
+                })
+                : Promise.resolve("");
+              const product = parseDlsiteProduct(await fetchProductJson(job.rj));
+              if (!product || (!product.title && !product.cv && !product.circle && !product.originalPrice && !product.currentPrice && !product.coverUrl && !product.keywords?.length)) throw new Error("empty product");
+              product.lowestDiscount = await lowestDiscountPromise;
+              let chineseChoice = "";
+              let chineseChoiceError = null;
+              if (targetChinese) {
+                if (product.hasChineseVersion || product.chineseEditionWorkno) {
+                  chineseChoice = CHOICE_SUBTITLE;
+                } else {
+                  try {
+                    const translatable = parseTranslatableChinese(await fetchTranslatableProducts(job.rj), job.rj);
+                    if (translatable) chineseChoice = translatable.hasChinese ? CHOICE_SUBTITLE : CHOICE_NONE;
+                  } catch (error) {
+                    chineseChoiceError = error;
+                    console.warn("Collection RJ Chinese edition import failed", job.rj, error);
+                  }
+                }
+              }
+              const nextWork = { ...job.work };
               let importedField = false;
               const missingFields = [];
               if (targetTitle) {
@@ -8958,6 +9072,43 @@
                   importedField = true;
                 } else missingFields.push(unavailableImportField(String.fromCharCode(0x539f, 0x4ef7)));
               }
+              if (targetCurrentPrice) {
+                const price = Number(product.currentPrice);
+                if (product.currentPrice !== "" && product.currentPrice != null && Number.isFinite(price)) {
+                  nextWork.price = price;
+                  importedField = true;
+                } else missingFields.push(unavailableImportField(String.fromCharCode(0x73b0, 0x4ef7)));
+              }
+              if (targetCurrentDiscount) {
+                const discount = Number(product.currentDiscount);
+                if (product.currentDiscount !== "" && product.currentDiscount != null && Number.isFinite(discount)) {
+                  nextWork.currentDiscount = discount;
+                  importedField = true;
+                } else missingFields.push(unavailableImportField(String.fromCharCode(0x73b0, 0x6298, 0x6263)));
+              }
+              if (targetLowestDiscount) {
+                const discount = Number(product.lowestDiscount);
+                if (product.lowestDiscount !== "" && product.lowestDiscount != null && Number.isFinite(discount)) {
+                  nextWork.lowestPrice = discount;
+                  importedField = true;
+                } else if (lowestDiscountError) {
+                  missingFields.push(unavailableImportField(String.fromCharCode(0x53f2, 0x4f4e, 0x6298, 0x6263), fullImportFailureReason(lowestDiscountError, "lowest")));
+                } else missingFields.push(unavailableImportField(String.fromCharCode(0x53f2, 0x4f4e, 0x6298, 0x6263)));
+              }
+              if (targetChinese) {
+                if (chineseChoice) {
+                  nextWork.cn = chineseChoice;
+                  importedField = true;
+                } else if (chineseChoiceError) {
+                  missingFields.push(unavailableImportField(String.fromCharCode(0x4e2d, 0x6587, 0x72b6, 0x6001), fullImportFailureReason(chineseChoiceError, "translatable")));
+                } else missingFields.push(unavailableImportField(String.fromCharCode(0x4e2d, 0x6587, 0x72b6, 0x6001)));
+              }
+              if (targetKeywords) {
+                if (Array.isArray(product.keywords) && product.keywords.length) {
+                  nextWork.keywords = product.keywords.slice(0, 8).join(" / ");
+                  importedField = true;
+                } else missingFields.push(unavailableImportField(String.fromCharCode(0x4f5c, 0x54c1, 0x5173, 0x952e, 0x8bcd)));
+              }
               if (targetCover) {
                 if (product.coverUrl) {
                   try {
@@ -8972,12 +9123,12 @@
               }
               if (!importedField) {
                 failed += 1;
-                failures.push({ rj:job.rj, reason:missingFields.length ? importFieldIssueText(missingFields) : UI_IMPORT_DLSITE_NO_DATA });
+                failures.push({ rj:job.rj, reason:missingFields.length ? collectionImportFieldIssueText(missingFields) : UI_IMPORT_DLSITE_NO_DATA });
                 continue;
               }
               nextWork.editedAt = Date.now();
               updates.push(nextWork);
-              if (missingFields.length) fieldIssues.push({ rj:job.rj, reason:importFieldIssueText(missingFields) });
+              if (missingFields.length) fieldIssues.push({ rj:job.rj, reason:collectionImportFieldIssueText(missingFields) });
             } catch (error) {
               failed += 1;
               failures.push({ rj:job.rj, reason:grid9FailureReason(error) });
@@ -9027,7 +9178,7 @@
         const existingTemporary = !rj ? records.find(work => !work.rj && work.sourceSlot === sourceSlot) : null;
         const id = rj || existingTemporary?.id || nextTemporaryWorkId();
         const optionalNumber = value => String(value ?? "").trim() === "" ? "" : Number(value);
-        return { id, rj, title: data.title || "", cn: data.cn || "", cv: data.cv || "", circle: data.circle || "", time: data.time || "", originalPrice: optionalNumber(data.originalPrice), price: optionalNumber(data.price), lowestPrice: optionalNumber(data.lowestPrice), rating: optionalNumber(data.rating), cover: data.cover || "", coverFit: data.coverFit || "cover", review: data.review || "", keywords: data.keywords || "", tags: data.tags || [], source, sourceSlot };
+        return { id, rj, title: data.title || "", cn: data.cn || "", cv: data.cv || "", circle: data.circle || "", time: data.time || "", originalPrice: optionalNumber(data.originalPrice), price: optionalNumber(data.price), currentDiscount: optionalNumber(data.currentDiscount), lowestPrice: optionalNumber(data.lowestPrice), rating: optionalNumber(data.rating), cvRating: optionalNumber(data.cvRating), storyRating: optionalNumber(data.storyRating), seRating: optionalNumber(data.seRating), cover: data.cover || "", coverFit: data.coverFit || "cover", review: data.review || "", keywords: data.keywords || "", tags: data.tags || [], source, sourceSlot };
       }
       function extractCurrentWorks(state) {
         const found = new Map();
@@ -9038,7 +9189,7 @@
           if (!previous) { found.set(work.id, work); return; }
           Object.keys(work).forEach(key => { if (work[key] !== "" && (!Array.isArray(work[key]) || work[key].length)) previous[key] = work[key]; });
         };
-        add("single", 0, { rj:state.rjText, title:state.recordTitle, cn:state.cnChoice, cv:state.cvText, circle:state.circleText, time:state.durationText, originalPrice:state.originalPrice, price:state.currentPrice, lowestPrice:state.lowestPrice, rating:Array.isArray(state.ratings) ? state.ratings[0] : 0, cover:state.coverSrc, coverFit:state.coverFit, review:state.reviewText, keywords:(state.tags || []).join(" / ") });
+        add("single", 0, { rj:state.rjText, title:state.recordTitle, cn:state.cnChoice, cv:state.cvText, circle:state.circleText, time:state.durationText, originalPrice:state.originalPrice, price:state.currentPrice, currentDiscount:state.currentDiscount, lowestPrice:state.lowestPrice, rating:Array.isArray(state.ratings) ? state.ratings[0] : 0, cvRating:Array.isArray(state.ratings) ? state.ratings[1] : "", storyRating:Array.isArray(state.ratings) ? state.ratings[2] : "", seRating:Array.isArray(state.ratings) ? state.ratings[3] : "", cover:state.coverSrc, coverFit:state.coverFit, review:state.reviewText, keywords:(state.tags || []).join(" / ") });
         (state.grid9?.cells || []).slice(0,9).forEach((cell,index) => add("grid9", index, { rj:cell.rj, cover:cell.cover, coverFit:cell.fit, review:cell.review }));
         (state.quick?.cells || []).slice(0,12).forEach((cell,index) => add("quick", index, { rj:cell.rj, cv:cell.cv, cover:cell.cover, coverFit:cell.coverFit, review:cell.review }));
         (state.trio?.cells || []).slice(0,3).forEach((cell,index) => add("trio", index, { rj:cell.rj, price:cell.price, rating:cell.rating, cover:cell.cover, coverFit:cell.coverFit, review:cell.repo }));

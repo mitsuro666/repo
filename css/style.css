@@ -457,8 +457,10 @@
     .collection-archive-body section { padding:26px 0;border-bottom:1px solid rgba(217,95,140,.2); }
     .collection-archive-body h3 { margin:0 0 12px;color:var(--accent);font-size:13px;letter-spacing:.1em; }
     .collection-archive-body p { margin:0;color:var(--ink);font-size:13px;line-height:2; }
-    .collection-rating-table > div { display:grid;grid-template-columns:76px 1fr;gap:10px;font-size:13px; }
-    #collectionDetailRatingStars { color:var(--accent);letter-spacing:.14em; }
+    .collection-rating-table { display:grid;gap:8px; }
+    .collection-rating-table > div { display:grid;grid-template-columns:76px 44px 1fr;gap:10px;align-items:center;font-size:13px; }
+    .collection-rating-editor { text-align:center; }
+    .collection-rating-stars { color:var(--accent);letter-spacing:.14em; }
     .collection-archive-review { grid-column:1/-1; }
     @media(max-width:760px){.collection-head{min-height:auto;align-items:flex-start;flex-direction:column;padding:14px 0}.collection-head-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.collection-head-actions .primary{grid-column:1/-1}.collection-summary{min-height:36px}.collection-controls{grid-template-columns:1fr auto}.collection-view-toggle{display:none}.collection-layout{display:block}.collection-tags{position:static;display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;padding:0;border:0}.collection-tags>b{display:none!important}#collectionTagLinks{display:flex;gap:8px}.collection-tags button{width:auto;flex:0 0 auto;border:1px solid rgba(217,95,140,.22);padding:7px 10px;font-size:12px}.collection-tag-actions{flex:0 0 auto;gap:8px}.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}.collection-cover span{display:none}.collection-pager{margin:22px 0 0}.collection-detail-toolbar{position:sticky;top:0;z-index:8;background:rgba(255,253,251,.94);padding:10px 0}.collection-detail-toolbar>div>button:not(.primary){display:none}.collection-archive-hero{grid-template-columns:1fr;gap:22px;padding:20px 14px 28px}.collection-archive-intro{padding:0}.collection-archive-intro h2{font-size:22px}.collection-facts{grid-template-columns:1fr}.collection-archive-body{grid-template-columns:1fr;padding:0 14px 24px}.collection-archive-review{grid-column:auto}}
 
@@ -2736,6 +2738,95 @@
       line-height: 1.75;
     }
 
+    .update-log-sheet {
+      width: min(100%, 560px);
+      height: min(78dvh, 640px);
+      max-height: min(78dvh, 640px);
+      align-content: start;
+    }
+
+    .update-log-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .update-log-entry {
+      overflow: hidden;
+      border: 1px solid rgba(217, 95, 140, 0.22);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .update-log-entry summary {
+      position: relative;
+      display: grid;
+      gap: 7px;
+      padding: 14px 44px 14px 16px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .update-log-entry summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .update-log-entry summary::after {
+      content: "+";
+      position: absolute;
+      top: 50%;
+      right: 17px;
+      color: var(--rose-deep);
+      font-size: 20px;
+      font-weight: 900;
+      transform: translateY(-50%);
+    }
+
+    .update-log-entry[open] summary::after {
+      content: "-";
+    }
+
+    .update-log-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .update-log-meta time {
+      color: var(--rose-deep);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+
+    .update-log-meta span {
+      padding: 3px 7px;
+      border-radius: 999px;
+      color: var(--rose-deep);
+      background: rgba(217, 95, 140, 0.1);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .update-log-entry h3 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .update-log-entry ul {
+      margin: 0;
+      padding: 0 18px 16px 34px;
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .update-log-entry li + li {
+      margin-top: 8px;
+    }
+
     .review-edit-title {
       margin: 0;
       color: var(--rose-deep);
@@ -3294,7 +3385,7 @@
         box-shadow: 0 -10px 28px rgba(184, 69, 112, 0.1);
         z-index: 90;
       }
-      body:has(#usageGuideModal:not([hidden]), #usageInfoModal:not([hidden]), #imageEditModal:not([hidden]):not(.standalone-editor), #reviewEditModal:not([hidden]), #exportModal:not([hidden]), #grid9ImportModal:not([hidden]), #collectionRjImportPrompt:not([hidden]), #collectionSavePrompt:not([hidden]), #appDialogModal:not([hidden])) .main-nav {
+      body:has(#usageGuideModal:not([hidden]), #usageInfoModal:not([hidden]), #updateLogModal:not([hidden]), #imageEditModal:not([hidden]):not(.standalone-editor), #reviewEditModal:not([hidden]), #exportModal:not([hidden]), #grid9ImportModal:not([hidden]), #collectionRjImportPrompt:not([hidden]), #collectionSavePrompt:not([hidden]), #appDialogModal:not([hidden])) .main-nav {
         display: none;
       }
       .main-nav-button {
@@ -4403,6 +4494,21 @@
       position: relative;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
+    }
+    .app-dialog-scroll-hint {
+      position: relative;
+      z-index: 1;
+      margin: -42px 0 0;
+      padding: 24px 0 4px;
+      color: var(--rose-deep);
+      background: linear-gradient(to bottom, rgba(255, 250, 252, 0), #fffafc 58%);
+      font-size: 12px;
+      font-weight: 900;
+      text-align: center;
+      pointer-events: none;
+    }
+    .app-dialog-scroll-hint[hidden] {
+      display: none;
     }
     .app-dialog-actions {
       position: relative;
