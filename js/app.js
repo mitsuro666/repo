@@ -213,6 +213,7 @@
     const MENU_STORAGE_KEY = "otome-record-card-active-menu";
     const MAIN_PAGE_STORAGE_KEY = "otome-record-card-main-page";
     const DLSITE_PROXY_URL = "https://dlsite-rj-import.shuiyingsheng.workers.dev/";
+    const DLSITE_PROXY_CACHE_VERSION = "20260816-bj2";
     const DEFAULT_THEME_ID = "matcha-berry-cheese";
     const IS_USAGE_TRACKING_PRODUCTION = window.location.hostname === "mitsuro666.github.io"
       && window.location.pathname.startsWith("/repo/");
@@ -694,11 +695,7 @@
       if (!maxLength) return value;
       const characters = Array.from(value);
       if (node === rjText) {
-        const raw = characters.join("").toUpperCase();
-        if (!raw) return "";
-        if (raw === "R") return raw;
-        const digits = (raw.startsWith("RJ") ? raw.slice(2) : raw).replace(/\D/g, "").slice(0, 10);
-        return "RJ" + digits;
+        return limitedWorknoText(characters.join(""));
       }
       if (characters.length <= maxLength) return characters.join("");
       return characters.slice(0, maxLength - 1).join("") + "\u2026";
@@ -1142,7 +1139,7 @@
     function rjFilePart(raw) {
       const clean = String(raw || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
       if (!clean) return "otome";
-      return clean.startsWith("RJ") ? clean : "RJ" + clean;
+      return clean.startsWith("RJ") || clean.startsWith("BJ") ? clean : "RJ" + clean;
     }
 
     function firstTemplateRjFilePart(template = currentTemplate()) {
@@ -1332,9 +1329,19 @@
 
     function normalizeWorkno(value) {
       const clean = String(value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-      const match = clean.match(/(?:RJ)?\d+/);
+      const match = clean.match(/(?:RJ|BJ)?\d+/);
       if (!match) return "";
-      return match[0].startsWith("RJ") ? match[0] : "RJ" + match[0];
+      return /^(?:RJ|BJ)/.test(match[0]) ? match[0] : "RJ" + match[0];
+    }
+
+    function limitedWorknoText(value) {
+      const clean = String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+      if (!clean) return "";
+      if (/^[RB]$/.test(clean)) return clean;
+      const prefixMatch = clean.match(/^(RJ|BJ)/);
+      const prefix = prefixMatch ? prefixMatch[1] : "RJ";
+      const digits = (prefixMatch ? clean.slice(2) : clean).replace(/\D/g, "").slice(0, 10);
+      return prefixMatch || digits ? prefix + digits : "";
     }
 
     function firstText(...values) {
@@ -1902,6 +1909,7 @@
         url.searchParams.set("workno", workno);
         if (endpoint) url.searchParams.set("endpoint", endpoint);
       }
+      url.searchParams.set("clientVersion", DLSITE_PROXY_CACHE_VERSION);
       return url.toString();
     }
 
@@ -1915,17 +1923,29 @@
       }
     }
 
+    function dlsiteProductSites(workno) {
+      return String(workno || "").toUpperCase().startsWith("BJ")
+        ? ["girls", "comic", "books", "maniax"]
+        : ["maniax"];
+    }
+
     async function fetchProductJson(workno) {
-      const directUrl = "https://www.dlsite.com/maniax/api/=/product.json?workno=" + encodeURIComponent(workno);
-      const attempts = [directUrl];
+      const attempts = dlsiteProductSites(workno).map((site) =>
+        "https://www.dlsite.com/" + site + "/api/=/product.json?workno=" + encodeURIComponent(workno)
+      );
       const proxyUrl = buildProxyUrl(dlsiteProxyUrl(), workno);
       if (proxyUrl) attempts.push(proxyUrl);
       let lastError;
       for (const url of attempts) {
         try {
-          const response = await fetchWithTimeout(url, { mode: "cors", credentials: "omit" }, 12000);
+          const response = await fetchWithTimeout(url, { mode: "cors", credentials: "omit", cache: "no-store" }, 12000);
           if (!response.ok) throw new Error("HTTP " + response.status);
-          return await response.json();
+          const data = await response.json();
+          const hasData = Array.isArray(data)
+            ? data.length > 0
+            : Boolean(data && typeof data === "object" && Object.keys(data).length);
+          if (!hasData) throw new Error("empty product");
+          return data;
         } catch (error) {
           lastError = error;
           console.warn("DLsite import attempt failed", url, error);
@@ -2060,15 +2080,37 @@
       );
     }
 
+    function importErrorDiagnostic(error, source = "") {
+      const name = String((error && error.name) || "UnknownError");
+      const message = String((error && error.message) || error || "no message");
+      const status = error && (error.status ?? error.response?.status);
+      const stackLine = String((error && error.stack) || "")
+        .split("\n")
+        .slice(1)
+        .map((line) => line.trim())
+        .find(Boolean);
+      const parts = ["type=" + name, "message=" + message];
+      if (source) parts.push("stage=" + source);
+      if (status !== undefined && status !== null && status !== "") parts.push("status=" + status);
+      if (stackLine) parts.push("location=" + stackLine);
+      return parts.join(" | ");
+    }
+
+    function importFailureWithDiagnostic(message, error, source = "") {
+      return message + " [" + importErrorDiagnostic(error, source) + "]";
+    }
+
     function fullImportFailureReason(error, source) {
       const message = String((error && error.message) || "");
-      if (source === "lowest" && message === "empty lowest discount") return UI_IMPORT_DLWATCHER_NO_DATA;
-      if (message === "empty product") return UI_IMPORT_DLSITE_NO_DATA;
-      if ((error && error.name === "AbortError") || /abort|timeout/i.test(message)) return UI_IMPORT_REQUEST_TIMEOUT;
+      let reason = "";
+      if (source === "lowest" && message === "empty lowest discount") reason = UI_IMPORT_DLWATCHER_NO_DATA;
+      else if (message === "empty product") reason = UI_IMPORT_DLSITE_NO_DATA;
+      else if ((error && error.name === "AbortError") || /abort|timeout/i.test(message)) reason = UI_IMPORT_REQUEST_TIMEOUT;
       const httpMatch = message.match(/^HTTP (\d+)/);
-      if (httpMatch) return UI_IMPORT_HTTP_PREFIX + "HTTP " + httpMatch[1] + String.fromCharCode(0x3002);
-      if (/failed to fetch|network|load failed/i.test(message)) return UI_IMPORT_REQUEST_NETWORK;
-      return message || UI_GRID9_UNKNOWN;
+      if (!reason && httpMatch) reason = UI_IMPORT_HTTP_PREFIX + "HTTP " + httpMatch[1] + String.fromCharCode(0x3002);
+      if (!reason && /failed to fetch|network|load failed/i.test(message)) reason = UI_IMPORT_REQUEST_NETWORK;
+      if (!reason) reason = message || UI_GRID9_UNKNOWN;
+      return importFailureWithDiagnostic(reason, error, source);
     }
 
     function showFullImportResult(success, failures) {
@@ -5153,10 +5195,11 @@
 
     function grid9FailureReason(error) {
       const message = String((error && error.message) || "");
-      if (message === "no cover url") return UI_GRID9_NO_COVER;
-      if (message === "empty product") return UI_GRID9_NO_DATA;
-      if (message) return message;
-      return UI_GRID9_UNKNOWN;
+      let reason = "";
+      if (message === "no cover url") reason = UI_GRID9_NO_COVER;
+      else if (message === "empty product") reason = UI_GRID9_NO_DATA;
+      else reason = message || UI_GRID9_UNKNOWN;
+      return importFailureWithDiagnostic(reason, error, "batch-import");
     }
 
     function showGrid9ImportLoading() {
@@ -6665,11 +6708,7 @@
     }
 
     function limitedTrioRjText(value) {
-      const raw = String(value || "").toUpperCase();
-      if (!raw) return "";
-      if (raw === "R") return raw;
-      const digits = (raw.startsWith("RJ") ? raw.slice(2) : raw).replace(/\D/g, "").slice(0, 10);
-      return "RJ" + digits;
+      return limitedWorknoText(value);
     }
 
     function limitedTrioPriceText(value) {
@@ -8720,7 +8759,7 @@
         const button = document.getElementById("collectionRjImportButton");
         const label = button.querySelector("span");
         const jobs = records.map((work,index) => {
-          const legacyRjId = /^RJ\d+$/i.test(String(work.id || "")) ? work.id : "";
+          const legacyRjId = /^(?:RJ|BJ)\d+$/i.test(String(work.id || "")) ? work.id : "";
           return { work, index, rj:normalizeWorkno(work.rj || legacyRjId) };
         }).filter(job => job.rj);
         const skipped = records.length - jobs.length;

@@ -18,9 +18,26 @@ function jsonResponse(data, status = 200) {
 
 function normalizeWorkno(value) {
   const clean = String(value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-  const match = clean.match(/(?:RJ)?\d+/);
+  const match = clean.match(/(?:RJ|BJ)?\d+/);
   if (!match) return "";
-  return match[0].startsWith("RJ") ? match[0] : "RJ" + match[0];
+  return /^(?:RJ|BJ)/.test(match[0]) ? match[0] : "RJ" + match[0];
+}
+
+function dlsiteProductSites(workno) {
+  return workno.startsWith("BJ")
+    ? ["girls", "comic", "books", "maniax"]
+    : ["maniax"];
+}
+
+function hasProductData(text) {
+  try {
+    const data = JSON.parse(text);
+    return Array.isArray(data)
+      ? data.length > 0
+      : Boolean(data && typeof data === "object" && Object.keys(data).length);
+  } catch (error) {
+    return false;
+  }
 }
 
 export default {
@@ -41,31 +58,51 @@ export default {
       return jsonResponse({ error: "missing_workno" }, 400);
     }
 
-    const upstreamUrl = useDlwatcher
-      ? "https://dlwatcher.com/product/" + encodeURIComponent(workno) + ".json"
+    const upstreamTargets = useDlwatcher
+      ? [{
+          url: "https://dlwatcher.com/product/" + encodeURIComponent(workno) + ".json",
+          referer: "https://dlwatcher.com/"
+        }]
       : useTranslatable
-        ? "https://www.dlsite.com/maniax/api/=/translatableProducts.json?keyword=" + encodeURIComponent(workno)
-        : "https://www.dlsite.com/maniax/api/=/product.json?workno=" + encodeURIComponent(workno);
-    const upstream = await fetch(upstreamUrl, {
-      headers: {
-        "Accept": "application/json,text/plain,*/*",
-        "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
-        "Referer": useDlwatcher ? "https://dlwatcher.com/" : "https://www.dlsite.com/maniax/"
+        ? [{
+            url: "https://www.dlsite.com/maniax/api/=/translatableProducts.json?keyword=" + encodeURIComponent(workno),
+            referer: "https://www.dlsite.com/maniax/"
+          }]
+        : dlsiteProductSites(workno).map((site) => ({
+            url: "https://www.dlsite.com/" + site + "/api/=/product.json?workno=" + encodeURIComponent(workno),
+            referer: "https://www.dlsite.com/" + site + "/"
+          }));
+    let lastStatus = 502;
+    for (const target of upstreamTargets) {
+      try {
+        const upstream = await fetch(target.url, {
+          headers: {
+            "Accept": "application/json,text/plain,*/*",
+            "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
+            "Referer": target.referer
+          }
+        });
+        if (!upstream.ok) {
+          lastStatus = upstream.status;
+          continue;
+        }
+        const text = await upstream.text();
+        if (!useDlwatcher && !useTranslatable && !hasProductData(text)) {
+          lastStatus = 404;
+          continue;
+        }
+        return new Response(text, {
+          status: 200,
+          headers: {
+            ...CORS_HEADERS,
+            "Content-Type": upstream.headers.get("Content-Type") || "application/json; charset=utf-8",
+            "Cache-Control": "public, max-age=3600"
+          }
+        });
+      } catch (error) {
+        lastStatus = 502;
       }
-    });
-
-    if (!upstream.ok) {
-      return jsonResponse({ error: useDlwatcher ? "dlwatcher_error" : "dlsite_error", status: upstream.status }, upstream.status);
     }
-
-    const text = await upstream.text();
-    return new Response(text, {
-      status: 200,
-      headers: {
-        ...CORS_HEADERS,
-        "Content-Type": upstream.headers.get("Content-Type") || "application/json; charset=utf-8",
-        "Cache-Control": "public, max-age=3600"
-      }
-    });
+    return jsonResponse({ error: useDlwatcher ? "dlwatcher_error" : "dlsite_error", status: lastStatus }, lastStatus);
   }
 };
