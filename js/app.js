@@ -77,6 +77,11 @@
     const mobileUsageInfoButton = document.getElementById("mobileUsageInfoButton");
     const usageInfoModal = document.getElementById("usageInfoModal");
     const usageInfoCloseButton = document.getElementById("usageInfoCloseButton");
+    const appDialogModal = document.getElementById("appDialogModal");
+    const appDialogTitle = document.getElementById("appDialogTitle");
+    const appDialogMessage = document.getElementById("appDialogMessage");
+    const appDialogCancelButton = document.getElementById("appDialogCancelButton");
+    const appDialogConfirmButton = document.getElementById("appDialogConfirmButton");
 
     const imageEditCanvas = document.getElementById("imageEditCanvas");
     const imageToolMosaic = document.getElementById("imageToolMosaic");
@@ -601,6 +606,12 @@
     const UI_IMPORT_RESULT_DONE = String.fromCharCode(0x5bfc, 0x5165, 0x5b8c, 0x6210, 0x3002);
     const UI_IMPORT_RESULT_PARTIAL = String.fromCharCode(0x5bfc, 0x5165, 0x5b8c, 0x6210, 0xff0c, 0x4f46, 0x4ee5, 0x4e0b, 0x5185, 0x5bb9, 0x5bfc, 0x5165, 0x5931, 0x8d25, 0xff1a);
     const UI_IMPORT_RESULT_FAILED = String.fromCharCode(0x5bfc, 0x5165, 0x5931, 0x8d25);
+    const UI_IMPORT_COMPLETE_COUNT = String.fromCharCode(0x5b8c, 0x6574, 0x5bfc, 0x5165);
+    const UI_IMPORT_PARTIAL_COUNT = String.fromCharCode(0x90e8, 0x5206, 0x5bfc, 0x5165);
+    const UI_IMPORT_MISSING_FIELDS = String.fromCharCode(0x672a, 0x80fd, 0x5bfc, 0x5165);
+    const UI_IMPORT_API_MISSING = String.fromCharCode(0x63a5, 0x53e3, 0x672a, 0x8fd4, 0x56de);
+    const UI_IMPORT_IMAGE_FAILED = String.fromCharCode(0x56fe, 0x7247, 0x8bfb, 0x53d6, 0x5931, 0x8d25);
+    const UI_IMPORT_UNCHANGED_MANUAL = String.fromCharCode(0x5bf9, 0x5e94, 0x4f4d, 0x7f6e, 0x672a, 0x66f4, 0x6539, 0xff0c, 0x8bf7, 0x624b, 0x52a8, 0x68c0, 0x67e5, 0x6216, 0x8865, 0x5145, 0x3002);
     const UI_IMPORT_LOWEST_LABEL = String.fromCharCode(0x53f2, 0x4f4e);
     const UI_IMPORT_CHINESE_LABEL = String.fromCharCode(0x4e2d, 0x6587, 0x60c5, 0x51b5);
     const UI_IMPORT_DLSITE_NO_DATA = "DLsite " + String.fromCharCode(0x6ca1, 0x6709, 0x8fd4, 0x56de, 0x53ef, 0x5bfc, 0x5165, 0x7684, 0x8d44, 0x6599, 0x3002);
@@ -614,7 +625,13 @@
     const UI_IMPORT_DATA_FAILED = String.fromCharCode(0x5bfc, 0x5165, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x786e, 0x8ba4, 0x6587, 0x4ef6, 0x662f, 0x672c, 0x9879, 0x76ee, 0x5bfc, 0x51fa, 0x7684, 0x20, 0x4a, 0x53, 0x4f, 0x4e, 0x3002);
     const UI_RESET_CONFIRM = String.fromCharCode(0x786e, 0x5b9a, 0x8981, 0x6e05, 0x7a7a, 0x5f53, 0x524d, 0x586b, 0x5199, 0x7684, 0x5168, 0x90e8, 0x5185, 0x5bb9, 0x5417, 0xff1f, 0x8fd9, 0x4e2a, 0x64cd, 0x4f5c, 0x4e0d, 0x80fd, 0x64a4, 0x9500, 0x3002);
     const UI_STORAGE_FULL = String.fromCharCode(0x672c, 0x5730, 0x5b58, 0x50a8, 0x7a7a, 0x95f4, 0x4e0d, 0x8db3, 0xff0c, 0x5185, 0x5bb9, 0x53ef, 0x80fd, 0x65e0, 0x6cd5, 0x5b8c, 0x6574, 0x4fdd, 0x5b58, 0xff0c, 0x8bf7, 0x5c1d, 0x8bd5, 0x538b, 0x7f29, 0x56fe, 0x7247, 0x6216, 0x5bfc, 0x51fa, 0x5907, 0x4efd, 0x3002);
+    const UI_DIALOG_NOTICE = String.fromCharCode(0x5c0f, 0x63d0, 0x793a);
+    const UI_DIALOG_CONFIRM = String.fromCharCode(0x8bf7, 0x786e, 0x8ba4);
+    const UI_DIALOG_CANCEL = String.fromCharCode(0x53d6, 0x6d88);
+    const UI_DIALOG_OK = String.fromCharCode(0x786e, 0x5b9a);
+    const UI_DIALOG_GOT_IT = String.fromCharCode(0x77e5, 0x9053, 0x5566);
     let storageFullWarned = false;
+    let appDialogQueue = Promise.resolve();
     mobileFocusBack.textContent = UI_BACK_FULL;
     modalDownloadButton.textContent = UI_DOWNLOAD_IMAGE;
     modalCloseButton.textContent = UI_CLOSE;
@@ -625,6 +642,57 @@
     reviewEditTitle.textContent = UI_REVIEW_EDIT_TITLE;
     reviewEditConfirm.textContent = UI_REVIEW_CONFIRM;
     reviewEditCancel.textContent = UI_REVIEW_CANCEL;
+
+    function openAppDialog(message, confirmMode) {
+      const previousFocus = document.activeElement;
+      appDialogTitle.textContent = confirmMode ? UI_DIALOG_CONFIRM : UI_DIALOG_NOTICE;
+      appDialogMessage.textContent = String(message || "");
+      appDialogCancelButton.textContent = UI_DIALOG_CANCEL;
+      appDialogConfirmButton.textContent = confirmMode ? UI_DIALOG_OK : UI_DIALOG_GOT_IT;
+      appDialogCancelButton.hidden = !confirmMode;
+      appDialogModal.hidden = false;
+
+      return new Promise((resolve) => {
+        let settled = false;
+        const finish = (value) => {
+          if (settled) return;
+          settled = true;
+          document.removeEventListener("keydown", handleKeydown);
+          appDialogModal.hidden = true;
+          appDialogCancelButton.onclick = null;
+          appDialogConfirmButton.onclick = null;
+          appDialogModal.onclick = null;
+          if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
+          resolve(value);
+        };
+        const handleKeydown = (event) => {
+          if (event.key !== "Escape") return;
+          event.preventDefault();
+          finish(false);
+        };
+        appDialogCancelButton.onclick = () => finish(false);
+        appDialogConfirmButton.onclick = () => finish(true);
+        appDialogModal.onclick = (event) => {
+          if (event.target === appDialogModal) finish(confirmMode ? false : true);
+        };
+        document.addEventListener("keydown", handleKeydown);
+        requestAnimationFrame(() => appDialogConfirmButton.focus());
+      });
+    }
+
+    function queueAppDialog(message, confirmMode) {
+      const result = appDialogQueue.then(() => openAppDialog(message, confirmMode));
+      appDialogQueue = result.catch(() => false);
+      return result;
+    }
+
+    function showAppAlert(message) {
+      return queueAppDialog(message, false);
+    }
+
+    function showAppConfirm(message) {
+      return queueAppDialog(message, true);
+    }
 
     function currentTemplate() {
       if (card.classList.contains("grid9")) return "grid9";
@@ -2113,6 +2181,14 @@
       return importFailureWithDiagnostic(reason, error, source);
     }
 
+    function unavailableImportField(label, reason = UI_IMPORT_API_MISSING) {
+      return label + String.fromCharCode(0xff08) + reason + String.fromCharCode(0xff09);
+    }
+
+    function importFieldIssueText(fields) {
+      return UI_IMPORT_MISSING_FIELDS + String.fromCharCode(0xff1a) + fields.join(String.fromCharCode(0x3001)) + String.fromCharCode(0xff1b) + UI_IMPORT_UNCHANGED_MANUAL;
+    }
+
     function showFullImportResult(success, failures) {
       const failureList = Array.isArray(failures) ? failures : [];
       grid9ImportTitle.textContent = success ? UI_GRID9_IMPORT_DONE_TITLE : UI_IMPORT_RESULT_FAILED;
@@ -2140,7 +2216,7 @@
     async function importProductInfo() {
       const workno = normalizeWorkno(editableText("rjText"));
       if (!workno) {
-        alert(UI_IMPORT_NEED_RJ);
+        showAppAlert(UI_IMPORT_NEED_RJ);
         return;
       }
       const importMode = await chooseBatchImportMode(hasImportOverwriteTarget());
@@ -2163,6 +2239,19 @@
           throw new Error("empty product");
         }
         product.lowestDiscount = await lowestDiscountPromise;
+        const shouldImportField = (currentValue) => importMode === "overwrite" || !String(currentValue || "").trim();
+        [
+          [String.fromCharCode(0x6807, 0x9898), product.title, editableText("recordTitle")],
+          ["CV", product.cv, editableText("cvText")],
+          [String.fromCharCode(0x793e, 0x56e2), product.circle, editableText("circleText")],
+          [String.fromCharCode(0x539f, 0x4ef7), product.originalPrice, originalPrice.value],
+          [String.fromCharCode(0x73b0, 0x4ef7), product.currentPrice, currentPrice.value],
+          [String.fromCharCode(0x73b0, 0x6298, 0x6263), product.currentDiscount, currentDiscount.value]
+        ].forEach(([label, value, currentValue]) => {
+          if (shouldImportField(currentValue) && (value === "" || value == null)) {
+            failures.push({ label, reason: UI_IMPORT_API_MISSING + String.fromCharCode(0xff0c) + UI_IMPORT_UNCHANGED_MANUAL });
+          }
+        });
         if (lowestDiscountError) {
           failures.push({ label: UI_IMPORT_LOWEST_LABEL, reason: fullImportFailureReason(lowestDiscountError, "lowest") });
         }
@@ -2183,10 +2272,10 @@
               await importCoverFromUrl(product.coverUrl);
             } catch (coverError) {
               console.warn("cover import failed", coverError);
-              failures.push({ label: "BK", reason: fullImportFailureReason(coverError, "cover") });
+              failures.push({ label: "BK", reason: fullImportFailureReason(coverError, "cover") + String.fromCharCode(0xff0c) + UI_IMPORT_UNCHANGED_MANUAL });
             }
           } else {
-            failures.push({ label: "BK", reason: UI_GRID9_NO_COVER + String.fromCharCode(0x3002) });
+            failures.push({ label: "BK", reason: UI_GRID9_NO_COVER + String.fromCharCode(0xff0c) + UI_IMPORT_UNCHANGED_MANUAL });
           }
         }
         showFullImportResult(true, failures);
@@ -3302,7 +3391,7 @@
     async function exportStandaloneImageFromEditor() {
       if (imageEditorMode !== "standalone") return;
       if (!editorImage || !imageEditCanvas.width || !imageEditCanvas.height) {
-        alert(String.fromCharCode(0x8bf7, 0x5148, 0x4e0a, 0x4f20, 0x56fe, 0x7247, 0x3002));
+        showAppAlert(String.fromCharCode(0x8bf7, 0x5148, 0x4e0a, 0x4f20, 0x56fe, 0x7247, 0x3002));
         return;
       }
       imageDoneButton.disabled = true;
@@ -3324,7 +3413,7 @@
         }
       } catch (error) {
         console.error(error);
-        alert(String.fromCharCode(0x5bfc, 0x51fa, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x6362, 0x4e00, 0x5f20, 0x56fe, 0x7247, 0x6216, 0x91cd, 0x65b0, 0x4e0a, 0x4f20, 0x540e, 0x518d, 0x8bd5, 0x3002));
+        showAppAlert(String.fromCharCode(0x5bfc, 0x51fa, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x6362, 0x4e00, 0x5f20, 0x56fe, 0x7247, 0x6216, 0x91cd, 0x65b0, 0x4e0a, 0x4f20, 0x540e, 0x518d, 0x8bd5, 0x3002));
       } finally {
         imageDoneButton.disabled = false;
       }
@@ -3399,7 +3488,7 @@
         } catch (error) {
           console.error("Collection detail image editor close failed", error);
           shouldClose = !apply;
-          alert("图片编辑结果应用失败，请再试一次。");
+          showAppAlert("图片编辑结果应用失败，请再试一次。");
         } finally {
           if (shouldClose) {
             editorSessionSnapshot = null;
@@ -3433,7 +3522,7 @@
           console.error("Grid9 image editor close failed", error);
           shouldClose = !apply;
           const detail = error && (error.name || error.message) ? "\n" + [error.name, error.message].filter(Boolean).join(": ") : "";
-          alert(String.fromCharCode(0x56fe, 0x7247, 0x2044, 0x7f16, 0x8f91, 0x7ed3, 0x679c, 0x5e94, 0x7528, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x518d, 0x8bd5, 0x4e00, 0x6b21, 0x3002) + detail);
+          showAppAlert(String.fromCharCode(0x56fe, 0x7247, 0x2044, 0x7f16, 0x8f91, 0x7ed3, 0x679c, 0x5e94, 0x7528, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x518d, 0x8bd5, 0x4e00, 0x6b21, 0x3002) + detail);
         } finally {
           if (shouldClose) {
             editorSessionSnapshot = null;
@@ -3468,7 +3557,7 @@
           console.error("Quick image editor close failed", error);
           shouldClose = !apply;
           const detail = error && (error.name || error.message) ? "\n" + [error.name, error.message].filter(Boolean).join(": ") : "";
-          alert(String.fromCharCode(0x56fe, 0x7247, 0x2044, 0x7f16, 0x8f91, 0x7ed3, 0x679c, 0x5e94, 0x7528, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x518d, 0x8bd5, 0x4e00, 0x6b21, 0x3002) + detail);
+          showAppAlert(String.fromCharCode(0x56fe, 0x7247, 0x2044, 0x7f16, 0x8f91, 0x7ed3, 0x679c, 0x5e94, 0x7528, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x518d, 0x8bd5, 0x4e00, 0x6b21, 0x3002) + detail);
         } finally {
           if (shouldClose) {
             editorSessionSnapshot = null;
@@ -3503,7 +3592,7 @@
           console.error("Trio image editor close failed", error);
           shouldClose = !apply;
           const detail = error && (error.name || error.message) ? "\n" + [error.name, error.message].filter(Boolean).join(": ") : "";
-          alert(String.fromCharCode(0x56fe, 0x7247, 0x2044, 0x7f16, 0x8f91, 0x7ed3, 0x679c, 0x5e94, 0x7528, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x518d, 0x8bd5, 0x4e00, 0x6b21, 0x3002) + detail);
+          showAppAlert(String.fromCharCode(0x56fe, 0x7247, 0x2044, 0x7f16, 0x8f91, 0x7ed3, 0x679c, 0x5e94, 0x7528, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x518d, 0x8bd5, 0x4e00, 0x6b21, 0x3002) + detail);
         } finally {
           if (shouldClose) {
             editorSessionSnapshot = null;
@@ -3549,7 +3638,7 @@
         console.error("Image editor close failed", error);
         shouldClose = !apply;
         const detail = error && (error.name || error.message) ? "\n" + [error.name, error.message].filter(Boolean).join(": ") : "";
-        alert(String.fromCharCode(0x56fe, 0x7247, 0x2044, 0x7f16, 0x8f91, 0x7ed3, 0x679c, 0x5e94, 0x7528, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x518d, 0x8bd5, 0x4e00, 0x6b21, 0x3002) + detail);
+        showAppAlert(String.fromCharCode(0x56fe, 0x7247, 0x2044, 0x7f16, 0x8f91, 0x7ed3, 0x679c, 0x5e94, 0x7528, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x518d, 0x8bd5, 0x4e00, 0x6b21, 0x3002) + detail);
       } finally {
         if (shouldClose) {
           editorSessionSnapshot = null;
@@ -3702,7 +3791,7 @@
           console.warn("IndexedDB state save failed", error);
           if (!storageFullWarned) {
             storageFullWarned = true;
-            alert(UI_STORAGE_FULL);
+            showAppAlert(UI_STORAGE_FULL);
           }
           return false;
         }
@@ -3733,7 +3822,7 @@
         console.warn("IndexedDB fallback save failed", error);
         if (!storageFullWarned) {
           storageFullWarned = true;
-          alert(UI_STORAGE_FULL);
+          showAppAlert(UI_STORAGE_FULL);
         }
         return false;
       }
@@ -3887,7 +3976,7 @@
           await setCoverFromDataUrl(reader.result);
         } catch (error) {
           console.error("Cover image normalize failed", error);
-          alert(String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x9009, 0x62e9, 0x56fe, 0x7247, 0x3002));
+          showAppAlert(String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x9009, 0x62e9, 0x56fe, 0x7247, 0x3002));
         } finally {
           coverInput.value = "";
         }
@@ -3989,8 +4078,8 @@
       saveState();
     });
 
-    resetButton.addEventListener("click", () => {
-      if (!window.confirm(UI_RESET_CONFIRM)) return;
+    resetButton.addEventListener("click", async () => {
+      if (!await showAppConfirm(UI_RESET_CONFIRM)) return;
       if (currentTemplate() === "quick") {
         resetQuickState();
         return;
@@ -4711,13 +4800,13 @@
           if (!await saveState()) throw new Error("state persistence failed");
         } catch (error) {
           console.error(error);
-          alert(UI_IMPORT_DATA_FAILED);
+          showAppAlert(UI_IMPORT_DATA_FAILED);
         } finally {
           importDataInput.value = "";
         }
       };
       reader.onerror = () => {
-        alert(UI_IMPORT_DATA_FAILED);
+        showAppAlert(UI_IMPORT_DATA_FAILED);
         importDataInput.value = "";
       };
       reader.readAsText(file, "utf-8");
@@ -4876,7 +4965,7 @@
         handleExportBlob(await canvasToBlob(canvas), templateExportFileName("full"), "full", exportThemeId);
       } catch (error) {
         console.error(error);
-        alert("导出失败：请告诉我你看到这条弹窗，我再继续修。");
+        showAppAlert("导出失败：请告诉我你看到这条弹窗，我再继续修。");
       } finally {
         downloadButton.disabled = false;
       }
@@ -5184,9 +5273,10 @@
       return rasterizeImageToPngDataUrl(await blobToDataUrl(blob));
     }
 
-    function grid9ImportMessage(imported, failed, skipped, empty) {
+    function grid9ImportMessage(imported, failed, skipped, empty, partial = 0) {
       const parts = [];
-      parts.push(UI_GRID9_IMPORTED + " " + imported + String.fromCharCode(0x5f20));
+      parts.push(UI_IMPORT_COMPLETE_COUNT + " " + Math.max(0, imported - partial) + String.fromCharCode(0x5f20));
+      if (partial > 0) parts.push(UI_IMPORT_PARTIAL_COUNT + " " + partial + String.fromCharCode(0x5f20));
       if (failed > 0) parts.push(UI_GRID9_FAILED + " " + failed);
       if (skipped > 0) parts.push(UI_GRID9_SKIPPED + " " + skipped);
       if (empty > 0) parts.push(UI_GRID9_EMPTY + " " + empty);
@@ -5232,13 +5322,20 @@
       });
     }
 
-    function showGrid9ImportResult(imported, failed, skipped, empty, failures) {
+    function showGrid9ImportResult(imported, failed, skipped, empty, failures, fieldIssues = []) {
       grid9ImportTitle.textContent = UI_GRID9_IMPORT_DONE_TITLE;
       grid9ImportBody.textContent = "";
       const summary = document.createElement("p");
       summary.style.margin = "0 0 6px";
-      summary.textContent = grid9ImportMessage(imported, failed, skipped, empty);
+      summary.textContent = grid9ImportMessage(imported, failed, skipped, empty, fieldIssues.length);
       grid9ImportBody.appendChild(summary);
+      fieldIssues.forEach((issue) => {
+        const line = document.createElement("p");
+        line.style.margin = "2px 0";
+        line.style.color = "var(--rose-deep)";
+        line.textContent = issue.rj + String.fromCharCode(0xff1a) + importFieldIssueText(issue.fields);
+        grid9ImportBody.appendChild(line);
+      });
       (Array.isArray(failures) ? failures : []).forEach((failure) => {
         const line = document.createElement("p");
         line.style.margin = "2px 0";
@@ -6026,7 +6123,7 @@
           setGrid9Cover(index, pngDataUrl);
         } catch (error) {
           console.error("Grid9 cover normalize failed", error);
-          alert(UI_GRID9_UPLOAD_FAILED);
+          showAppAlert(UI_GRID9_UPLOAD_FAILED);
         }
       };
 
@@ -6186,7 +6283,7 @@
               setQuickCover(index, pngDataUrl);
             } catch (error) {
               console.error("Quick cover normalize failed", error);
-              alert(UI_QUICK_UPLOAD_FAILED);
+              showAppAlert(UI_QUICK_UPLOAD_FAILED);
             }
           };
           reader.readAsDataURL(f);
@@ -6389,6 +6486,7 @@
       let imported = 0;
       let failed = 0;
       const failures = [];
+      const fieldIssues = [];
       let cursor = 0;
       const concurrency = 2;
       const worker = async () => {
@@ -6399,6 +6497,7 @@
             const product = parseDlsiteProduct(await fetchProductJson(job.rj));
             if (!product) throw new Error("empty product");
             let importedField = false;
+            const missingFields = [];
             const rjInput = quickCellEditors[job.index].querySelector(".quick-rj");
             rjInput.value = job.rj;
             fitQuickRjWidth(rjInput);
@@ -6406,6 +6505,8 @@
             if (job.importCv && product.cv) {
               cvInput.value = limitedQuickCvText(product.cv);
               importedField = true;
+            } else if (job.importCv) {
+              missingFields.push(unavailableImportField("CV"));
             }
             let coverError = null;
             if (job.importCover) {
@@ -6416,12 +6517,19 @@
                   importedField = true;
                 } catch (error) {
                   coverError = error;
+                  missingFields.push(unavailableImportField("BK", UI_IMPORT_IMAGE_FAILED));
                 }
               } else {
                 coverError = new Error("no cover url");
+                missingFields.push(unavailableImportField("BK"));
               }
             }
-            if (!importedField) throw coverError || new Error("empty product");
+            if (!importedField) {
+              failed += 1;
+              failures.push({ rj: job.rj, reason: missingFields.length ? importFieldIssueText(missingFields) : grid9FailureReason(coverError || new Error("empty product")) });
+              continue;
+            }
+            if (missingFields.length) fieldIssues.push({ rj: job.rj, fields: missingFields });
             imported += 1;
           } catch (error) {
             console.warn("Quick batch import failed", job.rj, error);
@@ -6434,7 +6542,7 @@
       for (let i = 0; i < Math.min(concurrency, jobs.length); i += 1) workers.push(worker());
       await Promise.all(workers);
       saveState();
-      showGrid9ImportResult(imported, failed, skipCount, emptyCount, failures);
+      showGrid9ImportResult(imported, failed, skipCount, emptyCount, failures, fieldIssues);
       if (imported > 0) trackFixedUsageEvent("feature-rj-import-success");
     }
 
@@ -6860,7 +6968,7 @@
               setTrioCover(index, pngDataUrl);
             } catch (error) {
               console.error("Trio cover normalize failed", error);
-              alert(UI_TRIO_UPLOAD_FAILED);
+              showAppAlert(UI_TRIO_UPLOAD_FAILED);
             }
           };
           reader.readAsDataURL(f);
@@ -7075,6 +7183,7 @@
       let imported = 0;
       let failed = 0;
       const failures = [];
+      const fieldIssues = [];
       let cursor = 0;
       const concurrency = 2;
       const worker = async () => {
@@ -7086,14 +7195,19 @@
             if (!product) throw new Error("empty product");
             const cell = trioCellEditors[job.index];
             let importedField = false;
+            const missingFields = [];
             const cvInput = cell.querySelector(".trio-cv");
             if (job.importCv && product.cv) {
               cvInput.value = limitedTrioCvText(product.cv);
               importedField = true;
+            } else if (job.importCv) {
+              missingFields.push(unavailableImportField("CV"));
             }
             if (job.importPrice && product.currentPrice !== "") {
               cell.querySelector(".trio-price-input").value = limitedTrioPriceText(product.currentPrice);
               importedField = true;
+            } else if (job.importPrice) {
+              missingFields.push(unavailableImportField(String.fromCharCode(0x73b0, 0x4ef7)));
             }
             const rjInput = cell.querySelector(".trio-rj-input");
             rjInput.value = limitedTrioRjText(job.rj);
@@ -7106,12 +7220,19 @@
                   importedField = true;
                 } catch (error) {
                   coverError = error;
+                  missingFields.push(unavailableImportField("BK", UI_IMPORT_IMAGE_FAILED));
                 }
               } else {
                 coverError = new Error("no cover url");
+                missingFields.push(unavailableImportField("BK"));
               }
             }
-            if (!importedField) throw coverError || new Error("empty product");
+            if (!importedField) {
+              failed += 1;
+              failures.push({ rj: job.rj, reason: missingFields.length ? importFieldIssueText(missingFields) : grid9FailureReason(coverError || new Error("empty product")) });
+              continue;
+            }
+            if (missingFields.length) fieldIssues.push({ rj: job.rj, fields: missingFields });
             imported += 1;
           } catch (error) {
             console.warn("Trio batch import failed", job.rj, error);
@@ -7124,7 +7245,7 @@
       for (let i = 0; i < Math.min(concurrency, jobs.length); i += 1) workers.push(worker());
       await Promise.all(workers);
       saveState();
-      showGrid9ImportResult(imported, failed, skipCount, emptyCount, failures);
+      showGrid9ImportResult(imported, failed, skipCount, emptyCount, failures, fieldIssues);
       if (imported > 0) trackFixedUsageEvent("feature-rj-import-success");
     }
 
@@ -7836,7 +7957,7 @@
           void addSticker(source.id);
         } catch (error) {
           console.error("Sticker upload normalize failed", error);
-          alert(String.fromCharCode(0x8d34, 0x7eb8, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x4e0a, 0x4f20, 0x3002));
+          showAppAlert(String.fromCharCode(0x8d34, 0x7eb8, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x4e0a, 0x4f20, 0x3002));
         } finally {
           stickerUploadInput.value = "";
         }
@@ -8012,7 +8133,7 @@
           void openStandaloneImageEditor(standaloneOriginalSrc);
         } catch (error) {
           console.error("Standalone image normalize failed", error);
-          alert(String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x4e0a, 0x4f20, 0x3002));
+          showAppAlert(String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x4e0a, 0x4f20, 0x3002));
         } finally {
           standaloneImageInput.value = "";
         }
@@ -8334,9 +8455,20 @@
         collectionRjImportDone.hidden = true;
         collectionRjImportPrompt.hidden = false;
       }
-      function showCollectionRjImportResult(message, failed = false) {
+      function showCollectionRjImportResult(message, failed = false, details = []) {
         collectionRjImportPromptTitle.textContent = failed ? "导入失败" : "已根据RJ号导入信息";
-        collectionRjImportPromptBody.textContent = message;
+        collectionRjImportPromptBody.textContent = "";
+        const summary = document.createElement("p");
+        summary.style.margin = details.length ? "0 0 6px" : "0";
+        summary.textContent = message;
+        collectionRjImportPromptBody.appendChild(summary);
+        details.forEach(detail => {
+          const line = document.createElement("p");
+          line.style.margin = "2px 0";
+          line.style.color = "var(--rose-deep)";
+          line.textContent = detail.rj + String.fromCharCode(0xff1a) + detail.reason;
+          collectionRjImportPromptBody.appendChild(line);
+        });
         collectionRjImportDone.hidden = false;
         collectionRjImportPrompt.hidden = false;
       }
@@ -8594,7 +8726,7 @@
             setCollectionDetailCover(src, collectionDetailArt.dataset.coverFit || "contain");
           } catch (error) {
             console.error("Collection detail cover upload failed", error);
-            alert("图片处理失败，请重新选择图片。");
+            showAppAlert("图片处理失败，请重新选择图片。");
           } finally {
             collectionDetailCoverInput.value = "";
           }
@@ -8609,7 +8741,7 @@
         const work = records.find(item => String(item.id) === String(activeCollectionRecordId));
         const nextRj = normalizeWorkno(detailText("collectionDetailRj"));
         const duplicate = nextRj && records.some(item => item !== work && item.rj === nextRj);
-        if (duplicate) { alert("这个 RJ 号已经存在，不能保存为重复档案。"); return; }
+        if (duplicate) { showAppAlert("这个 RJ 号已经存在，不能保存为重复档案。"); return; }
         const priceText = detailText("collectionDetailPrice").replace(/^¥\s*/, "");
         const ratingText = detailText("collectionDetailRating");
         const optionalNumber = value => value === "" ? "" : Number(value);
@@ -8622,11 +8754,11 @@
           activeCollectionRecordId = nextWork.id;
           render();
           openDetail(nextWork.id);
-          if (showSuccessMessage) alert("档案已保存");
+          if (showSuccessMessage) showAppAlert("档案已保存");
           return true;
         } catch (error) {
           console.error("Save collection detail failed", error);
-          alert("档案保存失败，请稍后重试。");
+          showAppAlert("档案保存失败，请稍后重试。");
           return false;
         }
       }
@@ -8645,7 +8777,7 @@
       document.getElementById("collectionDetailSaveButton").onclick = () => saveCollectionDetail(true);
       document.getElementById("collectionDeleteRecordButton").onclick = async () => {
         const work = records.find(item => String(item.id) === String(activeCollectionRecordId));
-        if (!work || !confirm("确定永久删除这条收藏记录吗？此操作无法撤销。")) return;
+        if (!work || !await showAppConfirm("确定永久删除这条收藏记录吗？此操作无法撤销。")) return;
         try {
           await deleteWork(work.id);
           records = records.filter(item => item !== work);
@@ -8654,7 +8786,7 @@
           returnToCollectionList();
         } catch (error) {
           console.error("Delete collection record failed", error);
-          alert("删除条目失败，请稍后重试。");
+          showAppAlert("删除条目失败，请稍后重试。");
         }
       };
       document.getElementById("collectionEditRecordButton").onclick = async () => {
@@ -8749,10 +8881,10 @@
           localStorage.setItem(COLLECTION_REMOVED_TAGS_KEY, JSON.stringify(removedCollectionTags));
           collectionPageIndex = 0;
           render();
-          alert("已导入 " + imported.length + " 条收藏记录");
+          showAppAlert("已导入 " + imported.length + " 条收藏记录");
         } catch (error) {
           console.error("Import collection failed", error);
-          alert("收藏备份导入失败，请确认文件格式正确。");
+          showAppAlert("收藏备份导入失败，请确认文件格式正确。");
         }
       }
       async function importCollectionByRj() {
@@ -8762,7 +8894,7 @@
           const legacyRjId = /^(?:RJ|BJ)\d+$/i.test(String(work.id || "")) ? work.id : "";
           return { work, index, rj:normalizeWorkno(work.rj || legacyRjId) };
         }).filter(job => job.rj);
-        const skipped = records.length - jobs.length;
+        let skipped = records.length - jobs.length;
         if (!jobs.length) {
           showCollectionRjImportResult("没有可导入的有效 RJ 号。", true);
           return;
@@ -8776,9 +8908,10 @@
         button.setAttribute("aria-busy", "true");
         label.textContent = "导入中 0/" + jobs.length;
         const updates = [];
+        const fieldIssues = [];
+        const failures = [];
         let completed = 0;
         let failed = 0;
-        let coverFailed = 0;
         let cursor = 0;
         const worker = async () => {
           while (cursor < jobs.length) {
@@ -8789,26 +8922,65 @@
               if (!product || (!product.title && !product.cv && !product.circle && !product.originalPrice && !product.coverUrl)) throw new Error("empty product");
               const nextWork = { ...job.work };
               const canWrite = value => mode === "overwrite" || isEmpty(value);
-              if (product.title && canWrite(job.work.title)) nextWork.title = product.title;
-              if (product.cv && canWrite(job.work.cv)) nextWork.cv = product.cv;
-              if (product.circle && canWrite(job.work.circle)) nextWork.circle = product.circle;
-              if (product.originalPrice !== "" && product.originalPrice != null && canWrite(job.work.originalPrice)) {
-                const price = Number(product.originalPrice);
-                if (Number.isFinite(price)) nextWork.originalPrice = price;
+              const targetTitle = canWrite(job.work.title);
+              const targetCv = canWrite(job.work.cv);
+              const targetCircle = canWrite(job.work.circle);
+              const targetOriginalPrice = canWrite(job.work.originalPrice);
+              const targetCover = canWrite(job.work.cover);
+              if (!targetTitle && !targetCv && !targetCircle && !targetOriginalPrice && !targetCover) {
+                skipped += 1;
+                continue;
               }
-              if (product.coverUrl && canWrite(job.work.cover)) {
-                try {
-                  nextWork.cover = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl));
-                  nextWork.coverFit = "cover";
-                } catch (coverError) {
-                  coverFailed += 1;
-                  console.warn("Collection RJ cover import failed", job.rj, coverError);
-                }
+              let importedField = false;
+              const missingFields = [];
+              if (targetTitle) {
+                if (product.title) {
+                  nextWork.title = product.title;
+                  importedField = true;
+                } else missingFields.push(unavailableImportField(String.fromCharCode(0x6807, 0x9898)));
+              }
+              if (targetCv) {
+                if (product.cv) {
+                  nextWork.cv = product.cv;
+                  importedField = true;
+                } else missingFields.push(unavailableImportField("CV"));
+              }
+              if (targetCircle) {
+                if (product.circle) {
+                  nextWork.circle = product.circle;
+                  importedField = true;
+                } else missingFields.push(unavailableImportField(String.fromCharCode(0x793e, 0x56e2)));
+              }
+              if (targetOriginalPrice) {
+                const price = Number(product.originalPrice);
+                if (product.originalPrice !== "" && product.originalPrice != null && Number.isFinite(price)) {
+                  nextWork.originalPrice = price;
+                  importedField = true;
+                } else missingFields.push(unavailableImportField(String.fromCharCode(0x539f, 0x4ef7)));
+              }
+              if (targetCover) {
+                if (product.coverUrl) {
+                  try {
+                    nextWork.cover = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl));
+                    nextWork.coverFit = "cover";
+                    importedField = true;
+                  } catch (coverError) {
+                    missingFields.push(unavailableImportField("BK", UI_IMPORT_IMAGE_FAILED));
+                    console.warn("Collection RJ cover import failed", job.rj, coverError);
+                  }
+                } else missingFields.push(unavailableImportField("BK"));
+              }
+              if (!importedField) {
+                failed += 1;
+                failures.push({ rj:job.rj, reason:missingFields.length ? importFieldIssueText(missingFields) : UI_IMPORT_DLSITE_NO_DATA });
+                continue;
               }
               nextWork.editedAt = Date.now();
               updates.push(nextWork);
+              if (missingFields.length) fieldIssues.push({ rj:job.rj, reason:importFieldIssueText(missingFields) });
             } catch (error) {
               failed += 1;
+              failures.push({ rj:job.rj, reason:grid9FailureReason(error) });
               console.warn("Collection RJ import failed", job.rj, error);
             } finally {
               completed += 1;
@@ -8825,11 +8997,11 @@
             render();
             trackFixedUsageEvent("feature-rj-import-success");
           }
-          const parts = ["成功 " + updates.length + " 条"];
-          if (failed) parts.push("失败 " + failed + " 条");
-          if (skipped) parts.push("跳过 " + skipped + " 条");
-          if (coverFailed) parts.push("其中 BK 保留原图 " + coverFailed + " 条");
-          showCollectionRjImportResult(parts.join("，"));
+          const parts = [UI_IMPORT_COMPLETE_COUNT + " " + Math.max(0, updates.length - fieldIssues.length) + " " + String.fromCharCode(0x6761)];
+          if (fieldIssues.length) parts.push(UI_IMPORT_PARTIAL_COUNT + " " + fieldIssues.length + " " + String.fromCharCode(0x6761));
+          if (failed) parts.push(UI_GRID9_FAILED + " " + failed + " " + String.fromCharCode(0x6761));
+          if (skipped) parts.push(UI_GRID9_SKIPPED + " " + skipped + " " + String.fromCharCode(0x6761));
+          showCollectionRjImportResult(parts.join(String.fromCharCode(0xff0c)), false, fieldIssues.concat(failures));
         } catch (error) {
           console.error("Save collection RJ import failed", error);
           showCollectionRjImportResult("导入结果保存失败，原收藏记录未被覆盖。", true);
@@ -8878,7 +9050,7 @@
         const now = Date.now();
         try {
           const extracted = extractCurrentWorks(state);
-          if (!extracted.length) { alert("没有可存入收藏的记录。"); return; }
+          if (!extracted.length) { showAppAlert("没有可存入收藏的记录。"); return; }
           const existingById = new Map(records.map(work => [work.id, work]));
           let added = 0;
           let updated = 0;
@@ -8892,10 +9064,10 @@
           await putWorks(nextWorks);
           records = records.filter(item => !nextWorks.some(work => work.id === item.id)).concat(nextWorks);
           render();
-          alert("已存入 " + added + " 条，更新 " + updated + " 条");
+          showAppAlert("已存入 " + added + " 条，更新 " + updated + " 条");
         } catch (error) {
           console.error("Save to collection failed", error);
-          alert("存入收藏失败，请检查浏览器是否允许本地存储。");
+          showAppAlert("存入收藏失败，请检查浏览器是否允许本地存储。");
         } finally {
           [saveToCollectionButton, mobileSaveToCollectionButton].forEach(button => { if (button) { button.disabled = false; button.removeAttribute("aria-busy"); } });
         }

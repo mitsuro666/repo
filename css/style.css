@@ -3294,7 +3294,7 @@
         box-shadow: 0 -10px 28px rgba(184, 69, 112, 0.1);
         z-index: 90;
       }
-      body:has(#usageGuideModal:not([hidden]), #usageInfoModal:not([hidden]), #imageEditModal:not([hidden]):not(.standalone-editor), #reviewEditModal:not([hidden]), #exportModal:not([hidden]), #grid9ImportModal:not([hidden]), #collectionRjImportPrompt:not([hidden]), #collectionSavePrompt:not([hidden])) .main-nav {
+      body:has(#usageGuideModal:not([hidden]), #usageInfoModal:not([hidden]), #imageEditModal:not([hidden]):not(.standalone-editor), #reviewEditModal:not([hidden]), #exportModal:not([hidden]), #grid9ImportModal:not([hidden]), #collectionRjImportPrompt:not([hidden]), #collectionSavePrompt:not([hidden]), #appDialogModal:not([hidden])) .main-nav {
         display: none;
       }
       .main-nav-button {
@@ -4380,6 +4380,32 @@
       display: flex;
       justify-content: flex-end;
       gap: 8px;
+    }
+    .app-dialog-modal {
+      z-index: 160;
+    }
+    .app-dialog-sheet {
+      position: relative;
+      overflow: hidden;
+    }
+    .app-dialog-sheet::before {
+      content: "";
+      position: absolute;
+      top: -34px;
+      right: -28px;
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background: rgba(217, 95, 140, 0.1);
+      pointer-events: none;
+    }
+    .app-dialog-message {
+      position: relative;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .app-dialog-actions {
+      position: relative;
     }
 
     @media (max-width: 780px) {

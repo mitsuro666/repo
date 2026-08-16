@@ -125,6 +125,12 @@ deployed on GitHub Pages.
   typography, spacing, and interaction states. A semantic variant such as a
   destructive action may change color, but must keep the established shape and
   dimensions unless the user explicitly requests a different treatment.
+- For every confirmation, warning, error, or informational prompt, use a
+  site-owned custom dialog rather than the browser's native `alert`, `confirm`,
+  or `prompt`. Match the RJ import dialog's established website style: white
+  background with pink text, plus the same dialog shape, typography, spacing,
+  and button treatment. Reuse or extend that dialog pattern instead of creating
+  an unrelated prompt style.
 - In `js/app.js`, always declare storage-key constants and other `const`/`let`
   dependencies before the first statement that uses or passes them. Never add
   a use-before-declaration dependency to page initialization.
