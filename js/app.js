@@ -28,6 +28,10 @@
     const circleText = document.getElementById("circleText");
     const rjText = document.getElementById("rjText");
     const durationText = document.getElementById("durationText");
+    const purchaseDateText = document.getElementById("purchaseDateText");
+    const listenedDateText = document.getElementById("listenedDateText");
+    const cardInfoField = document.getElementById("cardInfoField");
+    const cardInfoType = document.getElementById("cardInfoType");
     const recordTitle = document.getElementById("recordTitle");
     const reviewText = document.getElementById("reviewText");
     const coverInput = document.getElementById("coverInput");
@@ -62,6 +66,31 @@
     const exportHint = document.getElementById("exportHint");
     const modalDownloadButton = document.getElementById("modalDownloadButton");
     const modalCloseButton = document.getElementById("modalCloseButton");
+    const exportPagePager = document.getElementById("exportPagePager");
+    const exportPrevPage = document.getElementById("exportPrevPage");
+    const exportNextPage = document.getElementById("exportNextPage");
+    const exportPageCount = document.getElementById("exportPageCount");
+    const fullContinuationCard = document.getElementById("fullContinuationCard");
+    const fullContinuationCover = document.getElementById("fullContinuationCover");
+    const fullContinuationTitle = document.getElementById("fullContinuationTitle");
+    const fullContinuationCv = document.getElementById("fullContinuationCv");
+    const fullContinuationRj = document.getElementById("fullContinuationRj");
+    const fullContinuationReview = document.getElementById("fullContinuationReview");
+    const fullContinuationPageNumber = document.getElementById("fullContinuationPageNumber");
+    const compactContinuationCard = document.getElementById("compactContinuationCard");
+    const compactContinuationTitle = document.getElementById("compactContinuationTitle");
+    const compactContinuationCv = document.getElementById("compactContinuationCv");
+    const compactContinuationRj = document.getElementById("compactContinuationRj");
+    const compactContinuationReview = document.getElementById("compactContinuationReview");
+    const compactContinuationPageNumber = document.getElementById("compactContinuationPageNumber");
+    const templatePageControls = document.getElementById("templatePageControls");
+    const templatePrevPage = document.getElementById("templatePrevPage");
+    const templateNextPage = document.getElementById("templateNextPage");
+    const templatePageCount = document.getElementById("templatePageCount");
+    const templatePageCountText = document.getElementById("templatePageCountText");
+    const templatePageMenu = document.getElementById("templatePageMenu");
+    const templateAddPage = document.getElementById("templateAddPage");
+    const templateDeletePage = document.getElementById("templateDeletePage");
     const reviewEditModal = document.getElementById("reviewEditModal");
     const reviewEditTitle = document.getElementById("reviewEditTitle");
     const reviewEditArea = document.getElementById("reviewEditArea");
@@ -91,6 +120,7 @@
     const imageEditCanvas = document.getElementById("imageEditCanvas");
     const imageToolMosaic = document.getElementById("imageToolMosaic");
     const imageToolBlur = document.getElementById("imageToolBlur");
+    const imageToolWhiteFog = document.getElementById("imageToolWhiteFog");
     const imageToolErase = document.getElementById("imageToolErase");
     const imageToolSelect = document.getElementById("imageToolSelect");
     const brushSize = document.getElementById("brushSize");
@@ -99,7 +129,6 @@
     const imageClearButton = document.getElementById("imageClearButton");
     const imageDoneButton = document.getElementById("imageDoneButton");
     const imageCancelButton = document.getElementById("imageCancelButton");
-    const imageToolRow = document.querySelector(".image-tool-row");
     const imageActionRow = document.querySelector(".image-action-row");
     const stickerUploadInput = document.getElementById("stickerUploadInput");
     const stickerList = document.getElementById("stickerList");
@@ -120,6 +149,12 @@
     const grid9TitleText = document.getElementById("grid9TitleText");
     const grid9TitlePlaceholder = document.querySelector(".grid9-title-placeholder");
 
+    const templateGraphemeSegmenter = typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
+      ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
+      : null;
+
+    const measuredTextCanvas = document.createElement("canvas");
+
     function focusGrid9Field(node) {
       node.focus();
       const range = document.createRange();
@@ -135,9 +170,13 @@
       grid9TitleText.classList.toggle("is-empty", grid9TitleText.textContent.trim() === "");
     }
     function limitGrid9Text(node, maxLength) {
-      const chars = Array.from(node.textContent || "");
-      if (chars.length <= maxLength) return;
-      node.textContent = chars.slice(0, maxLength).join("");
+      const singleLineText = String(node.innerText || node.textContent || "").replace(/\r\n?|\n/g, " ");
+      const chars = wrappingCharacters(singleLineText);
+      const lengthLimited = chars.slice(0, maxLength).join("");
+      const limited = limitedByMeasuredLines(lengthLimited, node, 900, 1);
+      const plainTextOnly = node.childNodes.length <= 1 && (!node.firstChild || node.firstChild.nodeType === Node.TEXT_NODE);
+      if (limited === node.textContent && plainTextOnly) return;
+      node.textContent = limited;
     }
     updateGrid9EmptyClass();
     const GRID9_TITLE_STYLE_STORAGE_KEY = "otome-record-card-grid9-title-style-v1";
@@ -159,6 +198,9 @@
       });
     }
     bindGrid9TextInput(grid9TitleText, 15, GRID9_TITLE_TEXT_STORAGE_KEY);
+    grid9TitleText.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") event.preventDefault();
+    });
     grid9TitleText.addEventListener("blur", updateGrid9EmptyClass);
     const grid9ShowNumbers = document.getElementById("grid9ShowNumbers");
     const grid9ShowRj = document.getElementById("grid9ShowRj");
@@ -183,6 +225,7 @@
       grid9Card.classList.toggle("grid9-title-chip", isChip);
       grid9Card.classList.toggle("grid9-title-split", isSplit);
       grid9Card.classList.toggle("grid9-title-frost", isFrost);
+      limitGrid9Text(grid9TitleText, 15);
       grid9TitleStyleButtons.forEach((button) => {
         const selected = button.dataset.titleStyle === grid9TitleStyle;
         button.classList.toggle("is-selected", selected);
@@ -222,6 +265,7 @@
     const STATE_DB_KEY = "current";
     const MENU_STORAGE_KEY = "otome-record-card-active-menu";
     const MAIN_PAGE_STORAGE_KEY = "otome-record-card-main-page";
+    const COMPACT_CONTINUATION_STORAGE_KEY = "otome-record-card-compact-continuation-v1";
     const DLSITE_PROXY_URL = "https://dlsite-rj-import.shuiyingsheng.workers.dev/";
     const DLSITE_PROXY_CACHE_VERSION = "20260816-bj2";
     const DEFAULT_THEME_ID = "matcha-berry-cheese";
@@ -292,6 +336,24 @@
     const FULL_CIRCLE_LINE_WIDTH = 8;
     const COMPACT_CV_CIRCLE_LINE_WIDTH = 7;
     const TWO_LINE_FIELD_MAX_LINES = 2;
+    const CARD_INFO_TYPES = new Set(["duration", "purchaseDate", "listenedDate", "hidden"]);
+    function normalizeCardInfoType(value) {
+      return CARD_INFO_TYPES.has(value) ? value : "duration";
+    }
+    function normalizeCardDateValue(value) {
+      const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
+      if (digits.length <= 4) return digits;
+      if (digits.length <= 6) return digits.slice(0, 4) + "-" + digits.slice(4);
+      return digits.slice(0, 4) + "-" + digits.slice(4, 6) + "-" + digits.slice(6);
+    }
+    function syncCardInfoField() {
+      const nextType = normalizeCardInfoType(cardInfoType.value);
+      cardInfoType.value = nextType;
+      cardInfoField.dataset.infoType = nextType;
+      durationText.hidden = nextType !== "duration";
+      purchaseDateText.hidden = nextType !== "purchaseDate";
+      listenedDateText.hidden = nextType !== "listenedDate";
+    }
     const FULL_FIELD_MAX_WIDTHS = new Map([
       [cvText, FULL_CV_LINE_WIDTH * TWO_LINE_FIELD_MAX_LINES],
       [circleText, FULL_CIRCLE_LINE_WIDTH * TWO_LINE_FIELD_MAX_LINES],
@@ -304,6 +366,14 @@
       [rjText, 12]
     ]);
     const FULL_REVIEW_MAX_WIDTH = 407;
+    const FULL_REVIEW_LINE_WIDTH = 904;
+    const FULL_REVIEW_MAX_LINES = 11;
+    const FULL_CONTINUATION_REVIEW_WIDTH = 904;
+    const FULL_CONTINUATION_REVIEW_MAX_LINES = 34;
+    const COMPACT_CONTINUATION_COLUMN_WIDTH = 237;
+    const COMPACT_CONTINUATION_LINES_PER_COLUMN = 20;
+    const GRID9_REVIEW_LINE_WIDTH = (1080 - 58 * 2 - 18 * 2) / 3 - 19;
+    const GRID9_REVIEW_MAX_LINES = 4;
     let stateRestoreComplete = false;
     let stateUsesIndexedDb = localStorage.getItem(STATE_STORAGE_MODE_KEY) === STATE_STORAGE_MODE_INDEXED_DB;
     let stateSaveQueue = Promise.resolve(true);
@@ -503,6 +573,12 @@
     let mobileFocusTarget = null;
     let lastExportUrl = "";
     let lastExportFileName = "record-card.png";
+    let lastExportPages = [];
+    let exportPageIndex = 0;
+    const continuationState = {
+      full: { current: 0, pages: [] },
+      compact: { current: 0, pages: [] }
+    };
     let currentDiscountManual = false;
     const PLAYER_BAR_WIDTH = 484;
     const PLAYER_DOT_SIZE = 16;
@@ -514,6 +590,7 @@
     let coverEditedSrc = "";
     let coverMosaicMaskSrc = "";
     let coverBlurMaskSrc = "";
+    let coverWhiteFogMaskSrc = "";
     let coverEditorUndoStack = [];
     let coverEditorRedoStack = [];
     let coverStickers = [];
@@ -524,6 +601,7 @@
     let standaloneEditedSrc = "";
     let standaloneMosaicMaskSrc = "";
     let standaloneBlurMaskSrc = "";
+    let standaloneWhiteFogMaskSrc = "";
     let standaloneEditorUndoStack = [];
     let standaloneEditorRedoStack = [];
     let standaloneStickers = [];
@@ -587,9 +665,13 @@
     const editMosaicMaskCtx = editMosaicMaskCanvas.getContext("2d");
     const editBlurMaskCanvas = document.createElement("canvas");
     const editBlurMaskCtx = editBlurMaskCanvas.getContext("2d");
+    const editWhiteFogMaskCanvas = document.createElement("canvas");
+    const editWhiteFogMaskCtx = editWhiteFogMaskCanvas.getContext("2d");
     const UI_BACK_FULL = String.fromCharCode(0x8fd4, 0x56de, 0x5168, 0x56fe);
-    const UI_DOWNLOAD_IMAGE = String.fromCharCode(0x5bfc, 0x51fa, 0x56fe, 0x7247);
-    const UI_REMOVE_IMAGE = String.fromCharCode(0x79fb, 0x9664, 0x56fe, 0x7247);
+    const UI_EXPORT_SHORT = String.fromCharCode(0x5bfc, 0x51fa);
+    const UI_EXPORT_DOWNLOAD_PAGE = String.fromCharCode(0x4e0b, 0x8f7d, 0x5f53, 0x524d, 0x9875);
+    const UI_EXPORT_DOWNLOAD_IMAGE = String.fromCharCode(0x4e0b, 0x8f7d, 0x56fe, 0x7247);
+    const UI_REMOVE_SHORT = String.fromCharCode(0x79fb, 0x9664);
     const UI_CLOSE = String.fromCharCode(0x5173, 0x95ed);
     const UI_LONG_PRESS_SAVE = String.fromCharCode(0x53ef, 0x4ee5, 0x957f, 0x6309, 0x56fe, 0x7247, 0x4fdd, 0x5b58, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x70b9, 0x51fb, 0x4e0b, 0x8f7d, 0x3002);
     const UI_IMPORT_INFO = String.fromCharCode(0x5bfc, 0x5165, 0x4fe1, 0x606f);
@@ -629,30 +711,30 @@
     const UI_REVIEW_CANCEL = String.fromCharCode(0x53d6, 0x6d88);
     const UI_IMPORT_DATA_FAILED = String.fromCharCode(0x5bfc, 0x5165, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x786e, 0x8ba4, 0x6587, 0x4ef6, 0x662f, 0x672c, 0x9879, 0x76ee, 0x5bfc, 0x51fa, 0x7684, 0x20, 0x4a, 0x53, 0x4f, 0x4e, 0x3002);
     const UI_RESET_CONFIRM = String.fromCharCode(0x786e, 0x5b9a, 0x8981, 0x6e05, 0x7a7a, 0x5f53, 0x524d, 0x586b, 0x5199, 0x7684, 0x5168, 0x90e8, 0x5185, 0x5bb9, 0x5417, 0xff1f, 0x8fd9, 0x4e2a, 0x64cd, 0x4f5c, 0x4e0d, 0x80fd, 0x64a4, 0x9500, 0x3002);
+    const UI_DELETE_CONTINUATION_CONFIRM = String.fromCharCode(0x786e, 0x5b9a, 0x5220, 0x9664, 0x5f53, 0x524d, 0x7eed, 0x9875, 0x5417, 0xff1f, 0x5220, 0x9664, 0x540e, 0x65e0, 0x6cd5, 0x6062, 0x590d, 0x3002);
     const UI_STORAGE_FULL = String.fromCharCode(0x672c, 0x5730, 0x5b58, 0x50a8, 0x7a7a, 0x95f4, 0x4e0d, 0x8db3, 0xff0c, 0x5185, 0x5bb9, 0x53ef, 0x80fd, 0x65e0, 0x6cd5, 0x5b8c, 0x6574, 0x4fdd, 0x5b58, 0xff0c, 0x8bf7, 0x5c1d, 0x8bd5, 0x538b, 0x7f29, 0x56fe, 0x7247, 0x6216, 0x5bfc, 0x51fa, 0x5907, 0x4efd, 0x3002);
     const UI_DIALOG_NOTICE = String.fromCharCode(0x5c0f, 0x63d0, 0x793a);
     const UI_DIALOG_CONFIRM = String.fromCharCode(0x8bf7, 0x786e, 0x8ba4);
     const UI_DIALOG_CANCEL = String.fromCharCode(0x53d6, 0x6d88);
     const UI_DIALOG_OK = String.fromCharCode(0x786e, 0x5b9a);
     const UI_DIALOG_GOT_IT = String.fromCharCode(0x77e5, 0x9053, 0x5566);
-    const UPDATE_NOTICE_STORAGE_KEY = "otome-record-card-update-notice-20260817-v2";
-    const UPDATE_NOTICE_START_AT = Date.UTC(2026, 7, 17, 0, 0, 0);
+    const UPDATE_NOTICE_STORAGE_KEY = "otome-record-card-update-notice-20260819-v1";
+    const UPDATE_NOTICE_START_AT = Date.UTC(2026, 7, 19, 0, 0, 0);
     const UPDATE_NOTICE_TITLE = String.fromCharCode(0x8fd1, 0x671f, 0x66f4, 0x65b0, 0x8bf4, 0x660e);
     const UPDATE_NOTICE_MESSAGE = [
-      String.fromCharCode(0x8fd9, 0x51e0, 0x5929, 0x5bf9, 0x7f51, 0x7ad9, 0x8fdb, 0x884c, 0x4e86, 0x4e00, 0x6279, 0x4fee, 0x590d, 0x548c, 0x4f18, 0x5316, 0xff0c, 0x4e3b, 0x8981, 0x66f4, 0x65b0, 0x5982, 0x4e0b, 0xff1a),
-      String.fromCharCode(0x672c, 0x6b21, 0x66f4, 0x65b0, 0x5171, 0x20, 0x36, 0x20, 0x9879, 0xff0c, 0x8bf7, 0x4e0b, 0x6ed1, 0x67e5, 0x770b, 0x5168, 0x90e8, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x4fee, 0x590d, 0x5b8c, 0x6574, 0x7248, 0x6a21, 0x677f, 0x4e2d, 0x793e, 0x56e2, 0x540d, 0x79f0, 0x5f02, 0x5e38, 0x6362, 0x884c, 0x7684, 0x95ee, 0x9898, 0xff0c, 0x8f83, 0x957f, 0x540d, 0x79f0, 0x73b0, 0x5728, 0x4f1a, 0x66f4, 0x81ea, 0x7136, 0x5730, 0x5206, 0x884c, 0x663e, 0x793a, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x4fee, 0x590d, 0x5b89, 0x5353, 0x20, 0x45, 0x64, 0x67, 0x65, 0x20, 0x6d4f, 0x89c8, 0x5668, 0x4e2d, 0xff0c, 0x64cd, 0x4f5c, 0x300c, 0x6211, 0x7684, 0x6536, 0x85cf, 0x300d, 0x8be6, 0x60c5, 0x9875, 0x65f6, 0x53ef, 0x80fd, 0x51fa, 0x73b0, 0x7684, 0x5f02, 0x5e38, 0x8fd4, 0x56de, 0x53ca, 0x5185, 0x5bb9, 0x5904, 0x7406, 0x95ee, 0x9898, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x4fee, 0x590d, 0x20, 0x42, 0x4a, 0x20, 0x53f7, 0x65e0, 0x6cd5, 0x6b63, 0x5e38, 0x5bfc, 0x5165, 0x7684, 0x95ee, 0x9898, 0xff0c, 0x73b0, 0x5728, 0x5df2, 0x652f, 0x6301, 0x4f7f, 0x7528, 0x20, 0x42, 0x4a, 0x20, 0x53f7, 0x83b7, 0x53d6, 0x4f5c, 0x54c1, 0x4fe1, 0x606f, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x7edf, 0x4e00, 0x7f51, 0x7ad9, 0x5185, 0x786e, 0x8ba4, 0x3001, 0x8b66, 0x544a, 0x548c, 0x63d0, 0x793a, 0x5bf9, 0x8bdd, 0x6846, 0x7684, 0x6837, 0x5f0f, 0xff0c, 0x51cf, 0x5c11, 0x4e0d, 0x540c, 0x8bbe, 0x5907, 0x4e0a, 0x7684, 0x663e, 0x793a, 0x5dee, 0x5f02, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x7ec6, 0x5316, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x5bfc, 0x5165, 0x5b8c, 0x6210, 0x540e, 0x7684, 0x63d0, 0x793a, 0x3002, 0x73b0, 0x5728, 0x4f1a, 0x5206, 0x522b, 0x663e, 0x793a, 0x5b8c, 0x6574, 0x5bfc, 0x5165, 0x3001, 0x90e8, 0x5206, 0x5bfc, 0x5165, 0x3001, 0x5931, 0x8d25, 0x53ca, 0x8df3, 0x8fc7, 0x7684, 0x6570, 0x91cf, 0xff0c, 0x5e76, 0x8bf4, 0x660e, 0x672a, 0x80fd, 0x5bfc, 0x5165, 0x7684, 0x5b57, 0x6bb5, 0xff1b, 0x5df2, 0x6709, 0x5185, 0x5bb9, 0x548c, 0x672a, 0x6210, 0x529f, 0x5bfc, 0x5165, 0x7684, 0x4f4d, 0x7f6e, 0x4f1a, 0x4fdd, 0x6301, 0x4e0d, 0x53d8, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x8865, 0x9f50, 0x300c, 0x6211, 0x7684, 0x6536, 0x85cf, 0x300d, 0x8be6, 0x60c5, 0x9875, 0x4e2d, 0x7684, 0x539f, 0x4ef7, 0x3001, 0x73b0, 0x4ef7, 0x3001, 0x73b0, 0x6298, 0x6263, 0x548c, 0x53f2, 0x4f4e, 0x6298, 0x6263, 0xff0c, 0x5e76, 0x589e, 0x52a0, 0x603b, 0x4f53, 0x3001, 0x43, 0x56, 0x3001, 0x5267, 0x672c, 0x548c, 0x20, 0x53, 0x45, 0x20, 0x8bc4, 0x5206, 0xff1b, 0x540c, 0x65f6, 0x4fee, 0x6b63, 0x76f8, 0x5173, 0x5b57, 0x6bb5, 0x7684, 0x663e, 0x793a, 0x4e0e, 0x4fdd, 0x5b58, 0x3002),
+      String.fromCharCode(0x4eca, 0x5929, 0x5bf9, 0x7f51, 0x7ad9, 0x8fdb, 0x884c, 0x4e86, 0x4e00, 0x6279, 0x4fee, 0x590d, 0x548c, 0x4f18, 0x5316, 0xff0c, 0x672c, 0x6b21, 0x66f4, 0x65b0, 0x5171, 0x20, 0x36, 0x20, 0x9879, 0xff0c, 0x8bf7, 0x4e0b, 0x6ed1, 0x67e5, 0x770b, 0x5168, 0x90e8, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x5b8c, 0x6574, 0x7248, 0x548c, 0x7b80, 0x7565, 0x7248, 0x6a21, 0x677f, 0x65b0, 0x589e, 0x7eed, 0x9875, 0x529f, 0x80fd, 0xff0c, 0x53ef, 0x4ee5, 0x968f, 0x65f6, 0x6dfb, 0x52a0, 0x3001, 0x5207, 0x6362, 0x548c, 0x5220, 0x9664, 0x7eed, 0x9875, 0xff0c, 0x7535, 0x8111, 0x7aef, 0x5bfc, 0x51fa, 0x65f6, 0x4f1a, 0x5bfc, 0x51fa, 0x5168, 0x90e8, 0x56fe, 0x7247, 0xff0c, 0x79fb, 0x52a8, 0x7aef, 0x53ef, 0x9009, 0x62e9, 0x9700, 0x8981, 0x7684, 0x9875, 0x9762, 0x9010, 0x9875, 0x624b, 0x52a8, 0x4fdd, 0x5b58, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x5b8c, 0x6574, 0x7248, 0x300c, 0x65f6, 0x957f, 0x300d, 0x5b57, 0x6bb5, 0x73b0, 0x5728, 0x53ef, 0x4ee5, 0x5728, 0x300c, 0x65f6, 0x957f, 0x300d, 0x300c, 0x8d2d, 0x4e70, 0x65e5, 0x671f, 0x300d, 0x300c, 0x6536, 0x542c, 0x65e5, 0x671f, 0x300d, 0x4e4b, 0x95f4, 0x5207, 0x6362, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x9009, 0x62e9, 0x4e0d, 0x663e, 0x793a, 0xff1b, 0x6536, 0x85cf, 0x8bb0, 0x5f55, 0x4f1a, 0x540c, 0x6b65, 0x4fdd, 0x5b58, 0x5bf9, 0x5e94, 0x7684, 0x4fe1, 0x606f, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x4fee, 0x56fe, 0x5de5, 0x5177, 0x65b0, 0x589e, 0x300c, 0x767d, 0x96fe, 0x300d, 0x578b, 0x753b, 0x7b14, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x5bfc, 0x51fa, 0x56fe, 0x7247, 0x5931, 0x8d25, 0x65f6, 0x4f1a, 0x663e, 0x793a, 0x5177, 0x4f53, 0x5931, 0x8d25, 0x539f, 0x56e0, 0xff0c, 0x65b9, 0x4fbf, 0x5b9a, 0x4f4d, 0x548c, 0x53cd, 0x9988, 0x95ee, 0x9898, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x7edf, 0x4e00, 0x4e86, 0x5b8c, 0x6574, 0x7248, 0x548c, 0x7b80, 0x7565, 0x7248, 0x4e2d, 0x6807, 0x9898, 0x3001, 0x43, 0x56, 0x3001, 0x793e, 0x56e2, 0x7b49, 0x8f93, 0x5165, 0x6587, 0x672c, 0x7684, 0x6362, 0x884c, 0x89c4, 0x5219, 0xff0c, 0x957f, 0x5185, 0x5bb9, 0x4f1a, 0x6309, 0x56fa, 0x5b9a, 0x884c, 0x6570, 0x81ea, 0x7136, 0x6362, 0x884c, 0xff0c, 0x4e0d, 0x518d, 0x6ea2, 0x51fa, 0x6216, 0x9519, 0x4f4d, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x4f18, 0x5316, 0x300c, 0x6211, 0x7684, 0x6536, 0x85cf, 0x300d, 0x7684, 0x5206, 0x9875, 0x6309, 0x94ae, 0xff0c, 0x56fa, 0x5b9a, 0x663e, 0x793a, 0xff0c, 0x4e0d, 0x518d, 0x968f, 0x6bcf, 0x9875, 0x6761, 0x6570, 0x4e0d, 0x540c, 0x53d8, 0x6362, 0x4f4d, 0x7f6e, 0x3002),
       String.fromCharCode(0x611f, 0x8c22, 0x5927, 0x5bb6, 0x7684, 0x53cd, 0x9988, 0x4e0e, 0x4f7f, 0x7528, 0xff01, 0x5982, 0x679c, 0x66f4, 0x65b0, 0x540e, 0x4ecd, 0x9047, 0x5230, 0x95ee, 0x9898, 0xff0c, 0x6b22, 0x8fce, 0x901a, 0x8fc7, 0x7f51, 0x7ad9, 0x5185, 0x7684, 0x53cd, 0x9988, 0x5165, 0x53e3, 0x544a, 0x8bc9, 0x6211, 0x3002)
     ].join("\n\n");
     let storageFullWarned = false;
     let appDialogQueue = Promise.resolve();
     mobileFocusBack.textContent = UI_BACK_FULL;
-    modalDownloadButton.textContent = UI_DOWNLOAD_IMAGE;
+    modalDownloadButton.textContent = UI_EXPORT_DOWNLOAD_PAGE;
     modalCloseButton.textContent = UI_CLOSE;
     exportHint.textContent = UI_LONG_PRESS_SAVE;
     importButton.textContent = UI_IMPORT_INFO;
@@ -738,7 +820,227 @@
       return card.classList.contains("compact") ? "compact" : "full";
     }
 
+    function isPagedTemplate(template = currentTemplate()) {
+      return template === "full" || template === "compact";
+    }
+
+    function currentContinuationState(template = currentTemplate()) {
+      return continuationState[template] || null;
+    }
+
+    function templatePageTotal(template = currentTemplate()) {
+      const pageState = currentContinuationState(template);
+      return pageState ? pageState.pages.length + 1 : 1;
+    }
+
+    function paddedPageNumber(value) {
+      return String(Math.max(0, Number(value) || 0)).padStart(2, "0");
+    }
+
+    function normalizeContinuationPageState(value) {
+      const pages = Array.isArray(value?.pages)
+        ? value.pages.map((page) => typeof page === "string" ? page : String(page?.text || ""))
+        : [];
+      const current = Math.max(0, Math.min(pages.length, Number(value?.current) || 0));
+      return { current, pages };
+    }
+
+    function readCompactContinuationSnapshot() {
+      try {
+        const value = JSON.parse(localStorage.getItem(COMPACT_CONTINUATION_STORAGE_KEY) || "null");
+        return value && typeof value === "object" ? normalizeContinuationPageState(value) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function persistCompactContinuationSnapshot() {
+      try {
+        localStorage.setItem(COMPACT_CONTINUATION_STORAGE_KEY, JSON.stringify({
+          current: continuationState.compact.current,
+          pages: continuationState.compact.pages.slice()
+        }));
+      } catch (error) {
+        console.warn("Compact continuation snapshot save failed", error);
+      }
+    }
+
+    function compactContinuationReviewText() {
+      return String(compactContinuationReview.innerText || compactContinuationReview.textContent || "").replace(/\r\n?/g, "\n");
+    }
+
+    function limitedCompactContinuationReviewText(value) {
+      return limitedByMeasuredLines(
+        value,
+        compactContinuationReview,
+        COMPACT_CONTINUATION_COLUMN_WIDTH,
+        COMPACT_CONTINUATION_LINES_PER_COLUMN * 2
+      );
+    }
+
+    function renderCompactContinuationReview(value) {
+      compactContinuationReview.textContent = limitedCompactContinuationReviewText(value);
+    }
+
+    function limitCompactContinuationReviewInput() {
+      const current = compactContinuationReviewText();
+      const limited = limitedCompactContinuationReviewText(current);
+      if (limited === current) return false;
+      compactContinuationReview.textContent = limited;
+      placeCaretAtFullFieldEnd(compactContinuationReview);
+      return true;
+    }
+
+    function updateCompactContinuationPageText(value) {
+      const pageState = continuationState.compact;
+      if (pageState.current <= 0) return;
+      pageState.pages[pageState.current - 1] = value;
+      persistCompactContinuationSnapshot();
+    }
+
+    function commitCompactContinuationReviewText() {
+      const pageState = continuationState.compact;
+      if (compactContinuationCard.hidden || pageState.current <= 0) return false;
+      limitCompactContinuationReviewInput();
+      const pageText = compactContinuationReviewText();
+      const changed = pageState.pages[pageState.current - 1] !== pageText;
+      updateCompactContinuationPageText(pageText);
+      return changed;
+    }
+
+    function syncContinuationSharedInfo() {
+      const title = editableText("recordTitle");
+      const cv = editableText("cvText");
+      const rj = editableText("rjText");
+      fullContinuationTitle.textContent = title;
+      fullContinuationCv.textContent = cv;
+      fullContinuationRj.textContent = rj;
+      compactContinuationTitle.textContent = title;
+      compactContinuationCv.textContent = cv;
+      compactContinuationRj.textContent = rj;
+      const hasCover = Boolean(coverImage.getAttribute("src") && coverBox.classList.contains("has-image"));
+      fullContinuationCover.parentElement.classList.toggle("has-image", hasCover);
+      if (hasCover) {
+        fullContinuationCover.src = coverImage.src;
+        fullContinuationCover.style.objectFit = coverImage.style.objectFit === "cover" ? "cover" : "contain";
+      } else {
+        fullContinuationCover.removeAttribute("src");
+      }
+    }
+
+    function renderTemplatePageMenu() {
+      const template = currentTemplate();
+      const pageState = currentContinuationState(template);
+      templatePageMenu.innerHTML = "";
+      if (!pageState) return;
+      const total = templatePageTotal(template);
+      for (let index = 0; index < total; index += 1) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "template-page-jump" + (index === pageState.current ? " active" : "");
+        const number = document.createTextNode(
+          String.fromCharCode(0x3010) + paddedPageNumber(index + 1) + String.fromCharCode(0x3011)
+        );
+        button.appendChild(number);
+        button.addEventListener("click", () => {
+          commitCompactContinuationReviewText();
+          pageState.current = index;
+          closeTemplatePageMenu();
+          renderTemplatePage();
+          saveState();
+        });
+        templatePageMenu.appendChild(button);
+      }
+    }
+
+    function closeTemplatePageMenu() {
+      templatePageMenu.hidden = true;
+      templatePageCount.setAttribute("aria-expanded", "false");
+    }
+
+    function renderTemplatePage(fit = true) {
+      const template = currentTemplate();
+      const pageState = currentContinuationState(template);
+      if (!pageState) {
+        templatePageControls.hidden = true;
+        fullContinuationCard.hidden = true;
+        compactContinuationCard.hidden = true;
+        if (fit) fitStage();
+        return;
+      }
+      templatePageControls.classList.toggle("compact", template === "compact");
+      pageState.current = Math.max(0, Math.min(pageState.pages.length, pageState.current));
+      const total = templatePageTotal(template);
+      const continuation = pageState.current > 0;
+      card.hidden = continuation;
+      fullContinuationCard.hidden = !(template === "full" && continuation);
+      compactContinuationCard.hidden = !(template === "compact" && continuation);
+      templatePageControls.hidden = false;
+      templatePageCountText.textContent = paddedPageNumber(pageState.current + 1) + " / " + paddedPageNumber(total);
+      templatePrevPage.disabled = pageState.current === 0;
+      templateNextPage.disabled = pageState.current >= total - 1;
+      templateDeletePage.hidden = !continuation;
+      if (continuation) {
+        syncContinuationSharedInfo();
+        const pageText = pageState.pages[pageState.current - 1] || "";
+        if (template === "full") {
+          const limitedPageText = limitedFullContinuationReviewText(pageText);
+          pageState.pages[pageState.current - 1] = limitedPageText;
+          fullContinuationReview.value = limitedPageText;
+          fullContinuationPageNumber.textContent = paddedPageNumber(pageState.current + 1) + " / " + paddedPageNumber(total);
+        } else {
+          const limitedPageText = limitedCompactContinuationReviewText(pageText);
+          pageState.pages[pageState.current - 1] = limitedPageText;
+          renderCompactContinuationReview(limitedPageText);
+          compactContinuationPageNumber.textContent = paddedPageNumber(pageState.current + 1) + " / " + paddedPageNumber(total);
+        }
+      }
+      renderTemplatePageMenu();
+      if (fit) fitStage();
+    }
+
+    function changeTemplatePage(delta) {
+      const pageState = currentContinuationState();
+      if (!pageState) return;
+      const next = Math.max(0, Math.min(pageState.pages.length, pageState.current + delta));
+      if (next === pageState.current) return;
+      commitCompactContinuationReviewText();
+      pageState.current = next;
+      closeTemplatePageMenu();
+      renderTemplatePage();
+      saveState();
+    }
+
+    function addTemplateContinuationPage() {
+      const pageState = currentContinuationState();
+      if (!pageState) return;
+      commitCompactContinuationReviewText();
+      pageState.pages.push("");
+      pageState.current = pageState.pages.length;
+      closeTemplatePageMenu();
+      renderTemplatePage();
+      saveState();
+    }
+
+    async function deleteCurrentTemplateContinuationPage() {
+      const pageState = currentContinuationState();
+      if (!pageState || pageState.current === 0) return;
+      if (!await showAppConfirm(UI_DELETE_CONTINUATION_CONFIRM)) return;
+      pageState.pages.splice(pageState.current - 1, 1);
+      pageState.current = Math.min(pageState.current, pageState.pages.length);
+      closeTemplatePageMenu();
+      renderTemplatePage();
+      saveState();
+    }
+
     const fullFieldComposing = new WeakSet();
+
+    function wrappingCharacters(value) {
+      const text = String(value || "");
+      return templateGraphemeSegmenter
+        ? Array.from(templateGraphemeSegmenter.segment(text), (part) => part.segment)
+        : Array.from(text);
+    }
 
     function fullWidthUnits(character) {
       const codePoint = character.codePointAt(0) || 0;
@@ -747,16 +1049,20 @@
       return 2;
     }
 
+    function fullWidthClusterUnits(character) {
+      return Array.from(character).reduce((sum, codePointCharacter) => sum + fullWidthUnits(codePointCharacter), 0);
+    }
+
     function limitedByFullWidth(value, maxWidth, ellipsis = false) {
-      const characters = Array.from(value || "");
+      const characters = wrappingCharacters(value);
       const maxUnits = maxWidth * 2;
-      const totalUnits = characters.reduce((sum, character) => sum + fullWidthUnits(character), 0);
+      const totalUnits = characters.reduce((sum, character) => sum + fullWidthClusterUnits(character), 0);
       if (totalUnits <= maxUnits) return characters.join("");
       const contentUnits = ellipsis ? maxUnits - 2 : maxUnits;
       let usedUnits = 0;
       let limited = "";
       for (const character of characters) {
-        const units = fullWidthUnits(character);
+        const units = fullWidthClusterUnits(character);
         if (usedUnits + units > contentUnits) break;
         limited += character;
         usedUnits += units;
@@ -769,8 +1075,8 @@
       const maxUnits = lineWidth * 2;
       let line = "";
       let lineUnits = 0;
-      for (const character of Array.from(value || "")) {
-        const units = fullWidthUnits(character);
+      for (const character of wrappingCharacters(value)) {
+        const units = fullWidthClusterUnits(character);
         if (line && lineUnits + units > maxUnits) {
           lines.push(line);
           if (lines.length >= maxLines) return lines;
@@ -784,29 +1090,79 @@
       return lines;
     }
 
-    function limitedFullFieldText(node, value = node?.textContent || "") {
+    function editableInputText(node) {
+      if (!node) return "";
+      const value = node === recordTitle ? node.innerText : node.textContent;
+      return String(value || "").replace(/\r\n?/g, "\n");
+    }
+
+    function measuredTextContext(node) {
+      const ctx = measuredTextCanvas.getContext("2d");
+      const style = window.getComputedStyle(node);
+      ctx.font = [
+        style.fontStyle,
+        style.fontVariant,
+        style.fontWeight,
+        style.fontSize,
+        style.fontFamily
+      ].filter(Boolean).join(" ");
+      if ("letterSpacing" in ctx) ctx.letterSpacing = style.letterSpacing === "normal" ? "0px" : style.letterSpacing;
+      return ctx;
+    }
+
+    function limitedByMeasuredLines(value, node, maxWidth, maxLines) {
+      const text = String(value || "").replace(/\r\n?/g, "\n");
+      const ctx = measuredTextContext(node);
+      let limited = "";
+      let line = "";
+      let lineCount = 1;
+      for (const character of wrappingCharacters(text)) {
+        if (character === "\n") {
+          if (lineCount >= maxLines) break;
+          limited += character;
+          line = "";
+          lineCount += 1;
+          continue;
+        }
+        const nextLine = line + character;
+        if (line && ctx.measureText(nextLine).width > maxWidth) {
+          if (lineCount >= maxLines) break;
+          line = character;
+          lineCount += 1;
+        } else {
+          line = nextLine;
+        }
+        limited += character;
+      }
+      return limited;
+    }
+
+    function limitedFullFieldText(node, value = editableInputText(node)) {
       const maxWidth = FULL_FIELD_MAX_WIDTHS.get(node);
       if (!maxWidth) return value;
       const normalizedValue = node === cvText || node === circleText ? String(value).replace(/[\r\n]+/g, "") : value;
-      return limitedByFullWidth(normalizedValue, maxWidth, node === recordTitle || node === cvText || node === circleText);
+      const limited = limitedByFullWidth(normalizedValue, maxWidth, node === recordTitle || node === cvText || node === circleText);
+      return node === recordTitle ? limitedByMeasuredLines(limited, recordTitle, 904, 2) : limited;
     }
 
-    function limitedCompactFieldText(node, value = node?.textContent || "") {
+    function limitedCompactFieldText(node, value = editableInputText(node)) {
       if (node === cvText || node === circleText) {
         const normalizedValue = String(value).replace(/[\r\n]+/g, "");
         return limitedByFullWidth(normalizedValue, COMPACT_CV_CIRCLE_LINE_WIDTH * TWO_LINE_FIELD_MAX_LINES, true);
       }
       const maxLength = COMPACT_FIELD_MAX_LENGTHS.get(node);
       if (!maxLength) return value;
-      const characters = Array.from(value);
+      const characters = wrappingCharacters(value);
       if (node === rjText) {
         return limitedWorknoText(characters.join(""));
       }
-      if (characters.length <= maxLength) return characters.join("");
-      return characters.slice(0, maxLength - 1).join("") + "\u2026";
+      const limited = characters.length <= maxLength
+        ? characters.join("")
+        : characters.slice(0, maxLength - 1).join("") + "\u2026";
+      return node === recordTitle ? limitedByMeasuredLines(limited, recordTitle, 560, 3) : limited;
     }
 
-    function limitedCurrentFieldText(node, value = node?.textContent || "") {
+    function limitedCurrentFieldText(node, value = editableInputText(node)) {
       if (currentTemplate() === "compact") return limitedCompactFieldText(node, value);
       if (currentTemplate() === "full") return limitedFullFieldText(node, value);
       return value;
@@ -822,10 +1178,28 @@
       selection.addRange(range);
     }
 
+    function placeCaretAtFullFieldOffset(node, offset) {
+      if (document.activeElement !== node) return;
+      const textNode = node.firstChild;
+      if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+        placeCaretAtFullFieldEnd(node);
+        return;
+      }
+      const range = document.createRange();
+      range.setStart(textNode, Math.max(0, Math.min(textNode.data.length, offset)));
+      range.collapse(true);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
     function applyLimitedFullFieldText(node, limited) {
       const wrappedLineWidth = currentTemplate() === "full" && (node === cvText || node === circleText)
         ? (node === cvText ? FULL_CV_LINE_WIDTH : FULL_CIRCLE_LINE_WIDTH)
         : (currentTemplate() === "compact" && (node === cvText || node === circleText) ? COMPACT_CV_CIRCLE_LINE_WIDTH : 0);
+      const hasUnexpectedMarkup = Array.from(node.childNodes).some((child) => (
+        child.nodeType === Node.ELEMENT_NODE && !(wrappedLineWidth && child.nodeName === "BR")
+      ));
       if (wrappedLineWidth) {
         const lines = fullWidthWrappedLines(limited, wrappedLineWidth, TWO_LINE_FIELD_MAX_LINES);
         const currentLines = Array.from(node.childNodes).reduce((items, child) => {
@@ -833,7 +1207,7 @@
           else items[items.length - 1] += child.textContent || "";
           return items;
         }, [""]);
-        if (currentLines.length === lines.length && currentLines.every((line, index) => line === lines[index])) return false;
+        if (!hasUnexpectedMarkup && currentLines.length === lines.length && currentLines.every((line, index) => line === lines[index])) return false;
         node.replaceChildren();
         lines.forEach((line, index) => {
           if (index) node.appendChild(document.createElement("br"));
@@ -847,7 +1221,7 @@
         placeCaretAtFullFieldEnd(node);
         return true;
       }
-      if (limited === node.textContent) return false;
+      if (!hasUnexpectedMarkup && limited === editableInputText(node)) return false;
       node.textContent = limited;
       placeCaretAtFullFieldEnd(node);
       return true;
@@ -883,8 +1257,19 @@
     FULL_FIELD_MAX_WIDTHS.forEach((maxWidth, node) => {
       node?.addEventListener("beforeinput", (event) => {
         if (!["full", "compact"].includes(currentTemplate()) || fullFieldComposing.has(node) || event.isComposing) return;
+        if (node === recordTitle && ["insertParagraph", "insertLineBreak"].includes(event.inputType)) {
+          const current = editableInputText(node);
+          const selection = fullFieldSelectionOffsets(node);
+          const next = current.slice(0, selection.start) + "\n" + current.slice(selection.end);
+          const limited = limitedCurrentFieldText(node, next);
+          event.preventDefault();
+          node.textContent = limited;
+          placeCaretAtFullFieldOffset(node, Math.min(limited.length, selection.start + 1));
+          node.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: event.inputType, data: "\n" }));
+          return;
+        }
         if (!event.inputType.startsWith("insert") || typeof event.data !== "string") return;
-        const current = node.textContent || "";
+        const current = editableInputText(node);
         const selection = fullFieldSelectionOffsets(node);
         const next = current.slice(0, selection.start) + event.data + current.slice(selection.end);
         const limited = limitedCurrentFieldText(node, next);
@@ -906,10 +1291,21 @@
       });
     });
 
+    [cvText, circleText, rjText, durationText].forEach((node) => {
+      node?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") event.preventDefault();
+      });
+    });
+
     const fullReviewComposing = new WeakSet();
 
     function limitedFullReviewText(value) {
-      return limitedByFullWidth(value, FULL_REVIEW_MAX_WIDTH);
+      return limitedByMeasuredLines(
+        limitedByFullWidth(value, FULL_REVIEW_MAX_WIDTH),
+        reviewText,
+        FULL_REVIEW_LINE_WIDTH,
+        FULL_REVIEW_MAX_LINES
+      );
     }
 
     function limitFullReviewInput(input) {
@@ -950,6 +1346,57 @@
     bindFullReviewLimit(reviewText);
     bindFullReviewLimit(reviewEditArea);
 
+    function limitedFullContinuationReviewText(value) {
+      return limitedByMeasuredLines(
+        value,
+        fullContinuationReview,
+        FULL_CONTINUATION_REVIEW_WIDTH,
+        FULL_CONTINUATION_REVIEW_MAX_LINES
+      );
+    }
+
+    const fullContinuationReviewComposing = new WeakSet();
+
+    function limitFullContinuationReviewInput(input) {
+      if (!input) return false;
+      const limited = limitedFullContinuationReviewText(input.value);
+      if (limited === input.value) return false;
+      const caret = Math.min(limited.length, input.selectionStart ?? limited.length);
+      input.value = limited;
+      input.setSelectionRange(caret, caret);
+      return true;
+    }
+
+    function bindFullContinuationReviewLimit(input) {
+      input?.addEventListener("beforeinput", (event) => {
+        if (fullContinuationReviewComposing.has(input) || event.isComposing) return;
+        if (!event.inputType.startsWith("insert") || typeof event.data !== "string") return;
+        const start = input.selectionStart ?? input.value.length;
+        const end = input.selectionEnd ?? input.value.length;
+        const next = input.value.slice(0, start) + event.data + input.value.slice(end);
+        const limited = limitedFullContinuationReviewText(next);
+        if (limited === next) return;
+        event.preventDefault();
+        input.value = limited;
+        const caret = Math.min(limited.length, start + event.data.length);
+        input.setSelectionRange(caret, caret);
+        input.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: event.inputType, data: event.data }));
+      });
+      input?.addEventListener("compositionstart", () => fullContinuationReviewComposing.add(input));
+      input?.addEventListener("compositionend", () => {
+        fullContinuationReviewComposing.delete(input);
+        if (limitFullContinuationReviewInput(input)) {
+          input.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertCompositionText" }));
+        }
+        scheduleSave();
+      });
+      input?.addEventListener("input", () => {
+        if (!fullContinuationReviewComposing.has(input)) limitFullContinuationReviewInput(input);
+      });
+    }
+
+    bindFullContinuationReviewLimit(fullContinuationReview);
+
     function setActiveMenu(menuName, persist = true) {
       const allowedMenus = new Set(["template", "theme"]);
       const nextMenu = allowedMenus.has(menuName) ? menuName : "template";
@@ -981,6 +1428,9 @@
       const trioActive = templatePage && currentTemplate() === "trio";
       if (stage) stage.hidden = !templatePage;
       if (card) card.hidden = !templatePage || grid9Active || quickActive || trioActive;
+      if (fullContinuationCard) fullContinuationCard.hidden = true;
+      if (compactContinuationCard) compactContinuationCard.hidden = true;
+      if (templatePageControls) templatePageControls.hidden = !templatePage || !isPagedTemplate();
       if (grid9Card) grid9Card.hidden = !grid9Active;
       if (grid9ExternalTools) grid9ExternalTools.hidden = !grid9Active;
       if (quickCard) quickCard.hidden = !quickActive;
@@ -990,12 +1440,14 @@
       if (imageToolPage) imageToolPage.hidden = page !== "image-tool";
       if (collectionPage) collectionPage.hidden = page !== "collection";
       if (collectionDetailPage) collectionDetailPage.hidden = true;
+      if (templatePage && isPagedTemplate()) renderTemplatePage(false);
     }
 
     function setMainPage(pageName, persist = true) {
       const allowedPages = new Set(["template", "image-tool", "collection"]);
       const nextPage = allowedPages.has(pageName) ? pageName : "template";
       const previousPage = mainNavButtons.find((button) => button.classList.contains("active"))?.dataset.page || "";
+      commitCompactContinuationReviewText();
       mainNavButtons.forEach((button) => button.classList.toggle("active", button.dataset.page === nextPage));
       if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES[nextPage] || PAGE_TITLES.template;
       if (templateToolbar) templateToolbar.hidden = nextPage !== "template";
@@ -1111,6 +1563,8 @@
       const nextId = CARD_THEMES[normalizedThemeId] ? normalizedThemeId : DEFAULT_THEME_ID;
       currentThemeId = nextId;
       card.dataset.theme = nextId;
+      if (fullContinuationCard) fullContinuationCard.dataset.theme = nextId;
+      if (compactContinuationCard) compactContinuationCard.dataset.theme = nextId;
       if (grid9Card) grid9Card.dataset.theme = nextId;
       if (quickCard) quickCard.dataset.theme = nextId;
       if (trioCard) trioCard.dataset.theme = nextId;
@@ -1149,6 +1603,8 @@
       if (currentTemplate() === "grid9") return grid9Card;
       if (currentTemplate() === "quick") return quickCard;
       if (currentTemplate() === "trio") return trioCard;
+      const pageState = currentContinuationState();
+      if (pageState?.current > 0) return currentTemplate() === "compact" ? compactContinuationCard : fullContinuationCard;
       return card;
     }
 
@@ -1212,6 +1668,7 @@
 
     function setTemplate(template, persist = true) {
       const nextTemplate = template === "grid9" ? "grid9" : (template === "quick" ? "quick" : (template === "trio" ? "trio" : (template === "compact" ? "compact" : "full")));
+      commitCompactContinuationReviewText();
       card.classList.toggle("compact", nextTemplate === "compact");
       card.classList.toggle("grid9", nextTemplate === "grid9");
       card.classList.toggle("quick", nextTemplate === "quick");
@@ -1222,14 +1679,19 @@
       mobileFocusBack?.classList.add("hidden");
       if (stage) stage.classList.remove("is-focused");
       syncTemplatePages();
+      if (isPagedTemplate(nextTemplate)) renderTemplatePage(false);
       fitStage();
       if (persist) saveState();
     }
 
 
     function revokeLastExportUrl() {
-      if (lastExportUrl) URL.revokeObjectURL(lastExportUrl);
+      const urls = new Set(lastExportPages.map((page) => page.url).filter(Boolean));
+      if (lastExportUrl) urls.add(lastExportUrl);
+      urls.forEach((url) => URL.revokeObjectURL(url));
       lastExportUrl = "";
+      lastExportPages = [];
+      exportPageIndex = 0;
     }
 
     function safeFilePart(value, fallback = "otome") {
@@ -1269,6 +1731,11 @@
       ].join("_") + ".png";
     }
 
+    function templatePageExportFileName(template, pageIndex, pageTotal) {
+      const base = templateExportFileName(template).replace(/\.png$/i, "");
+      return pageTotal > 1 ? base + "_" + paddedPageNumber(pageIndex + 1) + ".png" : base + ".png";
+    }
+
     function standaloneExportFileName() {
       const now = new Date();
       const y = String(now.getFullYear());
@@ -1286,17 +1753,39 @@
       });
     }
 
-    function showExportPreview(blob, fileName = "record-card.png") {
+    function renderExportPagePreview() {
+      if (!lastExportPages.length) return;
+      exportPageIndex = Math.max(0, Math.min(lastExportPages.length - 1, exportPageIndex));
+      const page = lastExportPages[exportPageIndex];
+      lastExportUrl = page.url;
+      lastExportFileName = page.fileName;
+      exportPreviewImage.src = page.url;
+      exportPageCount.textContent = paddedPageNumber(exportPageIndex + 1) + " / " + paddedPageNumber(lastExportPages.length);
+      exportPrevPage.disabled = exportPageIndex === 0;
+      exportNextPage.disabled = exportPageIndex >= lastExportPages.length - 1;
+      exportPagePager.hidden = lastExportPages.length <= 1;
+    }
+
+    function showExportPreviewPages(pages, initialIndex = 0, downloadButtonText = UI_EXPORT_DOWNLOAD_PAGE) {
       revokeLastExportUrl();
-      lastExportFileName = fileName;
-      lastExportUrl = URL.createObjectURL(blob);
-      exportPreviewImage.src = lastExportUrl;
+      lastExportPages = pages.map((page) => ({
+        blob: page.blob,
+        fileName: page.fileName || "record-card.png",
+        url: URL.createObjectURL(page.blob)
+      }));
+      exportPageIndex = Math.max(0, Math.min(lastExportPages.length - 1, initialIndex));
+      modalDownloadButton.textContent = downloadButtonText;
+      renderExportPagePreview();
       exportModal.hidden = false;
     }
 
-    function handleExportBlob(blob, fileName = "record-card.png", templateId = "", themeId = currentThemeId) {
+    function showExportPreview(blob, fileName = "record-card.png", downloadButtonText = UI_EXPORT_DOWNLOAD_PAGE) {
+      showExportPreviewPages([{ blob, fileName }], 0, downloadButtonText);
+    }
+
+    function handleExportBlob(blob, fileName = "record-card.png", templateId = "", themeId = currentThemeId, downloadButtonText = UI_EXPORT_DOWNLOAD_PAGE) {
       if (isMobileView()) {
-        showExportPreview(blob, fileName);
+        showExportPreview(blob, fileName, downloadButtonText);
       } else {
         downloadBlob(blob, fileName);
       }
@@ -2467,7 +2956,7 @@
     }
 
     function resizeEditorCanvases(width, height) {
-      [imageEditCanvas, editOriginalCanvas, editMosaicCanvas, editBlurCanvas, editMosaicMaskCanvas, editBlurMaskCanvas].forEach((canvas) => {
+      [imageEditCanvas, editOriginalCanvas, editMosaicCanvas, editBlurCanvas, editMosaicMaskCanvas, editBlurMaskCanvas, editWhiteFogMaskCanvas].forEach((canvas) => {
         canvas.width = width;
         canvas.height = height;
       });
@@ -2476,6 +2965,7 @@
     function clearEditorMasks() {
       editMosaicMaskCtx.clearRect(0, 0, editMosaicMaskCanvas.width, editMosaicMaskCanvas.height);
       editBlurMaskCtx.clearRect(0, 0, editBlurMaskCanvas.width, editBlurMaskCanvas.height);
+      editWhiteFogMaskCtx.clearRect(0, 0, editWhiteFogMaskCanvas.width, editWhiteFogMaskCanvas.height);
     }
 
     function cloneSticker(sticker) {
@@ -2634,6 +3124,7 @@
       return {
         mosaic: editMosaicMaskCtx.getImageData(0, 0, editMosaicMaskCanvas.width, editMosaicMaskCanvas.height),
         blur: editBlurMaskCtx.getImageData(0, 0, editBlurMaskCanvas.width, editBlurMaskCanvas.height),
+        whiteFog: editWhiteFogMaskCtx.getImageData(0, 0, editWhiteFogMaskCanvas.width, editWhiteFogMaskCanvas.height),
         stickers: cloneStickerList(coverStickers)
       };
     }
@@ -2650,6 +3141,8 @@
       if (!snapshot) return;
       editMosaicMaskCtx.putImageData(snapshot.mosaic, 0, 0);
       editBlurMaskCtx.putImageData(snapshot.blur, 0, 0);
+      editWhiteFogMaskCtx.clearRect(0, 0, editWhiteFogMaskCanvas.width, editWhiteFogMaskCanvas.height);
+      if (snapshot.whiteFog) editWhiteFogMaskCtx.putImageData(snapshot.whiteFog, 0, 0);
       resetEditorMaskCompositeModes();
       coverStickers = cloneStickerList(snapshot.stickers);
       selectedStickerId = null;
@@ -2682,11 +3175,13 @@
       if (!snapshot || !editMosaicMaskCanvas.width || !editMosaicMaskCanvas.height) return null;
       const mosaic = document.createElement("canvas");
       const blur = document.createElement("canvas");
-      mosaic.width = blur.width = editMosaicMaskCanvas.width;
-      mosaic.height = blur.height = editMosaicMaskCanvas.height;
+      const whiteFog = document.createElement("canvas");
+      mosaic.width = blur.width = whiteFog.width = editMosaicMaskCanvas.width;
+      mosaic.height = blur.height = whiteFog.height = editMosaicMaskCanvas.height;
       mosaic.getContext("2d").putImageData(snapshot.mosaic, 0, 0);
       blur.getContext("2d").putImageData(snapshot.blur, 0, 0);
-      return { mosaic: mosaic.toDataURL("image/png"), blur: blur.toDataURL("image/png"), stickers: cloneStickerList(snapshot.stickers) };
+      if (snapshot.whiteFog) whiteFog.getContext("2d").putImageData(snapshot.whiteFog, 0, 0);
+      return { mosaic: mosaic.toDataURL("image/png"), blur: blur.toDataURL("image/png"), whiteFog: whiteFog.toDataURL("image/png"), stickers: cloneStickerList(snapshot.stickers) };
     }
 
     async function dataUrlToImageData(src, width, height) {
@@ -2714,7 +3209,8 @@
       for (const item of (Array.isArray(items) ? items.slice(-12) : [])) {
         const mosaic = await dataUrlToImageData(item?.mosaic, width, height);
         const blur = await dataUrlToImageData(item?.blur, width, height);
-        if (mosaic && blur) restored.push({ mosaic, blur, stickers: cloneStickerList(item?.stickers) });
+        const whiteFog = await dataUrlToImageData(item?.whiteFog, width, height) || editWhiteFogMaskCtx.createImageData(width, height);
+        if (mosaic && blur) restored.push({ mosaic, blur, whiteFog, stickers: cloneStickerList(item?.stickers) });
       }
       return restored;
     }
@@ -2728,6 +3224,7 @@
       if (!imageEditCanvas.width || !imageEditCanvas.height) return;
       coverMosaicMaskSrc = editMosaicMaskCanvas.toDataURL("image/png");
       coverBlurMaskSrc = editBlurMaskCanvas.toDataURL("image/png");
+      coverWhiteFogMaskSrc = editWhiteFogMaskCanvas.toDataURL("image/png");
       coverEditorUndoStack = editorUndoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-12);
       coverEditorRedoStack = editorRedoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-12);
       coverStickers = cloneStickerList(coverStickers);
@@ -2937,6 +3434,7 @@
       ctx.drawImage(editOriginalCanvas, 0, 0);
       drawMaskedEffect(ctx, editMosaicCanvas, editMosaicMaskCanvas);
       drawMaskedEffect(ctx, editBlurCanvas, editBlurMaskCanvas);
+      ctx.drawImage(editWhiteFogMaskCanvas, 0, 0);
       drawEditorStickers(ctx, options.controls !== false && targetCanvas === imageEditCanvas, options.controls === false);
     }
 
@@ -3050,6 +3548,7 @@
     function resetEditorMaskCompositeModes() {
       editMosaicMaskCtx.globalCompositeOperation = "source-over";
       editBlurMaskCtx.globalCompositeOperation = "source-over";
+      editWhiteFogMaskCtx.globalCompositeOperation = "source-over";
     }
 
     function paintEditorMaskStroke(ctx, from, to, size, operation) {
@@ -3070,18 +3569,50 @@
       ctx.restore();
     }
 
+    function paintWhiteFogStroke(from, to, size) {
+      const radius = size / 2;
+      const distance = Math.hypot(to.x - from.x, to.y - from.y);
+      const steps = Math.ceil(distance / Math.max(1, radius * 0.65));
+      editWhiteFogMaskCtx.save();
+      editWhiteFogMaskCtx.globalCompositeOperation = "source-over";
+      for (let index = 0; index <= steps; index += 1) {
+        const progress = steps ? index / steps : 0;
+        const x = from.x + (to.x - from.x) * progress;
+        const y = from.y + (to.y - from.y) * progress;
+        const gradient = editWhiteFogMaskCtx.createRadialGradient(x, y, 0, x, y, radius);
+        gradient.addColorStop(0, "rgba(255,255,255,0.68)");
+        gradient.addColorStop(0.12, "rgba(255,255,255,0.6)");
+        gradient.addColorStop(0.35, "rgba(255,255,255,0.3)");
+        gradient.addColorStop(0.65, "rgba(255,255,255,0.1)");
+        gradient.addColorStop(0.88, "rgba(255,255,255,0.02)");
+        gradient.addColorStop(1, "rgba(255,255,255,0)");
+        editWhiteFogMaskCtx.fillStyle = gradient;
+        editWhiteFogMaskCtx.beginPath();
+        editWhiteFogMaskCtx.arc(x, y, radius, 0, Math.PI * 2);
+        editWhiteFogMaskCtx.fill();
+      }
+      editWhiteFogMaskCtx.restore();
+    }
+
     function drawEditorStroke(from, to) {
       const size = Number(brushSize.value) || 42;
       resetEditorMaskCompositeModes();
       if (editorTool === "erase") {
         paintEditorMaskStroke(editMosaicMaskCtx, from, to, size, "destination-out");
         paintEditorMaskStroke(editBlurMaskCtx, from, to, size, "destination-out");
+        paintEditorMaskStroke(editWhiteFogMaskCtx, from, to, size, "destination-out");
       } else if (editorTool === "blur") {
         paintEditorMaskStroke(editBlurMaskCtx, from, to, size, "source-over");
         paintEditorMaskStroke(editMosaicMaskCtx, from, to, size, "destination-out");
+        paintEditorMaskStroke(editWhiteFogMaskCtx, from, to, size, "destination-out");
+      } else if (editorTool === "white-fog") {
+        paintWhiteFogStroke(from, to, size);
+        paintEditorMaskStroke(editMosaicMaskCtx, from, to, size, "destination-out");
+        paintEditorMaskStroke(editBlurMaskCtx, from, to, size, "destination-out");
       } else {
         paintEditorMaskStroke(editMosaicMaskCtx, from, to, size, "source-over");
         paintEditorMaskStroke(editBlurMaskCtx, from, to, size, "destination-out");
+        paintEditorMaskStroke(editWhiteFogMaskCtx, from, to, size, "destination-out");
       }
       resetEditorMaskCompositeModes();
       requestEditorRender();
@@ -3092,6 +3623,7 @@
       editorTool = tool;
       imageToolMosaic.classList.toggle("active", tool === "mosaic");
       imageToolBlur.classList.toggle("active", tool === "blur");
+      imageToolWhiteFog.classList.toggle("active", tool === "white-fog");
       imageToolErase.classList.toggle("active", tool === "erase");
       imageToolSelect?.classList.toggle("active", tool === "sticker");
       imageEditCanvas.style.cursor = tool === "sticker" ? "default" : editorBrushCursor();
@@ -3103,6 +3635,7 @@
         coverEditedSrc,
         coverMosaicMaskSrc,
         coverBlurMaskSrc,
+        coverWhiteFogMaskSrc,
         coverEditorUndoStack: JSON.parse(JSON.stringify(coverEditorUndoStack || [])),
         coverEditorRedoStack: JSON.parse(JSON.stringify(coverEditorRedoStack || [])),
         coverStickers: cloneStickerList(coverStickers),
@@ -3120,6 +3653,7 @@
       coverEditedSrc = next.coverEditedSrc || "";
       coverMosaicMaskSrc = next.coverMosaicMaskSrc || "";
       coverBlurMaskSrc = next.coverBlurMaskSrc || "";
+      coverWhiteFogMaskSrc = next.coverWhiteFogMaskSrc || "";
       coverEditorUndoStack = Array.isArray(next.coverEditorUndoStack) ? next.coverEditorUndoStack : [];
       coverEditorRedoStack = Array.isArray(next.coverEditorRedoStack) ? next.coverEditorRedoStack : [];
       coverStickers = cloneStickerList(next.coverStickers);
@@ -3134,6 +3668,7 @@
         coverEditedSrc: standaloneEditedSrc || "",
         coverMosaicMaskSrc: standaloneMosaicMaskSrc || "",
         coverBlurMaskSrc: standaloneBlurMaskSrc || "",
+        coverWhiteFogMaskSrc: standaloneWhiteFogMaskSrc || "",
         coverEditorUndoStack: standaloneEditorUndoStack,
         coverEditorRedoStack: standaloneEditorRedoStack,
         coverStickers: cloneStickerList(standaloneStickers),
@@ -3148,6 +3683,7 @@
       standaloneEditedSrc = coverEditedSrc || standaloneEditedSrc || "";
       standaloneMosaicMaskSrc = coverMosaicMaskSrc || "";
       standaloneBlurMaskSrc = coverBlurMaskSrc || "";
+      standaloneWhiteFogMaskSrc = coverWhiteFogMaskSrc || "";
       standaloneEditorUndoStack = JSON.parse(JSON.stringify(coverEditorUndoStack || []));
       standaloneEditorRedoStack = JSON.parse(JSON.stringify(coverEditorRedoStack || []));
       standaloneStickers = cloneStickerList(coverStickers);
@@ -3165,8 +3701,7 @@
       if (isMobileView()) {
         imageActionRow?.append(imageClearButton, imageDoneButton);
       } else {
-        imageToolRow?.append(imageClearButton);
-        imageActionRow?.append(imageDoneButton);
+        imageActionRow?.append(imageClearButton, imageDoneButton);
       }
     }
 
@@ -3181,8 +3716,8 @@
     function placeImageEditorForStandalone() {
       imageToolPage?.appendChild(imageEditModal);
       imageEditModal.classList.add("standalone-editor");
-      imageDoneButton.textContent = UI_DOWNLOAD_IMAGE;
-      imageCancelButton.textContent = UI_REMOVE_IMAGE;
+      imageDoneButton.textContent = UI_EXPORT_SHORT;
+      imageCancelButton.textContent = UI_REMOVE_SHORT;
       imageClearButton.parentElement?.append(imageClearButton, imageCancelButton, imageDoneButton);
     }
 
@@ -3204,6 +3739,7 @@
       clearEditorMasks();
       await restoreMaskCanvasFromSrc(editMosaicMaskCtx, coverMosaicMaskSrc, width, height);
       await restoreMaskCanvasFromSrc(editBlurMaskCtx, coverBlurMaskSrc, width, height);
+      await restoreMaskCanvasFromSrc(editWhiteFogMaskCtx, coverWhiteFogMaskSrc, width, height);
       await restoreEditorUndoStack(width, height);
       renderStickerPicker();
       setEditorTool(editorTool || "mosaic");
@@ -3243,7 +3779,7 @@
     function collectionDetailEditorGlobals() {
       const art = document.getElementById("collectionDetailArt");
       const src = art?.dataset.coverSrc || "";
-      return { coverOriginalSrc:src, coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverEditorUndoStack:[], coverEditorRedoStack:[], coverStickers:[], stickerSources:JSON.parse(JSON.stringify(stickerSources || [])), selectedStickerId:null, editorTool:"mosaic", coverSrc:src, coverFit:art?.dataset.coverFit || "contain" };
+      return { coverOriginalSrc:src, coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverWhiteFogMaskSrc:"", coverEditorUndoStack:[], coverEditorRedoStack:[], coverStickers:[], stickerSources:JSON.parse(JSON.stringify(stickerSources || [])), selectedStickerId:null, editorTool:"mosaic", coverSrc:src, coverFit:art?.dataset.coverFit || "contain" };
     }
 
     async function openCollectionDetailImageEditor() {
@@ -3269,6 +3805,7 @@
         coverEditedSrc: "",
         coverMosaicMaskSrc: "",
         coverBlurMaskSrc: "",
+        coverWhiteFogMaskSrc: "",
         coverEditorUndoStack: [],
         coverEditorRedoStack: [],
         coverStickers: [],
@@ -3305,6 +3842,7 @@
         coverEditedSrc: "",
         coverMosaicMaskSrc: "",
         coverBlurMaskSrc: "",
+        coverWhiteFogMaskSrc: "",
         coverEditorUndoStack: [],
         coverEditorRedoStack: [],
         coverStickers: [],
@@ -3366,6 +3904,7 @@
       standaloneEditedSrc = "";
       standaloneMosaicMaskSrc = "";
       standaloneBlurMaskSrc = "";
+      standaloneWhiteFogMaskSrc = "";
       standaloneEditorUndoStack = [];
       standaloneEditorRedoStack = [];
       standaloneStickers = [];
@@ -3419,7 +3958,7 @@
         canvas.height = imageEditCanvas.height;
         renderImageEditor(canvas, { controls: false });
         const blob = await canvasToBlob(canvas);
-        handleExportBlob(blob, standaloneExportFileName());
+        handleExportBlob(blob, standaloneExportFileName(), "", currentThemeId, UI_EXPORT_DOWNLOAD_IMAGE);
         standaloneOriginalSrc = editorSourceSrc || standaloneOriginalSrc;
         try {
           saveEditorProject();
@@ -3430,7 +3969,8 @@
         }
       } catch (error) {
         console.error(error);
-        showAppAlert(String.fromCharCode(0x5bfc, 0x51fa, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x6362, 0x4e00, 0x5f20, 0x56fe, 0x7247, 0x6216, 0x91cd, 0x65b0, 0x4e0a, 0x4f20, 0x540e, 0x518d, 0x8bd5, 0x3002));
+        const exportErrorText = error instanceof Error && error.message ? error.message : String.fromCharCode(0x672a, 0x77e5, 0x539f, 0x56e0);
+        showAppAlert(String.fromCharCode(0x5bfc, 0x51fa, 0x5931, 0x8d25, 0xff1a) + exportErrorText);
       } finally {
         imageDoneButton.disabled = false;
       }
@@ -3459,6 +3999,7 @@
       coverEditedSrc = editorSessionSnapshot.coverEditedSrc || "";
       coverMosaicMaskSrc = editorSessionSnapshot.coverMosaicMaskSrc || "";
       coverBlurMaskSrc = editorSessionSnapshot.coverBlurMaskSrc || "";
+      coverWhiteFogMaskSrc = editorSessionSnapshot.coverWhiteFogMaskSrc || "";
       coverEditorUndoStack = Array.isArray(editorSessionSnapshot.coverEditorUndoStack) ? editorSessionSnapshot.coverEditorUndoStack : [];
       coverEditorRedoStack = Array.isArray(editorSessionSnapshot.coverEditorRedoStack) ? editorSessionSnapshot.coverEditorRedoStack : [];
       coverStickers = cloneStickerList(editorSessionSnapshot.coverStickers);
@@ -3670,7 +4211,8 @@
     }
 
     function editableText(id) {
-      return document.getElementById(id)?.textContent || "";
+      const node = document.getElementById(id);
+      return node === recordTitle ? editableInputText(node) : (node?.textContent || "");
     }
 
     function syncCircleTextLayout() {
@@ -3713,6 +4255,9 @@
         circleText: editableText("circleText"),
         rjText: editableText("rjText"),
         durationText: editableText("durationText"),
+        purchaseDate: normalizeCardDateValue(valueOf("#purchaseDateText")),
+        listenedDate: normalizeCardDateValue(valueOf("#listenedDateText")),
+        cardInfoType: normalizeCardInfoType(cardInfoType.value),
         originalPrice: valueOf("#originalPrice"),
         currentPrice: valueOf("#currentPrice"),
         currentDiscount: valueOf("#currentDiscount"),
@@ -3721,12 +4266,13 @@
         cnChoice: document.querySelector(".choice-button.active")?.textContent.trim() || "",
         ratings: currentRatings(),
         tags: Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean),
-        reviewText: currentTemplate() === "full" ? limitedFullReviewText(valueOf("#reviewText")) : valueOf("#reviewText"),
+        reviewText: currentTemplate() === "full" ? limitedFullReviewText(reviewText.value) : reviewText.value,
         coverSrc: templateEditorState.coverSrc || coverImage.getAttribute("src") || "",
         coverOriginalSrc: templateEditorState.coverOriginalSrc || "",
         coverEditedSrc: templateEditorState.coverEditedSrc || "",
         coverMosaicMaskSrc: templateEditorState.coverMosaicMaskSrc || "",
         coverBlurMaskSrc: templateEditorState.coverBlurMaskSrc || "",
+        coverWhiteFogMaskSrc: templateEditorState.coverWhiteFogMaskSrc || "",
         coverEditorUndoStack: templateEditorState.coverEditorUndoStack || [],
         coverEditorRedoStack: templateEditorState.coverEditorRedoStack || [],
         coverStickers: cloneStickerList(templateEditorState.coverStickers),
@@ -3736,13 +4282,22 @@
         standaloneEditedSrc,
         standaloneMosaicMaskSrc,
         standaloneBlurMaskSrc,
+        standaloneWhiteFogMaskSrc,
         standaloneEditorUndoStack,
         standaloneEditorRedoStack,
         standaloneStickers: cloneStickerList(standaloneStickers),
         standaloneStickerSources,
+        brushSize: Number(brushSize.value) || 42,
         grid9: collectGrid9State(),
         quick: collectQuickState(),
         trio: collectTrioState(),
+        continuationPages: {
+          full: {
+            current: continuationState.full.current,
+            pages: continuationState.full.pages.map((page) => limitedFullContinuationReviewText(page))
+          },
+          compact: { current: continuationState.compact.current, pages: continuationState.compact.pages.slice() }
+        },
         playerTotalSeconds,
         playerProgress,
         playerPlaying,
@@ -3847,6 +4402,7 @@
 
     function saveState() {
       if (!stateRestoreComplete) return Promise.resolve(false);
+      persistCompactContinuationSnapshot();
       const state = collectState();
       stateSaveQueue = stateSaveQueue.catch(() => false).then(() => persistState(state));
       return stateSaveQueue;
@@ -3860,6 +4416,8 @@
 
     function applyState(state, persist = false) {
       if (!state || typeof state !== "object") return false;
+      continuationState.full = normalizeContinuationPageState(state.continuationPages?.full);
+      continuationState.compact = normalizeContinuationPageState(state.continuationPages?.compact);
       setTemplate(state.template || "full", false);
       applyCardTheme(state.theme || DEFAULT_THEME_ID, false);
       setEditableText("recordTitle", state.recordTitle || state.jpTitle || state.cnTitle || "");
@@ -3867,6 +4425,10 @@
       setEditableText("circleText", state.circleText || "");
       setEditableText("rjText", state.rjText || "");
       setEditableText("durationText", state.durationText || "");
+      purchaseDateText.value = normalizeCardDateValue(state.purchaseDate);
+      listenedDateText.value = normalizeCardDateValue(state.listenedDate);
+      cardInfoType.value = normalizeCardInfoType(state.cardInfoType);
+      syncCardInfoField();
       originalPrice.value = state.originalPrice || "";
       currentPrice.value = state.currentPrice || state.paidPrice || "";
       currentDiscount.value = state.currentDiscount || "";
@@ -3882,6 +4444,7 @@
       coverEditedSrc = state.coverEditedSrc || "";
       coverMosaicMaskSrc = state.coverMosaicMaskSrc || "";
       coverBlurMaskSrc = state.coverBlurMaskSrc || "";
+      coverWhiteFogMaskSrc = state.coverWhiteFogMaskSrc || "";
       coverEditorUndoStack = Array.isArray(state.coverEditorUndoStack) ? state.coverEditorUndoStack : [];
       coverEditorRedoStack = Array.isArray(state.coverEditorRedoStack) ? state.coverEditorRedoStack : [];
       coverStickers = cloneStickerList(state.coverStickers);
@@ -3890,10 +4453,13 @@
       standaloneEditedSrc = state.standaloneEditedSrc || "";
       standaloneMosaicMaskSrc = state.standaloneMosaicMaskSrc || "";
       standaloneBlurMaskSrc = state.standaloneBlurMaskSrc || "";
+      standaloneWhiteFogMaskSrc = state.standaloneWhiteFogMaskSrc || "";
       standaloneEditorUndoStack = Array.isArray(state.standaloneEditorUndoStack) ? state.standaloneEditorUndoStack : [];
       standaloneEditorRedoStack = Array.isArray(state.standaloneEditorRedoStack) ? state.standaloneEditorRedoStack : [];
       standaloneStickers = cloneStickerList(state.standaloneStickers);
       standaloneStickerSources = Array.isArray(state.standaloneStickerSources) ? state.standaloneStickerSources : [];
+      const savedBrushSize = Number(state.brushSize);
+      brushSize.value = String(Number.isFinite(savedBrushSize) ? clamp(savedBrushSize, Number(brushSize.min), Number(brushSize.max)) : 42);
       renderStickerPicker();
       const coverSrc = state.coverSrc || coverEditedSrc || coverOriginalSrc || "";
       if (coverSrc) {
@@ -3913,6 +4479,7 @@
       playerPlaying = Boolean(state.playerPlaying);
       syncPlayerUi(true);
       updateDiscount();
+      renderTemplatePage(false);
       fitStage();
       if (persist) saveState();
       return true;
@@ -3943,6 +4510,13 @@
           console.warn("IndexedDB state restore failed", error);
         }
       }
+      const compactContinuationSnapshot = readCompactContinuationSnapshot();
+      if (state && typeof state === "object" && compactContinuationSnapshot) {
+        state.continuationPages = {
+          ...(state.continuationPages && typeof state.continuationPages === "object" ? state.continuationPages : {}),
+          compact: compactContinuationSnapshot
+        };
+      }
       if (!applyState(state, false)) applyCardTheme(DEFAULT_THEME_ID, false);
       stateRestoreComplete = true;
     }
@@ -3958,6 +4532,7 @@
       coverEditedSrc = "";
       coverMosaicMaskSrc = "";
       coverBlurMaskSrc = "";
+      coverWhiteFogMaskSrc = "";
       coverEditorUndoStack = [];
       coverEditorRedoStack = [];
       coverStickers = [];
@@ -4031,6 +4606,16 @@
       });
     });
 
+    cardInfoType.addEventListener("change", () => {
+      syncCardInfoField();
+      saveState();
+    });
+    [purchaseDateText, listenedDateText].forEach((input) => {
+      input.addEventListener("input", () => {
+        input.value = normalizeCardDateValue(input.value);
+      });
+    });
+
     originalPrice.addEventListener("input", () => {
       sanitizeNumericInput(originalPrice);
       if (currentDiscountManual) {
@@ -4086,6 +4671,20 @@
       }
     });
 
+    tags.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && event.target.closest(".tag")) event.preventDefault();
+    });
+
+    tags.addEventListener("input", (event) => {
+      const tag = event.target.closest(".tag");
+      if (!tag) return;
+      const singleLineText = String(tag.innerText || tag.textContent || "").replace(/\r\n?|\n/g, " ");
+      const plainTextOnly = tag.childNodes.length <= 1 && (!tag.firstChild || tag.firstChild.nodeType === Node.TEXT_NODE);
+      if (plainTextOnly && tag.textContent === singleLineText) return;
+      tag.textContent = singleLineText;
+      placeCaretAtFullFieldEnd(tag);
+    });
+
     addTagButton.addEventListener("click", () => {
       const chip = createTag();
       const tag = chip.querySelector(".tag");
@@ -4120,12 +4719,17 @@
       resetCoverImageState();
       renderTags([]);
       document.querySelectorAll(".choice-button").forEach((item, index) => item.classList.toggle("active", index === 0));
+      cardInfoType.value = "duration";
+      syncCardInfoField();
       currentDiscountManual = false;
       playerTotalSeconds = PLAYER_DEFAULT_TOTAL;
       playerProgress = 0;
       playerPlaying = false;
       syncPlayerUi(true);
       updateDiscount(true);
+      continuationState.full = { current: 0, pages: [] };
+      continuationState.compact = { current: 0, pages: [] };
+      renderTemplatePage();
       saveState();
     });
 
@@ -4210,6 +4814,8 @@
     const LABEL_CIRCLE = String.fromCharCode(0x793e, 0x56e2);
     const LABEL_RJ = String.fromCharCode(0x52, 0x4a, 0x53f7);
     const LABEL_DURATION = String.fromCharCode(0x65f6, 0x957f);
+    const LABEL_PURCHASE_DATE = String.fromCharCode(0x8d2d, 0x4e70, 0x65e5, 0x671f);
+    const LABEL_LISTENED_DATE = String.fromCharCode(0x6536, 0x542c, 0x65e5, 0x671f);
     const LABEL_TAGS = String.fromCharCode(0x5173, 0x952e, 0x8bcd);
     const LABEL_PURCHASE = String.fromCharCode(0x4ef7, 0x683c);
     const LABEL_ORIGINAL = String.fromCharCode(0x539f, 0x4ef7);
@@ -4231,7 +4837,7 @@
           continue;
         }
         let line = "";
-        for (const char of Array.from(sourceLine)) {
+        for (const char of wrappingCharacters(sourceLine)) {
           const test = line + char;
           if (ctx.measureText(test).width > maxWidth && line) {
             lines.push(line);
@@ -4275,7 +4881,7 @@
           continue;
         }
         let line = "";
-        for (const char of Array.from(sourceLine)) {
+        for (const char of wrappingCharacters(sourceLine)) {
           const test = line + char;
           if (ctx.measureText(test).width > maxWidth && line) {
             lines.push(line);
@@ -4304,7 +4910,7 @@
           continue;
         }
         let line = "";
-        for (const char of Array.from(sourceLine)) {
+        for (const char of wrappingCharacters(sourceLine)) {
           const test = line + char;
           if (ctx.measureText(test).width > maxWidth && line) {
             lines.push(line);
@@ -4347,7 +4953,7 @@
       for (const sourceLine of sourceLines) {
         if (lines.length >= maxLines) break;
         let line = "";
-        for (const char of Array.from(sourceLine)) {
+        for (const char of wrappingCharacters(sourceLine)) {
           const test = line + char;
           if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = char; }
           else line = test;
@@ -4847,8 +5453,7 @@
       }
     }
 
-    async function downloadCompactCard() {
-      const exportThemeId = currentThemeId;
+    async function renderCompactHomeCanvas() {
       const canvas = document.createElement("canvas");
       canvas.width = 600;
       canvas.height = 800;
@@ -4865,129 +5470,370 @@
       for (let x = 0; x <= 600; x += 36) ctx.fillRect(x, 0, 1, 800);
       for (let y = 0; y <= 800; y += 36) ctx.fillRect(0, y, 600, 1);
 
-      await drawCover(ctx, 20, 20, 560, 420, 0, false, "contain");
+      await drawCover(ctx, 20, 20, 560, 420, 0, false);
 
       ctx.fillStyle = theme.ink;
       ctx.font = canvasFont('900', 21);
-      drawCenteredWrappedText(ctx, textOf('#recordTitle'), 20, 470, 560, 29, 3);
+      drawCenteredWrappedText(ctx, editableText("recordTitle"), 20, 470, 560, 29, 3);
 
       drawCompactInfoField(ctx, LABEL_RJ, textOf('#rjText'), 32, 542, 162.67);
       drawCompactInfoField(ctx, "CV", textOf('#cvText'), 218.67, 542, 162.66, { fullWidthTwoLine: true });
       drawCompactInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 405.33, 542, 162.67, { fullWidthTwoLine: true });
 
       drawPlayerDecoration(ctx);
-      handleExportBlob(await canvasToBlob(canvas), templateExportFileName("compact"), "compact", exportThemeId);
+      return canvas;
+    }
+
+    function drawTemplateCanvasBackground(ctx, width, height, framed = true) {
+      const theme = currentCardTheme();
+      const bg = ctx.createLinearGradient(0, 0, width, height);
+      bg.addColorStop(0, theme.bgStops[0]);
+      bg.addColorStop(0.48, theme.bgStops[1]);
+      bg.addColorStop(1, theme.bgStops[2]);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = "rgba(255,255,255,.36)";
+      for (let x = 0; x <= width; x += 36) ctx.fillRect(x, 0, 1, height);
+      ctx.fillStyle = "rgba(255,255,255,.32)";
+      for (let y = 0; y <= height; y += 36) ctx.fillRect(0, y, width, 1);
+      if (!framed) return;
+      if (width === 600) {
+        strokeRound(ctx, 9, 9, 582, 782, 24, themeAlpha("line", .78), 2);
+        strokeRound(ctx, 18, 18, 564, 764, 18, themeAlpha("dash", theme.dashAlpha), 1, true, [5, 5]);
+        return;
+      }
+      strokeRound(ctx, 16, 16, 1048, 1408, 30, themeAlpha("line", .78), 3);
+      strokeRound(ctx, 30, 30, 1020, 1380, 22, themeAlpha("dash", theme.dashAlpha), 2, true, [6, 6]);
+    }
+
+    function drawSingleLineEllipsizedText(ctx, text, x, y, maxWidth) {
+      const chars = wrappingCharacters(text);
+      let line = chars.join("");
+      if (ctx.measureText(line).width <= maxWidth) {
+        ctx.fillText(line, x, y);
+        return;
+      }
+      while (chars.length && ctx.measureText(chars.join("") + "\u2026").width > maxWidth) chars.pop();
+      line = chars.join("") + "\u2026";
+      ctx.fillText(line, x, y);
+    }
+
+    function compactContinuationCanvasLines(ctx, value, maxWidth) {
+      const text = String(value || "").replace(/\r\n?/g, "\n");
+      const lines = [];
+      let line = "";
+      let lineStart = 0;
+      let offset = 0;
+      for (const character of wrappingCharacters(text)) {
+        const characterLength = character.length;
+        if (character === "\n") {
+          lines.push({ text: line, start: lineStart, end: offset });
+          offset += characterLength;
+          line = "";
+          lineStart = offset;
+          continue;
+        }
+        const nextLine = line + character;
+        if (line && ctx.measureText(nextLine).width > maxWidth) {
+          lines.push({ text: line, start: lineStart, end: offset });
+          line = character;
+          lineStart = offset;
+        } else {
+          line = nextLine;
+        }
+        offset += characterLength;
+      }
+      if (line || !lines.length || text.endsWith("\n")) lines.push({ text: line, start: lineStart, end: offset });
+      return lines;
+    }
+
+    function drawCompactContinuationColumn(ctx, lines, x, firstBaseline, lineHeight) {
+      lines.forEach((line, lineIndex) => {
+        const baseline = firstBaseline + lineIndex * lineHeight;
+        ctx.fillText(line.text, x, baseline);
+      });
+    }
+
+    function drawCompactContinuationSpine(ctx) {
+      const top = 81;
+      const bottom = 730;
+      const motifBoxHeight = 22;
+      const gap = 8;
+      const motifs = [
+        ["\u2726", "accent"],
+        ["\u266a", "mint"],
+        ["\u2661", "accent"],
+        ["\u266a", "mint"]
+      ];
+      const lineLength = (bottom - top - motifs.length * motifBoxHeight - motifs.length * 2 * gap) / (motifs.length + 1);
+      let cursor = top;
+      ctx.save();
+      ctx.lineWidth = 1;
+      ctx.font = canvasFont('800', 14);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (let index = 0; index <= motifs.length; index += 1) {
+        ctx.strokeStyle = themeAlpha(index === 1 || index === 3 ? "mint" : "accent", index === 1 || index === 3 ? .62 : .56);
+        ctx.beginPath();
+        ctx.moveTo(300.5, cursor);
+        ctx.lineTo(300.5, cursor + lineLength);
+        ctx.stroke();
+        cursor += lineLength;
+        if (index >= motifs.length) continue;
+        cursor += gap;
+        const [symbol, color] = motifs[index];
+        ctx.fillStyle = currentCardTheme().bgStops[1];
+        ctx.fillRect(289, cursor, 22, motifBoxHeight);
+        ctx.fillStyle = color === "mint" ? currentCardTheme().mint : currentCardTheme().accent;
+        ctx.fillText(symbol, 300, cursor + motifBoxHeight / 2);
+        cursor += motifBoxHeight + gap;
+      }
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.restore();
+    }
+
+    async function renderFullHomeCanvas() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 1440;
+      const ctx = canvas.getContext("2d");
+      const theme = currentCardTheme();
+      drawTemplateCanvasBackground(ctx, 1080, 1440, true);
+
+      await drawCover(ctx, 64, 83.5, 420, 315, 24, true, null, true, 4);
+
+      fillRound(ctx, 508, 83.5, 508, 315, 26, theme.panelBg);
+      strokeRound(ctx, 508, 83.5, 508, 315, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
+      drawStickerLabel(ctx, LABEL_BASIC, 526, 62.5);
+      drawPreviewInfoField(ctx, "CV", limitedFullFieldText(cvText, textOf('#cvText')), 532, 127.5, 221, { fullWidthTwoLine: true, lineWidth: FULL_CV_LINE_WIDTH });
+      drawPreviewInfoField(ctx, LABEL_CIRCLE, limitedFullFieldText(circleText, textOf('#circleText')), 771, 127.5, 221, { fullWidthTwoLine: true, lineWidth: FULL_CIRCLE_LINE_WIDTH });
+      drawPreviewInfoField(ctx, LABEL_RJ, limitedFullFieldText(rjText, textOf('#rjText')), 532, 240.5, 221);
+      const selectedCardInfoType = normalizeCardInfoType(cardInfoType.value);
+      if (selectedCardInfoType !== "hidden") {
+        const selectedCardInfoLabel = selectedCardInfoType === "purchaseDate" ? LABEL_PURCHASE_DATE : selectedCardInfoType === "listenedDate" ? LABEL_LISTENED_DATE : LABEL_DURATION;
+        const selectedCardInfoText = selectedCardInfoType === "purchaseDate" ? purchaseDateText.value : selectedCardInfoType === "listenedDate" ? listenedDateText.value : limitedFullFieldText(durationText, textOf('#durationText'));
+        drawPreviewInfoField(ctx, selectedCardInfoLabel, selectedCardInfoText, 771, 240.5, 221);
+      }
+      drawPreviewChoiceField(ctx, document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE, 534, 340.5, 366);
+
+      fillRound(ctx, 64, 438.5, 952, 112, 26, theme.panelBg);
+      strokeRound(ctx, 64, 438.5, 952, 112, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
+      drawStickerLabel(ctx, LABEL_TITLE, 82, 417.5);
+      ctx.fillStyle = theme.ink;
+      ctx.font = canvasFont('900', 26);
+      drawWrappedText(ctx, limitedFullFieldText(recordTitle, editableText("recordTitle")), 88, 490.5, 904, 33, 2);
+
+      fillRound(ctx, 64, 590.5, 952, 105, 26, theme.panelBg);
+      strokeRound(ctx, 64, 590.5, 952, 105, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
+      drawStickerLabel(ctx, LABEL_TAGS, 82, 569.5);
+      const tagTexts = Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean);
+      let tx = 84;
+      const ty = 626.5;
+      ctx.font = canvasFont('900', 21);
+      tagTexts.forEach((tag) => {
+        const tw = ctx.measureText(tag).width + 26;
+        if (tx + tw > 984) return;
+        fillRound(ctx, tx, ty, tw, 39, 20, theme.chipBg);
+        strokeRound(ctx, tx, ty, tw, 39, 20, themeAlpha("accent", .24), 1);
+        ctx.fillStyle = currentThemeId === "matcha-berry-cheese" ? theme.ink : theme.accentDeep;
+        ctx.fillText(tag, tx + 13, ty + 27);
+        tx += tw + 9;
+      });
+
+      fillRound(ctx, 64, 735.5, 468, 220, 26, theme.panelBg);
+      strokeRound(ctx, 64, 735.5, 468, 220, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
+      drawStickerLabel(ctx, LABEL_PURCHASE, 82, 714.5);
+      drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 84, 771.5, 208, 77.5);
+      drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 304, 771.5, 208, 77.5);
+      drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 84, 860, 208, 77.5, "%off", { highDiscount: isHighDiscountValue(valueOf("#currentDiscount")) });
+      drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 304, 860, 208, 77.5, "%off", { highDiscount: isHighDiscountValue(valueOf("#lowestPrice")) });
+
+      fillRound(ctx, 548, 735.5, 468, 220, 26, theme.panelBg);
+      strokeRound(ctx, 548, 735.5, 468, 220, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
+      drawStickerLabel(ctx, LABEL_RATING, 566, 714.5);
+      const rows = Array.from(document.querySelectorAll(".rating-row"));
+      drawStars(ctx, LABEL_OVERALL, ratingValue(rows[0]), 574, 770.5);
+      drawStars(ctx, "CV", ratingValue(rows[1]), 574, 813.5);
+      drawStars(ctx, LABEL_STORY, ratingValue(rows[2]), 574, 856.5);
+      drawStars(ctx, "SE", ratingValue(rows[3]), 574, 899.5);
+
+      fillRound(ctx, 64, 995.5, 952, 382, 28, theme.reviewBg);
+      strokeRound(ctx, 64, 995.5, 952, 382, 28, themeAlpha("line", theme.lineSoftAlpha), 2);
+      drawStickerLabel(ctx, LABEL_REVIEW, 82, 974.5);
+      ctx.fillStyle = theme.ink;
+      ctx.font = canvasFont('400', 24);
+      drawWrappedText(ctx, limitedFullReviewText(reviewText.value), 88, 1051.5, FULL_REVIEW_LINE_WIDTH, 31, FULL_REVIEW_MAX_LINES);
+      return canvas;
+    }
+
+    async function renderFullContinuationCanvas(pageText, pageIndex, pageTotal) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 1440;
+      const ctx = canvas.getContext("2d");
+      const theme = currentCardTheme();
+      drawTemplateCanvasBackground(ctx, 1080, 1440, true);
+      await drawCover(ctx, 88, 62, 180, 135, 20, true, null, true, 4);
+      ctx.fillStyle = theme.ink;
+      ctx.font = canvasFont('900', 26);
+      drawWrappedText(ctx, editableText("recordTitle"), 298, 100, 718, 33, 2);
+      ctx.fillStyle = theme.accent;
+      ctx.font = canvasFont('800', 21);
+      const cvLabel = "CV";
+      const cvValue = textOf('#cvText');
+      const rjValue = textOf('#rjText');
+      ctx.fillText(cvLabel, 298, 174);
+      const cvValueX = 298 + ctx.measureText(cvLabel + " ").width + 8;
+      ctx.fillStyle = theme.ink;
+      ctx.font = canvasFont('900', 21);
+      ctx.fillText(cvValue, cvValueX, 174);
+      ctx.textAlign = "right";
+      drawSingleLineEllipsizedText(ctx, rjValue, 1000, 174, 343);
+      ctx.textAlign = "left";
+      ctx.strokeStyle = themeAlpha("accent", .34);
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 8]);
+      ctx.beginPath();
+      ctx.moveTo(64, 216.5);
+      ctx.lineTo(1016, 216.5);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      fillRound(ctx, 64, 250.5, 952, 1127, 28, theme.reviewBg);
+      strokeRound(ctx, 64, 250.5, 952, 1127, 28, themeAlpha("line", theme.lineSoftAlpha), 2);
+      ctx.save();
+      ctx.font = canvasFont('900', 24);
+      const reviewLabelWidth = Math.ceil(ctx.measureText(LABEL_REVIEW).width) + 40;
+      const reviewLabelGradient = ctx.createLinearGradient(82, 229.5, 82 + reviewLabelWidth, 267.5);
+      reviewLabelGradient.addColorStop(0, theme.accent);
+      reviewLabelGradient.addColorStop(1, theme.accentDeep);
+      ctx.shadowColor = themeAlpha("accentDeep", .18);
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetY = 6;
+      fillRound(ctx, 82, 229.5, reviewLabelWidth, 38, 19, reviewLabelGradient);
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.fillStyle = "#fff";
+      ctx.fillText(LABEL_REVIEW, 102, 257.5);
+      ctx.restore();
+      ctx.fillStyle = theme.ink;
+      ctx.font = canvasFont('400', 24);
+      drawWrappedText(ctx, limitedFullContinuationReviewText(pageText), 88, 306.5, FULL_CONTINUATION_REVIEW_WIDTH, 31.68, FULL_CONTINUATION_REVIEW_MAX_LINES);
+      ctx.fillStyle = theme.muted;
+      ctx.font = canvasFont('800', 18);
+      ctx.textAlign = "right";
+      if ("letterSpacing" in ctx) ctx.letterSpacing = "1.44px";
+      ctx.fillText(paddedPageNumber(pageIndex + 1) + " / " + paddedPageNumber(pageTotal), 1031, 1402);
+      if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+      ctx.textAlign = "left";
+      return canvas;
+    }
+
+    async function renderCompactContinuationCanvas(pageText, pageIndex, pageTotal) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 600;
+      canvas.height = 800;
+      const ctx = canvas.getContext("2d");
+      const theme = currentCardTheme();
+      drawTemplateCanvasBackground(ctx, 600, 800, true);
+      ctx.fillStyle = theme.muted;
+      ctx.font = canvasFont('800', 13);
+      if ("letterSpacing" in ctx) ctx.letterSpacing = ".78px";
+      const metaLabel = "CV";
+      const metaDetail = "  " + textOf('#cvText') + "  \u00b7  " + textOf('#rjText');
+      const metaText = metaLabel + metaDetail;
+      const metaWidth = ctx.measureText(metaText).width;
+      const titleMaxWidth = Math.max(0, 504 - metaWidth - 16);
+      ctx.fillStyle = theme.ink;
+      ctx.textAlign = "left";
+      drawSingleLineEllipsizedText(ctx, editableText("recordTitle").replace(/\s+/g, " ").trim(), 48, 42, titleMaxWidth);
+      const metaX = 552 - metaWidth;
+      ctx.fillStyle = theme.accentDeep;
+      ctx.fillText(metaLabel, metaX, 42);
+      ctx.fillStyle = theme.muted;
+      ctx.fillText(metaDetail, metaX + ctx.measureText(metaLabel).width, 42);
+      if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+      ctx.textAlign = "left";
+      ctx.strokeStyle = themeAlpha("accent", .42);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(48, 60);
+      ctx.lineTo(278, 60);
+      ctx.moveTo(322, 60);
+      ctx.lineTo(552, 60);
+      ctx.stroke();
+      ctx.fillStyle = theme.accent;
+      ctx.font = canvasFont('800', 14);
+      ctx.textAlign = "center";
+      ctx.fillText("\u266b", 300, 65);
+      ctx.textAlign = "left";
+      drawCompactContinuationSpine(ctx);
+      ctx.fillStyle = theme.ink;
+      ctx.font = canvasFont('400', 18);
+      if ("letterSpacing" in ctx) ctx.letterSpacing = ".36px";
+      const lines = compactContinuationCanvasLines(ctx, pageText, COMPACT_CONTINUATION_COLUMN_WIDTH);
+      drawCompactContinuationColumn(ctx, lines.slice(0, COMPACT_CONTINUATION_LINES_PER_COLUMN), 44, 102, 32.4);
+      drawCompactContinuationColumn(ctx, lines.slice(COMPACT_CONTINUATION_LINES_PER_COLUMN, COMPACT_CONTINUATION_LINES_PER_COLUMN * 2), 335, 102, 32.4);
+      if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+      ctx.strokeStyle = themeAlpha("mint", .44);
+      ctx.beginPath();
+      ctx.moveTo(48, 744);
+      ctx.lineTo(552, 744);
+      ctx.stroke();
+      ctx.fillStyle = theme.accentDeep;
+      ctx.font = canvasFont('800', 13);
+      ctx.fillText("SITUATION \u2726 VOICE", 48, 768);
+      ctx.textAlign = "right";
+      ctx.fillText(paddedPageNumber(pageIndex + 1) + " / " + paddedPageNumber(pageTotal), 552, 768);
+      ctx.textAlign = "left";
+      return canvas;
+    }
+
+    async function downloadPagedTemplateCards(template) {
+      const exportThemeId = currentThemeId;
+      const pageState = currentContinuationState(template);
+      const total = templatePageTotal(template);
+      const pages = [];
+      for (let index = 0; index < total; index += 1) {
+        let canvas;
+        if (index === 0) canvas = template === "compact" ? await renderCompactHomeCanvas() : await renderFullHomeCanvas();
+        else if (template === "compact") canvas = await renderCompactContinuationCanvas(pageState.pages[index - 1], index, total);
+        else canvas = await renderFullContinuationCanvas(pageState.pages[index - 1], index, total);
+        pages.push({ blob: await canvasToBlob(canvas), fileName: templatePageExportFileName(template, index, total) });
+      }
+      if (isMobileView()) showExportPreviewPages(pages, pageState.current);
+      else pages.forEach((page) => downloadBlob(page.blob, page.fileName));
+      trackSuccessfulExport(template, exportThemeId);
     }
 
     async function downloadCard() {
       commitActivePlayerTime();
       downloadButton.disabled = true;
       try {
-        if (currentTemplate() === "grid9") {
+        const template = currentTemplate();
+        if (template === "grid9") {
           await downloadGrid9Card();
           return;
         }
-        if (currentTemplate() === "quick") {
+        if (template === "quick") {
           await downloadQuickCard();
           return;
         }
-        if (currentTemplate() === "trio") {
+        if (template === "trio") {
           await downloadTrioCard();
           return;
         }
         await ensureCanvasFontReady();
-        const exportThemeId = currentThemeId;
-        if (currentTemplate() === "compact") {
-          await downloadCompactCard();
-          return;
-        }
-        const canvas = document.createElement("canvas");
-        canvas.width = 1080;
-        canvas.height = 1440;
-        const ctx = canvas.getContext("2d");
-
-        const theme = currentCardTheme();
-        const bg = ctx.createLinearGradient(0, 0, 1080, 1440);
-        bg.addColorStop(0, theme.bgStops[0]);
-        bg.addColorStop(0.48, theme.bgStops[1]);
-        bg.addColorStop(1, theme.bgStops[2]);
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, 1080, 1440);
-        ctx.fillStyle = "rgba(255,255,255,.36)";
-        for (let x = 0; x <= 1080; x += 36) ctx.fillRect(x, 0, 1, 1440);
-        ctx.fillStyle = "rgba(255,255,255,.32)";
-        for (let y = 0; y <= 1440; y += 36) ctx.fillRect(0, y, 1080, 1);
-        strokeRound(ctx, 16, 16, 1048, 1408, 30, themeAlpha("line", .78), 3);
-        strokeRound(ctx, 30, 30, 1020, 1380, 22, themeAlpha("dash", theme.dashAlpha), 2, true, [6, 6]);
-
-        await drawCover(ctx, 64, 83.5, 420, 315, 24, true, null, true, 4);
-
-        fillRound(ctx, 508, 83.5, 508, 315, 26, theme.panelBg);
-        strokeRound(ctx, 508, 83.5, 508, 315, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
-        drawStickerLabel(ctx, LABEL_BASIC, 526, 62.5);
-        drawPreviewInfoField(ctx, "CV", limitedFullFieldText(cvText, textOf('#cvText')), 532, 127.5, 221, { fullWidthTwoLine: true, lineWidth: FULL_CV_LINE_WIDTH });
-        drawPreviewInfoField(ctx, LABEL_CIRCLE, limitedFullFieldText(circleText, textOf('#circleText')), 771, 127.5, 221, { fullWidthTwoLine: true, lineWidth: FULL_CIRCLE_LINE_WIDTH });
-        drawPreviewInfoField(ctx, LABEL_RJ, limitedFullFieldText(rjText, textOf('#rjText')), 532, 240.5, 221);
-        drawPreviewInfoField(ctx, LABEL_DURATION, limitedFullFieldText(durationText, textOf('#durationText')), 771, 240.5, 221);
-        drawPreviewChoiceField(ctx, document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE, 534, 340.5, 366);
-
-        fillRound(ctx, 64, 438.5, 952, 112, 26, theme.panelBg);
-        strokeRound(ctx, 64, 438.5, 952, 112, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
-        drawStickerLabel(ctx, LABEL_TITLE, 82, 417.5);
-        ctx.fillStyle = currentCardTheme().ink;
-        ctx.font = canvasFont('900', 26);
-        drawWrappedText(ctx, limitedFullFieldText(recordTitle, textOf('#recordTitle')), 88, 490.5, 904, 33, 2);
-
-        fillRound(ctx, 64, 590.5, 952, 105, 26, theme.panelBg);
-        strokeRound(ctx, 64, 590.5, 952, 105, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
-        drawStickerLabel(ctx, LABEL_TAGS, 82, 569.5);
-        const tagTexts = Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean);
-        let tx = 84;
-        const ty = 626.5;
-        ctx.font = canvasFont('900', 21);
-        tagTexts.forEach((tag) => {
-          const tw = ctx.measureText(tag).width + 26;
-          if (tx + tw > 984) return;
-          fillRound(ctx, tx, ty, tw, 39, 20, theme.chipBg);
-          strokeRound(ctx, tx, ty, tw, 39, 20, themeAlpha("accent", .24), 1);
-          ctx.fillStyle = currentThemeId === "matcha-berry-cheese" ? theme.ink : theme.accentDeep;
-          ctx.fillText(tag, tx + 13, ty + 27);
-          tx += tw + 9;
-        });
-
-        fillRound(ctx, 64, 735.5, 468, 220, 26, theme.panelBg);
-        strokeRound(ctx, 64, 735.5, 468, 220, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
-        drawStickerLabel(ctx, LABEL_PURCHASE, 82, 714.5);
-        drawMetric(ctx, LABEL_ORIGINAL, valueOf("#originalPrice"), 84, 771.5, 208, 77.5);
-        drawMetric(ctx, LABEL_PAID, valueOf("#currentPrice"), 304, 771.5, 208, 77.5);
-        drawMetric(ctx, LABEL_DISCOUNT, valueOf("#currentDiscount"), 84, 860, 208, 77.5, "%off", { highDiscount: isHighDiscountValue(valueOf("#currentDiscount")) });
-        drawMetric(ctx, LABEL_LOWEST, valueOf("#lowestPrice"), 304, 860, 208, 77.5, "%off", { highDiscount: isHighDiscountValue(valueOf("#lowestPrice")) });
-
-        fillRound(ctx, 548, 735.5, 468, 220, 26, theme.panelBg);
-        strokeRound(ctx, 548, 735.5, 468, 220, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
-        drawStickerLabel(ctx, LABEL_RATING, 566, 714.5);
-        const rows = Array.from(document.querySelectorAll(".rating-row"));
-        drawStars(ctx, LABEL_OVERALL, ratingValue(rows[0]), 574, 770.5);
-        drawStars(ctx, "CV", ratingValue(rows[1]), 574, 813.5);
-        drawStars(ctx, LABEL_STORY, ratingValue(rows[2]), 574, 856.5);
-        drawStars(ctx, "SE", ratingValue(rows[3]), 574, 899.5);
-
-        fillRound(ctx, 64, 995.5, 952, 382, 28, theme.reviewBg);
-        strokeRound(ctx, 64, 995.5, 952, 382, 28, themeAlpha("line", theme.lineSoftAlpha), 2);
-        drawStickerLabel(ctx, LABEL_REVIEW, 82, 974.5);
-        ctx.fillStyle = currentCardTheme().ink;
-        ctx.font = canvasFont('400', 24);
-        drawWrappedText(ctx, limitedFullReviewText(valueOf("#reviewText")), 88, 1051.5, 904, 31, 11);
-
-        handleExportBlob(await canvasToBlob(canvas), templateExportFileName("full"), "full", exportThemeId);
+        await downloadPagedTemplateCards(template);
       } catch (error) {
         console.error(error);
-        showAppAlert("导出失败：请告诉我你看到这条弹窗，我再继续修。");
+        const exportErrorText = error instanceof Error && error.message ? error.message : String.fromCharCode(0x672a, 0x77e5, 0x539f, 0x56e0);
+        showAppAlert(String.fromCharCode(0x5bfc, 0x51fa, 0x5931, 0x8d25, 0xff1a) + exportErrorText);
       } finally {
         downloadButton.disabled = false;
       }
     }
-
     const UI_GRID9_UPLOAD = String.fromCharCode(0x70b9, 0x51fb, 0x4e0a, 0x4f20, 0x20, 0x42, 0x4b);
     const UI_GRID9_TAG_PLACEHOLDER = String.fromCharCode(0x77ed, 0x6807, 0x9898);
     const UI_GRID9_REVIEW_PLACEHOLDER = String.fromCharCode(0x77ed, 0x8bc4);
@@ -5040,6 +5886,10 @@
       String.fromCharCode(0x6700, 0x53ef, 0x7231),
       String.fromCharCode(0x6700, 0x7f8e, 0x42, 0x4b)
     ];
+
+    function limitedGrid9ReviewText(value, input) {
+      return limitedByMeasuredLines(value, input, GRID9_REVIEW_LINE_WIDTH, GRID9_REVIEW_MAX_LINES);
+    }
 
     function buildGrid9Cells() {
       grid9CellEditors = [];
@@ -5102,8 +5952,8 @@
         const reviewArea = document.createElement("textarea");
         reviewArea.className = "grid9-review-input";
         reviewArea.rows = 4;
-        reviewArea.maxLength = 48;
         reviewArea.placeholder = UI_GRID9_REVIEW_PLACEHOLDER;
+        bindTextInputLimit(reviewArea, (value) => limitedGrid9ReviewText(value, reviewArea));
         reviewWrap.appendChild(reviewArea);
 
         cell.append(tagInput, box, reviewWrap);
@@ -5169,7 +6019,7 @@
       return {
         cover: cell.querySelector(".grid9-cover-image").getAttribute("src") || "",
         tag: cell.querySelector(".grid9-tag-input").value.trim(),
-        review: cell.querySelector(".grid9-review-input").value.trim(),
+        review: cell.querySelector(".grid9-review-input").value,
         rj: cell.querySelector(".grid9-cell-rj-input").value.trim(),
         fit: cell.querySelector(".grid9-cover-image").style.objectFit || "cover"
       };
@@ -5182,7 +6032,8 @@
       applyGrid9Cover(index, next.cover || "");
       cell.querySelector(".grid9-cover-image").style.objectFit = next.fit === "contain" ? "contain" : "cover";
       cell.querySelector(".grid9-tag-input").value = next.tag || "";
-      cell.querySelector(".grid9-review-input").value = next.review || "";
+      const reviewInput = cell.querySelector(".grid9-review-input");
+      reviewInput.value = limitedGrid9ReviewText(next.review || "", reviewInput);
       const rjInput = cell.querySelector(".grid9-cell-rj-input");
       rjInput.value = next.rj || "";
       fitGrid9RjWidth(rjInput);
@@ -5625,7 +6476,7 @@
       let lines = 0;
       for (const sourceLine of sourceLines) {
         let line = "";
-        for (const char of Array.from(sourceLine)) {
+        for (const char of wrappingCharacters(sourceLine)) {
           const test = line + char;
           if (ctx.measureText(test).width > maxWidth && line) {
             lines += 1;
@@ -5646,7 +6497,7 @@
       for (const sourceLine of sourceLines) {
         if (lines.length >= maxLines) break;
         let line = "";
-        for (const char of Array.from(sourceLine)) {
+        for (const char of wrappingCharacters(sourceLine)) {
           const test = line + char;
           if (ctx.measureText(test).width > maxWidth && line) {
             lines.push(line);
@@ -5679,7 +6530,7 @@
       const sourceLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
       for (const sourceLine of sourceLines) {
         let line = "";
-        for (const char of Array.from(sourceLine)) {
+        for (const char of wrappingCharacters(sourceLine)) {
           const test = line + char;
           if (ctx.measureText(test).width > maxWidth && line) {
             max = Math.max(max, ctx.measureText(line).width);
@@ -5891,7 +6742,7 @@
         } else if (state.titleStyle === "chip") {
           ctx.font = canvasFont('950', 52);
           drawGrid9TitleChip(ctx, state.title, 540, titleBaselineY, 900, 60, titleLineCount);
-          drawCenteredWrappedText(ctx, state.title, 90, titleBaselineY, 900, 60, 2);
+          drawCenteredWrappedText(ctx, state.title, 90, titleBaselineY, 900, 60, titleLineCount);
         } else if (state.titleStyle === "split") {
           drawGrid9TitleSplit(ctx, state.title, 90, titleBaselineY - 3, 900, 66, titleLineCount);
         } else if (state.titleStyle === "frost") {
@@ -6055,7 +6906,7 @@
       ctx.restore();
       ctx.fillStyle = theme.ink;
       ctx.font = canvasFont('700', 24);
-      drawWrappedText(ctx, cell.review || "", x + 19, reviewTop + 24, w - 19, 24 * 1.22, 4);
+      drawWrappedText(ctx, cell.review || "", x + 19, reviewTop + 24, GRID9_REVIEW_LINE_WIDTH, 24 * 1.22, GRID9_REVIEW_MAX_LINES);
       ctx.strokeStyle = themeAlpha("accent", .35);
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -6160,10 +7011,14 @@
     const QUICK_CV_MAX_WIDTH = 12;
     const QUICK_REVIEW_MAX_WIDTH = 44;
     const QUICK_REVIEW_LINE_WIDTH = 22 * 11;
+    const QUICK_REVIEW_MAX_LINES = 4;
     const quickFieldComposing = new WeakSet();
 
-    function limitedQuickReviewText(value) {
-      return limitedByFullWidth(value, QUICK_REVIEW_MAX_WIDTH);
+    function limitedQuickReviewText(value, input = null) {
+      const limited = limitedByFullWidth(value, QUICK_REVIEW_MAX_WIDTH);
+      return input
+        ? limitedByMeasuredLines(limited, input, QUICK_REVIEW_LINE_WIDTH, QUICK_REVIEW_MAX_LINES)
+        : limited;
     }
 
     function limitedQuickCvText(value) {
@@ -6280,7 +7135,7 @@
         reviewArea.className = "quick-review";
         reviewArea.rows = 5;
         reviewArea.placeholder = UI_QUICK_REVIEW_PLACEHOLDER;
-        bindTextInputLimit(reviewArea, limitedQuickReviewText);
+        bindTextInputLimit(reviewArea, (value) => limitedQuickReviewText(value, reviewArea));
         reviewWrap.appendChild(reviewArea);
         content.append(cvRow, divider, reviewWrap);
 
@@ -6380,7 +7235,7 @@
         coverFit: cell.querySelector(".quick-cover img").style.objectFit || "cover",
         cv: cell.querySelector(".quick-cv").value.trim(),
         rj: cell.querySelector(".quick-rj").value.trim(),
-        review: cell.querySelector(".quick-review").value.trim()
+        review: cell.querySelector(".quick-review").value
       };
     }
 
@@ -6391,7 +7246,8 @@
       applyQuickCover(index, next.cover || "");
       cell.querySelector(".quick-cover img").style.objectFit = next.coverFit === "contain" ? "contain" : "cover";
       cell.querySelector(".quick-cv").value = limitedQuickCvText(next.cv);
-      cell.querySelector(".quick-review").value = limitedQuickReviewText(next.review);
+      const reviewInput = cell.querySelector(".quick-review");
+      reviewInput.value = limitedQuickReviewText(next.review, reviewInput);
       const rjInput = cell.querySelector(".quick-rj");
       rjInput.value = next.rj || "";
       fitQuickRjWidth(rjInput);
@@ -6778,7 +7634,7 @@
       ctx.fillStyle = themeAlpha("ink", .9);
       ctx.font = canvasFont('700', 22);
       ctx.textBaseline = "top";
-      drawWrappedText(ctx, limitedQuickReviewText(cell.review), contentX - 2, wrapTop + 14.4, QUICK_REVIEW_LINE_WIDTH, 31, 4);
+      drawWrappedText(ctx, limitedQuickReviewText(cell.review), contentX - 2, wrapTop + 14.4, QUICK_REVIEW_LINE_WIDTH, 31, QUICK_REVIEW_MAX_LINES);
       ctx.restore();
     }
 
@@ -6827,6 +7683,7 @@
     const UI_TRIO_REPO_LABEL = "REPO";
     const TRIO_CV_MAX_WIDTH = 7;
     const TRIO_REPO_MAX_WIDTH = 152;
+    const TRIO_REPO_MAX_LINES = 8;
 
     function limitedTrioCvText(value) {
       return limitedByFullWidth(value, TRIO_CV_MAX_WIDTH, true);
@@ -6840,8 +7697,12 @@
       return String(value || "").replace(/\D/g, "").slice(0, 6);
     }
 
-    function limitedTrioRepoText(value) {
-      return limitedByFullWidth(value, TRIO_REPO_MAX_WIDTH);
+    function limitedTrioRepoText(value, input = null) {
+      const limited = limitedByFullWidth(value, TRIO_REPO_MAX_WIDTH);
+      if (!input || !input.getClientRects().length) return limited;
+      const styleWidth = window.getComputedStyle(input).width;
+      const maxWidth = styleWidth.endsWith("px") ? Number.parseFloat(styleWidth) : input.getBoundingClientRect().width;
+      return limitedByMeasuredLines(limited, input, maxWidth, TRIO_REPO_MAX_LINES);
     }
 
     function trioIsCoarse() {
@@ -6966,7 +7827,7 @@
         const reviewArea = document.createElement("textarea");
         reviewArea.className = "trio-repo-input";
         reviewArea.placeholder = UI_TRIO_REPO_PLACEHOLDER;
-        bindTextInputLimit(reviewArea, limitedTrioRepoText);
+        bindTextInputLimit(reviewArea, (value) => limitedTrioRepoText(value, reviewArea));
         repo.append(reviewArea);
 
         info.append(infoRow, summary, repo);
@@ -7082,7 +7943,7 @@
         rj: cell.querySelector(".trio-rj-input").value.trim(),
         price: cell.querySelector(".trio-price-input").value.trim(),
         rating,
-        repo: cell.querySelector(".trio-repo-input").value.trim()
+        repo: cell.querySelector(".trio-repo-input").value
       };
     }
 
@@ -7102,7 +7963,8 @@
         star.classList.toggle("off", rating < starValue - 0.5);
       });
       cell.querySelector(".trio-score").textContent = rating.toFixed(1);
-      cell.querySelector(".trio-repo-input").value = limitedTrioRepoText(next.repo);
+      const repoInput = cell.querySelector(".trio-repo-input");
+      repoInput.value = limitedTrioRepoText(next.repo, repoInput);
     }
 
     function collectTrioState() {
@@ -7274,6 +8136,7 @@
         coverEditedSrc: "",
         coverMosaicMaskSrc: "",
         coverBlurMaskSrc: "",
+        coverWhiteFogMaskSrc: "",
         coverEditorUndoStack: [],
         coverEditorRedoStack: [],
         coverStickers: [],
@@ -7803,7 +8666,7 @@
       ctx.fillText("\u2661", repoLeftX + 6, repoTop + 18);
       ctx.fillStyle = themeAlpha("ink", .9);
       ctx.font = canvasFont('600', 22);
-      drawWrappedText(ctx, limitedTrioRepoText(cell.repo), repoTextX, repoTop + 18, infoW - 22 - 20, 29, 8);
+      drawWrappedText(ctx, limitedTrioRepoText(cell.repo), repoTextX, repoTop + 18, infoW - 22 - 20, 29, TRIO_REPO_MAX_LINES);
     }
 
     trioImportAllButton?.addEventListener("click", importAllTrioCells);
@@ -7821,6 +8684,7 @@
     });
     imageToolMosaic.addEventListener("click", () => setEditorTool("mosaic"));
     imageToolBlur.addEventListener("click", () => setEditorTool("blur"));
+    imageToolWhiteFog.addEventListener("click", () => setEditorTool("white-fog"));
     imageToolErase.addEventListener("click", () => setEditorTool("erase"));
     imageToolSelect.addEventListener("click", () => setEditorTool("sticker"));
     imageUndoButton.addEventListener("click", undoEditorStep);
@@ -7986,6 +8850,18 @@
     exportModal.addEventListener("click", (event) => {
       if (event.target === exportModal) { exportModal.hidden = true; revokeLastExportUrl(); }
     });
+    exportPrevPage.addEventListener("click", () => {
+      if (exportPageIndex > 0) {
+        exportPageIndex -= 1;
+        renderExportPagePreview();
+      }
+    });
+    exportNextPage.addEventListener("click", () => {
+      if (exportPageIndex < lastExportPages.length - 1) {
+        exportPageIndex += 1;
+        renderExportPagePreview();
+      }
+    });
     playerPlay.addEventListener("click", () => {
       playerPlaying = !playerPlaying;
       syncPlayerUi(false);
@@ -8050,10 +8926,11 @@
     });
 
     modalDownloadButton.addEventListener("click", () => {
-      if (lastExportUrl) {
+      const page = lastExportPages[exportPageIndex];
+      if (page?.url || lastExportUrl) {
         const link = document.createElement("a");
-        link.download = lastExportFileName || "record-card.png";
-        link.href = lastExportUrl;
+        link.download = page?.fileName || lastExportFileName || "record-card.png";
+        link.href = page?.url || lastExportUrl;
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -8153,6 +9030,7 @@
           standaloneEditedSrc = "";
           standaloneMosaicMaskSrc = "";
           standaloneBlurMaskSrc = "";
+          standaloneWhiteFogMaskSrc = "";
           standaloneEditorUndoStack = [];
           standaloneEditorRedoStack = [];
           standaloneStickers = [];
@@ -8181,6 +9059,46 @@
       link.addEventListener("click", () => trackFixedUsageEvent("feature-open-feedback"));
     });
 
+    templatePrevPage.addEventListener("click", () => changeTemplatePage(-1));
+    templateNextPage.addEventListener("click", () => changeTemplatePage(1));
+    templateAddPage.addEventListener("click", addTemplateContinuationPage);
+    templateDeletePage.addEventListener("click", deleteCurrentTemplateContinuationPage);
+    templatePageCount.addEventListener("click", (event) => {
+      event.stopPropagation();
+      templatePageMenu.hidden = !templatePageMenu.hidden;
+      templatePageCount.setAttribute("aria-expanded", String(!templatePageMenu.hidden));
+    });
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest("#templatePageControls")) closeTemplatePageMenu();
+    });
+    fullContinuationReview.addEventListener("input", () => {
+      const pageState = continuationState.full;
+      if (pageState.current > 0) pageState.pages[pageState.current - 1] = fullContinuationReview.value;
+      scheduleSave();
+    });
+    compactContinuationReview.addEventListener("input", () => {
+      commitCompactContinuationReviewText();
+      scheduleSave();
+    });
+    compactContinuationReview.addEventListener("paste", () => {
+      window.setTimeout(() => {
+        commitCompactContinuationReviewText();
+        saveState();
+      }, 0);
+    });
+    compactContinuationReview.addEventListener("blur", () => {
+      commitCompactContinuationReviewText();
+      saveState();
+    });
+    const compactContinuationReviewObserver = new MutationObserver(() => {
+      if (commitCompactContinuationReviewText()) scheduleSave();
+    });
+    compactContinuationReviewObserver.observe(compactContinuationReview, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+
     templateButtons.forEach((button) => {
       button.addEventListener("click", () => setTemplate(button.dataset.template || "full"));
     });
@@ -8197,6 +9115,7 @@
     downloadButton.addEventListener("click", downloadCard);
     document.addEventListener("input", (event) => {
       if (event.target && event.target.id === "circleText") syncCircleTextLayout();
+      if (event.target && ["recordTitle", "cvText", "rjText"].includes(event.target.id)) syncContinuationSharedInfo();
       if (fullFieldComposing.has(event.target)) return;
       scheduleSave();
     });
@@ -8207,7 +9126,9 @@
     buildGrid9Cells();
     buildQuickCells();
     buildTrioCells();
-    void restoreState().then(() => {
+    void ensureCanvasFontReady().catch((error) => {
+      console.warn("Template font preload failed; using the active fallback metrics", error);
+    }).then(() => restoreState()).then(() => {
       void migrateGrid9CoversToCompact();
       void migrateQuickCoversToCompact();
       void migrateTrioCoversToCompact();
@@ -8223,7 +9144,16 @@
     restoreActiveMenu();
     restoreMainPage();
     scrollActivePickerIntoView();
-    window.addEventListener("beforeunload", saveState);
+    function flushCompactContinuationBeforeLeave() {
+      window.clearTimeout(scheduleSave.timer);
+      commitCompactContinuationReviewText();
+      saveState();
+    }
+    window.addEventListener("beforeunload", flushCompactContinuationBeforeLeave);
+    window.addEventListener("pagehide", flushCompactContinuationBeforeLeave);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") flushCompactContinuationBeforeLeave();
+    });
     window.addEventListener("resize", () => {
       const savedMainPage = localStorage.getItem(MAIN_PAGE_STORAGE_KEY) || "template";
       const collectionDetailVisible = savedMainPage === "collection" && collectionDetailPage && !collectionDetailPage.hidden;
@@ -8272,7 +9202,7 @@
       const COLLECTION_REMOVED_TAGS_KEY = "otome-record-card-collection-removed-tags-v1";
       const COLLECTION_DETAIL_KEY = "otome-record-card-collection-detail-v1";
       const COLLECTION_BACKUP_TYPE = "otome-record-card-works";
-      const COLLECTION_BACKUP_VERSION = 2;
+      const COLLECTION_BACKUP_VERSION = 3;
       const COLLECTION_NEW_KEYWORD_TEXT = String.fromCharCode(0x65b0, 0x5173, 0x952e, 0x8bcd);
       const COLLECTION_NEW_TAG_TEXT = String.fromCharCode(0x65b0, 0x6807, 0x7b7e);
       const COLLECTION_ALL_TAG_TEXT = String.fromCharCode(0x5168, 0x90e8);
@@ -8364,9 +9294,11 @@
         const pageCount = Math.max(1, Math.ceil(a.length / pageSize));
         collectionPageIndex = Math.max(0, Math.min(collectionPageIndex, pageCount - 1));
         const visible = a.slice(collectionPageIndex * pageSize, (collectionPageIndex + 1) * pageSize);
+        const placeholderCount = a.length > pageSize ? pageSize - visible.length : 0;
+        const placeholderMarkup = "<article class=\"collection-record collection-record-placeholder\" aria-hidden=\"true\"><div class=\"collection-cover\"></div><div class=\"collection-meta\"><strong class=\"collection-list-title\">&nbsp;</strong><b class=\"collection-list-cv\">&nbsp;</b><div class=\"collection-list-bottom\"><small>&nbsp;</small></div><div class=\"collection-meta-row\"><b>&nbsp;</b><small>&nbsp;</small></div><i class=\"collection-tag-mini\">&nbsp;</i></div></article>".repeat(placeholderCount);
         grid.classList.toggle("list-mode", listMode);
         page.classList.toggle("collection-list-mode", listMode);
-        grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"${r.cover ? ` style="background-image:url('${r.cover}')"` : ""}><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><strong class="collection-list-title">${escapeCollectionText(r.title || "未填写标题")}</strong><b class="collection-list-cv">${escapeCollectionText(r.cv || "未填写 CV")}</b><div class="collection-list-bottom"><small>${escapeCollectionText(r.rj || "无 RJ")}</small>${r.tags?.[0] ? `<i class="collection-tag-mini">${escapeCollectionText(r.tags[0])}</i>` : ""}</div><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "未填写 CV")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div><i class="collection-tag-mini${r.tags?.[0] ? "" : " is-empty"}">${escapeCollectionText(r.tags?.[0] || "占位")}</i>${collectionMobileTagsMarkup(r.tags)}</div></article>`).join("") : "<div class=\"collection-empty\">暂无收藏记录</div>";
+        grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"${r.cover ? ` style="background-image:url('${r.cover}')"` : ""}><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><strong class="collection-list-title">${escapeCollectionText(r.title || "未填写标题")}</strong><b class="collection-list-cv">${escapeCollectionText(r.cv || "未填写 CV")}</b><div class="collection-list-bottom"><small>${escapeCollectionText(r.rj || "无 RJ")}</small>${r.tags?.[0] ? `<i class="collection-tag-mini">${escapeCollectionText(r.tags[0])}</i>` : ""}</div><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "未填写 CV")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div><i class="collection-tag-mini${r.tags?.[0] ? "" : " is-empty"}">${escapeCollectionText(r.tags?.[0] || "占位")}</i>${collectionMobileTagsMarkup(r.tags)}</div></article>`).join("") + placeholderMarkup : "<div class=\"collection-empty\">暂无收藏记录</div>";
         requestAnimationFrame(fitCollectionMobileTags);
         document.getElementById("collectionCount").textContent = a.length + " 条记录";
         const pager = document.getElementById("collectionPager");
@@ -8525,6 +9457,8 @@
         "collectionDetailCircle",
         "collectionDetailRj",
         "collectionDetailTime",
+        "collectionDetailPurchaseDate",
+        "collectionDetailListenedDate",
         "collectionDetailOriginalPrice",
         "collectionDetailCurrentPrice",
         "collectionDetailCurrentDiscount",
@@ -8576,7 +9510,7 @@
         scrollY = collectionScroller ? collectionScroller.scrollTop : window.scrollY;
         document.getElementById("collectionDetailTitle").textContent = r.title || "";
         document.getElementById("collectionDetailCn").textContent = r.cn || "";
-        ["Cv","Circle","Rj","Time"].forEach((key,index) => { document.getElementById("collectionDetail" + key).textContent = [r.cv,r.circle,r.rj,r.time][index] || ""; });
+        ["Cv","Circle","Rj","Time","PurchaseDate","ListenedDate"].forEach((key,index) => { document.getElementById("collectionDetail" + key).textContent = [r.cv,r.circle,r.rj,r.time,r.purchaseDate,r.listenedDate][index] || ""; });
         document.getElementById("collectionDetailOriginalPrice").textContent = collectionDetailNumberText(r.originalPrice, "¥");
         document.getElementById("collectionDetailCurrentPrice").textContent = collectionDetailNumberText(r.price, "¥");
         document.getElementById("collectionDetailCurrentDiscount").textContent = collectionDetailNumberText(r.currentDiscount, "", "%off");
@@ -8832,7 +9766,7 @@
         const numericText = id => detailText(id).replace(/^¥\s*/, "").replace(/\s*%off$/i, "").trim();
         const optionalNumber = value => value === "" ? "" : Number(value);
         const now = Date.now();
-        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
+        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), purchaseDate:normalizeCardDateValue(detailText("collectionDetailPurchaseDate")), listenedDate:normalizeCardDateValue(detailText("collectionDetailListenedDate")), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
         try {
           if (work && nextWork.id !== work.id) await deleteWork(work.id);
           await putWorks([nextWork]);
@@ -8881,7 +9815,7 @@
         if (!work) return;
         const state = collectState();
         const ratings = [work.rating, work.cvRating, work.storyRating, work.seRating].map(value => value === "" || value == null ? 0 : Number(value) || 0);
-        applyState({ ...state, template:"full", theme:"matcha-berry-cheese", recordTitle:work.title || "", cvText:work.cv || "", circleText:work.circle || "", rjText:work.rj || "", durationText:work.time || "", originalPrice:work.originalPrice === "" || work.originalPrice == null ? "" : work.originalPrice, currentPrice:work.price === "" || work.price == null ? "" : work.price, currentDiscount:work.currentDiscount === "" || work.currentDiscount == null ? "" : work.currentDiscount, lowestPrice:work.lowestPrice === "" || work.lowestPrice == null ? "" : work.lowestPrice, cnChoice:work.cn || CHOICE_SUBTITLE, ratings, tags:String(work.keywords || "").split(" / ").filter(Boolean), reviewText:work.review || "", coverSrc:work.cover || "", coverOriginalSrc:work.cover || "", coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverStickers:[] }, true);
+        applyState({ ...state, template:"full", theme:"matcha-berry-cheese", recordTitle:work.title || "", cvText:work.cv || "", circleText:work.circle || "", rjText:work.rj || "", durationText:work.time || "", purchaseDate:work.purchaseDate || "", listenedDate:work.listenedDate || "", cardInfoType:normalizeCardInfoType(work.cardInfoType), originalPrice:work.originalPrice === "" || work.originalPrice == null ? "" : work.originalPrice, currentPrice:work.price === "" || work.price == null ? "" : work.price, currentDiscount:work.currentDiscount === "" || work.currentDiscount == null ? "" : work.currentDiscount, lowestPrice:work.lowestPrice === "" || work.lowestPrice == null ? "" : work.lowestPrice, cnChoice:work.cn || CHOICE_SUBTITLE, ratings, tags:String(work.keywords || "").split(" / ").filter(Boolean), reviewText:work.review || "", coverSrc:work.cover || "", coverOriginalSrc:work.cover || "", coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverWhiteFogMaskSrc:"", coverStickers:[] }, true);
         setMainPage("template");
       };
       document.getElementById("collectionPrevPage").onclick = () => { if (collectionPageIndex > 0) { collectionPageIndex -= 1; render(); if (collectionScroller) collectionScroller.scrollTo({ top:0, behavior:"smooth" }); } };
@@ -8941,7 +9875,7 @@
         try {
           const payload = JSON.parse(await file.text());
           const legacyArray = Array.isArray(payload);
-          if (!legacyArray && (!payload || typeof payload !== "object" || payload.type !== COLLECTION_BACKUP_TYPE || ![1,2].includes(payload.version))) throw new Error("Unsupported collection backup");
+          if (!legacyArray && (!payload || typeof payload !== "object" || payload.type !== COLLECTION_BACKUP_TYPE || ![1,2,3].includes(payload.version))) throw new Error("Unsupported collection backup");
           const imported = legacyArray ? payload : payload.works;
           if (!Array.isArray(imported)) throw new Error("Invalid collection records");
           const importedIds = new Set();
@@ -9178,7 +10112,7 @@
         const existingTemporary = !rj ? records.find(work => !work.rj && work.sourceSlot === sourceSlot) : null;
         const id = rj || existingTemporary?.id || nextTemporaryWorkId();
         const optionalNumber = value => String(value ?? "").trim() === "" ? "" : Number(value);
-        return { id, rj, title: data.title || "", cn: data.cn || "", cv: data.cv || "", circle: data.circle || "", time: data.time || "", originalPrice: optionalNumber(data.originalPrice), price: optionalNumber(data.price), currentDiscount: optionalNumber(data.currentDiscount), lowestPrice: optionalNumber(data.lowestPrice), rating: optionalNumber(data.rating), cvRating: optionalNumber(data.cvRating), storyRating: optionalNumber(data.storyRating), seRating: optionalNumber(data.seRating), cover: data.cover || "", coverFit: data.coverFit || "cover", review: data.review || "", keywords: data.keywords || "", tags: data.tags || [], source, sourceSlot };
+        return { id, rj, title: data.title || "", cn: data.cn || "", cv: data.cv || "", circle: data.circle || "", time: data.time || "", purchaseDate:normalizeCardDateValue(data.purchaseDate), listenedDate:normalizeCardDateValue(data.listenedDate), cardInfoType:data.cardInfoType ? normalizeCardInfoType(data.cardInfoType) : "", originalPrice: optionalNumber(data.originalPrice), price: optionalNumber(data.price), currentDiscount: optionalNumber(data.currentDiscount), lowestPrice: optionalNumber(data.lowestPrice), rating: optionalNumber(data.rating), cvRating: optionalNumber(data.cvRating), storyRating: optionalNumber(data.storyRating), seRating: optionalNumber(data.seRating), cover: data.cover || "", coverFit: data.coverFit || "cover", review: data.review || "", keywords: data.keywords || "", tags: data.tags || [], source, sourceSlot };
       }
       function extractCurrentWorks(state) {
         const found = new Map();
@@ -9189,7 +10123,7 @@
           if (!previous) { found.set(work.id, work); return; }
           Object.keys(work).forEach(key => { if (work[key] !== "" && (!Array.isArray(work[key]) || work[key].length)) previous[key] = work[key]; });
         };
-        add("single", 0, { rj:state.rjText, title:state.recordTitle, cn:state.cnChoice, cv:state.cvText, circle:state.circleText, time:state.durationText, originalPrice:state.originalPrice, price:state.currentPrice, currentDiscount:state.currentDiscount, lowestPrice:state.lowestPrice, rating:Array.isArray(state.ratings) ? state.ratings[0] : 0, cvRating:Array.isArray(state.ratings) ? state.ratings[1] : "", storyRating:Array.isArray(state.ratings) ? state.ratings[2] : "", seRating:Array.isArray(state.ratings) ? state.ratings[3] : "", cover:state.coverSrc, coverFit:state.coverFit, review:state.reviewText, keywords:(state.tags || []).join(" / ") });
+        add("single", 0, { rj:state.rjText, title:state.recordTitle, cn:state.cnChoice, cv:state.cvText, circle:state.circleText, time:state.durationText, purchaseDate:state.purchaseDate, listenedDate:state.listenedDate, cardInfoType:state.cardInfoType, originalPrice:state.originalPrice, price:state.currentPrice, currentDiscount:state.currentDiscount, lowestPrice:state.lowestPrice, rating:Array.isArray(state.ratings) ? state.ratings[0] : 0, cvRating:Array.isArray(state.ratings) ? state.ratings[1] : "", storyRating:Array.isArray(state.ratings) ? state.ratings[2] : "", seRating:Array.isArray(state.ratings) ? state.ratings[3] : "", cover:state.coverSrc, coverFit:state.coverFit, review:state.reviewText, keywords:(state.tags || []).join(" / ") });
         (state.grid9?.cells || []).slice(0,9).forEach((cell,index) => add("grid9", index, { rj:cell.rj, cover:cell.cover, coverFit:cell.fit, review:cell.review }));
         (state.quick?.cells || []).slice(0,12).forEach((cell,index) => add("quick", index, { rj:cell.rj, cv:cell.cv, cover:cell.cover, coverFit:cell.coverFit, review:cell.review }));
         (state.trio?.cells || []).slice(0,3).forEach((cell,index) => add("trio", index, { rj:cell.rj, price:cell.price, rating:cell.rating, cover:cell.cover, coverFit:cell.coverFit, review:cell.repo }));

@@ -66,6 +66,7 @@ deployed on GitHub Pages.
 ## Working preferences
 
 - When changing code, only run basic syntax/static checks (e.g. JS parse check). Do NOT run functional, visual, or end-to-end verification - no browser automation, no screenshot rendering, no click-through testing. The user verifies the actual effect themselves.
+- After structural changes to `js/app.js` (new shared helpers, moved declarations, new top-level initialization code), run `node check-load.js` (a Node DOM-stub smoke test that executes the whole script and fails on load-time errors such as use-before-declaration). Pure CSS edits or function-body-only tweaks do not require it. This is a static smoke check, not browser verification.
 - For long-running asynchronous work:
   - Empty `write_stdin` polls MUST use `yield_time_ms >= 180000`; prefer
     `300000` when intermediate output is not needed.
@@ -131,6 +132,14 @@ deployed on GitHub Pages.
   background with pink text, plus the same dialog shape, typography, spacing,
   and button treatment. Reuse or extend that dialog pattern instead of creating
   an unrelated prompt style.
+- Delete actions must always require a second confirmation before any data is
+  removed. Use a site-owned custom dialog with explicit confirm/cancel choices,
+  never a one-click deletion without confirmation.
+- Features with failure risk (e.g. import, export, image processing) must show a
+  dialog stating the specific reason when they fail. Surface the actual error
+  message (or a precise cause) instead of a generic placeholder such as "failed,
+  please try again", and keep a fallback message only when no error detail is
+  available.
 - In `js/app.js`, always declare storage-key constants and other `const`/`let`
   dependencies before the first statement that uses or passes them. Never add
   a use-before-declaration dependency to page initialization.

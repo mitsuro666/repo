@@ -168,9 +168,16 @@
             </div>
             <div class="editable" id="rjText" contenteditable="true" aria-label="RJ号"></div>
           </div>
-          <div class="field">
-            <label>时长</label>
-            <div class="editable" id="durationText" contenteditable="true" aria-label="时长"></div>
+          <div class="field card-info-field" id="cardInfoField" data-info-type="duration">
+            <select class="card-info-type-select" id="cardInfoType" aria-label="&#34917;&#20805;&#20449;&#24687;&#26174;&#31034;&#39033;">
+              <option value="duration">&#26102;&#38271;</option>
+              <option value="purchaseDate">&#36141;&#20080;&#26085;&#26399;</option>
+              <option value="listenedDate">&#25910;&#21548;&#26085;&#26399;</option>
+              <option value="hidden">&#19981;&#26174;&#31034;</option>
+            </select>
+            <div class="editable card-info-value" id="durationText" contenteditable="true" aria-label="&#26102;&#38271;"></div>
+            <input class="soft-input card-info-value" id="purchaseDateText" type="text" inputmode="numeric" maxlength="10" placeholder="YYYY-MM-DD" aria-label="&#36141;&#20080;&#26085;&#26399;" hidden />
+            <input class="soft-input card-info-value" id="listenedDateText" type="text" inputmode="numeric" maxlength="10" placeholder="YYYY-MM-DD" aria-label="&#25910;&#21548;&#26085;&#26399;" hidden />
           </div>
           <div class="field cn-field">
             <div class="choice-group" id="cnChoices" aria-label="&#20013;&#25991;">
@@ -244,6 +251,32 @@
 
 
       </section>
+      <section class="card continuation-card full-continuation-card" id="fullContinuationCard" aria-label="&#23436;&#25972;&#29256;&#32493;&#39029;" hidden>
+        <header class="full-continuation-header">
+          <div class="continuation-cover-frame"><img id="fullContinuationCover" alt="" /><span>BK</span></div>
+          <div class="full-continuation-meta">
+            <div class="full-continuation-title" id="fullContinuationTitle"></div>
+            <div class="full-continuation-byline"><span>CV <b id="fullContinuationCv"></b></span><span><b class="full-continuation-rj" id="fullContinuationRj"></b></span></div>
+          </div>
+        </header>
+        <section class="full-continuation-review">
+          <div class="section-label review-label">&#35780;&#20215;</div>
+          <textarea class="continuation-review-input" id="fullContinuationReview" aria-label="&#32493;&#39029;&#35780;&#20215;"></textarea>
+        </section>
+        <div class="continuation-page-number" id="fullContinuationPageNumber"></div>
+      </section>
+      <section class="card compact compact-continuation-card" id="compactContinuationCard" aria-label="&#31616;&#30053;&#29256;&#32493;&#39029;" hidden>
+        <header class="compact-continuation-header">
+          <span class="compact-continuation-title" id="compactContinuationTitle"></span>
+          <span class="compact-continuation-meta"><span>CV</span><span id="compactContinuationCv"></span><span>&#183;</span><span id="compactContinuationRj"></span></span>
+        </header>
+        <div class="compact-continuation-divider"><span>&#9835;</span></div>
+        <div class="compact-continuation-content">
+          <div class="compact-continuation-review" id="compactContinuationReview" contenteditable="plaintext-only" role="textbox" aria-multiline="true" aria-label="&#32493;&#39029;&#35780;&#20215;"></div>
+          <div class="compact-continuation-spine" aria-hidden="true"><i></i><span>&#10022;</span><i></i><span>&#9834;</span><i></i><span>&#9825;</span><i></i><span>&#9834;</span><i></i></div>
+        </div>
+        <footer class="compact-continuation-footer"><span>SITUATION &#10022; VOICE</span><span id="compactContinuationPageNumber"></span></footer>
+      </section>
       <section class="card grid9-card" id="grid9Card" hidden>
         <header class="grid9-header">
           <div class="grid9-header-tools" data-editor-only>
@@ -277,6 +310,18 @@
         <div class="trio-list" id="trioCells"></div>
         <div class="trio-watermark">&#20057;&#25235;&#35760;&#24405; &#183; THREE VOICE NOTES</div>
       </section>
+    </div>
+    <div class="template-page-controls" id="templatePageControls">
+      <div class="template-page-nav">
+        <button class="template-page-arrow" id="templatePrevPage" type="button" aria-label="&#19978;&#19968;&#39029;">&#8249;</button>
+        <button class="template-page-count" id="templatePageCount" type="button" aria-expanded="false" aria-controls="templatePageMenu"><span id="templatePageCountText">01 / 01</span><span class="template-page-chevron">&#9662;</span></button>
+        <button class="template-page-arrow" id="templateNextPage" type="button" aria-label="&#19979;&#19968;&#39029;">&#8250;</button>
+      </div>
+      <div class="template-page-actions">
+        <button class="template-page-action danger" id="templateDeletePage" type="button" hidden>&#21024;&#38500;&#32493;&#39029;</button>
+        <button class="template-page-action primary" id="templateAddPage" type="button">&#65291; &#28155;&#21152;&#32493;&#39029;</button>
+      </div>
+      <div class="template-page-menu" id="templatePageMenu" hidden></div>
     </div>
     <div class="grid9-external-tools" id="grid9ExternalTools" hidden>
       <button class="tool-button primary" id="grid9ImportAllButton" type="button">&#25353;RJ&#21495;&#23548;&#20837;&#20449;&#24687;</button>
@@ -327,7 +372,7 @@
     <section class="app-page collection-detail-page" id="collectionDetailPage" hidden>
       <div class="collection-detail-workspace">
       <div class="collection-detail-toolbar"><button id="collectionBack" type="button">← 返回列表</button><div><button id="collectionEditRecordButton" type="button">编辑repo</button><button class="danger" id="collectionDeleteRecordButton" type="button" hidden>删除条目</button><button class="primary" id="collectionDetailSaveButton" type="button">保存记录</button></div></div>
-      <article class="collection-archive-sheet"><header class="collection-archive-hero"><div class="collection-detail-art-wrap"><button class="collection-detail-art" id="collectionDetailArt" type="button" aria-label="上传 BK 图片"><span>点击上传 BK</span></button><input class="hidden" id="collectionDetailCoverInput" type="file" accept="image/*" /><div class="collection-detail-cover-tools"><button class="tiny-button" id="collectionDetailContainButton" type="button">完整显示</button><button class="tiny-button" id="collectionDetailCoverButton" type="button">铺满裁切</button><button class="tiny-button" id="collectionDetailImageEditButton" type="button">编辑</button><button class="tiny-button" id="collectionDetailRemoveCoverButton" type="button">移除</button></div></div><div class="collection-archive-intro"><small>OTOME VOICE ARCHIVE</small><h2 id="collectionDetailTitle" contenteditable="true"></h2><p id="collectionDetailCn" contenteditable="true"></p><div class="collection-facts"><div><b>CV</b><span id="collectionDetailCv" contenteditable="true"></span></div><div><b>&#31038;&#22242;</b><span id="collectionDetailCircle" contenteditable="true"></span></div><div><b>RJ</b><span id="collectionDetailRj" contenteditable="true"></span></div><div><b>&#26102;&#38271;</b><span id="collectionDetailTime" contenteditable="true"></span></div><div><b>&#21407;&#20215;</b><span id="collectionDetailOriginalPrice" contenteditable="true"></span></div><div><b>&#29616;&#20215;</b><span id="collectionDetailCurrentPrice" contenteditable="true"></span></div><div><b>&#29616;&#25240;&#25187;</b><span id="collectionDetailCurrentDiscount" contenteditable="true"></span></div><div><b>&#21490;&#20302;&#25240;&#25187;</b><span id="collectionDetailLowestDiscount" contenteditable="true"></span></div></div><div class="collection-archive-tags"><div><span>作品关键词</span><div id="collectionDetailKeywords"></div><button class="collection-detail-add-button" id="collectionDetailAddKeyword" type="button" aria-label="&#28155;&#21152;&#20851;&#38190;&#35789;">＋</button></div><div><span>我的标签</span><div id="collectionDetailLibraryTags"></div><button class="collection-detail-add-button" id="collectionDetailAddTag" type="button" aria-label="&#28155;&#21152;&#26631;&#31614;">＋</button></div></div></div></header><div class="collection-archive-body"><section><h3>作品简介</h3><p id="collectionDetailSummary" contenteditable="true"></p></section><section><h3>角色资料</h3><p id="collectionDetailCharacter" contenteditable="true"></p></section><section><h3>我的评价</h3><div class="collection-rating-table"><div><span>&#24635;&#20307;</span><span class="collection-rating-editor" id="collectionDetailRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailRatingStars"></span></div><div><span>CV</span><span class="collection-rating-editor" id="collectionDetailCvRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailCvRatingStars"></span></div><div><span>&#21095;&#26412;</span><span class="collection-rating-editor" id="collectionDetailStoryRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailStoryRatingStars"></span></div><div><span>SE</span><span class="collection-rating-editor" id="collectionDetailSeRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailSeRatingStars"></span></div></div></section><section class="collection-archive-review"><h3>Repo / 感想</h3><p id="collectionDetailReview" contenteditable="true"></p></section></div></article>
+      <article class="collection-archive-sheet"><header class="collection-archive-hero"><div class="collection-detail-art-wrap"><button class="collection-detail-art" id="collectionDetailArt" type="button" aria-label="上传 BK 图片"><span>点击上传 BK</span></button><input class="hidden" id="collectionDetailCoverInput" type="file" accept="image/*" /><div class="collection-detail-cover-tools"><button class="tiny-button" id="collectionDetailContainButton" type="button">完整显示</button><button class="tiny-button" id="collectionDetailCoverButton" type="button">铺满裁切</button><button class="tiny-button" id="collectionDetailImageEditButton" type="button">编辑</button><button class="tiny-button" id="collectionDetailRemoveCoverButton" type="button">移除</button></div></div><div class="collection-archive-intro"><small>OTOME VOICE ARCHIVE</small><h2 id="collectionDetailTitle" contenteditable="true"></h2><p id="collectionDetailCn" contenteditable="true"></p><div class="collection-facts"><div><b>CV</b><span id="collectionDetailCv" contenteditable="true"></span></div><div><b>&#31038;&#22242;</b><span id="collectionDetailCircle" contenteditable="true"></span></div><div><b>RJ</b><span id="collectionDetailRj" contenteditable="true"></span></div><div><b>&#26102;&#38271;</b><span id="collectionDetailTime" contenteditable="true"></span></div><div><b>&#36141;&#20080;&#26085;&#26399;</b><span id="collectionDetailPurchaseDate" contenteditable="true"></span></div><div><b>&#25910;&#21548;&#26085;&#26399;</b><span id="collectionDetailListenedDate" contenteditable="true"></span></div><div><b>&#21407;&#20215;</b><span id="collectionDetailOriginalPrice" contenteditable="true"></span></div><div><b>&#29616;&#20215;</b><span id="collectionDetailCurrentPrice" contenteditable="true"></span></div><div><b>&#29616;&#25240;&#25187;</b><span id="collectionDetailCurrentDiscount" contenteditable="true"></span></div><div><b>&#21490;&#20302;&#25240;&#25187;</b><span id="collectionDetailLowestDiscount" contenteditable="true"></span></div></div><div class="collection-archive-tags"><div><span>作品关键词</span><div id="collectionDetailKeywords"></div><button class="collection-detail-add-button" id="collectionDetailAddKeyword" type="button" aria-label="&#28155;&#21152;&#20851;&#38190;&#35789;">＋</button></div><div><span>我的标签</span><div id="collectionDetailLibraryTags"></div><button class="collection-detail-add-button" id="collectionDetailAddTag" type="button" aria-label="&#28155;&#21152;&#26631;&#31614;">＋</button></div></div></div></header><div class="collection-archive-body"><section><h3>作品简介</h3><p id="collectionDetailSummary" contenteditable="true"></p></section><section><h3>角色资料</h3><p id="collectionDetailCharacter" contenteditable="true"></p></section><section><h3>我的评价</h3><div class="collection-rating-table"><div><span>&#24635;&#20307;</span><span class="collection-rating-editor" id="collectionDetailRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailRatingStars"></span></div><div><span>CV</span><span class="collection-rating-editor" id="collectionDetailCvRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailCvRatingStars"></span></div><div><span>&#21095;&#26412;</span><span class="collection-rating-editor" id="collectionDetailStoryRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailStoryRatingStars"></span></div><div><span>SE</span><span class="collection-rating-editor" id="collectionDetailSeRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailSeRatingStars"></span></div></div></section><section class="collection-archive-review"><h3>Repo / 感想</h3><p id="collectionDetailReview" contenteditable="true"></p></section></div></article>
       </div>
     </section>
 
@@ -352,6 +397,11 @@
       <div class="export-sheet">
         <img class="export-preview-image" id="exportPreviewImage" alt="" />
         <p class="export-hint" id="exportHint"></p>
+        <div class="export-page-pager" id="exportPagePager" hidden>
+          <button id="exportPrevPage" type="button" aria-label="&#19978;&#19968;&#39029;">&#8249;</button>
+          <b id="exportPageCount">01 / 01</b>
+          <button id="exportNextPage" type="button" aria-label="&#19979;&#19968;&#39029;">&#8250;</button>
+        </div>
         <div class="export-actions">
           <button class="action-button primary" id="modalDownloadButton" type="button"></button>
           <button class="action-button" id="modalCloseButton" type="button"></button>
@@ -378,6 +428,7 @@
           <div class="image-tool-row">
             <button class="image-tool-button image-icon-button icon-mosaic active" id="imageToolMosaic" type="button" aria-label="mosaic"><span>&#39532;&#36187;&#20811;</span></button>
             <button class="image-tool-button image-icon-button icon-blur" id="imageToolBlur" type="button" aria-label="blur"><span>&#27169;&#31946;</span></button>
+            <button class="image-tool-button image-icon-button icon-white-fog" id="imageToolWhiteFog" type="button" aria-label="white fog"><span>&#30333;&#38654;</span></button>
             <button class="image-tool-button image-icon-button icon-erase" id="imageToolErase" type="button" aria-label="erase"><span>&#27233;&#30382;&#25830;</span><img class="tool-image eraser-image eraser-image-default" src="tool-icons/eraser1.png" alt="" /><img class="tool-image eraser-image eraser-image-active" src="tool-icons/eraser2.png" alt="" /></button>
             <button class="image-tool-button image-icon-button icon-select" id="imageToolSelect" type="button" aria-label="select sticker"><span>&#36873;&#25321;</span></button>
             <button class="image-tool-button image-icon-button icon-undo" id="imageUndoButton" type="button" aria-label="undo"><span>&#25764;&#38144;</span></button>
@@ -516,6 +567,20 @@
         <button class="usage-info-close" id="updateLogCloseButton" type="button" aria-label="&#20851;&#38381;&#26356;&#26032;&#20844;&#21578;"><span aria-hidden="true">&times;</span></button>
         <h2 class="usage-info-title" id="updateLogTitle">&#26356;&#26032;&#20844;&#21578;</h2>
         <div class="update-log-list">
+          <details class="update-log-entry" open>
+            <summary>
+              <div class="update-log-meta"><time datetime="2026-08-19">2026.08.19</time><span>&#21151;&#33021;&#26356;&#26032; &#183; &#38382;&#39064;&#20462;&#22797;</span></div>
+              <h3>&#36817;&#26399;&#26356;&#26032;</h3>
+            </summary>
+            <ul>
+              <li>&#23436;&#25972;&#29256;&#21644;&#31616;&#30053;&#29256;&#27169;&#26495;&#26032;&#22686;&#32493;&#39029;&#21151;&#33021;&#65292;&#21487;&#20197;&#38543;&#26102;&#28155;&#21152;&#12289;&#20999;&#25442;&#21644;&#21024;&#38500;&#32493;&#39029;&#65292;&#30005;&#33041;&#31471;&#23548;&#20986;&#26102;&#20250;&#23548;&#20986;&#20840;&#37096;&#22270;&#29255;&#65292;&#31227;&#21160;&#31471;&#21487;&#36873;&#25321;&#38656;&#35201;&#30340;&#39029;&#38754;&#36880;&#39029;&#25163;&#21160;&#20445;&#23384;&#12290;</li>
+              <li>&#23436;&#25972;&#29256;&#12300;&#26102;&#38271;&#12301;&#23383;&#27573;&#29616;&#22312;&#21487;&#20197;&#22312;&#12300;&#26102;&#38271;&#12301;&#12300;&#36141;&#20080;&#26085;&#26399;&#12301;&#12300;&#25910;&#21548;&#26085;&#26399;&#12301;&#20043;&#38388;&#20999;&#25442;&#65292;&#20063;&#21487;&#20197;&#36873;&#25321;&#19981;&#26174;&#31034;&#65307;&#25910;&#34255;&#35760;&#24405;&#20250;&#21516;&#27493;&#20445;&#23384;&#23545;&#24212;&#30340;&#20449;&#24687;&#12290;</li>
+              <li>&#20462;&#22270;&#24037;&#20855;&#26032;&#22686;&#12300;&#30333;&#38654;&#12301;&#22411;&#30011;&#31508;&#12290;</li>
+              <li>&#23548;&#20986;&#22270;&#29255;&#22833;&#36133;&#26102;&#20250;&#26174;&#31034;&#20855;&#20307;&#22833;&#36133;&#21407;&#22240;&#65292;&#26041;&#20415;&#23450;&#20301;&#21644;&#21453;&#39304;&#38382;&#39064;&#12290;</li>
+              <li>&#32479;&#19968;&#20102;&#23436;&#25972;&#29256;&#21644;&#31616;&#30053;&#29256;&#20013;&#26631;&#39064;&#12289;&#67;&#86;&#12289;&#31038;&#22242;&#31561;&#36755;&#20837;&#25991;&#26412;&#30340;&#25442;&#34892;&#35268;&#21017;&#65292;&#38271;&#20869;&#23481;&#20250;&#25353;&#22266;&#23450;&#34892;&#25968;&#33258;&#28982;&#25442;&#34892;&#65292;&#19981;&#20877;&#28322;&#20986;&#25110;&#38169;&#20301;&#12290;</li>
+              <li>&#20248;&#21270;&#12300;&#25105;&#30340;&#25910;&#34255;&#12301;&#30340;&#20998;&#39029;&#25353;&#38062;&#65292;&#22266;&#23450;&#26174;&#31034;&#65292;&#19981;&#20877;&#38543;&#27599;&#39029;&#26465;&#25968;&#19981;&#21516;&#21464;&#25442;&#20301;&#32622;&#12290;</li>
+            </ul>
+          </details>
           <details class="update-log-entry" open>
             <summary>
               <div class="update-log-meta"><time datetime="2026-08-17">2026.08.17</time><span>&#21151;&#33021;&#26356;&#26032; &#183; &#38382;&#39064;&#20462;&#22797;</span></div>
