@@ -4872,11 +4872,15 @@
     const LABEL_STORY = String.fromCharCode(0x5267, 0x672c);
     const LABEL_REVIEW = String.fromCharCode(0x8bc4, 0x4ef7);
 
-    function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3) {
+    function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3, ellipsis = false) {
       const lines = [];
       const sourceLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
+      let truncated = false;
       for (const sourceLine of sourceLines) {
-        if (lines.length >= maxLines) break;
+        if (lines.length >= maxLines) {
+          truncated = true;
+          break;
+        }
         if (!sourceLine) {
           lines.push("");
           continue;
@@ -4887,12 +4891,20 @@
           if (ctx.measureText(test).width > maxWidth && line) {
             lines.push(line);
             line = char;
-            if (lines.length >= maxLines) break;
+            if (lines.length >= maxLines) {
+              truncated = true;
+              break;
+            }
           } else {
             line = test;
           }
         }
         if (line && lines.length < maxLines) lines.push(line);
+      }
+      if (truncated && ellipsis && lines.length) {
+        let lastLine = lines[lines.length - 1];
+        while (lastLine.length > 1 && ctx.measureText(lastLine + "\u2026").width > maxWidth) lastLine = lastLine.slice(0, -1);
+        lines[lines.length - 1] = lastLine + "\u2026";
       }
       lines.forEach((item, index) => ctx.fillText(item, x, y + index * lineHeight));
       return lines.length * lineHeight;
@@ -5722,7 +5734,7 @@
       await drawCover(ctx, 88, 62, 180, 135, 20, true, null, true, 4);
       ctx.fillStyle = theme.ink;
       ctx.font = canvasFont('900', 26);
-      drawWrappedText(ctx, editableText("recordTitle"), 298, 100, 718, 33, 2);
+      drawWrappedText(ctx, editableText("recordTitle"), 298, 100, 718, 33, 2, true);
       ctx.fillStyle = theme.accent;
       ctx.font = canvasFont('800', 21);
       const cvLabel = "CV";
