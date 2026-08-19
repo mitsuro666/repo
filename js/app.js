@@ -114,6 +114,7 @@
     const appDialogTitle = document.getElementById("appDialogTitle");
     const appDialogMessage = document.getElementById("appDialogMessage");
     const appDialogScrollHint = document.getElementById("appDialogScrollHint");
+    const appDialogLinkButton = document.getElementById("appDialogLinkButton");
     const appDialogCancelButton = document.getElementById("appDialogCancelButton");
     const appDialogConfirmButton = document.getElementById("appDialogConfirmButton");
 
@@ -718,6 +719,22 @@
     const UI_DIALOG_CANCEL = String.fromCharCode(0x53d6, 0x6d88);
     const UI_DIALOG_OK = String.fromCharCode(0x786e, 0x5b9a);
     const UI_DIALOG_GOT_IT = String.fromCharCode(0x77e5, 0x9053, 0x5566);
+    const UI_DIALOG_LINK = String.fromCharCode(0x5728, 0x6d4f, 0x89c8, 0x5668, 0x4e2d, 0x6253, 0x5f00);
+    const UI_FONT_FALLBACK_TITLE = String.fromCharCode(0x5bfc, 0x51fa, 0x63d0, 0x793a);
+    const UI_FONT_FALLBACK_CONTINUE = String.fromCharCode(0x7528, 0x7cfb, 0x7edf, 0x5b57, 0x4f53, 0x7ee7, 0x7eed, 0x5bfc, 0x51fa);
+    const UI_FONT_FALLBACK_UNKNOWN = String.fromCharCode(0x672a, 0x77e5, 0x539f, 0x56e0);
+    const UI_FONT_FALLBACK_BODY_PREFIX = String.fromCharCode(0x5361, 0x7247, 0x4e13, 0x7528, 0x5b57, 0x4f53, 0x52a0, 0x8f7d, 0x5931, 0x8d25, 0xff08);
+    const UI_FONT_FALLBACK_BODY_SUFFIX = String.fromCharCode(
+      0xff09, 0xff0c, 0x6682, 0x65f6, 0x65e0, 0x6cd5, 0x7528, 0x539f, 0x5b57, 0x4f53, 0x751f, 0x6210, 0x5bfc, 0x51fa, 0x56fe, 0x3002,
+      0x0a, 0x0a,
+      0x5efa, 0x8bae, 0x5148, 0x5c1d, 0x8bd5, 0xff1a,
+      0x0a,
+      0x31, 0x2e, 0x20, 0x5982, 0x679c, 0x662f, 0x5728, 0x5176, 0x4ed6, 0x20, 0x41, 0x70, 0x70, 0x20, 0x7684, 0x5185, 0x7f6e, 0x6d4f, 0x89c8, 0x5668, 0x91cc, 0x6253, 0x5f00, 0x7684, 0x672c, 0x7ad9, 0xff0c, 0x8bf7, 0x6539, 0x7528, 0x624b, 0x673a, 0x81ea, 0x5e26, 0x7684, 0x20, 0x53, 0x61, 0x66, 0x61, 0x72, 0x69, 0x20, 0x6d4f, 0x89c8, 0x5668, 0x6253, 0x5f00, 0xff1b,
+      0x0a,
+      0x32, 0x2e, 0x20, 0x5207, 0x6362, 0x5230, 0x7a33, 0x5b9a, 0x7684, 0x20, 0x57, 0x69, 0x2d, 0x46, 0x69, 0xff0c, 0x5237, 0x65b0, 0x9875, 0x9762, 0x540e, 0x518d, 0x8bd5, 0x3002,
+      0x0a, 0x0a,
+      0x5982, 0x679c, 0x4ecd, 0x60f3, 0x7ee7, 0x7eed, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x9009, 0x62e9, 0x6539, 0x7528, 0x624b, 0x673a, 0x81ea, 0x5e26, 0x5b57, 0x4f53, 0x5bfc, 0x51fa, 0xff0c, 0x5361, 0x7247, 0x6587, 0x5b57, 0x6837, 0x5f0f, 0x4f1a, 0x548c, 0x9884, 0x89c8, 0x7565, 0x6709, 0x5dee, 0x5f02, 0x3002, 0x662f, 0x5426, 0x7ee7, 0x7eed, 0xff1f
+    );
     const UPDATE_NOTICE_STORAGE_KEY = "otome-record-card-update-notice-20260819-v1";
     const UPDATE_NOTICE_START_AT = Date.UTC(2026, 7, 19, 0, 0, 0);
     const UPDATE_NOTICE_TITLE = String.fromCharCode(0x8fd1, 0x671f, 0x66f4, 0x65b0, 0x8bf4, 0x660e);
@@ -744,14 +761,17 @@
     reviewEditConfirm.textContent = UI_REVIEW_CONFIRM;
     reviewEditCancel.textContent = UI_REVIEW_CANCEL;
 
-    function openAppDialog(message, confirmMode, title = "") {
+    function openAppDialog(message, confirmMode, title = "", options = null) {
       const previousFocus = document.activeElement;
       const isUpdateNotice = title === UPDATE_NOTICE_TITLE;
+      const linkLabel = options && options.linkLabel ? options.linkLabel : "";
       appDialogTitle.textContent = title || (confirmMode ? UI_DIALOG_CONFIRM : UI_DIALOG_NOTICE);
       appDialogMessage.textContent = String(message || "");
       appDialogScrollHint.hidden = !isUpdateNotice;
       appDialogCancelButton.textContent = UI_DIALOG_CANCEL;
-      appDialogConfirmButton.textContent = confirmMode ? UI_DIALOG_OK : UI_DIALOG_GOT_IT;
+      appDialogConfirmButton.textContent = options && options.confirmLabel ? options.confirmLabel : (confirmMode ? UI_DIALOG_OK : UI_DIALOG_GOT_IT);
+      appDialogLinkButton.hidden = !linkLabel;
+      appDialogLinkButton.textContent = linkLabel;
       appDialogCancelButton.hidden = !confirmMode;
       appDialogModal.hidden = false;
       const syncScrollHint = () => {
@@ -772,6 +792,7 @@
           appDialogModal.hidden = true;
           appDialogCancelButton.onclick = null;
           appDialogConfirmButton.onclick = null;
+          appDialogLinkButton.onclick = null;
           appDialogModal.onclick = null;
           if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
           resolve(value);
@@ -783,6 +804,7 @@
         };
         appDialogCancelButton.onclick = () => finish(false);
         appDialogConfirmButton.onclick = () => finish(true);
+        appDialogLinkButton.onclick = () => finish("browser");
         appDialogModal.onclick = (event) => {
           if (event.target === appDialogModal) finish(confirmMode ? false : true);
         };
@@ -804,6 +826,17 @@
 
     function showAppConfirm(message) {
       return queueAppDialog(message, true);
+    }
+
+    function showAppFontFallbackPrompt(errorMessage) {
+      const detail = String(errorMessage || "").trim() || UI_FONT_FALLBACK_UNKNOWN;
+      const message = UI_FONT_FALLBACK_BODY_PREFIX + detail + UI_FONT_FALLBACK_BODY_SUFFIX;
+      const result = appDialogQueue.then(() => openAppDialog(message, true, UI_FONT_FALLBACK_TITLE, {
+        confirmLabel: UI_FONT_FALLBACK_CONTINUE,
+        linkLabel: UI_DIALOG_LINK
+      }));
+      appDialogQueue = result.catch(() => false);
+      return result;
     }
 
     async function maybeShowUpdateNotice() {
@@ -4740,16 +4773,28 @@
       return weight + ' ' + size + 'px "' + CANVAS_FONT + '", ' + CANVAS_FALLBACK;
     }
 
-    async function ensureCanvasFontReady() {
-      if (!document.fonts || !window.FontFace) return;
-      const alreadyLoaded = Array.from(document.fonts).some((font) => font.family === CANVAS_FONT && font.status === 'loaded');
-      if (!alreadyLoaded) {
-        const font = new FontFace(CANVAS_FONT, 'url("./font/BlackSugarPlumCandy-Bold.ttf")');
-        await font.load();
-        document.fonts.add(font);
+    async function ensureCanvasFontReady(promptOnFailure = true) {
+      if (!document.fonts || !window.FontFace) return true;
+      try {
+        const alreadyLoaded = Array.from(document.fonts).some((font) => font.family === CANVAS_FONT && font.status === 'loaded');
+        if (!alreadyLoaded) {
+          const font = new FontFace(CANVAS_FONT, 'url("./font/BlackSugarPlumCandy-Bold.ttf")');
+          await font.load();
+          document.fonts.add(font);
+        }
+        await document.fonts.load(canvasFont('900', 50), '乙抓记录中文测试');
+        await document.fonts.ready;
+        return true;
+      } catch (error) {
+        console.warn("Export font load failed", error);
+        if (!promptOnFailure) return false;
+        const choice = await showAppFontFallbackPrompt(error && error.message ? error.message : "");
+        if (choice === "browser") {
+          window.open(window.location.href, "_blank");
+          return false;
+        }
+        return choice === true;
       }
-      await document.fonts.load(canvasFont('900', 50), '乙抓记录中文测试');
-      await document.fonts.ready;
     }
 
     function textOf(selector) {
@@ -5824,7 +5869,7 @@
           await downloadTrioCard();
           return;
         }
-        await ensureCanvasFontReady();
+        if (!(await ensureCanvasFontReady())) return;
         await downloadPagedTemplateCards(template);
       } catch (error) {
         console.error(error);
@@ -6439,7 +6484,7 @@
     }
 
     async function createGrid9DomExportBlob() {
-      await ensureCanvasFontReady();
+      if (!(await ensureCanvasFontReady())) return null;
       await waitGrid9ImagesReady();
       const snapshot = await createGrid9ExportSnapshot();
       try {
@@ -6453,7 +6498,7 @@
     }
 
     async function downloadGrid9CardLegacy() {
-      await ensureCanvasFontReady();
+      if (!(await ensureCanvasFontReady())) return;
       try {
         await waitGrid9ImagesReady();
       } catch (imageError) {
@@ -7429,7 +7474,7 @@
     }
 
     async function downloadQuickCard() {
-      await ensureCanvasFontReady();
+      if (!(await ensureCanvasFontReady())) return;
       try {
         await waitQuickImagesReady();
       } catch (imageError) {
@@ -8242,7 +8287,7 @@
     }
 
     async function downloadTrioCard() {
-      await ensureCanvasFontReady();
+      if (!(await ensureCanvasFontReady())) return;
       try {
         await waitTrioImagesReady();
       } catch (imageError) {
@@ -9126,7 +9171,7 @@
     buildGrid9Cells();
     buildQuickCells();
     buildTrioCells();
-    void ensureCanvasFontReady().catch((error) => {
+    void ensureCanvasFontReady(false).catch((error) => {
       console.warn("Template font preload failed; using the active fallback metrics", error);
     }).then(() => restoreState()).then(() => {
       void migrateGrid9CoversToCompact();
