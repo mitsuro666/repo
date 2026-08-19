@@ -2153,6 +2153,8 @@
     }
 
     .full-continuation-title {
+      position: relative;
+      top: -5px;
       height: 66px;
       overflow: hidden;
       display: -webkit-box;
@@ -2169,6 +2171,8 @@
     }
 
     .full-continuation-byline {
+      position: relative;
+      top: 15px;
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: center;
