@@ -10180,7 +10180,12 @@
           if (!previous) { found.set(work.id, work); return; }
           Object.keys(work).forEach(key => { if (work[key] !== "" && (!Array.isArray(work[key]) || work[key].length)) previous[key] = work[key]; });
         };
-        add("single", 0, { rj:state.rjText, title:state.recordTitle, cn:state.cnChoice, cv:state.cvText, circle:state.circleText, time:state.durationText, purchaseDate:state.purchaseDate, listenedDate:state.listenedDate, cardInfoType:state.cardInfoType, originalPrice:state.originalPrice, price:state.currentPrice, currentDiscount:state.currentDiscount, lowestPrice:state.lowestPrice, rating:Array.isArray(state.ratings) ? state.ratings[0] : 0, cvRating:Array.isArray(state.ratings) ? state.ratings[1] : "", storyRating:Array.isArray(state.ratings) ? state.ratings[2] : "", seRating:Array.isArray(state.ratings) ? state.ratings[3] : "", cover:state.coverSrc, coverFit:state.coverFit, review:state.reviewText, keywords:(state.tags || []).join(" / ") });
+        const mergedReviewParts = [
+          state.reviewText,
+          ...(state.continuationPages?.full?.pages || []),
+          ...(state.continuationPages?.compact?.pages || [])
+        ].map(part => String(part || "").replace(/\r\n?/g, "\n")).filter(part => part.trim() !== "");
+        add("single", 0, { rj:state.rjText, title:state.recordTitle, cn:state.cnChoice, cv:state.cvText, circle:state.circleText, time:state.durationText, purchaseDate:state.purchaseDate, listenedDate:state.listenedDate, cardInfoType:state.cardInfoType, originalPrice:state.originalPrice, price:state.currentPrice, currentDiscount:state.currentDiscount, lowestPrice:state.lowestPrice, rating:Array.isArray(state.ratings) ? state.ratings[0] : 0, cvRating:Array.isArray(state.ratings) ? state.ratings[1] : "", storyRating:Array.isArray(state.ratings) ? state.ratings[2] : "", seRating:Array.isArray(state.ratings) ? state.ratings[3] : "", cover:state.coverSrc, coverFit:state.coverFit, review:mergedReviewParts.join("\n"), keywords:(state.tags || []).join(" / ") });
         (state.grid9?.cells || []).slice(0,9).forEach((cell,index) => add("grid9", index, { rj:cell.rj, cover:cell.cover, coverFit:cell.fit, review:cell.review }));
         (state.quick?.cells || []).slice(0,12).forEach((cell,index) => add("quick", index, { rj:cell.rj, cv:cell.cv, cover:cell.cover, coverFit:cell.coverFit, review:cell.review }));
         (state.trio?.cells || []).slice(0,3).forEach((cell,index) => add("trio", index, { rj:cell.rj, price:cell.price, rating:cell.rating, cover:cell.cover, coverFit:cell.coverFit, review:cell.repo }));
