@@ -5512,9 +5512,10 @@
 
     async function renderCompactHomeCanvas() {
       const canvas = document.createElement("canvas");
-      canvas.width = 600;
-      canvas.height = 800;
+      canvas.width = 1080;
+      canvas.height = 1440;
       const ctx = canvas.getContext("2d");
+      ctx.scale(1.8, 1.8);
 
       const theme = currentCardTheme();
       const bg = ctx.createLinearGradient(0, 0, 600, 800);
@@ -5789,9 +5790,10 @@
 
     async function renderCompactContinuationCanvas(pageText, pageIndex, pageTotal) {
       const canvas = document.createElement("canvas");
-      canvas.width = 600;
-      canvas.height = 800;
+      canvas.width = 1080;
+      canvas.height = 1440;
       const ctx = canvas.getContext("2d");
+      ctx.scale(1.8, 1.8);
       const theme = currentCardTheme();
       drawTemplateCanvasBackground(ctx, 600, 800, true);
       ctx.fillStyle = theme.muted;
