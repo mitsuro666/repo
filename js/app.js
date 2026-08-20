@@ -18,6 +18,7 @@
     const collectionMobileRjImportButton = document.getElementById("collectionMobileRjImportButton");
     const collectionMobileImportButton = document.getElementById("collectionMobileImportButton");
     const collectionMobileExportButton = document.getElementById("collectionMobileExportButton");
+    const collectionMobileBatchAddButton = document.getElementById("collectionMobileBatchAddButton");
     const standaloneImageInput = document.getElementById("standaloneImageInput");
     const standaloneImageUploadButton = document.getElementById("standaloneImageUploadButton");
     const imageToolEmpty = document.getElementById("imageToolEmpty");
@@ -264,6 +265,13 @@
     const STATE_DB_VERSION = 1;
     const STATE_DB_STORE = "state";
     const STATE_DB_KEY = "current";
+    const IMAGE_DB_NAME = "otome-record-card-images-v1";
+    const IMAGE_DB_VERSION = 1;
+    const IMAGE_DB_STORE = "images";
+    const STATE_IMAGE_REFERENCE_PREFIX = "idb-image-v1:";
+    const SINGLE_COVER_MAX_SIDE = 1200;
+    const COVER_JPEG_QUALITY = 0.85;
+    const AUTO_SAVE_FAILURE_SESSION_KEY = "otome-record-card-auto-save-failure-warned-v1";
     const MENU_STORAGE_KEY = "otome-record-card-active-menu";
     const MAIN_PAGE_STORAGE_KEY = "otome-record-card-main-page";
     const COMPACT_CONTINUATION_STORAGE_KEY = "otome-record-card-compact-continuation-v1";
@@ -378,6 +386,9 @@
     let stateRestoreComplete = false;
     let stateUsesIndexedDb = localStorage.getItem(STATE_STORAGE_MODE_KEY) === STATE_STORAGE_MODE_INDEXED_DB;
     let stateSaveQueue = Promise.resolve(true);
+    const storedImageReferenceByDataUrl = new Map();
+    const storedImageDataUrlByReference = new Map();
+    let storedImageRestoreWarned = false;
     const CARD_THEMES = {
       "matcha-berry-cheese": {
         id: "matcha-berry-cheese",
@@ -713,7 +724,13 @@
     const UI_IMPORT_DATA_FAILED = String.fromCharCode(0x5bfc, 0x5165, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x786e, 0x8ba4, 0x6587, 0x4ef6, 0x662f, 0x672c, 0x9879, 0x76ee, 0x5bfc, 0x51fa, 0x7684, 0x20, 0x4a, 0x53, 0x4f, 0x4e, 0x3002);
     const UI_RESET_CONFIRM = String.fromCharCode(0x786e, 0x5b9a, 0x8981, 0x6e05, 0x7a7a, 0x5f53, 0x524d, 0x586b, 0x5199, 0x7684, 0x5168, 0x90e8, 0x5185, 0x5bb9, 0x5417, 0xff1f, 0x8fd9, 0x4e2a, 0x64cd, 0x4f5c, 0x4e0d, 0x80fd, 0x64a4, 0x9500, 0x3002);
     const UI_DELETE_CONTINUATION_CONFIRM = String.fromCharCode(0x786e, 0x5b9a, 0x5220, 0x9664, 0x5f53, 0x524d, 0x7eed, 0x9875, 0x5417, 0xff1f, 0x5220, 0x9664, 0x540e, 0x65e0, 0x6cd5, 0x6062, 0x590d, 0x3002);
-    const UI_STORAGE_FULL = String.fromCharCode(0x672c, 0x5730, 0x5b58, 0x50a8, 0x7a7a, 0x95f4, 0x4e0d, 0x8db3, 0xff0c, 0x5185, 0x5bb9, 0x53ef, 0x80fd, 0x65e0, 0x6cd5, 0x5b8c, 0x6574, 0x4fdd, 0x5b58, 0xff0c, 0x8bf7, 0x5c1d, 0x8bd5, 0x538b, 0x7f29, 0x56fe, 0x7247, 0x6216, 0x5bfc, 0x51fa, 0x5907, 0x4efd, 0x3002);
+    const UI_AUTO_SAVE_FAILURE_TITLE = String.fromCharCode(0x81ea, 0x52a8, 0x4fdd, 0x5b58, 0x672a, 0x5b8c, 0x6210);
+    const UI_AUTO_SAVE_QUOTA_REASON = String.fromCharCode(0x672c, 0x5730, 0x5b58, 0x50a8, 0x7a7a, 0x95f4, 0x4e0d, 0x8db3, 0x3002);
+    const UI_AUTO_SAVE_UNAVAILABLE_REASON = String.fromCharCode(0x6d4f, 0x89c8, 0x5668, 0x672c, 0x5730, 0x5b58, 0x50a8, 0x4e0d, 0x53ef, 0x7528, 0x3002);
+    const UI_AUTO_SAVE_RISK = String.fromCharCode(0x5f53, 0x524d, 0x9875, 0x9762, 0x5185, 0x5bb9, 0x4ecd, 0x53ef, 0x7ee7, 0x7eed, 0x7f16, 0x8f91, 0xff0c, 0x4f46, 0x5237, 0x65b0, 0x6216, 0x5173, 0x95ed, 0x9875, 0x9762, 0x540e, 0xff0c, 0x672c, 0x6b21, 0x4fee, 0x6539, 0x53ef, 0x80fd, 0x65e0, 0x6cd5, 0x6062, 0x590d, 0x3002, 0x5efa, 0x8bae, 0x5148, 0x5bfc, 0x51fa, 0x5907, 0x4efd, 0x3002);
+    const UI_AUTO_SAVE_ERROR_PREFIX = String.fromCharCode(0x539f, 0x56e0, 0xff1a);
+    const UI_EXPORT_BACKUP = String.fromCharCode(0x5bfc, 0x51fa, 0x5907, 0x4efd);
+    const UI_DEFER_ACTION = String.fromCharCode(0x6682, 0x4e0d, 0x5904, 0x7406);
     const UI_DIALOG_NOTICE = String.fromCharCode(0x5c0f, 0x63d0, 0x793a);
     const UI_DIALOG_CONFIRM = String.fromCharCode(0x8bf7, 0x786e, 0x8ba4);
     const UI_DIALOG_CANCEL = String.fromCharCode(0x53d6, 0x6d88);
@@ -768,7 +785,7 @@
       appDialogTitle.textContent = title || (confirmMode ? UI_DIALOG_CONFIRM : UI_DIALOG_NOTICE);
       appDialogMessage.textContent = String(message || "");
       appDialogScrollHint.hidden = !isUpdateNotice;
-      appDialogCancelButton.textContent = UI_DIALOG_CANCEL;
+      appDialogCancelButton.textContent = options && options.cancelLabel ? options.cancelLabel : UI_DIALOG_CANCEL;
       appDialogConfirmButton.textContent = options && options.confirmLabel ? options.confirmLabel : (confirmMode ? UI_DIALOG_OK : UI_DIALOG_GOT_IT);
       appDialogLinkButton.hidden = !linkLabel;
       appDialogLinkButton.textContent = linkLabel;
@@ -814,8 +831,8 @@
       });
     }
 
-    function queueAppDialog(message, confirmMode, title = "") {
-      const result = appDialogQueue.then(() => openAppDialog(message, confirmMode, title));
+    function queueAppDialog(message, confirmMode, title = "", options = null) {
+      const result = appDialogQueue.then(() => openAppDialog(message, confirmMode, title, options));
       appDialogQueue = result.catch(() => false);
       return result;
     }
@@ -826,6 +843,45 @@
 
     function showAppConfirm(message) {
       return queueAppDialog(message, true);
+    }
+
+    function autoSaveFailureWasWarnedThisSession() {
+      if (storageFullWarned) return true;
+      try {
+        if (sessionStorage.getItem(AUTO_SAVE_FAILURE_SESSION_KEY) === "1") {
+          storageFullWarned = true;
+          return true;
+        }
+      } catch (error) {
+        console.warn("Auto-save warning session check failed", error);
+      }
+      return false;
+    }
+
+    function markAutoSaveFailureWarnedThisSession() {
+      storageFullWarned = true;
+      try {
+        sessionStorage.setItem(AUTO_SAVE_FAILURE_SESSION_KEY, "1");
+      } catch (error) {
+        console.warn("Auto-save warning session marker failed", error);
+      }
+    }
+
+    function showAutoSaveFailure(error) {
+      if (autoSaveFailureWasWarnedThisSession()) return;
+      markAutoSaveFailureWarnedThisSession();
+      const reason = isStorageQuotaError(error) ? UI_AUTO_SAVE_QUOTA_REASON : UI_AUTO_SAVE_UNAVAILABLE_REASON;
+      const detail = error && (error.name || error.message)
+        ? Array.from(new Set([error.name, error.message].filter(Boolean))).join(": ")
+        : "";
+      const message = reason + "\n\n" + UI_AUTO_SAVE_RISK
+        + (detail ? "\n\n" + UI_AUTO_SAVE_ERROR_PREFIX + detail : "");
+      void queueAppDialog(message, true, UI_AUTO_SAVE_FAILURE_TITLE, {
+        confirmLabel: UI_EXPORT_BACKUP,
+        cancelLabel: UI_DEFER_ACTION
+      }).then((shouldExport) => {
+        if (shouldExport) exportRecordData();
+      });
     }
 
     function showAppFontFallbackPrompt(errorMessage) {
@@ -2510,6 +2566,7 @@
         title: firstText(product.work_name, product.title, product.name, product.work?.work_name),
         cv: firstText(findVoiceText(creators), findVoiceText(product), creatorText(creators, "voice_by"), product.voice_by, product.voice),
         circle: firstText(product.maker_name, product.circle, product.maker?.name, product.brand?.name),
+        releaseDate: normalizeCardDateValue(firstText(product.regist_date, product.release_date, product.sales_date)),
         originalPrice: originalPriceText,
         currentPrice: currentPriceText,
         currentDiscount: currentDiscountText,
@@ -2605,14 +2662,28 @@
       if (!product) return "";
       const responseWorkno = normalizeWorkno(firstText(product.productId, product.product_id, product.workno, product.id));
       if (responseWorkno && responseWorkno !== normalizeWorkno(workno)) return "";
-      const lowest = product.lowestPrice || product.lowest_price || product.lowest;
-      const discount = numericText(
-        lowest?.priceInfo?.discountRate,
-        lowest?.price_info?.discount_rate,
-        lowest?.discountRate,
-        lowest?.discount_rate
-      );
-      return discount !== "" && Number(discount) <= 100 ? discount : "";
+      const numberValue = (...values) => {
+        const value = values.find(item => item != null && String(item).trim() !== "");
+        if (value == null) return NaN;
+        const match = String(value).replace(/,/g, "").match(/-?\d+(?:\.\d+)?/);
+        return match ? Number(match[0]) : NaN;
+      };
+      const candidates = [
+        product.lowestPrice || product.lowest_price || product.lowest,
+        product.latestDiscountPrice || product.latest_discount_price || product.latestDiscount
+      ].filter(Boolean).map(entry => {
+        const priceInfo = entry.priceInfo || entry.price_info || entry;
+        return {
+          price: numberValue(priceInfo.price, priceInfo.salesPrice, priceInfo.sales_price, entry.price),
+          discount: numberValue(priceInfo.discountRate, priceInfo.discount_rate, entry.discountRate, entry.discount_rate)
+        };
+      }).filter(entry => Number.isFinite(entry.discount) && entry.discount >= 0 && entry.discount <= 100);
+      if (!candidates.length) return "";
+      candidates.sort((left, right) => {
+        if (Number.isFinite(left.price) && Number.isFinite(right.price) && left.price !== right.price) return left.price - right.price;
+        return right.discount - left.discount;
+      });
+      return String(Math.round(candidates[0].discount));
     }
 
     async function fetchDlwatcherLowestDiscount(workno) {
@@ -2677,6 +2748,143 @@
         reader.onerror = () => reject(reader.error || new Error("FileReader failed"));
         reader.readAsDataURL(blob);
       });
+    }
+
+    function dataUrlToBlob(dataUrl) {
+      const match = String(dataUrl || "").match(/^data:([^;,]+)?(;base64)?,(.*)$/s);
+      if (!match) throw new Error("Invalid image data URL");
+      const mimeType = match[1] || "application/octet-stream";
+      const binary = match[2] ? atob(match[3]) : decodeURIComponent(match[3]);
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+      return new Blob([bytes], { type: mimeType });
+    }
+
+    function nextStoredImageReference() {
+      const id = window.crypto?.randomUUID
+        ? window.crypto.randomUUID()
+        : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+      return STATE_IMAGE_REFERENCE_PREFIX + id;
+    }
+
+    function openImageDatabase() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) {
+          reject(new Error("IndexedDB is unavailable"));
+          return;
+        }
+        const request = indexedDB.open(IMAGE_DB_NAME, IMAGE_DB_VERSION);
+        request.onupgradeneeded = () => {
+          const db = request.result;
+          if (!db.objectStoreNames.contains(IMAGE_DB_STORE)) db.createObjectStore(IMAGE_DB_STORE);
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error("Image database open failed"));
+        request.onblocked = () => reject(new Error("Image database open blocked"));
+      });
+    }
+
+    async function writeStoredImageBlob(reference, blob) {
+      const db = await openImageDatabase();
+      try {
+        await new Promise((resolve, reject) => {
+          const transaction = db.transaction(IMAGE_DB_STORE, "readwrite");
+          transaction.objectStore(IMAGE_DB_STORE).put(blob, reference);
+          transaction.oncomplete = () => resolve();
+          transaction.onerror = () => reject(transaction.error || new Error("Image blob write failed"));
+          transaction.onabort = () => reject(transaction.error || new Error("Image blob write aborted"));
+        });
+      } finally {
+        db.close();
+      }
+    }
+
+    async function readStoredImageBlob(reference) {
+      const db = await openImageDatabase();
+      try {
+        return await new Promise((resolve, reject) => {
+          const transaction = db.transaction(IMAGE_DB_STORE, "readonly");
+          const request = transaction.objectStore(IMAGE_DB_STORE).get(reference);
+          request.onsuccess = () => resolve(request.result || null);
+          request.onerror = () => reject(request.error || new Error("Image blob read failed"));
+        });
+      } finally {
+        db.close();
+      }
+    }
+
+    async function registerNewStoredImage(dataUrl) {
+      if (!String(dataUrl || "").startsWith("data:image/")) return dataUrl;
+      if (storedImageReferenceByDataUrl.has(dataUrl)) return dataUrl;
+      try {
+        const reference = nextStoredImageReference();
+        await writeStoredImageBlob(reference, dataUrlToBlob(dataUrl));
+        storedImageReferenceByDataUrl.set(dataUrl, reference);
+        storedImageDataUrlByReference.set(reference, dataUrl);
+      } catch (error) {
+        console.warn("Image blob storage unavailable, keeping inline image", error);
+      }
+      return dataUrl;
+    }
+
+    function storedImageReference(value) {
+      return storedImageReferenceByDataUrl.get(value) || value || "";
+    }
+
+    async function resolveStoredImageReference(value) {
+      if (!String(value || "").startsWith(STATE_IMAGE_REFERENCE_PREFIX)) return value || "";
+      if (storedImageDataUrlByReference.has(value)) return storedImageDataUrlByReference.get(value);
+      const blob = await readStoredImageBlob(value);
+      if (!blob) throw new Error("Stored image is missing: " + value);
+      const dataUrl = await blobToDataUrl(blob);
+      storedImageDataUrlByReference.set(value, dataUrl);
+      storedImageReferenceByDataUrl.set(dataUrl, value);
+      return dataUrl;
+    }
+
+    async function resolveStoredImageReferenceSafely(value) {
+      try {
+        return await resolveStoredImageReference(value);
+      } catch (error) {
+        console.warn("Stored image restore failed", error);
+        if (!storedImageRestoreWarned) {
+          storedImageRestoreWarned = true;
+          const detail = error && (error.name || error.message)
+            ? "\n" + [error.name, error.message].filter(Boolean).join(": ")
+            : "";
+          showAppAlert(String.fromCharCode(0x56fe, 0x7247, 0x8bfb, 0x53d6, 0x5931, 0x8d25, 0xff1a) + detail);
+        }
+        return "";
+      }
+    }
+
+    function canvasHasTransparency(ctx, width, height) {
+      const pixels = ctx.getImageData(0, 0, width, height).data;
+      for (let index = 3; index < pixels.length; index += 4) {
+        if (pixels[index] < 255) return true;
+      }
+      return false;
+    }
+
+    async function singleCoverStorageDataUrl(dataUrl) {
+      if (!dataUrl) return "";
+      const image = await loadImage(dataUrl);
+      const width = image.naturalWidth || image.width || 1;
+      const height = image.naturalHeight || image.height || 1;
+      const scale = Math.min(1, SINGLE_COVER_MAX_SIDE / Math.max(width, height));
+      const outWidth = Math.max(1, Math.round(width * scale));
+      const outHeight = Math.max(1, Math.round(height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = outWidth;
+      canvas.height = outHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, outWidth, outHeight);
+      ctx.drawImage(image, 0, 0, outWidth, outHeight);
+      const output = canvasHasTransparency(ctx, outWidth, outHeight)
+        ? canvas.toDataURL("image/png")
+        : canvas.toDataURL("image/jpeg", COVER_JPEG_QUALITY);
+      await registerNewStoredImage(output);
+      return output;
     }
 
     async function importCoverFromUrl(url) {
@@ -3162,11 +3370,23 @@
       };
     }
 
+    function editorHistoryLimit() {
+      if (imageEditorMode === "standalone") return 24;
+      if (imageEditorMode === "collection-detail") return 3;
+      return 6;
+    }
+
+    function persistedEditorHistoryLimit() {
+      if (imageEditorMode === "standalone") return 12;
+      if (imageEditorMode === "collection-detail") return 3;
+      return 6;
+    }
+
     function snapshotEditorMasks(clearRedo = true) {
       const snapshot = currentEditorSnapshot();
       if (!snapshot) return;
       editorUndoStack.push(snapshot);
-      if (editorUndoStack.length > 24) editorUndoStack.shift();
+      if (editorUndoStack.length > editorHistoryLimit()) editorUndoStack.shift();
       if (clearRedo) editorRedoStack = [];
     }
 
@@ -3187,7 +3407,7 @@
       if (!previous) return;
       const current = currentEditorSnapshot();
       if (current) editorRedoStack.push(current);
-      if (editorRedoStack.length > 24) editorRedoStack.shift();
+      if (editorRedoStack.length > editorHistoryLimit()) editorRedoStack.shift();
       restoreEditorSnapshot(previous);
       saveEditorProject();
       saveState();
@@ -3198,7 +3418,7 @@
       if (!next) return;
       const current = currentEditorSnapshot();
       if (current) editorUndoStack.push(current);
-      if (editorUndoStack.length > 24) editorUndoStack.shift();
+      if (editorUndoStack.length > editorHistoryLimit()) editorUndoStack.shift();
       restoreEditorSnapshot(next);
       saveEditorProject();
       saveState();
@@ -3239,7 +3459,7 @@
 
     async function restoreEditorStack(items, width, height) {
       const restored = [];
-      for (const item of (Array.isArray(items) ? items.slice(-12) : [])) {
+      for (const item of (Array.isArray(items) ? items.slice(-persistedEditorHistoryLimit()) : [])) {
         const mosaic = await dataUrlToImageData(item?.mosaic, width, height);
         const blur = await dataUrlToImageData(item?.blur, width, height);
         const whiteFog = await dataUrlToImageData(item?.whiteFog, width, height) || editWhiteFogMaskCtx.createImageData(width, height);
@@ -3258,8 +3478,9 @@
       coverMosaicMaskSrc = editMosaicMaskCanvas.toDataURL("image/png");
       coverBlurMaskSrc = editBlurMaskCanvas.toDataURL("image/png");
       coverWhiteFogMaskSrc = editWhiteFogMaskCanvas.toDataURL("image/png");
-      coverEditorUndoStack = editorUndoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-12);
-      coverEditorRedoStack = editorRedoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-12);
+      const historyLimit = persistedEditorHistoryLimit();
+      coverEditorUndoStack = editorUndoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-historyLimit);
+      coverEditorRedoStack = editorRedoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-historyLimit);
       coverStickers = cloneStickerList(coverStickers);
       if (imageEditorMode === "standalone") syncStandaloneFromEditorGlobals();
     }
@@ -4071,7 +4292,7 @@
               const nextEditedSrc = await updateEditedCoverFromEditor();
               if (!nextEditedSrc) throw new Error("Edited cover is empty");
               const fit = document.getElementById("collectionDetailArt")?.dataset.coverFit || "contain";
-              setCollectionDetailCover(await grid9CoverStorageDataUrl(nextEditedSrc), fit);
+              setCollectionDetailCover(await grid9CoverStorageDataUrl(nextEditedSrc, true), fit);
             } else {
               restoreEditorSessionSnapshot();
             }
@@ -4102,7 +4323,7 @@
             if (apply) {
               const nextEditedSrc = await updateEditedCoverFromEditor();
               if (!nextEditedSrc) throw new Error("Edited cover is empty");
-              applyGrid9Cover(activeGrid9Index, await grid9CoverStorageDataUrl(nextEditedSrc));
+              applyGrid9Cover(activeGrid9Index, await grid9CoverStorageDataUrl(nextEditedSrc, true));
               saveState();
               requestAnimationFrame(() => fitStage());
             } else {
@@ -4137,7 +4358,7 @@
             if (apply) {
               const nextEditedSrc = await updateEditedCoverFromEditor();
               if (!nextEditedSrc) throw new Error("Edited cover is empty");
-              applyQuickCover(activeQuickIndex, await grid9CoverStorageDataUrl(nextEditedSrc));
+              applyQuickCover(activeQuickIndex, await grid9CoverStorageDataUrl(nextEditedSrc, true));
               saveState();
               requestAnimationFrame(() => fitStage());
             } else {
@@ -4172,7 +4393,7 @@
             if (apply) {
               const nextEditedSrc = await updateEditedCoverFromEditor();
               if (!nextEditedSrc) throw new Error("Edited cover is empty");
-              applyTrioCover(activeTrioIndex, await grid9CoverStorageDataUrl(nextEditedSrc));
+              applyTrioCover(activeTrioIndex, await grid9CoverStorageDataUrl(nextEditedSrc, true));
               saveState();
               requestAnimationFrame(() => fitStage());
             } else {
@@ -4204,10 +4425,13 @@
       try {
         if (editorImage) {
           if (apply) {
-            const nextEditedSrc = await updateEditedCoverFromEditor();
-            if (!nextEditedSrc) throw new Error("Edited cover is empty");
-            coverOriginalSrc = editorSourceSrc;
-            coverEditedSrc = nextEditedSrc;
+            const renderedEditedSrc = await updateEditedCoverFromEditor();
+            if (!renderedEditedSrc) throw new Error("Edited cover is empty");
+            const previousOriginalSrc = editorSessionSnapshot?.coverOriginalSrc || "";
+            coverOriginalSrc = storedImageReferenceByDataUrl.has(previousOriginalSrc)
+              ? previousOriginalSrc
+              : await singleCoverStorageDataUrl(editorSourceSrc);
+            coverEditedSrc = await singleCoverStorageDataUrl(renderedEditedSrc);
             coverImage.removeAttribute("src");
             coverImage.setAttribute("src", coverEditedSrc);
             coverImage.src = coverEditedSrc;
@@ -4277,8 +4501,46 @@
       if (valueNode) valueNode.textContent = String(numeric);
     }
 
+    function serializeStateImageReferences(state) {
+      const next = {
+        ...state,
+        coverSrc: storedImageReference(state.coverSrc),
+        coverOriginalSrc: storedImageReference(state.coverOriginalSrc),
+        coverEditedSrc: storedImageReference(state.coverEditedSrc)
+      };
+      ["grid9", "quick", "trio"].forEach((sectionName) => {
+        const section = state[sectionName];
+        if (!section || !Array.isArray(section.cells)) return;
+        next[sectionName] = {
+          ...section,
+          cells: section.cells.map((cell) => ({ ...cell, cover: storedImageReference(cell?.cover) }))
+        };
+      });
+      return next;
+    }
+
+    async function hydrateStateImageReferences(state) {
+      if (!state || typeof state !== "object") return state;
+      for (const field of ["coverSrc", "coverOriginalSrc", "coverEditedSrc"]) {
+        state[field] = await resolveStoredImageReferenceSafely(state[field]);
+      }
+      const tasks = [];
+      ["grid9", "quick", "trio"].forEach((sectionName) => {
+        const cells = state[sectionName]?.cells;
+        if (!Array.isArray(cells)) return;
+        cells.forEach((cell) => {
+          tasks.push(resolveStoredImageReferenceSafely(cell?.cover).then((src) => { cell.cover = src; }));
+        });
+      });
+      await Promise.all(tasks);
+      return state;
+    }
+
     function collectState() {
       const templateEditorState = templateEditorGlobalsBackup || editorGlobals();
+      const originalCoverSrc = templateEditorState.coverOriginalSrc || "";
+      const editedCoverSrc = templateEditorState.coverEditedSrc || "";
+      const activeCoverSrc = templateEditorState.coverSrc || coverImage.getAttribute("src") || "";
       return {
         template: currentTemplate(),
         theme: currentThemeId,
@@ -4300,9 +4562,9 @@
         ratings: currentRatings(),
         tags: Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean),
         reviewText: currentTemplate() === "full" ? limitedFullReviewText(reviewText.value) : reviewText.value,
-        coverSrc: templateEditorState.coverSrc || coverImage.getAttribute("src") || "",
-        coverOriginalSrc: templateEditorState.coverOriginalSrc || "",
-        coverEditedSrc: templateEditorState.coverEditedSrc || "",
+        coverSrc: activeCoverSrc === originalCoverSrc || activeCoverSrc === editedCoverSrc ? "" : activeCoverSrc,
+        coverOriginalSrc: originalCoverSrc,
+        coverEditedSrc: editedCoverSrc,
         coverMosaicMaskSrc: templateEditorState.coverMosaicMaskSrc || "",
         coverBlurMaskSrc: templateEditorState.coverBlurMaskSrc || "",
         coverWhiteFogMaskSrc: templateEditorState.coverWhiteFogMaskSrc || "",
@@ -4388,33 +4650,32 @@
     }
 
     async function persistState(state) {
+      const storedState = serializeStateImageReferences(state);
       if (stateUsesIndexedDb) {
         try {
-          await writeStateToIndexedDb(state);
+          await writeStateToIndexedDb(storedState);
           return true;
         } catch (error) {
           console.warn("IndexedDB state save failed", error);
-          if (!storageFullWarned) {
-            storageFullWarned = true;
-            showAppAlert(UI_STORAGE_FULL);
-          }
+          showAutoSaveFailure(error);
           return false;
         }
       }
 
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(storedState));
         return true;
       } catch (error) {
         if (!isStorageQuotaError(error)) {
           console.warn("save failed", error);
+          showAutoSaveFailure(error);
           return false;
         }
         console.warn("Local storage quota exceeded, switching state storage to IndexedDB", error);
       }
 
       try {
-        await writeStateToIndexedDb(state);
+        await writeStateToIndexedDb(storedState);
         stateUsesIndexedDb = true;
         localStorage.removeItem(STORAGE_KEY);
         try {
@@ -4425,10 +4686,7 @@
         return true;
       } catch (error) {
         console.warn("IndexedDB fallback save failed", error);
-        if (!storageFullWarned) {
-          storageFullWarned = true;
-          showAppAlert(UI_STORAGE_FULL);
-        }
+        showAutoSaveFailure(error);
         return false;
       }
     }
@@ -4550,6 +4808,7 @@
           compact: compactContinuationSnapshot
         };
       }
+      if (state && typeof state === "object") await hydrateStateImageReferences(state);
       if (!applyState(state, false)) applyCardTheme(DEFAULT_THEME_ID, false);
       stateRestoreComplete = true;
     }
@@ -4583,10 +4842,10 @@
     }
 
     async function setCoverFromDataUrl(dataUrl) {
-      const pngDataUrl = await rasterizeImageToPngDataUrl(dataUrl);
+      const storedDataUrl = await singleCoverStorageDataUrl(dataUrl);
       resetCoverImageState();
-      coverOriginalSrc = pngDataUrl;
-      coverImage.src = pngDataUrl;
+      coverOriginalSrc = storedDataUrl;
+      coverImage.src = storedDataUrl;
       coverImage.style.filter = "";
       coverBox.classList.add("has-image");
       saveState();
@@ -6154,10 +6413,13 @@
       await Promise.all(pending);
     }
 
-    async function grid9CoverStorageDataUrl(dataUrl) {
+    async function grid9CoverStorageDataUrl(dataUrl, storeAsBlob = false) {
       if (!dataUrl) return dataUrl;
       const img = await loadImage(dataUrl).catch(() => null);
-      if (!img || !img.naturalWidth || !img.naturalHeight) return dataUrl;
+      if (!img || !img.naturalWidth || !img.naturalHeight) {
+        if (storeAsBlob) await registerNewStoredImage(dataUrl);
+        return dataUrl;
+      }
       const width = img.naturalWidth;
       const height = img.naturalHeight;
       const scale = Math.min(1, 480 / Math.max(width, height));
@@ -6170,7 +6432,9 @@
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, outWidth, outHeight);
       ctx.drawImage(img, 0, 0, outWidth, outHeight);
-      return canvas.toDataURL("image/jpeg", 0.85);
+      const output = canvas.toDataURL("image/jpeg", COVER_JPEG_QUALITY);
+      if (storeAsBlob) await registerNewStoredImage(output);
+      return output;
     }
 
     async function migrateGrid9CoversToCompact() {
@@ -6313,7 +6577,7 @@
             const product = parseDlsiteProduct(await fetchProductJson(job.rj));
             const coverUrl = product && product.coverUrl;
             if (!coverUrl) throw new Error("no cover url");
-            const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(coverUrl));
+            const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(coverUrl), true);
             applyGrid9Cover(job.index, pngDataUrl);
             const rjInput = grid9CellEditors[job.index].querySelector(".grid9-cell-rj-input");
             rjInput.value = job.rj;
@@ -7046,7 +7310,7 @@
       const reader = new FileReader();
       reader.onload = async () => {
         try {
-          const pngDataUrl = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result));
+          const pngDataUrl = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result), true);
           setGrid9Cover(index, pngDataUrl);
         } catch (error) {
           console.error("Grid9 cover normalize failed", error);
@@ -7210,7 +7474,7 @@
           const reader = new FileReader();
           reader.onload = async () => {
             try {
-              const pngDataUrl = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result));
+              const pngDataUrl = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result), true);
               setQuickCover(index, pngDataUrl);
             } catch (error) {
               console.error("Quick cover normalize failed", error);
@@ -7444,7 +7708,7 @@
             if (job.importCover) {
               if (product.coverUrl) {
                 try {
-                  const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl));
+                  const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true);
                   applyQuickCover(job.index, pngDataUrl);
                   importedField = true;
                 } catch (error) {
@@ -7901,7 +8165,7 @@
           const reader = new FileReader();
           reader.onload = async () => {
             try {
-              const pngDataUrl = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result));
+              const pngDataUrl = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result), true);
               setTrioCover(index, pngDataUrl);
             } catch (error) {
               console.error("Trio cover normalize failed", error);
@@ -8153,7 +8417,7 @@
             if (job.importCover) {
               if (product.coverUrl) {
                 try {
-                  const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl));
+                  const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true);
                   applyTrioCover(job.index, pngDataUrl);
                   importedField = true;
                 } catch (error) {
@@ -9065,7 +9329,8 @@
       [collectionMobileNewRecordButton, "collectionNewRecordButton"],
       [collectionMobileRjImportButton, "collectionRjImportButton"],
       [collectionMobileImportButton, "collectionImportButton"],
-      [collectionMobileExportButton, "collectionExportButton"]
+      [collectionMobileExportButton, "collectionExportButton"],
+      [collectionMobileBatchAddButton, "collectionBatchAddButton"]
     ].forEach(([button, targetId]) => {
       button?.addEventListener("click", () => {
         closeCollectionMobileDataMenu();
@@ -9245,6 +9510,15 @@
       const collectionRjImportFill = document.getElementById("collectionRjImportFill");
       const collectionRjImportOverwrite = document.getElementById("collectionRjImportOverwrite");
       const collectionRjImportDone = document.getElementById("collectionRjImportDone");
+      const collectionBatchAddPrompt = document.getElementById("collectionBatchAddPrompt");
+      const collectionBatchAddTitle = document.getElementById("collectionBatchAddTitle");
+      const collectionBatchAddForm = document.getElementById("collectionBatchAddForm");
+      const collectionBatchAddInput = document.getElementById("collectionBatchAddInput");
+      const collectionBatchAddStatus = document.getElementById("collectionBatchAddStatus");
+      const collectionBatchAddResult = document.getElementById("collectionBatchAddResult");
+      const collectionBatchAddCancel = document.getElementById("collectionBatchAddCancel");
+      const collectionBatchAddStart = document.getElementById("collectionBatchAddStart");
+      const collectionBatchAddDone = document.getElementById("collectionBatchAddDone");
       const collectionMobileTagSelect = document.getElementById("collectionMobileTagSelect");
       const collectionManageTagsButton = document.getElementById("collectionManageTagsButton");
       const collectionTagManageModal = document.getElementById("collectionTagManageModal");
@@ -9256,6 +9530,16 @@
       const collectionMobileListBtn = document.getElementById("collectionMobileListBtn");
       const collectionSort = document.getElementById("collectionSort");
       const collectionMobileSort = document.getElementById("collectionMobileSort");
+      const collectionDetailMobileMenuButton = document.getElementById("collectionDetailMobileMenuButton");
+      const collectionDetailMobileDropdown = document.getElementById("collectionDetailMobileDropdown");
+      const collectionDetailMobileImportButton = document.getElementById("collectionDetailMobileImportButton");
+      const collectionDetailMobileMakeRepoButton = document.getElementById("collectionDetailMobileMakeRepoButton");
+      const collectionPageNumbers = document.getElementById("collectionPageNumbers");
+      const collectionPageJump = document.getElementById("collectionPageJump");
+      const collectionPageJumpInput = document.getElementById("collectionPageJumpInput");
+      const collectionSearchInput = document.getElementById("collectionSearch");
+      const collectionSearchDesktopPlaceholder = collectionSearchInput.placeholder;
+      const collectionMobileLayoutMedia = window.matchMedia("(max-width: 780px)");
       document.getElementById("collectionDetailTitle").dataset.placeholder = String.fromCharCode(0x6807, 0x9898);
       const COLLECTION_TAGS_KEY = "otome-record-card-collection-tags-v1";
       const COLLECTION_REMOVED_TAGS_KEY = "otome-record-card-collection-removed-tags-v1";
@@ -9289,7 +9573,7 @@
         return `<div class="collection-mobile-tags">${names.map(name => `<i class="collection-tag-mini" data-mobile-tag-chip>${escapeCollectionText(name)}</i>`).join("")}<i class="collection-tag-mini collection-tag-overflow" data-mobile-tag-overflow hidden></i></div>`;
       }
       function fitCollectionMobileTags() {
-        if (!window.matchMedia("(max-width: 780px)").matches) return;
+        if (!collectionMobileLayoutMedia.matches) return;
         grid.querySelectorAll(".collection-mobile-tags").forEach(wrap => {
           const chips = Array.from(wrap.querySelectorAll("[data-mobile-tag-chip]"));
           const overflow = wrap.querySelector("[data-mobile-tag-overflow]");
@@ -9314,7 +9598,7 @@
             const nextVisibleWidth = visibleWidth + (index > 0 ? gap : 0) + chipWidths[index];
             const nextHiddenCount = chips.length - index - 1;
             if (nextHiddenCount <= 0) {
-              visibleCount = chips.length;
+              if (nextVisibleWidth <= available) visibleCount = chips.length;
               break;
             }
             overflow.textContent = "+" + nextHiddenCount;
@@ -9329,6 +9613,42 @@
           overflow.hidden = hiddenCount <= 0;
         });
       }
+      let collectionTagFitFrame = 0;
+      function scheduleCollectionMobileTagFit() {
+        window.cancelAnimationFrame(collectionTagFitFrame);
+        collectionTagFitFrame = window.requestAnimationFrame(fitCollectionMobileTags);
+      }
+      function syncCollectionSearchPlaceholder() {
+        collectionSearchInput.placeholder = collectionMobileLayoutMedia.matches
+          ? String.fromCharCode(0x641c, 0x7d22)
+          : collectionSearchDesktopPlaceholder;
+        scheduleCollectionMobileTagFit();
+      }
+      collectionMobileLayoutMedia.addEventListener?.("change", syncCollectionSearchPlaceholder);
+      window.addEventListener("resize", scheduleCollectionMobileTagFit);
+      document.fonts?.ready.then(scheduleCollectionMobileTagFit);
+      syncCollectionSearchPlaceholder();
+      function collectionPaginationItems(pageCount, currentPage, siblingCount) {
+        const range = (start, end) => Array.from({ length:Math.max(0, end - start + 1) }, (_, index) => start + index);
+        const windowSize = siblingCount * 2 + 1;
+        const maximumNumberCount = windowSize + 2;
+        if (pageCount <= maximumNumberCount) return range(1, pageCount);
+        if (currentPage <= siblingCount + 2) {
+          return range(1, windowSize).concat("ellipsis", pageCount);
+        }
+        if (currentPage >= pageCount - siblingCount - 1) {
+          return [1, "ellipsis"].concat(range(pageCount - windowSize + 1, pageCount));
+        }
+        return [1, "ellipsis"].concat(range(currentPage - siblingCount, currentPage + siblingCount), "ellipsis", pageCount);
+      }
+      function collectionPaginationMarkup(pageCount, currentPage, siblingCount, mode) {
+        const items = collectionPaginationItems(pageCount, currentPage, siblingCount);
+        return `<div class="collection-page-number-set is-${mode}">${items.map(item => {
+          if (item === "ellipsis") return `<span class="collection-page-ellipsis" aria-hidden="true">\u2026</span>`;
+          const active = item === currentPage;
+          return `<button class="collection-page-number${active ? " active" : ""}" type="button" data-collection-page="${item - 1}" aria-label="${item}"${active ? " aria-current=\"page\" disabled" : ""}>${item}</button>`;
+        }).join("")}</div>`;
+      }
       function renderCollectionTags() {
         const links = document.getElementById("collectionTagLinks");
         links.classList.toggle("remove-mode", collectionTagRemoveMode);
@@ -9340,7 +9660,7 @@
       function render() {
         renderCollectionTags();
         renderMobileTagSelect();
-        const q = document.getElementById("collectionSearch").value.trim().toLowerCase();
+        const q = collectionSearchInput.value.trim().toLowerCase();
         let a = records.filter(r => tag === "all" || (r.tags || []).includes(tag)).filter(r => !q || [r.title,r.cn,r.cv,r.rj,r.circle,r.keywords,...(r.tags || [])].join(" ").toLowerCase().includes(q));
         const s = collectionSort.value;
         if (s === "recent") a.sort((x,y) => (y.editedAt || 0) - (x.editedAt || 0));
@@ -9358,11 +9678,14 @@
         grid.classList.toggle("list-mode", listMode);
         page.classList.toggle("collection-list-mode", listMode);
         grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"${r.cover ? ` style="background-image:url('${r.cover}')"` : ""}><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><strong class="collection-list-title">${escapeCollectionText(r.title || "未填写标题")}</strong><b class="collection-list-cv">${escapeCollectionText(r.cv || "未填写 CV")}</b><div class="collection-list-bottom"><small>${escapeCollectionText(r.rj || "无 RJ")}</small>${r.tags?.[0] ? `<i class="collection-tag-mini">${escapeCollectionText(r.tags[0])}</i>` : ""}</div><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "未填写 CV")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div><i class="collection-tag-mini${r.tags?.[0] ? "" : " is-empty"}">${escapeCollectionText(r.tags?.[0] || "占位")}</i>${collectionMobileTagsMarkup(r.tags)}</div></article>`).join("") + placeholderMarkup : "<div class=\"collection-empty\">暂无收藏记录</div>";
-        requestAnimationFrame(fitCollectionMobileTags);
+        scheduleCollectionMobileTagFit();
         document.getElementById("collectionCount").textContent = a.length + " 条记录";
         const pager = document.getElementById("collectionPager");
         pager.hidden = a.length <= pageSize;
-        document.getElementById("collectionPageText").textContent = (collectionPageIndex + 1) + " / " + pageCount;
+        collectionPageJump.hidden = pager.hidden;
+        collectionPageJumpInput.max = String(pageCount);
+        if (Number(collectionPageJumpInput.value) > pageCount) collectionPageJumpInput.value = "";
+        collectionPageNumbers.innerHTML = collectionPaginationMarkup(pageCount, collectionPageIndex + 1, 2, "desktop") + collectionPaginationMarkup(pageCount, collectionPageIndex + 1, 1, "mobile");
         document.getElementById("collectionPrevPage").disabled = collectionPageIndex === 0;
         document.getElementById("collectionNextPage").disabled = collectionPageIndex >= pageCount - 1;
       }
@@ -9450,7 +9773,7 @@
           collectionRjImportPromptBody.append(
             document.createTextNode(String.fromCharCode(0x586b, 0x5145, 0x7a7a, 0x4f4d, 0xff1a, 0x53ea, 0x8865, 0x5145, 0x5f53, 0x524d, 0x4e3a, 0x7a7a, 0x7684, 0x4fe1, 0x606f, 0x3002)),
             document.createElement("br"),
-            document.createTextNode(String.fromCharCode(0x8986, 0x76d6, 0x5168, 0x90e8, 0xff1a, 0x8986, 0x76d6, 0x5df2, 0x6709, 0x7684, 0x6807, 0x9898, 0x3001, 0x43, 0x56, 0x3001, 0x793e, 0x56e2, 0x3001, 0x4ef7, 0x683c, 0x3001, 0x6298, 0x6263, 0x3001, 0x4e2d, 0x6587, 0x72b6, 0x6001, 0x3001, 0x4f5c, 0x54c1, 0x5173, 0x952e, 0x8bcd, 0x548c, 0x20, 0x42, 0x4b, 0x3002, 0x5982, 0x679c, 0x83b7, 0x53d6, 0x5931, 0x8d25, 0x5219, 0x7ef4, 0x6301, 0x539f, 0x503c, 0x3002))
+            document.createTextNode(String.fromCharCode(0x8986, 0x76d6, 0x5168, 0x90e8, 0xff1a, 0x8986, 0x76d6, 0x5df2, 0x6709, 0x7684, 0x6807, 0x9898, 0x3001, 0x43, 0x56, 0x3001, 0x793e, 0x56e2, 0x3001, 0x53d1, 0x552e, 0x65e5, 0x671f, 0x3001, 0x4ef7, 0x683c, 0x3001, 0x6298, 0x6263, 0x3001, 0x4e2d, 0x6587, 0x72b6, 0x6001, 0x3001, 0x4f5c, 0x54c1, 0x5173, 0x952e, 0x8bcd, 0x548c, 0x20, 0x42, 0x4b, 0x3002, 0x5982, 0x679c, 0x83b7, 0x53d6, 0x5931, 0x8d25, 0x5219, 0x7ef4, 0x6301, 0x539f, 0x503c, 0x3002))
           );
           collectionRjImportOverwrite.hidden = false;
           collectionRjImportFill.hidden = false;
@@ -9518,6 +9841,7 @@
         "collectionDetailTime",
         "collectionDetailPurchaseDate",
         "collectionDetailListenedDate",
+        "collectionDetailReleaseDate",
         "collectionDetailOriginalPrice",
         "collectionDetailCurrentPrice",
         "collectionDetailCurrentDiscount",
@@ -9569,7 +9893,7 @@
         scrollY = collectionScroller ? collectionScroller.scrollTop : window.scrollY;
         document.getElementById("collectionDetailTitle").textContent = r.title || "";
         document.getElementById("collectionDetailCn").textContent = r.cn || "";
-        ["Cv","Circle","Rj","Time","PurchaseDate","ListenedDate"].forEach((key,index) => { document.getElementById("collectionDetail" + key).textContent = [r.cv,r.circle,r.rj,r.time,r.purchaseDate,r.listenedDate][index] || ""; });
+        ["Cv","Circle","Rj","Time","PurchaseDate","ListenedDate","ReleaseDate"].forEach((key,index) => { document.getElementById("collectionDetail" + key).textContent = [r.cv,r.circle,r.rj,r.time,r.purchaseDate,r.listenedDate,r.releaseDate][index] || ""; });
         document.getElementById("collectionDetailOriginalPrice").textContent = collectionDetailNumberText(r.originalPrice, "¥");
         document.getElementById("collectionDetailCurrentPrice").textContent = collectionDetailNumberText(r.price, "¥");
         document.getElementById("collectionDetailCurrentDiscount").textContent = collectionDetailNumberText(r.currentDiscount, "", "%off");
@@ -9610,7 +9934,7 @@
         if (!record || !grid.contains(record)) return;
         openDetail(record.dataset.id);
       });
-      document.getElementById("collectionSearch").oninput = () => { collectionPageIndex = 0; render(); };
+      collectionSearchInput.oninput = () => { collectionPageIndex = 0; render(); };
       collectionSort.onchange = () => {
         if (collectionMobileSort) collectionMobileSort.value = collectionSort.value;
         collectionPageIndex = 0;
@@ -9802,7 +10126,7 @@
         const reader = new FileReader();
         reader.onload = async () => {
           try {
-            const src = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result));
+            const src = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result), true);
             setCollectionDetailCover(src, collectionDetailArt.dataset.coverFit || "contain");
           } catch (error) {
             console.error("Collection detail cover upload failed", error);
@@ -9817,6 +10141,139 @@
       document.getElementById("collectionDetailCoverButton").onclick = () => setCollectionDetailCover(collectionDetailArt.dataset.coverSrc || "", "cover");
       document.getElementById("collectionDetailImageEditButton").onclick = () => void openCollectionDetailImageEditor();
       document.getElementById("collectionDetailRemoveCoverButton").onclick = () => setCollectionDetailCover("", collectionDetailArt.dataset.coverFit || "contain");
+      async function importCollectionDetailByRj() {
+        const button = document.getElementById("collectionDetailImportButton");
+        const workno = normalizeWorkno(detailText("collectionDetailRj"));
+        if (!workno) {
+          showAppAlert(String.fromCharCode(0x8bf7, 0x5148, 0x586b, 0x5199, 0x6709, 0x6548, 0x7684, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x3002));
+          return;
+        }
+        const current = {
+          title: detailText("collectionDetailTitle"),
+          cv: detailText("collectionDetailCv"),
+          circle: detailText("collectionDetailCircle"),
+          releaseDate: detailText("collectionDetailReleaseDate"),
+          originalPrice: detailText("collectionDetailOriginalPrice"),
+          currentPrice: detailText("collectionDetailCurrentPrice"),
+          currentDiscount: detailText("collectionDetailCurrentDiscount"),
+          lowestDiscount: detailText("collectionDetailLowestDiscount"),
+          chinese: detailText("collectionDetailCn"),
+          keywords: detailChipValues("collectionDetailKeywords"),
+          cover: collectionDetailArt.dataset.coverSrc || ""
+        };
+        const isEmpty = value => Array.isArray(value) ? !value.length : value == null || String(value).trim() === "";
+        const mode = Object.values(current).every(isEmpty) ? "overwrite" : await requestCollectionRjImportMode();
+        if (!mode) return;
+        const canWrite = value => mode === "overwrite" || isEmpty(value);
+        const targets = {
+          title: canWrite(current.title),
+          cv: canWrite(current.cv),
+          circle: canWrite(current.circle),
+          releaseDate: canWrite(current.releaseDate),
+          originalPrice: canWrite(current.originalPrice),
+          currentPrice: canWrite(current.currentPrice),
+          currentDiscount: canWrite(current.currentDiscount),
+          lowestDiscount: canWrite(current.lowestDiscount),
+          chinese: canWrite(current.chinese),
+          keywords: canWrite(current.keywords),
+          cover: canWrite(current.cover)
+        };
+        showCollectionRjImportLoading();
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+        try {
+          let lowestDiscountError = null;
+          const lowestDiscountPromise = targets.lowestDiscount
+            ? fetchDlwatcherLowestDiscount(workno).catch(error => {
+              lowestDiscountError = error;
+              console.warn("Collection detail RJ lowest discount import failed", workno, error);
+              return "";
+            })
+            : Promise.resolve("");
+          const product = parseDlsiteProduct(await fetchProductJson(workno));
+          if (!product || (!product.title && !product.cv && !product.circle && !product.releaseDate && !product.originalPrice && !product.currentPrice && !product.coverUrl && !product.keywords?.length)) throw new Error("empty product");
+          product.lowestDiscount = await lowestDiscountPromise;
+          let chineseChoice = "";
+          let chineseChoiceError = null;
+          if (targets.chinese) {
+            if (product.hasChineseVersion || product.chineseEditionWorkno) {
+              chineseChoice = CHOICE_SUBTITLE;
+            } else {
+              try {
+                const translatable = parseTranslatableChinese(await fetchTranslatableProducts(workno), workno);
+                chineseChoice = translatable?.hasChinese ? CHOICE_SUBTITLE : CHOICE_NONE;
+              } catch (error) {
+                chineseChoiceError = error;
+                console.warn("Collection detail RJ Chinese edition import failed", workno, error);
+              }
+            }
+          }
+          let importedField = false;
+          const missingFields = [];
+          const importText = (target, value, id, label) => {
+            if (!target) return;
+            if (value !== "" && value != null) {
+              document.getElementById(id).textContent = value;
+              importedField = true;
+            } else missingFields.push(unavailableImportField(label));
+          };
+          importText(targets.title, product.title, "collectionDetailTitle", String.fromCharCode(0x6807, 0x9898));
+          importText(targets.cv, product.cv, "collectionDetailCv", "CV");
+          importText(targets.circle, product.circle, "collectionDetailCircle", String.fromCharCode(0x793e, 0x56e2));
+          importText(targets.releaseDate, product.releaseDate, "collectionDetailReleaseDate", String.fromCharCode(0x53d1, 0x552e, 0x65e5, 0x671f));
+          importText(targets.originalPrice, product.originalPrice === "" ? "" : collectionDetailNumberText(product.originalPrice, "¥"), "collectionDetailOriginalPrice", String.fromCharCode(0x539f, 0x4ef7));
+          importText(targets.currentPrice, product.currentPrice === "" ? "" : collectionDetailNumberText(product.currentPrice, "¥"), "collectionDetailCurrentPrice", String.fromCharCode(0x73b0, 0x4ef7));
+          importText(targets.currentDiscount, product.currentDiscount === "" ? "" : collectionDetailNumberText(product.currentDiscount, "", "%off"), "collectionDetailCurrentDiscount", String.fromCharCode(0x73b0, 0x6298, 0x6263));
+          if (targets.lowestDiscount) {
+            if (product.lowestDiscount !== "") {
+              document.getElementById("collectionDetailLowestDiscount").textContent = collectionDetailNumberText(product.lowestDiscount, "", "%off");
+              importedField = true;
+            } else if (lowestDiscountError) {
+              missingFields.push(unavailableImportField(String.fromCharCode(0x53f2, 0x4f4e, 0x6298, 0x6263), fullImportFailureReason(lowestDiscountError, "lowest")));
+            } else missingFields.push(unavailableImportField(String.fromCharCode(0x53f2, 0x4f4e, 0x6298, 0x6263)));
+          }
+          if (targets.chinese) {
+            if (chineseChoice) {
+              document.getElementById("collectionDetailCn").textContent = chineseChoice;
+              importedField = true;
+            } else if (chineseChoiceError) {
+              missingFields.push(unavailableImportField(String.fromCharCode(0x4e2d, 0x6587, 0x72b6, 0x6001), fullImportFailureReason(chineseChoiceError, "translatable")));
+            } else missingFields.push(unavailableImportField(String.fromCharCode(0x4e2d, 0x6587, 0x72b6, 0x6001)));
+          }
+          if (targets.keywords) {
+            if (Array.isArray(product.keywords) && product.keywords.length) {
+              renderDetailChips("collectionDetailKeywords", product.keywords.slice(0, 8));
+              importedField = true;
+            } else missingFields.push(unavailableImportField(String.fromCharCode(0x4f5c, 0x54c1, 0x5173, 0x952e, 0x8bcd)));
+          }
+          if (targets.cover) {
+            if (product.coverUrl) {
+              try {
+                setCollectionDetailCover(await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true), "cover");
+                importedField = true;
+              } catch (coverError) {
+                missingFields.push(unavailableImportField("BK", UI_IMPORT_IMAGE_FAILED));
+                console.warn("Collection detail RJ cover import failed", workno, coverError);
+              }
+            } else missingFields.push(unavailableImportField("BK"));
+          }
+          if (!importedField) {
+            showCollectionRjImportResult(UI_IMPORT_DLSITE_NO_DATA, true, missingFields.length ? [{ rj:workno, reason:collectionImportFieldIssueText(missingFields) }] : []);
+            return;
+          }
+          const message = missingFields.length
+            ? String.fromCharCode(0x5df2, 0x5bfc, 0x5165, 0xff0c, 0x90e8, 0x5206, 0x4fe1, 0x606f, 0x672a, 0x80fd, 0x83b7, 0x53d6, 0x3002)
+            : String.fromCharCode(0x5df2, 0x5bfc, 0x5165, 0x8fd9, 0x90e8, 0x4f5c, 0x54c1, 0x7684, 0x4fe1, 0x606f, 0x3002);
+          showCollectionRjImportResult(message, false, missingFields.length ? [{ rj:workno, reason:collectionImportFieldIssueText(missingFields) }] : []);
+        } catch (error) {
+          console.error("Collection detail RJ import failed", error);
+          showCollectionRjImportResult(String.fromCharCode(0x5bfc, 0x5165, 0x5931, 0x8d25, 0x3002), true, [{ rj:workno, reason:grid9FailureReason(error) }]);
+        } finally {
+          button.disabled = false;
+          button.removeAttribute("aria-busy");
+        }
+      }
+      document.getElementById("collectionDetailImportButton").onclick = () => void importCollectionDetailByRj();
       async function saveCollectionDetail(showSuccessMessage = true) {
         const work = records.find(item => String(item.id) === String(activeCollectionRecordId));
         const nextRj = normalizeWorkno(detailText("collectionDetailRj"));
@@ -9825,7 +10282,7 @@
         const numericText = id => detailText(id).replace(/^¥\s*/, "").replace(/\s*%off$/i, "").trim();
         const optionalNumber = value => value === "" ? "" : Number(value);
         const now = Date.now();
-        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), purchaseDate:normalizeCardDateValue(detailText("collectionDetailPurchaseDate")), listenedDate:normalizeCardDateValue(detailText("collectionDetailListenedDate")), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
+        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), purchaseDate:normalizeCardDateValue(detailText("collectionDetailPurchaseDate")), listenedDate:normalizeCardDateValue(detailText("collectionDetailListenedDate")), releaseDate:normalizeCardDateValue(detailText("collectionDetailReleaseDate")), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
         try {
           if (work && nextWork.id !== work.id) await deleteWork(work.id);
           await putWorks([nextWork]);
@@ -9873,12 +10330,63 @@
         const work = records.find(item => String(item.id) === String(activeCollectionRecordId));
         if (!work) return;
         const state = collectState();
+        const hasCurrentFullInformation = Boolean(
+          [state.recordTitle, state.cvText, state.circleText, state.rjText, state.durationText, state.purchaseDate, state.listenedDate, state.originalPrice, state.currentPrice, state.currentDiscount, state.lowestPrice, state.reviewText]
+            .some(value => String(value ?? "").trim()) ||
+          (state.cnChoice && state.cnChoice !== CHOICE_SUBTITLE) ||
+          (state.ratings || []).some(value => Number(value) !== 4) ||
+          (state.tags || []).some(value => String(value || "").trim()) ||
+          state.coverSrc || state.coverOriginalSrc || state.coverEditedSrc ||
+          (state.coverStickers || []).length
+        );
+        if (hasCurrentFullInformation && !await showAppConfirm(String.fromCharCode(0x5f53, 0x524d, 0x5b8c, 0x6574, 0x7248, 0x5df2, 0x6709, 0x4fe1, 0x606f, 0xff0c, 0x5236, 0x4f5c, 0x20, 0x72, 0x65, 0x70, 0x6f, 0x20, 0x4f1a, 0x8986, 0x76d6, 0x73b0, 0x6709, 0x5185, 0x5bb9, 0x3002, 0x786e, 0x5b9a, 0x7ee7, 0x7eed, 0x5417, 0xff1f))) return;
         const ratings = [work.rating, work.cvRating, work.storyRating, work.seRating].map(value => value === "" || value == null ? 0 : Number(value) || 0);
         applyState({ ...state, template:"full", theme:"matcha-berry-cheese", recordTitle:work.title || "", cvText:work.cv || "", circleText:work.circle || "", rjText:work.rj || "", durationText:work.time || "", purchaseDate:work.purchaseDate || "", listenedDate:work.listenedDate || "", cardInfoType:normalizeCardInfoType(work.cardInfoType), originalPrice:work.originalPrice === "" || work.originalPrice == null ? "" : work.originalPrice, currentPrice:work.price === "" || work.price == null ? "" : work.price, currentDiscount:work.currentDiscount === "" || work.currentDiscount == null ? "" : work.currentDiscount, lowestPrice:work.lowestPrice === "" || work.lowestPrice == null ? "" : work.lowestPrice, cnChoice:work.cn || CHOICE_SUBTITLE, ratings, tags:String(work.keywords || "").split(" / ").filter(Boolean), reviewText:work.review || "", coverSrc:work.cover || "", coverOriginalSrc:work.cover || "", coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverWhiteFogMaskSrc:"", coverStickers:[] }, true);
         setMainPage("template");
       };
-      document.getElementById("collectionPrevPage").onclick = () => { if (collectionPageIndex > 0) { collectionPageIndex -= 1; render(); if (collectionScroller) collectionScroller.scrollTo({ top:0, behavior:"smooth" }); } };
-      document.getElementById("collectionNextPage").onclick = () => { collectionPageIndex += 1; render(); if (collectionScroller) collectionScroller.scrollTo({ top:0, behavior:"smooth" }); };
+      function closeCollectionDetailMobileMenu() {
+        collectionDetailMobileDropdown.hidden = true;
+        collectionDetailMobileMenuButton.setAttribute("aria-expanded", "false");
+      }
+      collectionDetailMobileMenuButton.onclick = event => {
+        event.stopPropagation();
+        const nextHidden = !collectionDetailMobileDropdown.hidden;
+        collectionDetailMobileDropdown.hidden = nextHidden;
+        collectionDetailMobileMenuButton.setAttribute("aria-expanded", String(!nextHidden));
+      };
+      [
+        [collectionDetailMobileImportButton, "collectionDetailImportButton"],
+        [collectionDetailMobileMakeRepoButton, "collectionEditRecordButton"]
+      ].forEach(([button, targetId]) => {
+        button.onclick = () => {
+          closeCollectionDetailMobileMenu();
+          document.getElementById(targetId).click();
+        };
+      });
+      document.addEventListener("click", event => {
+        if (collectionDetailMobileDropdown.hidden || event.target.closest(".collection-detail-mobile-menu")) return;
+        closeCollectionDetailMobileMenu();
+      });
+      document.getElementById("collectionPrevPage").onclick = () => { if (collectionPageIndex > 0) { collectionPageIndex -= 1; render(); } };
+      document.getElementById("collectionNextPage").onclick = () => { collectionPageIndex += 1; render(); };
+      collectionPageNumbers.onclick = event => {
+        const button = event.target.closest("[data-collection-page]");
+        if (!button || button.disabled) return;
+        collectionPageIndex = Number(button.dataset.collectionPage);
+        render();
+      };
+      collectionPageJump.onsubmit = event => {
+        event.preventDefault();
+        const requestedPage = Number(collectionPageJumpInput.value);
+        const pageCount = Number(collectionPageJumpInput.max) || 1;
+        if (!Number.isInteger(requestedPage) || requestedPage < 1 || requestedPage > pageCount) {
+          showAppAlert(String.fromCharCode(0x8bf7, 0x8f93, 0x5165, 0x20) + "1-" + pageCount + String.fromCharCode(0x20, 0x4e4b, 0x95f4, 0x7684, 0x9875, 0x7801, 0x3002));
+          return;
+        }
+        collectionPageIndex = requestedPage - 1;
+        collectionPageJumpInput.value = "";
+        render();
+      };
       render();
       function openWorksDatabase() {
         return new Promise((resolve, reject) => {
@@ -9890,20 +10398,28 @@
           request.onsuccess = () => resolve(request.result);
         });
       }
+      async function hydrateCollectionWorkImage(work) {
+        if (!work || typeof work !== "object") return work;
+        return { ...work, cover: await resolveStoredImageReferenceSafely(work.cover) };
+      }
+      function serializeCollectionWorkImage(work) {
+        return { ...work, cover: storedImageReference(work?.cover) };
+      }
       async function loadWorks() {
         const database = await openWorksDatabase();
-        return new Promise((resolve, reject) => {
+        const storedWorks = await new Promise((resolve, reject) => {
           const request = database.transaction("works", "readonly").objectStore("works").getAll();
           request.onsuccess = () => { database.close(); resolve(request.result || []); };
           request.onerror = () => { database.close(); reject(request.error); };
         });
+        return Promise.all(storedWorks.map(hydrateCollectionWorkImage));
       }
       async function putWorks(works) {
         const database = await openWorksDatabase();
         return new Promise((resolve, reject) => {
           const transaction = database.transaction("works", "readwrite");
           const store = transaction.objectStore("works");
-          works.forEach(work => store.put(work));
+          works.forEach(work => store.put(serializeCollectionWorkImage(work)));
           transaction.oncomplete = () => { database.close(); resolve(); };
           transaction.onerror = () => { database.close(); reject(transaction.error); };
         });
@@ -9978,7 +10494,7 @@
           return;
         }
         const isEmpty = value => value == null || String(value).trim() === "";
-        const allImportTargetsEmpty = jobs.every(({ work }) => [work.title, work.cv, work.cover, work.circle, work.originalPrice, work.price, work.currentDiscount, work.lowestPrice, work.cn, work.keywords].every(isEmpty));
+        const allImportTargetsEmpty = jobs.every(({ work }) => [work.title, work.cv, work.cover, work.circle, work.releaseDate, work.originalPrice, work.price, work.currentDiscount, work.lowestPrice, work.cn, work.keywords].every(isEmpty));
         const mode = allImportTargetsEmpty ? "overwrite" : await requestCollectionRjImportMode();
         if (!mode) return;
         showCollectionRjImportLoading();
@@ -10000,6 +10516,7 @@
               const targetTitle = canWrite(job.work.title);
               const targetCv = canWrite(job.work.cv);
               const targetCircle = canWrite(job.work.circle);
+              const targetReleaseDate = canWrite(job.work.releaseDate);
               const targetOriginalPrice = canWrite(job.work.originalPrice);
               const targetCurrentPrice = canWrite(job.work.price);
               const targetCurrentDiscount = canWrite(job.work.currentDiscount);
@@ -10007,7 +10524,7 @@
               const targetChinese = canWrite(job.work.cn);
               const targetKeywords = canWrite(job.work.keywords);
               const targetCover = canWrite(job.work.cover);
-              if (![targetTitle, targetCv, targetCircle, targetOriginalPrice, targetCurrentPrice, targetCurrentDiscount, targetLowestDiscount, targetChinese, targetKeywords, targetCover].some(Boolean)) {
+              if (![targetTitle, targetCv, targetCircle, targetReleaseDate, targetOriginalPrice, targetCurrentPrice, targetCurrentDiscount, targetLowestDiscount, targetChinese, targetKeywords, targetCover].some(Boolean)) {
                 skipped += 1;
                 continue;
               }
@@ -10030,7 +10547,7 @@
                 } else {
                   try {
                     const translatable = parseTranslatableChinese(await fetchTranslatableProducts(job.rj), job.rj);
-                    if (translatable) chineseChoice = translatable.hasChinese ? CHOICE_SUBTITLE : CHOICE_NONE;
+                    chineseChoice = translatable?.hasChinese ? CHOICE_SUBTITLE : CHOICE_NONE;
                   } catch (error) {
                     chineseChoiceError = error;
                     console.warn("Collection RJ Chinese edition import failed", job.rj, error);
@@ -10057,6 +10574,12 @@
                   nextWork.circle = product.circle;
                   importedField = true;
                 } else missingFields.push(unavailableImportField(String.fromCharCode(0x793e, 0x56e2)));
+              }
+              if (targetReleaseDate) {
+                if (product.releaseDate) {
+                  nextWork.releaseDate = product.releaseDate;
+                  importedField = true;
+                } else missingFields.push(unavailableImportField(String.fromCharCode(0x53d1, 0x552e, 0x65e5, 0x671f)));
               }
               if (targetOriginalPrice) {
                 const price = Number(product.originalPrice);
@@ -10105,7 +10628,7 @@
               if (targetCover) {
                 if (product.coverUrl) {
                   try {
-                    nextWork.cover = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl));
+                    nextWork.cover = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true);
                     nextWork.coverFit = "cover";
                     importedField = true;
                   } catch (coverError) {
@@ -10155,6 +10678,218 @@
           label.textContent = "按RJ号导入信息";
         }
       }
+      const COLLECTION_BATCH_ADD_TEXT = {
+        title:String.fromCharCode(0x6279, 0x91cf, 0x65b0, 0x589e),
+        loading:String.fromCharCode(0x6b63, 0x5728, 0x6279, 0x91cf, 0x65b0, 0x589e, 0x2026),
+        complete:String.fromCharCode(0x6279, 0x91cf, 0x65b0, 0x589e, 0x5b8c, 0x6210),
+        failed:String.fromCharCode(0x6279, 0x91cf, 0x65b0, 0x589e, 0x5931, 0x8d25),
+        empty:String.fromCharCode(0x8bf7, 0x8f93, 0x5165, 0x81f3, 0x5c11, 0x4e00, 0x4e2a, 0x6709, 0x6548, 0x7684, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x3002),
+        maximum:String.fromCharCode(0x4e00, 0x6b21, 0x6700, 0x591a, 0x53ea, 0x80fd, 0x5bfc, 0x5165, 0x20, 0x31, 0x30, 0x20, 0x4e2a, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x3002),
+        invalid:String.fromCharCode(0x4ee5, 0x4e0b, 0x5185, 0x5bb9, 0x4e0d, 0x662f, 0x6709, 0x6548, 0x7684, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0xff1a),
+        importing:String.fromCharCode(0x6b63, 0x5728, 0x5bfc, 0x5165),
+        added:String.fromCharCode(0x5df2, 0x65b0, 0x589e),
+        partial:String.fromCharCode(0x90e8, 0x5206, 0x6210, 0x529f),
+        importFailed:String.fromCharCode(0x5bfc, 0x5165, 0x5931, 0x8d25),
+        existing:String.fromCharCode(0x5df2, 0x5b58, 0x5728, 0x8df3, 0x8fc7),
+        alreadyExists:String.fromCharCode(0x6536, 0x85cf, 0x4e2d, 0x5df2, 0x5b58, 0x5728),
+        storageFailed:String.fromCharCode(0x4fdd, 0x5b58, 0x5931, 0x8d25, 0xff0c, 0x672a, 0x65b0, 0x589e, 0x4efb, 0x4f55, 0x6761, 0x76ee, 0x3002, 0x539f, 0x56e0, 0xff1a),
+        item:String.fromCharCode(0x6761)
+      };
+      function parseCollectionBatchAddInput(value) {
+        const tokens = String(value || "").split(/[\s,\uff0c;\uff1b]+/).map(item => item.trim()).filter(Boolean);
+        const rjs = [];
+        const invalid = [];
+        const seen = new Set();
+        tokens.forEach(token => {
+          const clean = token.toUpperCase();
+          if (!/^(?:RJ|BJ)?\d+$/.test(clean)) {
+            invalid.push(token);
+            return;
+          }
+          const rj = normalizeWorkno(clean);
+          if (rj && !seen.has(rj)) {
+            seen.add(rj);
+            rjs.push(rj);
+          }
+        });
+        return { rjs, invalid };
+      }
+      function updateCollectionBatchAddCount() {
+        const parsed = parseCollectionBatchAddInput(collectionBatchAddInput.value);
+        collectionBatchAddStatus.textContent = parsed.rjs.length + " / 10";
+      }
+      function openCollectionBatchAdd() {
+        collectionBatchAddTitle.textContent = COLLECTION_BATCH_ADD_TEXT.title;
+        collectionBatchAddForm.hidden = false;
+        collectionBatchAddResult.hidden = true;
+        collectionBatchAddResult.textContent = "";
+        collectionBatchAddInput.disabled = false;
+        collectionBatchAddInput.value = "";
+        collectionBatchAddStatus.textContent = "0 / 10";
+        collectionBatchAddCancel.hidden = false;
+        collectionBatchAddCancel.disabled = false;
+        collectionBatchAddStart.hidden = false;
+        collectionBatchAddStart.disabled = false;
+        collectionBatchAddDone.hidden = true;
+        collectionBatchAddPrompt.hidden = false;
+        if (!window.matchMedia("(max-width: 780px)").matches) collectionBatchAddInput.focus();
+      }
+      function showCollectionBatchAddResult(summary, failed, details) {
+        collectionBatchAddTitle.textContent = failed ? COLLECTION_BATCH_ADD_TEXT.failed : COLLECTION_BATCH_ADD_TEXT.complete;
+        collectionBatchAddForm.hidden = true;
+        collectionBatchAddResult.hidden = false;
+        collectionBatchAddResult.textContent = "";
+        const summaryLine = document.createElement("p");
+        summaryLine.style.margin = details.length ? "0 0 7px" : "0";
+        summaryLine.textContent = summary;
+        collectionBatchAddResult.appendChild(summaryLine);
+        details.forEach(detail => {
+          const line = document.createElement("p");
+          line.style.color = "var(--rose-deep)";
+          line.textContent = detail.rj + String.fromCharCode(0xff1a) + detail.reason;
+          collectionBatchAddResult.appendChild(line);
+        });
+        collectionBatchAddCancel.hidden = true;
+        collectionBatchAddStart.hidden = true;
+        collectionBatchAddDone.hidden = false;
+        collectionBatchAddDone.focus();
+      }
+      async function fetchCollectionBatchAddWork(rj) {
+        const missingFields = [];
+        let lowestDiscountError = null;
+        const lowestDiscountPromise = fetchDlwatcherLowestDiscount(rj).catch(error => {
+          lowestDiscountError = error;
+          console.warn("Collection batch add lowest discount import failed", rj, error);
+          return "";
+        });
+        const product = parseDlsiteProduct(await fetchProductJson(rj));
+        if (!product || (!product.title && !product.cv && !product.circle && !product.releaseDate && !product.originalPrice && !product.currentPrice && !product.coverUrl && !product.keywords?.length)) throw new Error("empty product");
+        product.lowestDiscount = await lowestDiscountPromise;
+        let chineseChoice = "";
+        if (product.hasChineseVersion || product.chineseEditionWorkno) {
+          chineseChoice = CHOICE_SUBTITLE;
+        } else {
+          try {
+            const translatable = parseTranslatableChinese(await fetchTranslatableProducts(rj), rj);
+            chineseChoice = translatable?.hasChinese ? CHOICE_SUBTITLE : CHOICE_NONE;
+          } catch (error) {
+            missingFields.push(unavailableImportField(String.fromCharCode(0x4e2d, 0x6587, 0x72b6, 0x6001), fullImportFailureReason(error, "translatable")));
+            console.warn("Collection batch add Chinese edition import failed", rj, error);
+          }
+        }
+        const requiredText = (value, label) => {
+          if (value !== "" && value != null) return value;
+          missingFields.push(unavailableImportField(label));
+          return "";
+        };
+        const requiredNumber = (value, label, reason = "") => {
+          const number = Number(value);
+          if (value !== "" && value != null && Number.isFinite(number)) return number;
+          missingFields.push(unavailableImportField(label, reason || UI_IMPORT_API_MISSING));
+          return "";
+        };
+        const title = requiredText(product.title, String.fromCharCode(0x6807, 0x9898));
+        const cv = requiredText(product.cv, "CV");
+        const circle = requiredText(product.circle, String.fromCharCode(0x793e, 0x56e2));
+        const releaseDate = requiredText(product.releaseDate, String.fromCharCode(0x53d1, 0x552e, 0x65e5, 0x671f));
+        const originalPriceValue = requiredNumber(product.originalPrice, String.fromCharCode(0x539f, 0x4ef7));
+        const currentPriceValue = requiredNumber(product.currentPrice, String.fromCharCode(0x73b0, 0x4ef7));
+        const currentDiscountValue = requiredNumber(product.currentDiscount, String.fromCharCode(0x73b0, 0x6298, 0x6263));
+        const lowestDiscountValue = requiredNumber(product.lowestDiscount, String.fromCharCode(0x53f2, 0x4f4e, 0x6298, 0x6263), lowestDiscountError ? fullImportFailureReason(lowestDiscountError, "lowest") : "");
+        let keywords = "";
+        if (Array.isArray(product.keywords) && product.keywords.length) keywords = product.keywords.slice(0, 8).join(" / ");
+        else missingFields.push(unavailableImportField(String.fromCharCode(0x4f5c, 0x54c1, 0x5173, 0x952e, 0x8bcd)));
+        let cover = "";
+        if (product.coverUrl) {
+          try {
+            cover = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true);
+          } catch (error) {
+            missingFields.push(unavailableImportField("BK", UI_IMPORT_IMAGE_FAILED));
+            console.warn("Collection batch add cover import failed", rj, error);
+          }
+        } else missingFields.push(unavailableImportField("BK"));
+        const now = Date.now();
+        return {
+          work:{ id:rj, rj, title, cn:chineseChoice, cv, circle, time:"", purchaseDate:"", listenedDate:"", releaseDate:normalizeCardDateValue(releaseDate), cardInfoType:"", originalPrice:originalPriceValue, price:currentPriceValue, currentDiscount:currentDiscountValue, lowestPrice:lowestDiscountValue, rating:"", cvRating:"", storyRating:"", seRating:"", summary:"", character:"", review:"", keywords, tags:[], cover, coverFit:"cover", addedAt:now, editedAt:now },
+          missingFields
+        };
+      }
+      async function importCollectionBatchAdd() {
+        const parsed = parseCollectionBatchAddInput(collectionBatchAddInput.value);
+        if (parsed.invalid.length) {
+          showAppAlert(COLLECTION_BATCH_ADD_TEXT.invalid + parsed.invalid.join(String.fromCharCode(0x3001)));
+          return;
+        }
+        if (!parsed.rjs.length) {
+          showAppAlert(COLLECTION_BATCH_ADD_TEXT.empty);
+          return;
+        }
+        if (parsed.rjs.length > 10) {
+          showAppAlert(COLLECTION_BATCH_ADD_TEXT.maximum);
+          return;
+        }
+        const existingRjs = new Set(records.map(work => {
+          const legacyId = /^(?:RJ|BJ)\d+$/i.test(String(work.id || "")) ? work.id : "";
+          return normalizeWorkno(work.rj || legacyId);
+        }).filter(Boolean));
+        const existing = parsed.rjs.filter(rj => existingRjs.has(rj));
+        const jobs = parsed.rjs.filter(rj => !existingRjs.has(rj));
+        collectionBatchAddTitle.textContent = COLLECTION_BATCH_ADD_TEXT.loading;
+        collectionBatchAddInput.disabled = true;
+        collectionBatchAddCancel.hidden = true;
+        collectionBatchAddStart.hidden = true;
+        collectionBatchAddStatus.textContent = COLLECTION_BATCH_ADD_TEXT.importing + " 0 / " + jobs.length;
+        const additions = [];
+        const fieldIssues = [];
+        const failures = [];
+        let completed = 0;
+        let cursor = 0;
+        const worker = async () => {
+          while (cursor < jobs.length) {
+            const rj = jobs[cursor];
+            cursor += 1;
+            try {
+              const imported = await fetchCollectionBatchAddWork(rj);
+              additions.push(imported.work);
+              if (imported.missingFields.length) fieldIssues.push({ rj, reason:collectionImportFieldIssueText(imported.missingFields) });
+            } catch (error) {
+              failures.push({ rj, reason:grid9FailureReason(error) });
+              console.warn("Collection batch add failed", rj, error);
+            } finally {
+              completed += 1;
+              collectionBatchAddStatus.textContent = COLLECTION_BATCH_ADD_TEXT.importing + " " + completed + " / " + jobs.length;
+            }
+          }
+        };
+        try {
+          await Promise.all(Array.from({ length:Math.min(2, jobs.length) }, () => worker()));
+          if (additions.length) {
+            await putWorks(additions);
+            records = records.concat(additions);
+            render();
+            trackFixedUsageEvent("feature-batch-rj-add-success");
+          }
+          const completeCount = Math.max(0, additions.length - fieldIssues.length);
+          const parts = [COLLECTION_BATCH_ADD_TEXT.added + " " + completeCount + " " + COLLECTION_BATCH_ADD_TEXT.item];
+          if (fieldIssues.length) parts.push(COLLECTION_BATCH_ADD_TEXT.partial + " " + fieldIssues.length + " " + COLLECTION_BATCH_ADD_TEXT.item);
+          if (failures.length) parts.push(COLLECTION_BATCH_ADD_TEXT.importFailed + " " + failures.length + " " + COLLECTION_BATCH_ADD_TEXT.item);
+          if (existing.length) parts.push(COLLECTION_BATCH_ADD_TEXT.existing + " " + existing.length + " " + COLLECTION_BATCH_ADD_TEXT.item);
+          const detailOrder = new Map(parsed.rjs.map((rj, index) => [rj, index]));
+          const details = fieldIssues.concat(failures, existing.map(rj => ({ rj, reason:COLLECTION_BATCH_ADD_TEXT.alreadyExists }))).sort((left, right) => detailOrder.get(left.rj) - detailOrder.get(right.rj));
+          showCollectionBatchAddResult(parts.join(String.fromCharCode(0xff0c)), !additions.length && Boolean(failures.length), details);
+        } catch (error) {
+          console.error("Save collection batch add failed", error);
+          const reason = String((error && error.message) || UI_GRID9_UNKNOWN);
+          showCollectionBatchAddResult(COLLECTION_BATCH_ADD_TEXT.storageFailed + reason, true, []);
+        }
+      }
+      collectionBatchAddInput.addEventListener("input", updateCollectionBatchAddCount);
+      collectionBatchAddCancel.onclick = () => { collectionBatchAddPrompt.hidden = true; };
+      collectionBatchAddStart.onclick = () => void importCollectionBatchAdd();
+      collectionBatchAddDone.onclick = () => { collectionBatchAddPrompt.hidden = true; };
+      collectionBatchAddPrompt.addEventListener("click", event => {
+        if (event.target === collectionBatchAddPrompt && !collectionBatchAddDone.hidden) collectionBatchAddPrompt.hidden = true;
+      });
       function nextTemporaryWorkId() {
         const largest = records.reduce((max, work) => {
           const match = String(work.id || "").match(/^ID(\d{8})$/);
@@ -10171,7 +10906,7 @@
         const existingTemporary = !rj ? records.find(work => !work.rj && work.sourceSlot === sourceSlot) : null;
         const id = rj || existingTemporary?.id || nextTemporaryWorkId();
         const optionalNumber = value => String(value ?? "").trim() === "" ? "" : Number(value);
-        return { id, rj, title: data.title || "", cn: data.cn || "", cv: data.cv || "", circle: data.circle || "", time: data.time || "", purchaseDate:normalizeCardDateValue(data.purchaseDate), listenedDate:normalizeCardDateValue(data.listenedDate), cardInfoType:data.cardInfoType ? normalizeCardInfoType(data.cardInfoType) : "", originalPrice: optionalNumber(data.originalPrice), price: optionalNumber(data.price), currentDiscount: optionalNumber(data.currentDiscount), lowestPrice: optionalNumber(data.lowestPrice), rating: optionalNumber(data.rating), cvRating: optionalNumber(data.cvRating), storyRating: optionalNumber(data.storyRating), seRating: optionalNumber(data.seRating), cover: data.cover || "", coverFit: data.coverFit || "cover", review: data.review || "", keywords: data.keywords || "", tags: data.tags || [], source, sourceSlot };
+        return { id, rj, title: data.title || "", cn: data.cn || "", cv: data.cv || "", circle: data.circle || "", time: data.time || "", purchaseDate:normalizeCardDateValue(data.purchaseDate), listenedDate:normalizeCardDateValue(data.listenedDate), releaseDate:normalizeCardDateValue(data.releaseDate), cardInfoType:data.cardInfoType ? normalizeCardInfoType(data.cardInfoType) : "", originalPrice: optionalNumber(data.originalPrice), price: optionalNumber(data.price), currentDiscount: optionalNumber(data.currentDiscount), lowestPrice: optionalNumber(data.lowestPrice), rating: optionalNumber(data.rating), cvRating: optionalNumber(data.cvRating), storyRating: optionalNumber(data.storyRating), seRating: optionalNumber(data.seRating), cover: data.cover || "", coverFit: data.coverFit || "cover", review: data.review || "", keywords: data.keywords || "", tags: data.tags || [], source, sourceSlot };
       }
       function extractCurrentWorks(state) {
         const found = new Map();
@@ -10187,7 +10922,7 @@
           ...(state.continuationPages?.full?.pages || []),
           ...(state.continuationPages?.compact?.pages || [])
         ].map(part => String(part || "").replace(/\r\n?/g, "\n")).filter(part => part.trim() !== "");
-        add("single", 0, { rj:state.rjText, title:state.recordTitle, cn:state.cnChoice, cv:state.cvText, circle:state.circleText, time:state.durationText, purchaseDate:state.purchaseDate, listenedDate:state.listenedDate, cardInfoType:state.cardInfoType, originalPrice:state.originalPrice, price:state.currentPrice, currentDiscount:state.currentDiscount, lowestPrice:state.lowestPrice, rating:Array.isArray(state.ratings) ? state.ratings[0] : 0, cvRating:Array.isArray(state.ratings) ? state.ratings[1] : "", storyRating:Array.isArray(state.ratings) ? state.ratings[2] : "", seRating:Array.isArray(state.ratings) ? state.ratings[3] : "", cover:state.coverSrc, coverFit:state.coverFit, review:mergedReviewParts.join("\n"), keywords:(state.tags || []).join(" / ") });
+        add("single", 0, { rj:state.rjText, title:state.recordTitle, cn:state.cnChoice, cv:state.cvText, circle:state.circleText, time:state.durationText, purchaseDate:state.purchaseDate, listenedDate:state.listenedDate, cardInfoType:state.cardInfoType, originalPrice:state.originalPrice, price:state.currentPrice, currentDiscount:state.currentDiscount, lowestPrice:state.lowestPrice, rating:Array.isArray(state.ratings) ? state.ratings[0] : 0, cvRating:Array.isArray(state.ratings) ? state.ratings[1] : "", storyRating:Array.isArray(state.ratings) ? state.ratings[2] : "", seRating:Array.isArray(state.ratings) ? state.ratings[3] : "", cover:state.coverSrc || state.coverEditedSrc || state.coverOriginalSrc, coverFit:state.coverFit, review:mergedReviewParts.join("\n"), keywords:(state.tags || []).join(" / ") });
         (state.grid9?.cells || []).slice(0,9).forEach((cell,index) => add("grid9", index, { rj:cell.rj, cover:cell.cover, coverFit:cell.fit, review:cell.review }));
         (state.quick?.cells || []).slice(0,12).forEach((cell,index) => add("quick", index, { rj:cell.rj, cv:cell.cv, cover:cell.cover, coverFit:cell.coverFit, review:cell.review }));
         (state.trio?.cells || []).slice(0,3).forEach((cell,index) => add("trio", index, { rj:cell.rj, price:cell.price, rating:cell.rating, cover:cell.cover, coverFit:cell.coverFit, review:cell.repo }));
@@ -10198,7 +10933,9 @@
         const state = collectState();
         const now = Date.now();
         try {
-          const extracted = extractCurrentWorks(state);
+          const extracted = await Promise.all(extractCurrentWorks(state).map(async (work) => (
+            work.cover ? { ...work, cover: await grid9CoverStorageDataUrl(work.cover, true) } : work
+          )));
           if (!extracted.length) { showAppAlert("没有可存入收藏的记录。"); return; }
           const existingById = new Map(records.map(work => [work.id, work]));
           let added = 0;
@@ -10224,6 +10961,7 @@
       [saveToCollectionButton, mobileSaveToCollectionButton].forEach(button => { if (button) button.addEventListener("click", saveCurrentToCollection); });
       const collectionImportInput = document.getElementById("collectionImportInput");
       document.getElementById("collectionRjImportButton").onclick = importCollectionByRj;
+      document.getElementById("collectionBatchAddButton").onclick = openCollectionBatchAdd;
       document.getElementById("collectionImportButton").onclick = () => collectionImportInput.click();
       document.getElementById("collectionExportButton").onclick = exportCollectionBackup;
       document.getElementById("collectionNewRecordButton").onclick = openNewDetail;
