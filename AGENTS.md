@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Single-page card generator app (otome record card template). No build step, no
-package manager. Runs by opening `index.html` directly (`file://`) and is also
+package manager. Runs through a local web server (`localhost`) and is also
 deployed on GitHub Pages.
 
 ## Structure
@@ -14,9 +14,8 @@ deployed on GitHub Pages.
   DLsite import, localStorage state.
 - `font/` — card display font.
 - `stamp/` — built-in sticker PNGs (source files).
-- `stamp-data/` — per-sticker base64 data files. They are the fallback for
-  `file://` environments where `fetch()` is blocked. After editing any file in
-  `stamp/`, regenerate them with `python generate_stamp_data.py` and hard-refresh.
+- `stamp-data/` — legacy per-sticker base64 fallback data retained by the
+  current implementation.
 - `tool-icons/` — image editor tool icons.
 - `dlsite-worker.js` — Cloudflare Worker proxying the DLsite product API (CORS).
 
@@ -26,12 +25,6 @@ deployed on GitHub Pages.
   uses HTML entities; Unicode punctuation in regexes uses `\uXXXX`. See
   `ENCODING_NOTES.md` for the full rules (previously corrupted by encoding bugs).
 - State is persisted to `localStorage` under key `otome-record-card-v1`.
-- The page must keep working via `file://`: no ES modules, and no absolute
-  `/path` references in HTML/CSS/JS.
-- Image editor export: never draw `file://` images onto export canvases —
-  Chrome taints them and `toDataURL()` throws `SecurityError`. Sticker images
-  must be localized to a data URL first (`localizeImageToPngDataUrl` falls back
-  to `stamp-data/` embedded copies, then to `<img>` rasterization).
 
 ## Design rules for new card templates
 
