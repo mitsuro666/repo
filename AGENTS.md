@@ -167,6 +167,33 @@ deployed on GitHub Pages.
   scrolling. Prefer recording measurements without changing layout; remove
   all diagnostic UI and listeners after the cause is confirmed.
 
+## Mobile long-text editing reference
+
+- For new or revised long text-entry areas on mobile, use the full-template
+  homepage review interaction as the default pattern: open a dedicated focus
+  editing layer instead of a centered modal or direct typing inside a scaled
+  template textarea.
+- The focus editor must update the source field and live preview continuously;
+  do not wait for a final confirmation before synchronizing the text. Preserve
+  the source layout's actual limits and expose useful capacity feedback such as
+  the current rendered line count.
+- Size the focus layer from `visualViewport` while it is active so the editor
+  and its compact action bar remain inside the area above the virtual keyboard.
+  Let the textarea own its scrolling; do not move the root page, `.app`, or the
+  template on every keyboard or caret change.
+- Hide unrelated template controls and bottom navigation during focused entry.
+  Provide a one-tap full-card preview that dismisses the keyboard, plus an
+  obvious way to continue editing. Preserve and restore the textarea selection
+  and scroll position across that preview transition.
+- Do not treat editing a transformed, enlarged template textarea as the mobile
+  default: readable type, full-width card wrapping, and stable iOS caret
+  behavior cannot all be guaranteed at phone width. The dedicated editor is
+  the comfortable writing surface; the full-card view is the exact layout
+  preview.
+- Existing continuation-page review fields are an explicit exception for now:
+  keep their current direct typing behavior unchanged unless the user
+  specifically asks to revise continuation-page editing.
+
 ## Preview/export dual-render workflow
 
 - The intentional long-term architecture is two renderers: DOM/CSS for the live
