@@ -4330,6 +4330,7 @@
       }
       #importDataButton,
       #exportDataButton,
+      #storageManageButton,
       #saveToCollectionButton { display: none !important; }
       #resetButton { order: 1; }
       #downloadButton { order: 1; }

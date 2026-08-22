@@ -7,6 +7,7 @@
     const mobileDataDropdown = document.getElementById("mobileDataDropdown");
     const mobileImportDataButton = document.getElementById("mobileImportDataButton");
     const mobileExportDataButton = document.getElementById("mobileExportDataButton");
+    const mobileStorageManageButton = document.getElementById("mobileStorageManageButton");
     const stage = document.getElementById("stage");
     const imageToolPage = document.getElementById("imageToolPage");
     const collectionPage = document.getElementById("collectionPage");
@@ -47,6 +48,7 @@
     const downloadButton = document.getElementById("downloadButton");
     const importDataButton = document.getElementById("importDataButton");
     const exportDataButton = document.getElementById("exportDataButton");
+    const storageManageButton = document.getElementById("storageManageButton");
     const importDataInput = document.getElementById("importDataInput");
     const importButton = document.getElementById("importButton");
     const resetButton = document.getElementById("resetButton");
@@ -262,13 +264,18 @@
     const STATE_STORAGE_MODE_KEY = "otome-record-card-storage-mode-v1";
     const STATE_STORAGE_MODE_INDEXED_DB = "indexeddb";
     const STATE_DB_NAME = "otome-record-card-state-v1";
-    const STATE_DB_VERSION = 1;
+    const STATE_DB_VERSION = 3;
     const STATE_DB_STORE = "state";
     const STATE_DB_KEY = "current";
+    const STATE_DB_SETTINGS_STORE = "settings";
+    const STATE_DB_EDITOR_STORE = "editor-projects";
+    const STORAGE_SCHEMA_VERSION = 2;
     const IMAGE_DB_NAME = "otome-record-card-images-v1";
-    const IMAGE_DB_VERSION = 1;
+    const IMAGE_DB_VERSION = 3;
     const IMAGE_DB_STORE = "images";
+    const IMAGE_DB_META_STORE = "image-meta";
     const STATE_IMAGE_REFERENCE_PREFIX = "idb-image-v1:";
+    const STORED_IMAGE_GC_GRACE_MS = 24 * 60 * 60 * 1000;
     const SINGLE_COVER_MAX_SIDE = 1200;
     const COVER_JPEG_QUALITY = 0.85;
     const AUTO_SAVE_FAILURE_SESSION_KEY = "otome-record-card-auto-save-failure-warned-v1";
@@ -388,7 +395,13 @@
     let stateSaveQueue = Promise.resolve(true);
     const storedImageReferenceByDataUrl = new Map();
     const storedImageDataUrlByReference = new Map();
+    const storedImageReferencePromiseByDataUrl = new Map();
+    const storedImageDataUrlPromiseByReference = new Map();
     let storedImageRestoreWarned = false;
+    let lastPersistedStoredState = null;
+    let storedImageGcTimer = 0;
+    let collectionStorageReadyForGc = false;
+    let collectionStoredImageReferencesReader = async () => [];
     const CARD_THEMES = {
       "matcha-berry-cheese": {
         id: "matcha-berry-cheese",
@@ -605,6 +618,10 @@
     let coverWhiteFogMaskSrc = "";
     let coverEditorUndoStack = [];
     let coverEditorRedoStack = [];
+    let coverEditorHistoryCheckpoint = null;
+    let coverEditorOperations = [];
+    let coverEditorRedoOperations = [];
+    let coverEditorHistoryFormat = "operations-v1";
     let coverStickers = [];
     let stickerSources = [];
     let imageEditorMode = "template";
@@ -616,6 +633,10 @@
     let standaloneWhiteFogMaskSrc = "";
     let standaloneEditorUndoStack = [];
     let standaloneEditorRedoStack = [];
+    let standaloneEditorHistoryCheckpoint = null;
+    let standaloneEditorOperations = [];
+    let standaloneEditorRedoOperations = [];
+    let standaloneEditorHistoryFormat = "operations-v1";
     let standaloneStickers = [];
     let standaloneStickerSources = [];
     const defaultStickerSources = [
@@ -660,6 +681,10 @@
     let editorSourceSrc = "";
     let editorUndoStack = [];
     let editorRedoStack = [];
+    let editorUndoOperations = [];
+    let editorRedoOperations = [];
+    let editorHistoryFormat = "operations-v1";
+    let pendingEditorBrushOperation = null;
     let editorDrawing = false;
     let editorLastPoint = null;
     const editorTouchPointers = new Set();
@@ -729,6 +754,19 @@
     const UI_AUTO_SAVE_UNAVAILABLE_REASON = String.fromCharCode(0x6d4f, 0x89c8, 0x5668, 0x672c, 0x5730, 0x5b58, 0x50a8, 0x4e0d, 0x53ef, 0x7528, 0x3002);
     const UI_AUTO_SAVE_RISK = String.fromCharCode(0x5f53, 0x524d, 0x9875, 0x9762, 0x5185, 0x5bb9, 0x4ecd, 0x53ef, 0x7ee7, 0x7eed, 0x7f16, 0x8f91, 0xff0c, 0x4f46, 0x5237, 0x65b0, 0x6216, 0x5173, 0x95ed, 0x9875, 0x9762, 0x540e, 0xff0c, 0x672c, 0x6b21, 0x4fee, 0x6539, 0x53ef, 0x80fd, 0x65e0, 0x6cd5, 0x6062, 0x590d, 0x3002, 0x5efa, 0x8bae, 0x5148, 0x5bfc, 0x51fa, 0x5907, 0x4efd, 0x3002);
     const UI_AUTO_SAVE_ERROR_PREFIX = String.fromCharCode(0x539f, 0x56e0, 0xff1a);
+    const UI_STORAGE_ESTIMATE_PREFIX = String.fromCharCode(0x6d4f, 0x89c8, 0x5668, 0x4f30, 0x7b97, 0xff1a, 0x5df2, 0x4f7f, 0x7528, 0x20);
+    const UI_STORAGE_ESTIMATE_QUOTA = String.fromCharCode(0x20, 0x2f, 0x20, 0x914d, 0x989d, 0x7ea6, 0x20);
+    const UI_STORAGE_MANAGE_TITLE = String.fromCharCode(0x5b58, 0x50a8, 0x7ba1, 0x7406);
+    const UI_STORAGE_MANAGE_BODY = String.fromCharCode(0x53ea, 0x4f1a, 0x6e05, 0x7406, 0x6ca1, 0x6709, 0x88ab, 0x8349, 0x7a3f, 0x3001, 0x4fee, 0x56fe, 0x6216, 0x6536, 0x85cf, 0x4f7f, 0x7528, 0x7684, 0x56fe, 0x7247, 0x3002);
+    const UI_STORAGE_CLEAN_ACTION = String.fromCharCode(0x6e05, 0x7406, 0x65e0, 0x6548, 0x56fe, 0x7247);
+    const UI_STORAGE_CLEAN_CONFIRM = String.fromCharCode(0x786e, 0x5b9a, 0x6e05, 0x7406, 0x6240, 0x6709, 0x672a, 0x88ab, 0x4f7f, 0x7528, 0x7684, 0x56fe, 0x7247, 0x5417, 0xff1f);
+    const UI_STORAGE_CLEAN_RESULT_PREFIX = String.fromCharCode(0x6e05, 0x7406, 0x5b8c, 0x6210, 0xff0c, 0x5df2, 0x5220, 0x9664, 0x20);
+    const UI_STORAGE_CLEAN_RESULT_SUFFIX = String.fromCharCode(0x20, 0x5f20, 0x65e0, 0x6548, 0x56fe, 0x7247, 0x3002);
+    const UI_STORAGE_CLEAN_FAILED = String.fromCharCode(0x6e05, 0x7406, 0x5931, 0x8d25, 0xff1a);
+    const UI_STORAGE_PERSISTED = String.fromCharCode(0x6301, 0x4e45, 0x5b58, 0x50a8, 0x4fdd, 0x62a4, 0xff1a, 0x5df2, 0x542f, 0x7528);
+    const UI_STORAGE_NOT_PERSISTED = String.fromCharCode(0x6301, 0x4e45, 0x5b58, 0x50a8, 0x4fdd, 0x62a4, 0xff1a, 0x672a, 0x542f, 0x7528);
+    const UI_STORAGE_PERSIST_UNSUPPORTED = String.fromCharCode(0x6301, 0x4e45, 0x5b58, 0x50a8, 0x4fdd, 0x62a4, 0xff1a, 0x6d4f, 0x89c8, 0x5668, 0x4e0d, 0x652f, 0x6301);
+    const UI_CUSTOM_STICKER_DELETE_CONFIRM = String.fromCharCode(0x786e, 0x5b9a, 0x5220, 0x9664, 0x8fd9, 0x4e2a, 0x81ea, 0x5b9a, 0x4e49, 0x8d34, 0x7eb8, 0x5417, 0xff1f);
     const UI_EXPORT_BACKUP = String.fromCharCode(0x5bfc, 0x51fa, 0x5907, 0x4efd);
     const UI_DEFER_ACTION = String.fromCharCode(0x6682, 0x4e0d, 0x5904, 0x7406);
     const UI_DIALOG_NOTICE = String.fromCharCode(0x5c0f, 0x63d0, 0x793a);
@@ -867,6 +905,43 @@
       }
     }
 
+    async function browserStorageEstimateText() {
+      if (typeof navigator === "undefined" || typeof navigator.storage?.estimate !== "function") return "";
+      try {
+        const estimate = await navigator.storage.estimate();
+        const usage = Number(estimate?.usage);
+        const quota = Number(estimate?.quota);
+        if (!Number.isFinite(usage) || !Number.isFinite(quota)) return "";
+        const megabytes = (bytes) => (bytes / (1024 * 1024)).toFixed(1);
+        return UI_STORAGE_ESTIMATE_PREFIX + megabytes(usage) + " MB" + UI_STORAGE_ESTIMATE_QUOTA + megabytes(quota) + " MB";
+      } catch (estimateError) {
+        console.warn("Storage estimate unavailable", estimateError);
+        return "";
+      }
+    }
+
+    async function requestPersistentStorage() {
+      if (typeof navigator === "undefined" || typeof navigator.storage?.persist !== "function") return null;
+      try {
+        return Boolean(await navigator.storage.persist());
+      } catch (error) {
+        console.warn("Persistent storage request failed", error);
+        return false;
+      }
+    }
+
+    async function persistentStorageStatusText(request = false) {
+      if (typeof navigator === "undefined" || typeof navigator.storage?.persisted !== "function") return UI_STORAGE_PERSIST_UNSUPPORTED;
+      try {
+        const persisted = request ? await requestPersistentStorage() : await navigator.storage.persisted();
+        if (persisted == null) return UI_STORAGE_PERSIST_UNSUPPORTED;
+        return persisted ? UI_STORAGE_PERSISTED : UI_STORAGE_NOT_PERSISTED;
+      } catch (error) {
+        console.warn("Persistent storage status check failed", error);
+        return UI_STORAGE_NOT_PERSISTED;
+      }
+    }
+
     function showAutoSaveFailure(error) {
       if (autoSaveFailureWasWarnedThisSession()) return;
       markAutoSaveFailureWarnedThisSession();
@@ -874,14 +949,46 @@
       const detail = error && (error.name || error.message)
         ? Array.from(new Set([error.name, error.message].filter(Boolean))).join(": ")
         : "";
-      const message = reason + "\n\n" + UI_AUTO_SAVE_RISK
-        + (detail ? "\n\n" + UI_AUTO_SAVE_ERROR_PREFIX + detail : "");
-      void queueAppDialog(message, true, UI_AUTO_SAVE_FAILURE_TITLE, {
-        confirmLabel: UI_EXPORT_BACKUP,
-        cancelLabel: UI_DEFER_ACTION
+      void browserStorageEstimateText().then((estimateText) => {
+        const message = reason
+          + (estimateText ? "\n\n" + estimateText : "")
+          + "\n\n" + UI_AUTO_SAVE_RISK
+          + (detail ? "\n\n" + UI_AUTO_SAVE_ERROR_PREFIX + detail : "");
+        return queueAppDialog(message, true, UI_AUTO_SAVE_FAILURE_TITLE, {
+          confirmLabel: UI_EXPORT_BACKUP,
+          cancelLabel: UI_DEFER_ACTION
+        });
       }).then((shouldExport) => {
         if (shouldExport) exportRecordData();
       });
+    }
+
+    async function openStorageManagement() {
+      const persistenceRequest = persistentStorageStatusText(true);
+      const [estimateText, persistenceText] = await Promise.all([browserStorageEstimateText(), persistenceRequest]);
+      const shouldClean = await queueAppDialog(
+        (estimateText ? estimateText + "\n" : "") + persistenceText + "\n\n" + UI_STORAGE_MANAGE_BODY,
+        true,
+        UI_STORAGE_MANAGE_TITLE,
+        { confirmLabel: UI_STORAGE_CLEAN_ACTION, cancelLabel: UI_CLOSE }
+      );
+      if (!shouldClean || !await showAppConfirm(UI_STORAGE_CLEAN_CONFIRM)) return;
+      try {
+        if (!await saveState()) throw new Error("Current state could not be saved before cleanup");
+        const result = await garbageCollectStoredImages(lastPersistedStoredState, true);
+        const nextEstimateText = await browserStorageEstimateText();
+        await showAppAlert(
+          UI_STORAGE_CLEAN_RESULT_PREFIX + result.deleted + UI_STORAGE_CLEAN_RESULT_SUFFIX
+          + (nextEstimateText ? "\n\n" + nextEstimateText : ""),
+          UI_STORAGE_MANAGE_TITLE
+        );
+      } catch (error) {
+        console.error("Manual storage cleanup failed", error);
+        const detail = error && (error.name || error.message)
+          ? [error.name, error.message].filter(Boolean).join(": ")
+          : UI_AUTO_SAVE_UNAVAILABLE_REASON;
+        await showAppAlert(UI_STORAGE_CLEAN_FAILED + detail, UI_STORAGE_MANAGE_TITLE);
+      }
     }
 
     function showAppFontFallbackPrompt(errorMessage) {
@@ -943,17 +1050,6 @@
       }
     }
 
-    function persistCompactContinuationSnapshot() {
-      try {
-        localStorage.setItem(COMPACT_CONTINUATION_STORAGE_KEY, JSON.stringify({
-          current: continuationState.compact.current,
-          pages: continuationState.compact.pages.slice()
-        }));
-      } catch (error) {
-        console.warn("Compact continuation snapshot save failed", error);
-      }
-    }
-
     function compactContinuationReviewText() {
       return String(compactContinuationReview.innerText || compactContinuationReview.textContent || "").replace(/\r\n?/g, "\n");
     }
@@ -984,7 +1080,6 @@
       const pageState = continuationState.compact;
       if (pageState.current <= 0) return;
       pageState.pages[pageState.current - 1] = value;
-      persistCompactContinuationSnapshot();
     }
 
     function commitCompactContinuationReviewText() {
@@ -2777,6 +2872,7 @@
         request.onupgradeneeded = () => {
           const db = request.result;
           if (!db.objectStoreNames.contains(IMAGE_DB_STORE)) db.createObjectStore(IMAGE_DB_STORE);
+          if (!db.objectStoreNames.contains(IMAGE_DB_META_STORE)) db.createObjectStore(IMAGE_DB_META_STORE);
         };
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error || new Error("Image database open failed"));
@@ -2784,15 +2880,45 @@
       });
     }
 
-    async function writeStoredImageBlob(reference, blob) {
+    function mergeStoredImageMetadata(current, patch) {
+      const existing = current && typeof current === "object" ? current : {};
+      const next = patch && typeof patch === "object" ? patch : {};
+      const merged = { ...existing, ...next, createdAt: Number(existing.createdAt) || Number(next.createdAt) || Date.now() };
+      if (existing.cache === false || next.cache === false) merged.cache = false;
+      delete merged.dedupeByContent;
+      return merged;
+    }
+
+    async function writeStoredImageBlob(reference, blob, metadata = null) {
       const db = await openImageDatabase();
       try {
         await new Promise((resolve, reject) => {
-          const transaction = db.transaction(IMAGE_DB_STORE, "readwrite");
+          const transaction = db.transaction([IMAGE_DB_STORE, IMAGE_DB_META_STORE], "readwrite");
           transaction.objectStore(IMAGE_DB_STORE).put(blob, reference);
+          const metaStore = transaction.objectStore(IMAGE_DB_META_STORE);
+          const metaRequest = metaStore.get(reference);
+          metaRequest.onsuccess = () => metaStore.put(mergeStoredImageMetadata(metaRequest.result, metadata), reference);
           transaction.oncomplete = () => resolve();
           transaction.onerror = () => reject(transaction.error || new Error("Image blob write failed"));
           transaction.onabort = () => reject(transaction.error || new Error("Image blob write aborted"));
+        });
+      } finally {
+        db.close();
+      }
+    }
+
+    async function updateStoredImageMetadata(reference, metadata) {
+      if (!reference || !metadata || typeof metadata !== "object") return;
+      const db = await openImageDatabase();
+      try {
+        await new Promise((resolve, reject) => {
+          const transaction = db.transaction(IMAGE_DB_META_STORE, "readwrite");
+          const store = transaction.objectStore(IMAGE_DB_META_STORE);
+          const request = store.get(reference);
+          request.onsuccess = () => store.put(mergeStoredImageMetadata(request.result, metadata), reference);
+          transaction.oncomplete = () => resolve();
+          transaction.onerror = () => reject(transaction.error || new Error("Image metadata update failed"));
+          transaction.onabort = () => reject(transaction.error || new Error("Image metadata update aborted"));
         });
       } finally {
         db.close();
@@ -2813,33 +2939,161 @@
       }
     }
 
-    async function registerNewStoredImage(dataUrl) {
-      if (!String(dataUrl || "").startsWith("data:image/")) return dataUrl;
-      if (storedImageReferenceByDataUrl.has(dataUrl)) return dataUrl;
+    async function readStoredImageMetadata(reference) {
+      const db = await openImageDatabase();
       try {
-        const reference = nextStoredImageReference();
-        await writeStoredImageBlob(reference, dataUrlToBlob(dataUrl));
-        storedImageReferenceByDataUrl.set(dataUrl, reference);
-        storedImageDataUrlByReference.set(reference, dataUrl);
+        return await new Promise((resolve, reject) => {
+          const transaction = db.transaction(IMAGE_DB_META_STORE, "readonly");
+          const request = transaction.objectStore(IMAGE_DB_META_STORE).get(reference);
+          request.onsuccess = () => resolve(request.result || null);
+          request.onerror = () => reject(request.error || new Error("Image metadata read failed"));
+        });
+      } finally {
+        db.close();
+      }
+    }
+
+    async function storedImageContentHash(blob) {
+      if (!window.crypto?.subtle || !blob) return "";
+      try {
+        const digest = await window.crypto.subtle.digest("SHA-256", await blob.arrayBuffer());
+        return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+      } catch (error) {
+        console.warn("Image content hash unavailable", error);
+        return "";
+      }
+    }
+
+    async function findStoredImageReferenceByContentHash(contentHash) {
+      if (!contentHash) return "";
+      const { metadata } = await storedImageKeysAndMetadata();
+      for (const [reference, entry] of metadata) {
+        if (entry?.contentHash === contentHash) return reference;
+      }
+      return "";
+    }
+
+    async function registerNewStoredImage(dataUrl, options = null) {
+      if (!String(dataUrl || "").startsWith("data:image/")) return dataUrl;
+      try {
+        await ensureStoredImageReference(dataUrl, options);
       } catch (error) {
         console.warn("Image blob storage unavailable, keeping inline image", error);
       }
       return dataUrl;
     }
 
-    function storedImageReference(value) {
-      return storedImageReferenceByDataUrl.get(value) || value || "";
+    async function ensureStoredImageReference(value, options = null) {
+      const source = String(value || "");
+      const metadataOptions = options && typeof options === "object" ? { ...options } : {};
+      const dedupeByContent = Boolean(metadataOptions.dedupeByContent);
+      delete metadataOptions.dedupeByContent;
+      if (!source) return source;
+      if (source.startsWith(STATE_IMAGE_REFERENCE_PREFIX)) {
+        if (Object.keys(metadataOptions).length) await updateStoredImageMetadata(source, metadataOptions);
+        return source;
+      }
+      if (!source.startsWith("data:image/")) return source;
+      const existingReference = storedImageReferenceByDataUrl.get(source);
+      if (existingReference) {
+        if (dedupeByContent && !metadataOptions.contentHash) metadataOptions.contentHash = await storedImageContentHash(dataUrlToBlob(source));
+        if (Object.keys(metadataOptions).length) await updateStoredImageMetadata(existingReference, metadataOptions);
+        return existingReference;
+      }
+      if (storedImageReferencePromiseByDataUrl.has(source)) {
+        const pendingReference = await storedImageReferencePromiseByDataUrl.get(source);
+        if (Object.keys(metadataOptions).length) await updateStoredImageMetadata(pendingReference, metadataOptions);
+        return pendingReference;
+      }
+      const pending = (async () => {
+        const blob = dataUrlToBlob(source);
+        if (dedupeByContent && !metadataOptions.contentHash) metadataOptions.contentHash = await storedImageContentHash(blob);
+        const duplicateReference = dedupeByContent ? await findStoredImageReferenceByContentHash(metadataOptions.contentHash) : "";
+        const reference = duplicateReference || nextStoredImageReference();
+        try {
+          await writeStoredImageBlob(reference, blob, metadataOptions);
+        } catch (error) {
+          if (!isStorageQuotaError(error)) throw error;
+          await clearRebuildableImageCache();
+          await writeStoredImageBlob(reference, blob, metadataOptions);
+        }
+        storedImageReferenceByDataUrl.set(source, reference);
+        storedImageDataUrlByReference.set(reference, source);
+        return reference;
+      })();
+      storedImageReferencePromiseByDataUrl.set(source, pending);
+      try {
+        return await pending;
+      } finally {
+        storedImageReferencePromiseByDataUrl.delete(source);
+      }
+    }
+
+    async function rebuildStoredImageBlob(metadata) {
+      let rebuildUrl = normalizeImageUrl(metadata?.rebuildUrl);
+      const rebuildWorkno = normalizeWorkno(metadata?.rebuildWorkno);
+      if (rebuildWorkno) {
+        try {
+          const product = parseDlsiteProduct(await fetchProductJson(rebuildWorkno));
+          if (product?.coverUrl) rebuildUrl = normalizeImageUrl(product.coverUrl);
+        } catch (error) {
+          console.warn("Stored image cache RJ rebuild lookup failed", rebuildWorkno, error);
+        }
+      }
+      if (!rebuildUrl) throw new Error("Stored image cache has no rebuild URL");
+      const response = await fetchWithTimeout(rebuildUrl, { mode: "cors", credentials: "omit" }, isMobileView() ? 10000 : 15000);
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const sourceBlob = await response.blob();
+      if (!sourceBlob.type || !sourceBlob.type.startsWith("image/")) throw new Error("Not an image response");
+      const image = await loadImage(await blobToDataUrl(sourceBlob));
+      const width = image.naturalWidth || image.width || 1;
+      const height = image.naturalHeight || image.height || 1;
+      const maxSide = Math.max(1, Number(metadata.rebuildMaxSide) || Math.max(width, height));
+      const scale = Math.min(1, maxSide / Math.max(width, height));
+      const outWidth = Math.max(1, Math.round(width * scale));
+      const outHeight = Math.max(1, Math.round(height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = outWidth;
+      canvas.height = outHeight;
+      const ctx = canvas.getContext("2d");
+      if (metadata.rebuildForceJpeg) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, outWidth, outHeight);
+      }
+      ctx.drawImage(image, 0, 0, outWidth, outHeight);
+      const dataUrl = metadata.rebuildForceJpeg || !canvasHasTransparency(ctx, outWidth, outHeight)
+        ? canvas.toDataURL("image/jpeg", COVER_JPEG_QUALITY)
+        : canvas.toDataURL("image/png");
+      return dataUrlToBlob(dataUrl);
+    }
+
+    async function readOrRebuildStoredImageBlob(reference) {
+      let blob = await readStoredImageBlob(reference);
+      if (blob) return blob;
+      const metadata = await readStoredImageMetadata(reference);
+      if (!metadata?.cache || !metadata.rebuildUrl) throw new Error("Stored image is missing: " + reference);
+      blob = await rebuildStoredImageBlob(metadata);
+      await writeStoredImageBlob(reference, blob, metadata);
+      return blob;
     }
 
     async function resolveStoredImageReference(value) {
       if (!String(value || "").startsWith(STATE_IMAGE_REFERENCE_PREFIX)) return value || "";
       if (storedImageDataUrlByReference.has(value)) return storedImageDataUrlByReference.get(value);
-      const blob = await readStoredImageBlob(value);
-      if (!blob) throw new Error("Stored image is missing: " + value);
-      const dataUrl = await blobToDataUrl(blob);
-      storedImageDataUrlByReference.set(value, dataUrl);
-      storedImageReferenceByDataUrl.set(dataUrl, value);
-      return dataUrl;
+      if (storedImageDataUrlPromiseByReference.has(value)) return storedImageDataUrlPromiseByReference.get(value);
+      const pending = (async () => {
+        const blob = await readOrRebuildStoredImageBlob(value);
+        const dataUrl = await blobToDataUrl(blob);
+        storedImageDataUrlByReference.set(value, dataUrl);
+        storedImageReferenceByDataUrl.set(dataUrl, value);
+        return dataUrl;
+      })();
+      storedImageDataUrlPromiseByReference.set(value, pending);
+      try {
+        return await pending;
+      } finally {
+        storedImageDataUrlPromiseByReference.delete(value);
+      }
     }
 
     async function resolveStoredImageReferenceSafely(value) {
@@ -2858,6 +3112,113 @@
       }
     }
 
+    function collectStoredImageReferences(value, references = new Set()) {
+      if (typeof value === "string") {
+        if (value.startsWith(STATE_IMAGE_REFERENCE_PREFIX)) references.add(value);
+        return references;
+      }
+      if (Array.isArray(value)) {
+        value.forEach((item) => collectStoredImageReferences(item, references));
+        return references;
+      }
+      if (value && typeof value === "object") {
+        Object.values(value).forEach((item) => collectStoredImageReferences(item, references));
+      }
+      return references;
+    }
+
+    async function storedImageKeysAndMetadata() {
+      const db = await openImageDatabase();
+      try {
+        return await new Promise((resolve, reject) => {
+          const transaction = db.transaction([IMAGE_DB_STORE, IMAGE_DB_META_STORE], "readonly");
+          const imageKeysRequest = transaction.objectStore(IMAGE_DB_STORE).getAllKeys();
+          const metaKeysRequest = transaction.objectStore(IMAGE_DB_META_STORE).getAllKeys();
+          const metaValuesRequest = transaction.objectStore(IMAGE_DB_META_STORE).getAll();
+          transaction.oncomplete = () => {
+            const metadata = new Map((metaKeysRequest.result || []).map((key, index) => [key, metaValuesRequest.result[index]]));
+            resolve({ imageKeys: imageKeysRequest.result || [], metaKeys: metaKeysRequest.result || [], metadata });
+          };
+          transaction.onerror = () => reject(transaction.error || new Error("Image metadata read failed"));
+          transaction.onabort = () => reject(transaction.error || new Error("Image metadata read aborted"));
+        });
+      } finally {
+        db.close();
+      }
+    }
+
+    async function garbageCollectStoredImages(storedState, force = false) {
+      if (!storedState || !collectionStorageReadyForGc) return { deleted: 0, kept: 0 };
+      const liveReferences = collectStoredImageReferences(storedState);
+      const collectionReferences = await collectionStoredImageReferencesReader();
+      collectionReferences.forEach((reference) => liveReferences.add(reference));
+      const { imageKeys, metaKeys, metadata } = await storedImageKeysAndMetadata();
+      const allReferences = Array.from(new Set(imageKeys.concat(metaKeys)));
+      const now = Date.now();
+      const missingMetadata = [];
+      const expiredReferences = [];
+      allReferences.forEach((reference) => {
+        if (liveReferences.has(reference)) return;
+        const createdAt = Number(metadata.get(reference)?.createdAt);
+        if (force) expiredReferences.push(reference);
+        else if (!Number.isFinite(createdAt)) missingMetadata.push(reference);
+        else if (now - createdAt >= STORED_IMAGE_GC_GRACE_MS) expiredReferences.push(reference);
+      });
+      if (!missingMetadata.length && !expiredReferences.length) return { deleted: 0, kept: allReferences.length };
+      const db = await openImageDatabase();
+      try {
+        await new Promise((resolve, reject) => {
+          const transaction = db.transaction([IMAGE_DB_STORE, IMAGE_DB_META_STORE], "readwrite");
+          const imageStore = transaction.objectStore(IMAGE_DB_STORE);
+          const metaStore = transaction.objectStore(IMAGE_DB_META_STORE);
+          missingMetadata.forEach((reference) => metaStore.put({ createdAt: now }, reference));
+          expiredReferences.forEach((reference) => {
+            imageStore.delete(reference);
+            metaStore.delete(reference);
+            const dataUrl = storedImageDataUrlByReference.get(reference);
+            storedImageDataUrlByReference.delete(reference);
+            if (dataUrl) storedImageReferenceByDataUrl.delete(dataUrl);
+          });
+          transaction.oncomplete = () => resolve();
+          transaction.onerror = () => reject(transaction.error || new Error("Image cleanup failed"));
+          transaction.onabort = () => reject(transaction.error || new Error("Image cleanup aborted"));
+        });
+      } finally {
+        db.close();
+      }
+      return { deleted: expiredReferences.length, kept: allReferences.length - expiredReferences.length };
+    }
+
+    async function clearRebuildableImageCache() {
+      const { imageKeys, metadata } = await storedImageKeysAndMetadata();
+      const cacheReferences = imageKeys.filter((reference) => metadata.get(reference)?.cache === true && metadata.get(reference)?.rebuildUrl);
+      if (!cacheReferences.length) return 0;
+      const db = await openImageDatabase();
+      try {
+        await new Promise((resolve, reject) => {
+          const transaction = db.transaction(IMAGE_DB_STORE, "readwrite");
+          const imageStore = transaction.objectStore(IMAGE_DB_STORE);
+          cacheReferences.forEach((reference) => imageStore.delete(reference));
+          transaction.oncomplete = () => resolve();
+          transaction.onerror = () => reject(transaction.error || new Error("Rebuildable image cache cleanup failed"));
+          transaction.onabort = () => reject(transaction.error || new Error("Rebuildable image cache cleanup aborted"));
+        });
+      } finally {
+        db.close();
+      }
+      return cacheReferences.length;
+    }
+
+    function scheduleStoredImageGarbageCollection(storedState = lastPersistedStoredState) {
+      if (storedState) lastPersistedStoredState = storedState;
+      window.clearTimeout(storedImageGcTimer);
+      storedImageGcTimer = window.setTimeout(() => {
+        void garbageCollectStoredImages(lastPersistedStoredState).catch((error) => {
+          console.warn("Stored image cleanup skipped", error);
+        });
+      }, 5000);
+    }
+
     function canvasHasTransparency(ctx, width, height) {
       const pixels = ctx.getImageData(0, 0, width, height).data;
       for (let index = 3; index < pixels.length; index += 4) {
@@ -2866,7 +3227,18 @@
       return false;
     }
 
-    async function singleCoverStorageDataUrl(dataUrl) {
+    function rebuildableRemoteCoverOptions(url, maxSide, forceJpeg, workno = "") {
+      return {
+        assetType: "remote-cover-cache",
+        cache: true,
+        rebuildUrl: normalizeImageUrl(url),
+        rebuildWorkno: normalizeWorkno(workno),
+        rebuildMaxSide: maxSide,
+        rebuildForceJpeg: Boolean(forceJpeg)
+      };
+    }
+
+    async function singleCoverStorageDataUrl(dataUrl, storageOptions = null) {
       if (!dataUrl) return "";
       const image = await loadImage(dataUrl);
       const width = image.naturalWidth || image.width || 1;
@@ -2883,18 +3255,18 @@
       const output = canvasHasTransparency(ctx, outWidth, outHeight)
         ? canvas.toDataURL("image/png")
         : canvas.toDataURL("image/jpeg", COVER_JPEG_QUALITY);
-      await registerNewStoredImage(output);
+      await registerNewStoredImage(output, storageOptions);
       return output;
     }
 
-    async function importCoverFromUrl(url) {
+    async function importCoverFromUrl(url, workno = "") {
       const normalizedUrl = normalizeImageUrl(url);
       if (!normalizedUrl) return false;
       const response = await fetchWithTimeout(normalizedUrl, { mode: "cors", credentials: "omit" }, isMobileView() ? 10000 : 15000);
       if (!response.ok) throw new Error("HTTP " + response.status);
       const blob = await response.blob();
       if (!blob.type || !blob.type.startsWith("image/")) throw new Error("Not an image response");
-      await setCoverFromDataUrl(await blobToDataUrl(blob));
+      await setCoverFromDataUrl(await blobToDataUrl(blob), rebuildableRemoteCoverOptions(normalizedUrl, SINGLE_COVER_MAX_SIDE, false, workno));
       return true;
     }
 
@@ -3016,7 +3388,7 @@
         if (importMode === "overwrite" || !coverImage.getAttribute("src")) {
           if (product.coverUrl) {
             try {
-              await importCoverFromUrl(product.coverUrl);
+              await importCoverFromUrl(product.coverUrl, workno);
             } catch (coverError) {
               console.warn("cover import failed", coverError);
               failures.push({ label: "BK", reason: fullImportFailureReason(coverError, "cover") + String.fromCharCode(0xff0c) + UI_IMPORT_UNCHANGED_MANUAL });
@@ -3217,6 +3589,39 @@
       return Array.isArray(list) ? list.map(cloneSticker).filter(Boolean) : [];
     }
 
+    function cloneEditorOperations(list) {
+      return Array.isArray(list) ? list.map((operation) => operation ? {
+        ...operation,
+        points: Array.isArray(operation.points) ? operation.points.map((point) => ({ x: Number(point.x) || 0, y: Number(point.y) || 0 })) : [],
+        stickers: cloneStickerList(operation.stickers)
+      } : null).filter(Boolean) : [];
+    }
+
+    async function customStickerSourceContentHash(source) {
+      if (!source || source.type !== "image") return "";
+      if (source.contentHash) return source.contentHash;
+      const imageSource = source.localSrc || source.src || "";
+      if (!String(imageSource).startsWith("data:image/")) return "";
+      const contentHash = await storedImageContentHash(dataUrlToBlob(imageSource));
+      if (contentHash) source.contentHash = contentHash;
+      return contentHash;
+    }
+
+    async function reusableCustomStickerSource(localSrc, contentHash) {
+      const pools = [stickerSources, standaloneStickerSources, templateEditorGlobalsBackup?.stickerSources];
+      const seenIds = new Set();
+      for (const pool of pools) {
+        for (const source of (Array.isArray(pool) ? pool : [])) {
+          if (!source || source.type !== "image" || seenIds.has(source.id)) continue;
+          seenIds.add(source.id);
+          const sourceImage = source.localSrc || source.src || "";
+          if (sourceImage === localSrc) return source;
+          if (contentHash && await customStickerSourceContentHash(source) === contentHash) return source;
+        }
+      }
+      return null;
+    }
+
     function allStickerSources() {
       return defaultStickerSources.concat(stickerSources || []);
     }
@@ -3283,10 +3688,22 @@
       const filterSnapshots = (list) => (Array.isArray(list) ? list : []).map((item) => (
         item ? { ...item, stickers: cloneStickerList((item.stickers || []).filter((sticker) => sticker.sourceId !== sourceId)) } : item
       ));
+      const filterOperations = (list) => cloneEditorOperations(list).map((item) => ({
+        ...item,
+        stickers: cloneStickerList((item.stickers || []).filter((sticker) => sticker.sourceId !== sourceId))
+      }));
       editorUndoStack = filterSnapshots(editorUndoStack);
       editorRedoStack = filterSnapshots(editorRedoStack);
       coverEditorUndoStack = filterSnapshots(coverEditorUndoStack);
       coverEditorRedoStack = filterSnapshots(coverEditorRedoStack);
+      coverEditorHistoryCheckpoint = filterSnapshots([coverEditorHistoryCheckpoint])[0] || null;
+      coverEditorOperations = filterOperations(coverEditorOperations);
+      coverEditorRedoOperations = filterOperations(coverEditorRedoOperations);
+      standaloneEditorHistoryCheckpoint = filterSnapshots([standaloneEditorHistoryCheckpoint])[0] || null;
+      standaloneEditorOperations = filterOperations(standaloneEditorOperations);
+      standaloneEditorRedoOperations = filterOperations(standaloneEditorRedoOperations);
+      editorUndoOperations = filterOperations(editorUndoOperations);
+      editorRedoOperations = filterOperations(editorRedoOperations);
       stickerImageCache.delete(sourceId);
       if (selectedStickerId && !coverStickers.some((sticker) => sticker.id === selectedStickerId)) selectedStickerId = null;
       renderStickerPicker();
@@ -3355,6 +3772,7 @@
       clampSticker(sticker);
       coverStickers.push(sticker);
       selectedStickerId = sticker.id;
+      commitEditorOperation({ kind: "stickers" });
       renderImageEditor();
       saveEditorProject();
       saveState();
@@ -3377,20 +3795,38 @@
     }
 
     function persistedEditorHistoryLimit() {
-      if (imageEditorMode === "standalone") return 12;
+      if (imageEditorMode === "standalone") return 6;
       if (imageEditorMode === "collection-detail") return 3;
       return 6;
+    }
+
+    function activeEditorHistoryLimit() {
+      return editorHistoryFormat === "operations-v1" ? persistedEditorHistoryLimit() : editorHistoryLimit();
     }
 
     function snapshotEditorMasks(clearRedo = true) {
       const snapshot = currentEditorSnapshot();
       if (!snapshot) return;
       editorUndoStack.push(snapshot);
-      if (editorUndoStack.length > editorHistoryLimit()) editorUndoStack.shift();
-      if (clearRedo) editorRedoStack = [];
+      if (editorUndoStack.length > activeEditorHistoryLimit()) editorUndoStack.shift();
+      if (clearRedo) {
+        editorRedoStack = [];
+        if (editorHistoryFormat === "operations-v1") editorRedoOperations = [];
+      }
     }
 
-    function restoreEditorSnapshot(snapshot) {
+    function commitEditorOperation(operation) {
+      if (editorHistoryFormat !== "operations-v1" || !operation) return;
+      editorUndoOperations.push({ ...operation, stickers: cloneStickerList(coverStickers) });
+      while (editorUndoOperations.length > editorUndoStack.length) editorUndoOperations.shift();
+      while (editorUndoOperations.length > persistedEditorHistoryLimit()) {
+        editorUndoOperations.shift();
+        editorUndoStack.shift();
+      }
+      editorRedoOperations = [];
+    }
+
+    function restoreEditorSnapshotSilently(snapshot) {
       if (!snapshot) return;
       editMosaicMaskCtx.putImageData(snapshot.mosaic, 0, 0);
       editBlurMaskCtx.putImageData(snapshot.blur, 0, 0);
@@ -3399,6 +3835,11 @@
       resetEditorMaskCompositeModes();
       coverStickers = cloneStickerList(snapshot.stickers);
       selectedStickerId = null;
+    }
+
+    function restoreEditorSnapshot(snapshot) {
+      if (!snapshot) return;
+      restoreEditorSnapshotSilently(snapshot);
       renderImageEditor();
     }
 
@@ -3407,7 +3848,11 @@
       if (!previous) return;
       const current = currentEditorSnapshot();
       if (current) editorRedoStack.push(current);
-      if (editorRedoStack.length > editorHistoryLimit()) editorRedoStack.shift();
+      if (editorRedoStack.length > activeEditorHistoryLimit()) editorRedoStack.shift();
+      if (editorHistoryFormat === "operations-v1") {
+        const operation = editorUndoOperations.pop();
+        if (operation) editorRedoOperations.push(operation);
+      }
       restoreEditorSnapshot(previous);
       saveEditorProject();
       saveState();
@@ -3418,7 +3863,11 @@
       if (!next) return;
       const current = currentEditorSnapshot();
       if (current) editorUndoStack.push(current);
-      if (editorUndoStack.length > editorHistoryLimit()) editorUndoStack.shift();
+      if (editorUndoStack.length > activeEditorHistoryLimit()) editorUndoStack.shift();
+      if (editorHistoryFormat === "operations-v1") {
+        const operation = editorRedoOperations.pop();
+        if (operation) editorUndoOperations.push(operation);
+      }
       restoreEditorSnapshot(next);
       saveEditorProject();
       saveState();
@@ -3469,8 +3918,35 @@
     }
 
     async function restoreEditorUndoStack(width, height) {
-      editorUndoStack = await restoreEditorStack(coverEditorUndoStack, width, height);
-      editorRedoStack = await restoreEditorStack(coverEditorRedoStack, width, height);
+      editorHistoryFormat = coverEditorHistoryFormat === "operations-v1" ? "operations-v1" : "legacy";
+      editorUndoOperations = [];
+      editorRedoOperations = [];
+      if (editorHistoryFormat !== "operations-v1") {
+        editorUndoStack = await restoreEditorStack(coverEditorUndoStack, width, height);
+        editorRedoStack = await restoreEditorStack(coverEditorRedoStack, width, height);
+        return;
+      }
+      const finalSnapshot = currentEditorSnapshot();
+      const restoredCheckpoint = await restoreEditorStack(coverEditorHistoryCheckpoint ? [coverEditorHistoryCheckpoint] : [], width, height);
+      const checkpoint = restoredCheckpoint[0] || finalSnapshot;
+      editorUndoOperations = cloneEditorOperations(coverEditorOperations).slice(-persistedEditorHistoryLimit());
+      editorRedoOperations = cloneEditorOperations(coverEditorRedoOperations).slice(-persistedEditorHistoryLimit());
+      editorUndoStack = [];
+      editorRedoStack = [];
+      if (!checkpoint || !finalSnapshot) return;
+      restoreEditorSnapshotSilently(checkpoint);
+      editorUndoOperations.forEach((operation) => {
+        editorUndoStack.push(currentEditorSnapshot());
+        applyEditorOperation(operation);
+      });
+      restoreEditorSnapshotSilently(finalSnapshot);
+      const redoTargets = [];
+      editorRedoOperations.slice().reverse().forEach((operation) => {
+        applyEditorOperation(operation);
+        redoTargets.push(currentEditorSnapshot());
+      });
+      editorRedoStack = redoTargets.reverse();
+      restoreEditorSnapshotSilently(finalSnapshot);
     }
 
     function saveEditorProject() {
@@ -3479,8 +3955,23 @@
       coverBlurMaskSrc = editBlurMaskCanvas.toDataURL("image/png");
       coverWhiteFogMaskSrc = editWhiteFogMaskCanvas.toDataURL("image/png");
       const historyLimit = persistedEditorHistoryLimit();
-      coverEditorUndoStack = editorUndoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-historyLimit);
-      coverEditorRedoStack = editorRedoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-historyLimit);
+      if (editorHistoryFormat === "operations-v1") {
+        const hasPersistedHistory = editorUndoOperations.length > 0 || editorRedoOperations.length > 0;
+        const checkpoint = hasPersistedHistory ? (editorUndoStack[0] || currentEditorSnapshot()) : null;
+        coverEditorHistoryCheckpoint = maskSnapshotToDataUrls(checkpoint);
+        coverEditorOperations = cloneEditorOperations(editorUndoOperations).slice(-historyLimit);
+        coverEditorRedoOperations = cloneEditorOperations(editorRedoOperations).slice(-historyLimit);
+        coverEditorHistoryFormat = "operations-v1";
+        coverEditorUndoStack = [];
+        coverEditorRedoStack = [];
+      } else {
+        coverEditorUndoStack = editorUndoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-historyLimit);
+        coverEditorRedoStack = editorRedoStack.map(maskSnapshotToDataUrls).filter(Boolean).slice(-historyLimit);
+        coverEditorHistoryCheckpoint = null;
+        coverEditorOperations = [];
+        coverEditorRedoOperations = [];
+        coverEditorHistoryFormat = "legacy";
+      }
       coverStickers = cloneStickerList(coverStickers);
       if (imageEditorMode === "standalone") syncStandaloneFromEditorGlobals();
     }
@@ -3848,18 +4339,19 @@
       editWhiteFogMaskCtx.restore();
     }
 
-    function drawEditorStroke(from, to) {
-      const size = Number(brushSize.value) || 42;
+    function drawEditorStroke(from, to, options = null) {
+      const size = Number(options?.size ?? brushSize.value) || 42;
+      const tool = options?.tool || editorTool;
       resetEditorMaskCompositeModes();
-      if (editorTool === "erase") {
+      if (tool === "erase") {
         paintEditorMaskStroke(editMosaicMaskCtx, from, to, size, "destination-out");
         paintEditorMaskStroke(editBlurMaskCtx, from, to, size, "destination-out");
         paintEditorMaskStroke(editWhiteFogMaskCtx, from, to, size, "destination-out");
-      } else if (editorTool === "blur") {
+      } else if (tool === "blur") {
         paintEditorMaskStroke(editBlurMaskCtx, from, to, size, "source-over");
         paintEditorMaskStroke(editMosaicMaskCtx, from, to, size, "destination-out");
         paintEditorMaskStroke(editWhiteFogMaskCtx, from, to, size, "destination-out");
-      } else if (editorTool === "white-fog") {
+      } else if (tool === "white-fog") {
         paintWhiteFogStroke(from, to, size);
         paintEditorMaskStroke(editMosaicMaskCtx, from, to, size, "destination-out");
         paintEditorMaskStroke(editBlurMaskCtx, from, to, size, "destination-out");
@@ -3869,7 +4361,30 @@
         paintEditorMaskStroke(editWhiteFogMaskCtx, from, to, size, "destination-out");
       }
       resetEditorMaskCompositeModes();
-      requestEditorRender();
+      if (options?.render !== false) requestEditorRender();
+    }
+
+    function applyEditorOperation(operation) {
+      if (!operation) return;
+      if (operation.kind === "clear") {
+        clearEditorMasks();
+      } else if (operation.kind === "brush" && operation.didDraw) {
+        const scaleX = editMosaicMaskCanvas.width / Math.max(1, Number(operation.canvasWidth) || editMosaicMaskCanvas.width);
+        const scaleY = editMosaicMaskCanvas.height / Math.max(1, Number(operation.canvasHeight) || editMosaicMaskCanvas.height);
+        const points = (Array.isArray(operation.points) ? operation.points : []).map((point) => ({
+          x: (Number(point.x) || 0) * scaleX,
+          y: (Number(point.y) || 0) * scaleY
+        }));
+        const scaledSize = (Number(operation.size) || 42) * Math.min(scaleX, scaleY);
+        if (points.length === 1) drawEditorStroke(points[0], points[0], { tool: operation.tool, size: scaledSize, render: false });
+        else {
+          for (let index = 1; index < points.length; index += 1) {
+            drawEditorStroke(points[index - 1], points[index], { tool: operation.tool, size: scaledSize, render: false });
+          }
+        }
+      }
+      coverStickers = cloneStickerList(operation.stickers);
+      selectedStickerId = null;
     }
 
     function setEditorTool(tool) {
@@ -3892,6 +4407,10 @@
         coverWhiteFogMaskSrc,
         coverEditorUndoStack: JSON.parse(JSON.stringify(coverEditorUndoStack || [])),
         coverEditorRedoStack: JSON.parse(JSON.stringify(coverEditorRedoStack || [])),
+        coverEditorHistoryCheckpoint: coverEditorHistoryCheckpoint ? JSON.parse(JSON.stringify(coverEditorHistoryCheckpoint)) : null,
+        coverEditorOperations: cloneEditorOperations(coverEditorOperations),
+        coverEditorRedoOperations: cloneEditorOperations(coverEditorRedoOperations),
+        coverEditorHistoryFormat,
         coverStickers: cloneStickerList(coverStickers),
         stickerSources: JSON.parse(JSON.stringify(stickerSources || [])),
         selectedStickerId,
@@ -3910,6 +4429,12 @@
       coverWhiteFogMaskSrc = next.coverWhiteFogMaskSrc || "";
       coverEditorUndoStack = Array.isArray(next.coverEditorUndoStack) ? next.coverEditorUndoStack : [];
       coverEditorRedoStack = Array.isArray(next.coverEditorRedoStack) ? next.coverEditorRedoStack : [];
+      coverEditorHistoryCheckpoint = next.coverEditorHistoryCheckpoint || null;
+      coverEditorOperations = cloneEditorOperations(next.coverEditorOperations);
+      coverEditorRedoOperations = cloneEditorOperations(next.coverEditorRedoOperations);
+      coverEditorHistoryFormat = next.coverEditorHistoryFormat === "operations-v1"
+        ? "operations-v1"
+        : (coverEditorUndoStack.length || coverEditorRedoStack.length ? "legacy" : "operations-v1");
       coverStickers = cloneStickerList(next.coverStickers);
       stickerSources = Array.isArray(next.stickerSources) ? next.stickerSources : [];
       selectedStickerId = next.selectedStickerId || null;
@@ -3925,6 +4450,10 @@
         coverWhiteFogMaskSrc: standaloneWhiteFogMaskSrc || "",
         coverEditorUndoStack: standaloneEditorUndoStack,
         coverEditorRedoStack: standaloneEditorRedoStack,
+        coverEditorHistoryCheckpoint: standaloneEditorHistoryCheckpoint,
+        coverEditorOperations: cloneEditorOperations(standaloneEditorOperations),
+        coverEditorRedoOperations: cloneEditorOperations(standaloneEditorRedoOperations),
+        coverEditorHistoryFormat: standaloneEditorHistoryFormat,
         coverStickers: cloneStickerList(standaloneStickers),
         stickerSources: JSON.parse(JSON.stringify(standaloneStickerSources || [])),
         selectedStickerId,
@@ -3940,6 +4469,10 @@
       standaloneWhiteFogMaskSrc = coverWhiteFogMaskSrc || "";
       standaloneEditorUndoStack = JSON.parse(JSON.stringify(coverEditorUndoStack || []));
       standaloneEditorRedoStack = JSON.parse(JSON.stringify(coverEditorRedoStack || []));
+      standaloneEditorHistoryCheckpoint = coverEditorHistoryCheckpoint ? JSON.parse(JSON.stringify(coverEditorHistoryCheckpoint)) : null;
+      standaloneEditorOperations = cloneEditorOperations(coverEditorOperations);
+      standaloneEditorRedoOperations = cloneEditorOperations(coverEditorRedoOperations);
+      standaloneEditorHistoryFormat = coverEditorHistoryFormat;
       standaloneStickers = cloneStickerList(coverStickers);
       standaloneStickerSources = JSON.parse(JSON.stringify(stickerSources || []));
     }
@@ -4022,6 +4555,7 @@
       const nextSrc = src || "";
       const nextFit = fit === "cover" ? "cover" : "contain";
       art.dataset.coverSrc = nextSrc;
+      if (nextSrc && !nextSrc.startsWith("blob:")) art.dataset.coverStoredSrc = nextSrc;
       art.dataset.coverFit = nextFit;
       art.style.backgroundImage = nextSrc ? `url('${nextSrc}')` : "";
       art.style.backgroundSize = nextFit;
@@ -4161,12 +4695,20 @@
       standaloneWhiteFogMaskSrc = "";
       standaloneEditorUndoStack = [];
       standaloneEditorRedoStack = [];
+      standaloneEditorHistoryCheckpoint = null;
+      standaloneEditorOperations = [];
+      standaloneEditorRedoOperations = [];
+      standaloneEditorHistoryFormat = "operations-v1";
       standaloneStickers = [];
       editorImage = null;
       editorSourceSrc = "";
       editorSessionSnapshot = null;
       editorDrawing = false;
       editorLastPoint = null;
+      editorUndoOperations = [];
+      editorRedoOperations = [];
+      editorHistoryFormat = "operations-v1";
+      pendingEditorBrushOperation = null;
       editorStickerDrag = null;
       selectedStickerId = null;
       applyEditorGlobals(standaloneEditorGlobals(""));
@@ -4249,17 +4791,7 @@
 
     function restoreEditorSessionSnapshot() {
       if (!editorSessionSnapshot) return;
-      coverOriginalSrc = editorSessionSnapshot.coverOriginalSrc || "";
-      coverEditedSrc = editorSessionSnapshot.coverEditedSrc || "";
-      coverMosaicMaskSrc = editorSessionSnapshot.coverMosaicMaskSrc || "";
-      coverBlurMaskSrc = editorSessionSnapshot.coverBlurMaskSrc || "";
-      coverWhiteFogMaskSrc = editorSessionSnapshot.coverWhiteFogMaskSrc || "";
-      coverEditorUndoStack = Array.isArray(editorSessionSnapshot.coverEditorUndoStack) ? editorSessionSnapshot.coverEditorUndoStack : [];
-      coverEditorRedoStack = Array.isArray(editorSessionSnapshot.coverEditorRedoStack) ? editorSessionSnapshot.coverEditorRedoStack : [];
-      coverStickers = cloneStickerList(editorSessionSnapshot.coverStickers);
-      stickerSources = Array.isArray(editorSessionSnapshot.stickerSources) ? editorSessionSnapshot.stickerSources : [];
-      selectedStickerId = editorSessionSnapshot.selectedStickerId || null;
-      editorTool = editorSessionSnapshot.editorTool || "mosaic";
+      applyEditorGlobals(editorSessionSnapshot);
     }
 
     async function closeImageEditor(apply) {
@@ -4501,39 +5033,31 @@
       if (valueNode) valueNode.textContent = String(numeric);
     }
 
-    function serializeStateImageReferences(state) {
-      const next = {
-        ...state,
-        coverSrc: storedImageReference(state.coverSrc),
-        coverOriginalSrc: storedImageReference(state.coverOriginalSrc),
-        coverEditedSrc: storedImageReference(state.coverEditedSrc)
-      };
-      ["grid9", "quick", "trio"].forEach((sectionName) => {
-        const section = state[sectionName];
-        if (!section || !Array.isArray(section.cells)) return;
-        next[sectionName] = {
-          ...section,
-          cells: section.cells.map((cell) => ({ ...cell, cover: storedImageReference(cell?.cover) }))
-        };
-      });
-      return next;
+    async function mapStateImageValues(value, mapper) {
+      if (typeof value === "string") {
+        if (value.startsWith("data:image/") || value.startsWith(STATE_IMAGE_REFERENCE_PREFIX)) return mapper(value);
+        return value;
+      }
+      if (Array.isArray(value)) {
+        const mappedItems = [];
+        for (const item of value) mappedItems.push(await mapStateImageValues(item, mapper));
+        return mappedItems;
+      }
+      if (value && typeof value === "object") {
+        const mappedObject = {};
+        for (const [key, item] of Object.entries(value)) mappedObject[key] = await mapStateImageValues(item, mapper);
+        return mappedObject;
+      }
+      return value;
+    }
+
+    async function serializeStateImageReferences(state) {
+      return mapStateImageValues(state, ensureStoredImageReference);
     }
 
     async function hydrateStateImageReferences(state) {
       if (!state || typeof state !== "object") return state;
-      for (const field of ["coverSrc", "coverOriginalSrc", "coverEditedSrc"]) {
-        state[field] = await resolveStoredImageReferenceSafely(state[field]);
-      }
-      const tasks = [];
-      ["grid9", "quick", "trio"].forEach((sectionName) => {
-        const cells = state[sectionName]?.cells;
-        if (!Array.isArray(cells)) return;
-        cells.forEach((cell) => {
-          tasks.push(resolveStoredImageReferenceSafely(cell?.cover).then((src) => { cell.cover = src; }));
-        });
-      });
-      await Promise.all(tasks);
-      return state;
+      return mapStateImageValues(state, resolveStoredImageReferenceSafely);
     }
 
     function collectState() {
@@ -4570,6 +5094,10 @@
         coverWhiteFogMaskSrc: templateEditorState.coverWhiteFogMaskSrc || "",
         coverEditorUndoStack: templateEditorState.coverEditorUndoStack || [],
         coverEditorRedoStack: templateEditorState.coverEditorRedoStack || [],
+        coverEditorHistoryCheckpoint: templateEditorState.coverEditorHistoryCheckpoint || null,
+        coverEditorOperations: cloneEditorOperations(templateEditorState.coverEditorOperations),
+        coverEditorRedoOperations: cloneEditorOperations(templateEditorState.coverEditorRedoOperations),
+        coverEditorHistoryFormat: templateEditorState.coverEditorHistoryFormat || "operations-v1",
         coverStickers: cloneStickerList(templateEditorState.coverStickers),
         stickerSources: templateEditorState.stickerSources || [],
         coverFit: templateEditorState.coverFit || coverImage.style.objectFit || "contain",
@@ -4580,6 +5108,10 @@
         standaloneWhiteFogMaskSrc,
         standaloneEditorUndoStack,
         standaloneEditorRedoStack,
+        standaloneEditorHistoryCheckpoint,
+        standaloneEditorOperations: cloneEditorOperations(standaloneEditorOperations),
+        standaloneEditorRedoOperations: cloneEditorOperations(standaloneEditorRedoOperations),
+        standaloneEditorHistoryFormat,
         standaloneStickers: cloneStickerList(standaloneStickers),
         standaloneStickerSources,
         brushSize: Number(brushSize.value) || 42,
@@ -4599,6 +5131,41 @@
       };
     }
 
+    const STATE_SETTINGS_FIELDS = [
+      "template", "theme", "brushSize", "playerTotalSeconds", "playerProgress", "playerPlaying"
+    ];
+    const STATE_EDITOR_FIELDS = [
+      "coverSrc", "coverOriginalSrc", "coverEditedSrc", "coverMosaicMaskSrc", "coverBlurMaskSrc",
+      "coverWhiteFogMaskSrc", "coverEditorUndoStack", "coverEditorRedoStack", "coverEditorHistoryCheckpoint",
+      "coverEditorOperations", "coverEditorRedoOperations", "coverEditorHistoryFormat", "coverStickers",
+      "stickerSources", "coverFit", "standaloneOriginalSrc", "standaloneEditedSrc",
+      "standaloneMosaicMaskSrc", "standaloneBlurMaskSrc", "standaloneWhiteFogMaskSrc",
+      "standaloneEditorUndoStack", "standaloneEditorRedoStack", "standaloneEditorHistoryCheckpoint",
+      "standaloneEditorOperations", "standaloneEditorRedoOperations", "standaloneEditorHistoryFormat", "standaloneStickers",
+      "standaloneStickerSources"
+    ];
+
+    function splitStoredState(state) {
+      const draft = { ...state, storageSchemaVersion: STORAGE_SCHEMA_VERSION };
+      const settings = { storageSchemaVersion: STORAGE_SCHEMA_VERSION };
+      const editorProject = { storageSchemaVersion: STORAGE_SCHEMA_VERSION };
+      STATE_SETTINGS_FIELDS.forEach((field) => {
+        if (Object.prototype.hasOwnProperty.call(draft, field)) settings[field] = draft[field];
+        delete draft[field];
+      });
+      STATE_EDITOR_FIELDS.forEach((field) => {
+        if (Object.prototype.hasOwnProperty.call(draft, field)) editorProject[field] = draft[field];
+        delete draft[field];
+      });
+      return { draft, settings, editorProject };
+    }
+
+    function mergeStoredState(draft, settings, editorProject) {
+      if (!draft || typeof draft !== "object") return null;
+      if (Number(draft.storageSchemaVersion) < STORAGE_SCHEMA_VERSION) return draft;
+      return { ...draft, ...(settings || {}), ...(editorProject || {}), storageSchemaVersion: STORAGE_SCHEMA_VERSION };
+    }
+
     function openStateDatabase() {
       return new Promise((resolve, reject) => {
         if (!window.indexedDB) {
@@ -4609,6 +5176,8 @@
         request.onupgradeneeded = () => {
           const db = request.result;
           if (!db.objectStoreNames.contains(STATE_DB_STORE)) db.createObjectStore(STATE_DB_STORE);
+          if (!db.objectStoreNames.contains(STATE_DB_SETTINGS_STORE)) db.createObjectStore(STATE_DB_SETTINGS_STORE);
+          if (!db.objectStoreNames.contains(STATE_DB_EDITOR_STORE)) db.createObjectStore(STATE_DB_EDITOR_STORE);
         };
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error || new Error("IndexedDB open failed"));
@@ -4619,9 +5188,12 @@
     async function writeStateToIndexedDb(state) {
       const db = await openStateDatabase();
       try {
+        const { draft, settings, editorProject } = splitStoredState(state);
         await new Promise((resolve, reject) => {
-          const transaction = db.transaction(STATE_DB_STORE, "readwrite");
-          transaction.objectStore(STATE_DB_STORE).put(state, STATE_DB_KEY);
+          const transaction = db.transaction([STATE_DB_STORE, STATE_DB_SETTINGS_STORE, STATE_DB_EDITOR_STORE], "readwrite");
+          transaction.objectStore(STATE_DB_STORE).put(draft, STATE_DB_KEY);
+          transaction.objectStore(STATE_DB_SETTINGS_STORE).put(settings, STATE_DB_KEY);
+          transaction.objectStore(STATE_DB_EDITOR_STORE).put(editorProject, STATE_DB_KEY);
           transaction.oncomplete = () => resolve();
           transaction.onerror = () => reject(transaction.error || new Error("IndexedDB write failed"));
           transaction.onabort = () => reject(transaction.error || new Error("IndexedDB write aborted"));
@@ -4635,10 +5207,13 @@
       const db = await openStateDatabase();
       try {
         return await new Promise((resolve, reject) => {
-          const transaction = db.transaction(STATE_DB_STORE, "readonly");
-          const request = transaction.objectStore(STATE_DB_STORE).get(STATE_DB_KEY);
-          request.onsuccess = () => resolve(request.result || null);
-          request.onerror = () => reject(request.error || new Error("IndexedDB read failed"));
+          const transaction = db.transaction([STATE_DB_STORE, STATE_DB_SETTINGS_STORE, STATE_DB_EDITOR_STORE], "readonly");
+          const draftRequest = transaction.objectStore(STATE_DB_STORE).get(STATE_DB_KEY);
+          const settingsRequest = transaction.objectStore(STATE_DB_SETTINGS_STORE).get(STATE_DB_KEY);
+          const editorRequest = transaction.objectStore(STATE_DB_EDITOR_STORE).get(STATE_DB_KEY);
+          transaction.oncomplete = () => resolve(mergeStoredState(draftRequest.result, settingsRequest.result, editorRequest.result));
+          transaction.onerror = () => reject(transaction.error || new Error("IndexedDB read failed"));
+          transaction.onabort = () => reject(transaction.error || new Error("IndexedDB read aborted"));
         });
       } finally {
         db.close();
@@ -4650,42 +5225,44 @@
     }
 
     async function persistState(state) {
-      const storedState = serializeStateImageReferences(state);
-      if (stateUsesIndexedDb) {
-        try {
+      let storedState = null;
+      try {
+        const requiresMigrationVerification = !stateUsesIndexedDb || Boolean(localStorage.getItem(STORAGE_KEY));
+        storedState = await serializeStateImageReferences({
+          ...state,
+          storageSchemaVersion: STORAGE_SCHEMA_VERSION
+        });
+        const writeAndVerify = async () => {
           await writeStateToIndexedDb(storedState);
-          return true;
-        } catch (error) {
-          console.warn("IndexedDB state save failed", error);
-          showAutoSaveFailure(error);
-          return false;
+          if (requiresMigrationVerification) {
+            const verifiedState = await readStateFromIndexedDb();
+            if (!verifiedState || Number(verifiedState.storageSchemaVersion) !== STORAGE_SCHEMA_VERSION) {
+              throw new Error("IndexedDB state migration verification failed");
+            }
+          }
+        };
+        try {
+          await writeAndVerify();
+        } catch (writeError) {
+          if (!isStorageQuotaError(writeError)) throw writeError;
+          await garbageCollectStoredImages(storedState);
+          const clearedCacheCount = await clearRebuildableImageCache();
+          if (clearedCacheCount) console.info("Cleared rebuildable image cache", clearedCacheCount);
+          await writeAndVerify();
         }
-      }
-
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(storedState));
-        return true;
-      } catch (error) {
-        if (!isStorageQuotaError(error)) {
-          console.warn("save failed", error);
-          showAutoSaveFailure(error);
-          return false;
-        }
-        console.warn("Local storage quota exceeded, switching state storage to IndexedDB", error);
-      }
-
-      try {
-        await writeStateToIndexedDb(storedState);
         stateUsesIndexedDb = true;
-        localStorage.removeItem(STORAGE_KEY);
         try {
           localStorage.setItem(STATE_STORAGE_MODE_KEY, STATE_STORAGE_MODE_INDEXED_DB);
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(COMPACT_CONTINUATION_STORAGE_KEY);
         } catch (markerError) {
           console.warn("IndexedDB state marker save failed", markerError);
         }
+        lastPersistedStoredState = storedState;
+        scheduleStoredImageGarbageCollection(storedState);
         return true;
       } catch (error) {
-        console.warn("IndexedDB fallback save failed", error);
+        console.warn("IndexedDB state save failed", error);
         showAutoSaveFailure(error);
         return false;
       }
@@ -4693,7 +5270,6 @@
 
     function saveState() {
       if (!stateRestoreComplete) return Promise.resolve(false);
-      persistCompactContinuationSnapshot();
       const state = collectState();
       stateSaveQueue = stateSaveQueue.catch(() => false).then(() => persistState(state));
       return stateSaveQueue;
@@ -4738,6 +5314,12 @@
       coverWhiteFogMaskSrc = state.coverWhiteFogMaskSrc || "";
       coverEditorUndoStack = Array.isArray(state.coverEditorUndoStack) ? state.coverEditorUndoStack : [];
       coverEditorRedoStack = Array.isArray(state.coverEditorRedoStack) ? state.coverEditorRedoStack : [];
+      coverEditorHistoryCheckpoint = state.coverEditorHistoryCheckpoint || null;
+      coverEditorOperations = cloneEditorOperations(state.coverEditorOperations);
+      coverEditorRedoOperations = cloneEditorOperations(state.coverEditorRedoOperations);
+      coverEditorHistoryFormat = state.coverEditorHistoryFormat === "operations-v1"
+        ? "operations-v1"
+        : (coverEditorUndoStack.length || coverEditorRedoStack.length ? "legacy" : "operations-v1");
       coverStickers = cloneStickerList(state.coverStickers);
       stickerSources = Array.isArray(state.stickerSources) ? state.stickerSources : [];
       standaloneOriginalSrc = state.standaloneOriginalSrc || "";
@@ -4747,6 +5329,12 @@
       standaloneWhiteFogMaskSrc = state.standaloneWhiteFogMaskSrc || "";
       standaloneEditorUndoStack = Array.isArray(state.standaloneEditorUndoStack) ? state.standaloneEditorUndoStack : [];
       standaloneEditorRedoStack = Array.isArray(state.standaloneEditorRedoStack) ? state.standaloneEditorRedoStack : [];
+      standaloneEditorHistoryCheckpoint = state.standaloneEditorHistoryCheckpoint || null;
+      standaloneEditorOperations = cloneEditorOperations(state.standaloneEditorOperations);
+      standaloneEditorRedoOperations = cloneEditorOperations(state.standaloneEditorRedoOperations);
+      standaloneEditorHistoryFormat = state.standaloneEditorHistoryFormat === "operations-v1"
+        ? "operations-v1"
+        : (standaloneEditorUndoStack.length || standaloneEditorRedoStack.length ? "legacy" : "operations-v1");
       standaloneStickers = cloneStickerList(state.standaloneStickers);
       standaloneStickerSources = Array.isArray(state.standaloneStickerSources) ? state.standaloneStickerSources : [];
       const savedBrushSize = Number(state.brushSize);
@@ -4778,27 +5366,19 @@
 
     async function restoreState() {
       let state;
-      if (!stateUsesIndexedDb) {
-        try {
-          state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-        } catch {
-          state = null;
-        }
+      let loadedFromLegacyLocalStorage = false;
+      try {
+        state = await readStateFromIndexedDb();
+        if (state && typeof state === "object") stateUsesIndexedDb = true;
+      } catch (error) {
+        console.warn("IndexedDB state restore failed", error);
       }
       if (!state) {
         try {
-          const indexedState = await readStateFromIndexedDb();
-          if (indexedState && typeof indexedState === "object") {
-            state = indexedState;
-            stateUsesIndexedDb = true;
-            try {
-              localStorage.setItem(STATE_STORAGE_MODE_KEY, STATE_STORAGE_MODE_INDEXED_DB);
-            } catch (markerError) {
-              console.warn("IndexedDB state marker restore failed", markerError);
-            }
-          }
-        } catch (error) {
-          console.warn("IndexedDB state restore failed", error);
+          state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+          loadedFromLegacyLocalStorage = Boolean(state && typeof state === "object");
+        } catch {
+          state = null;
         }
       }
       const compactContinuationSnapshot = readCompactContinuationSnapshot();
@@ -4808,7 +5388,13 @@
           compact: compactContinuationSnapshot
         };
       }
-      if (state && typeof state === "object") await hydrateStateImageReferences(state);
+      if (state && typeof state === "object") {
+        lastPersistedStoredState = state;
+        if (loadedFromLegacyLocalStorage || Number(state.storageSchemaVersion) < STORAGE_SCHEMA_VERSION) {
+          await persistState(state);
+        }
+        state = await hydrateStateImageReferences(state);
+      }
       if (!applyState(state, false)) applyCardTheme(DEFAULT_THEME_ID, false);
       stateRestoreComplete = true;
     }
@@ -4827,10 +5413,18 @@
       coverWhiteFogMaskSrc = "";
       coverEditorUndoStack = [];
       coverEditorRedoStack = [];
+      coverEditorHistoryCheckpoint = null;
+      coverEditorOperations = [];
+      coverEditorRedoOperations = [];
+      coverEditorHistoryFormat = "operations-v1";
       coverStickers = [];
       selectedStickerId = null;
       editorUndoStack = [];
       editorRedoStack = [];
+      editorUndoOperations = [];
+      editorRedoOperations = [];
+      editorHistoryFormat = "operations-v1";
+      pendingEditorBrushOperation = null;
       coverImage.style.filter = "";
       coverImage.style.objectFit = "contain";
       coverBox.classList.remove("has-image");
@@ -4841,8 +5435,8 @@
       saveState();
     }
 
-    async function setCoverFromDataUrl(dataUrl) {
-      const storedDataUrl = await singleCoverStorageDataUrl(dataUrl);
+    async function setCoverFromDataUrl(dataUrl, storageOptions = null) {
+      const storedDataUrl = await singleCoverStorageDataUrl(dataUrl, storageOptions);
       resetCoverImageState();
       coverOriginalSrc = storedDataUrl;
       coverImage.src = storedDataUrl;
@@ -6413,11 +7007,11 @@
       await Promise.all(pending);
     }
 
-    async function grid9CoverStorageDataUrl(dataUrl, storeAsBlob = false) {
+    async function grid9CoverStorageDataUrl(dataUrl, storeAsBlob = false, storageOptions = null) {
       if (!dataUrl) return dataUrl;
       const img = await loadImage(dataUrl).catch(() => null);
       if (!img || !img.naturalWidth || !img.naturalHeight) {
-        if (storeAsBlob) await registerNewStoredImage(dataUrl);
+        if (storeAsBlob) await registerNewStoredImage(dataUrl, storageOptions);
         return dataUrl;
       }
       const width = img.naturalWidth;
@@ -6433,7 +7027,7 @@
       ctx.fillRect(0, 0, outWidth, outHeight);
       ctx.drawImage(img, 0, 0, outWidth, outHeight);
       const output = canvas.toDataURL("image/jpeg", COVER_JPEG_QUALITY);
-      if (storeAsBlob) await registerNewStoredImage(output);
+      if (storeAsBlob) await registerNewStoredImage(output, storageOptions);
       return output;
     }
 
@@ -6577,7 +7171,7 @@
             const product = parseDlsiteProduct(await fetchProductJson(job.rj));
             const coverUrl = product && product.coverUrl;
             if (!coverUrl) throw new Error("no cover url");
-            const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(coverUrl), true);
+            const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(coverUrl), true, rebuildableRemoteCoverOptions(coverUrl, 480, true, job.rj));
             applyGrid9Cover(job.index, pngDataUrl);
             const rjInput = grid9CellEditors[job.index].querySelector(".grid9-cell-rj-input");
             rjInput.value = job.rj;
@@ -7708,7 +8302,7 @@
             if (job.importCover) {
               if (product.coverUrl) {
                 try {
-                  const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true);
+                  const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true, rebuildableRemoteCoverOptions(product.coverUrl, 480, true, job.rj));
                   applyQuickCover(job.index, pngDataUrl);
                   importedField = true;
                 } catch (error) {
@@ -8417,7 +9011,7 @@
             if (job.importCover) {
               if (product.coverUrl) {
                 try {
-                  const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true);
+                  const pngDataUrl = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true, rebuildableRemoteCoverOptions(product.coverUrl, 480, true, job.rj));
                   applyTrioCover(job.index, pngDataUrl);
                   importedField = true;
                 } catch (error) {
@@ -9017,6 +9611,7 @@
       clearEditorMasks();
       coverStickers = [];
       selectedStickerId = null;
+      commitEditorOperation({ kind: "clear" });
       renderImageEditor();
       saveEditorProject();
       saveState();
@@ -9041,6 +9636,7 @@
           editorPinching = true;
           editorDrawing = false;
           editorLastPoint = null;
+          pendingEditorBrushOperation = null;
           editorStickerDrag = null;
           return;
         }
@@ -9057,6 +9653,7 @@
         if (hit.action === "delete") {
           coverStickers = coverStickers.filter((item) => item.id !== hit.sticker.id);
           selectedStickerId = null;
+          commitEditorOperation({ kind: "stickers" });
           renderImageEditor();
           saveEditorProject();
           saveState();
@@ -9079,7 +9676,19 @@
       snapshotEditorMasks();
       editorDrawing = true;
       editorLastPoint = point;
-      if (event.pointerType !== "touch") drawEditorStroke(editorLastPoint, editorLastPoint);
+      pendingEditorBrushOperation = {
+        kind: "brush",
+        tool: editorTool,
+        size: Number(brushSize.value) || 42,
+        canvasWidth: imageEditCanvas.width,
+        canvasHeight: imageEditCanvas.height,
+        points: [{ x: point.x, y: point.y }],
+        didDraw: false
+      };
+      if (event.pointerType !== "touch") {
+        drawEditorStroke(editorLastPoint, editorLastPoint);
+        pendingEditorBrushOperation.didDraw = true;
+      }
     });
     imageEditCanvas.addEventListener("pointermove", (event) => {
       if (editorPinching) return;
@@ -9099,6 +9708,10 @@
       }
       if (!editorLastPoint) return;
       drawEditorStroke(editorLastPoint, point);
+      if (pendingEditorBrushOperation) {
+        pendingEditorBrushOperation.points.push({ x: point.x, y: point.y });
+        pendingEditorBrushOperation.didDraw = true;
+      }
       editorLastPoint = point;
     });
     ["pointerup", "pointercancel"].forEach((name) => {
@@ -9112,11 +9725,14 @@
           }
         }
         if (editorDrawing || editorStickerDrag) {
+          if (editorDrawing && pendingEditorBrushOperation) commitEditorOperation(pendingEditorBrushOperation);
+          else if (editorStickerDrag) commitEditorOperation({ kind: "stickers" });
           saveEditorProject();
           saveState();
         }
         editorDrawing = false;
         editorLastPoint = null;
+        pendingEditorBrushOperation = null;
         editorStickerDrag = null;
         imageEditCanvas.style.cursor = editorTool === "sticker" ? "default" : editorBrushCursor();
       });
@@ -9137,7 +9753,9 @@
     stickerList.addEventListener("click", (event) => {
       const deleteButton = event.target.closest(".sticker-delete");
       if (deleteButton) {
-        deleteCustomSticker(deleteButton.dataset.stickerDeleteId);
+        void showAppConfirm(UI_CUSTOM_STICKER_DELETE_CONFIRM).then((confirmed) => {
+          if (confirmed) deleteCustomSticker(deleteButton.dataset.stickerDeleteId);
+        });
         return;
       }
       const button = event.target.closest(".sticker-option");
@@ -9153,8 +9771,18 @@
       reader.onload = async () => {
         try {
           const localSrc = await rasterizeImageToPngDataUrl(reader.result);
-          const source = { id: nextStickerId("uploaded-sticker"), type: "image", src: localSrc, localSrc };
-          stickerSources.push(source);
+          const contentHash = await storedImageContentHash(dataUrlToBlob(localSrc));
+          const reusableSource = await reusableCustomStickerSource(localSrc, contentHash);
+          const sourceImage = reusableSource?.localSrc || reusableSource?.src || localSrc;
+          await registerNewStoredImage(sourceImage, { assetType: "custom-sticker", cache: false, contentHash, dedupeByContent: true });
+          const activeReusableSource = reusableSource && stickerSources.find((item) => item.id === reusableSource.id);
+          const sharedImageId = reusableSource?.imageId || contentHash || reusableSource?.contentHash || nextStickerId("custom-image");
+          if (reusableSource) reusableSource.imageId = sharedImageId;
+          const source = activeReusableSource
+            ? { ...activeReusableSource, imageId: sharedImageId, contentHash: contentHash || activeReusableSource.contentHash || "" }
+            : { id: nextStickerId("uploaded-sticker"), type: "image", src: sourceImage, localSrc: sourceImage, imageId: sharedImageId, contentHash: contentHash || reusableSource?.contentHash || "" };
+          if (activeReusableSource) Object.assign(activeReusableSource, source);
+          if (!stickerSources.some((item) => item.id === source.id)) stickerSources.push(source);
           stickerPage = Math.max(0, Math.ceil(allStickerSources().length / STICKERS_PER_PAGE) - 1);
           renderStickerPicker();
           setEditorTool("sticker");
@@ -9262,6 +9890,7 @@
 
     importDataButton.addEventListener("click", () => importDataInput.click());
     exportDataButton.addEventListener("click", exportRecordData);
+    storageManageButton?.addEventListener("click", () => void openStorageManagement());
     mobileDataMenuButton?.addEventListener("click", (event) => {
       event.stopPropagation();
       const nextHidden = !mobileDataDropdown?.hidden ? true : false;
@@ -9277,6 +9906,11 @@
       if (mobileDataDropdown) mobileDataDropdown.hidden = true;
       mobileDataMenuButton?.setAttribute("aria-expanded", "false");
       exportRecordData();
+    });
+    mobileStorageManageButton?.addEventListener("click", () => {
+      if (mobileDataDropdown) mobileDataDropdown.hidden = true;
+      mobileDataMenuButton?.setAttribute("aria-expanded", "false");
+      void openStorageManagement();
     });
     usageGuideButton?.addEventListener("click", () => { if (usageGuideModal) usageGuideModal.hidden = false; });
     mobileUsageGuideButton?.addEventListener("click", () => {
@@ -9357,6 +9991,10 @@
           standaloneWhiteFogMaskSrc = "";
           standaloneEditorUndoStack = [];
           standaloneEditorRedoStack = [];
+          standaloneEditorHistoryCheckpoint = null;
+          standaloneEditorOperations = [];
+          standaloneEditorRedoOperations = [];
+          standaloneEditorHistoryFormat = "operations-v1";
           standaloneStickers = [];
           standaloneStickerSources = [];
           saveState();
@@ -9453,6 +10091,7 @@
     void ensureCanvasFontReady(false).catch((error) => {
       console.warn("Template font preload failed; using the active fallback metrics", error);
     }).then(() => restoreState()).then(() => {
+      void requestPersistentStorage();
       void migrateGrid9CoversToCompact();
       void migrateQuickCoversToCompact();
       void migrateTrioCoversToCompact();
@@ -9500,6 +10139,10 @@
       const COLLECTION_LIST_PAGE_SIZE = 4;
       const grid = document.getElementById("collectionGrid");
       const collectionScroller = page.parentElement;
+      const collectionCoverObjectUrls = new Map();
+      const collectionCoverObjectUrlPromises = new Map();
+      let collectionCoverRenderToken = 0;
+      let collectionDetailStoredCoverValue = "";
       const collectionSavePrompt = document.getElementById("collectionSavePrompt");
       const collectionSavePromptCancel = document.getElementById("collectionSavePromptCancel");
       const collectionSavePromptConfirm = document.getElementById("collectionSavePromptConfirm");
@@ -9558,6 +10201,46 @@
       try { customCollectionTags = JSON.parse(localStorage.getItem(COLLECTION_TAGS_KEY) || "[]"); } catch { customCollectionTags = []; }
       try { removedCollectionTags = JSON.parse(localStorage.getItem(COLLECTION_REMOVED_TAGS_KEY) || "[]"); } catch { removedCollectionTags = []; }
       const defaultCollectionTags = [];
+      async function collectionCoverDisplayUrl(value) {
+        const source = String(value || "");
+        if (!source || !source.startsWith(STATE_IMAGE_REFERENCE_PREFIX)) return source;
+        if (collectionCoverObjectUrls.has(source)) return collectionCoverObjectUrls.get(source);
+        if (collectionCoverObjectUrlPromises.has(source)) return collectionCoverObjectUrlPromises.get(source);
+        const pending = (async () => {
+          const blob = await readOrRebuildStoredImageBlob(source);
+          const url = URL.createObjectURL(blob);
+          collectionCoverObjectUrls.set(source, url);
+          return url;
+        })();
+        collectionCoverObjectUrlPromises.set(source, pending);
+        try {
+          return await pending;
+        } finally {
+          collectionCoverObjectUrlPromises.delete(source);
+        }
+      }
+      function releaseUnusedCollectionCoverUrls(keptReferences) {
+        collectionCoverObjectUrls.forEach((url, reference) => {
+          if (keptReferences.has(reference)) return;
+          URL.revokeObjectURL(url);
+          collectionCoverObjectUrls.delete(reference);
+        });
+      }
+      async function loadVisibleCollectionCovers(visible, renderToken) {
+        const elementsById = new Map(Array.from(grid.querySelectorAll(".collection-record[data-id]")).map((element) => [element.dataset.id, element]));
+        for (const work of visible) {
+          if (renderToken !== collectionCoverRenderToken) return;
+          if (!work.cover) continue;
+          try {
+            const url = await collectionCoverDisplayUrl(work.cover);
+            if (renderToken !== collectionCoverRenderToken) return;
+            const cover = elementsById.get(String(work.id))?.querySelector(".collection-cover");
+            if (cover && url) cover.style.backgroundImage = `url("${url}")`;
+          } catch (error) {
+            console.warn("Collection cover lazy load failed", work.id, error);
+          }
+        }
+      }
       function escapeCollectionText(value) { return String(value ?? "").replace(/[&<>"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[character]); }
       function collectionTagNames() { return Array.from(new Set(defaultCollectionTags.concat(customCollectionTags).concat(records.flatMap(work => work.tags || [])))).filter(name => !removedCollectionTags.includes(name)); }
       function renderMobileTagSelect() {
@@ -9658,6 +10341,7 @@
         links.innerHTML = buttons.map(item => `<div class="collection-tag-row">${collectionTagEditMode && item.name !== "all" ? `<span class="collection-tag-filter ${tag === item.name ? "active" : ""}" contenteditable="true" data-original-collection-tag="${escapeCollectionText(item.name)}">${escapeCollectionText(item.label)}</span>` : `<button type="button" class="collection-tag-filter ${tag === item.name ? "active" : ""}" data-collection-tag="${escapeCollectionText(item.name)}"><span>${escapeCollectionText(item.label)}</span></button>`}<span class="collection-tag-count">${item.count}</span>${item.name === "all" ? "" : `<button type="button" class="collection-tag-remove" data-remove-collection-tag="${escapeCollectionText(item.name)}" aria-label="移除标签 ${escapeCollectionText(item.label)}">×</button>`}</div>`).join("") + (collectionTagDraftActive ? `<div class="collection-tag-row collection-tag-draft"><span class="collection-tag-draft-name" contenteditable="true">新标签</span><button type="button" class="collection-tag-finish" data-finish-collection-tag>完成</button></div>` : "");
       }
       function render() {
+        const renderToken = ++collectionCoverRenderToken;
         renderCollectionTags();
         renderMobileTagSelect();
         const q = collectionSearchInput.value.trim().toLowerCase();
@@ -9673,11 +10357,15 @@
         const pageCount = Math.max(1, Math.ceil(a.length / pageSize));
         collectionPageIndex = Math.max(0, Math.min(collectionPageIndex, pageCount - 1));
         const visible = a.slice(collectionPageIndex * pageSize, (collectionPageIndex + 1) * pageSize);
+        const keptCoverReferences = collectStoredImageReferences(visible.map((work) => work.cover));
+        collectStoredImageReferences(collectionDetailStoredCoverValue, keptCoverReferences);
+        releaseUnusedCollectionCoverUrls(keptCoverReferences);
         const placeholderCount = a.length > pageSize ? pageSize - visible.length : 0;
         const placeholderMarkup = "<article class=\"collection-record collection-record-placeholder\" aria-hidden=\"true\"><div class=\"collection-cover\"></div><div class=\"collection-meta\"><strong class=\"collection-list-title\">&nbsp;</strong><b class=\"collection-list-cv\">&nbsp;</b><div class=\"collection-list-bottom\"><small>&nbsp;</small></div><div class=\"collection-meta-row\"><b>&nbsp;</b><small>&nbsp;</small></div><i class=\"collection-tag-mini\">&nbsp;</i></div></article>".repeat(placeholderCount);
         grid.classList.toggle("list-mode", listMode);
         page.classList.toggle("collection-list-mode", listMode);
-        grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"${r.cover ? ` style="background-image:url('${r.cover}')"` : ""}><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><strong class="collection-list-title">${escapeCollectionText(r.title || "未填写标题")}</strong><b class="collection-list-cv">${escapeCollectionText(r.cv || "未填写 CV")}</b><div class="collection-list-bottom"><small>${escapeCollectionText(r.rj || "无 RJ")}</small>${r.tags?.[0] ? `<i class="collection-tag-mini">${escapeCollectionText(r.tags[0])}</i>` : ""}</div><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "未填写 CV")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div><i class="collection-tag-mini${r.tags?.[0] ? "" : " is-empty"}">${escapeCollectionText(r.tags?.[0] || "占位")}</i>${collectionMobileTagsMarkup(r.tags)}</div></article>`).join("") + placeholderMarkup : "<div class=\"collection-empty\">暂无收藏记录</div>";
+        grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><strong class="collection-list-title">${escapeCollectionText(r.title || "未填写标题")}</strong><b class="collection-list-cv">${escapeCollectionText(r.cv || "未填写 CV")}</b><div class="collection-list-bottom"><small>${escapeCollectionText(r.rj || "无 RJ")}</small>${r.tags?.[0] ? `<i class="collection-tag-mini">${escapeCollectionText(r.tags[0])}</i>` : ""}</div><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "未填写 CV")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div><i class="collection-tag-mini${r.tags?.[0] ? "" : " is-empty"}">${escapeCollectionText(r.tags?.[0] || "占位")}</i>${collectionMobileTagsMarkup(r.tags)}</div></article>`).join("") + placeholderMarkup : "<div class=\"collection-empty\">暂无收藏记录</div>";
+        void loadVisibleCollectionCovers(visible, renderToken);
         scheduleCollectionMobileTagFit();
         document.getElementById("collectionCount").textContent = a.length + " 条记录";
         const pager = document.getElementById("collectionPager");
@@ -9880,9 +10568,30 @@
           document.getElementById(starsId).textContent = collectionRatingStars(detailText(valueId));
         });
       });
+      let collectionDetailCoverLoadToken = 0;
+      async function setCollectionDetailCoverValue(value, fit) {
+        const source = String(value || "");
+        const loadToken = ++collectionDetailCoverLoadToken;
+        collectionDetailStoredCoverValue = source;
+        collectionDetailArt.dataset.coverStoredSrc = source;
+        if (!source.startsWith(STATE_IMAGE_REFERENCE_PREFIX)) {
+          setCollectionDetailCover(source, fit);
+          return;
+        }
+        setCollectionDetailCover("", fit);
+        collectionDetailArt.dataset.coverStoredSrc = source;
+        try {
+          const url = await collectionCoverDisplayUrl(source);
+          if (loadToken !== collectionDetailCoverLoadToken || collectionDetailArt.dataset.coverStoredSrc !== source) return;
+          setCollectionDetailCover(url, fit);
+          collectionDetailArt.dataset.coverStoredSrc = source;
+        } catch (error) {
+          console.warn("Collection detail cover load failed", error);
+        }
+      }
       function collectionDetailSnapshot() {
         const art = document.getElementById("collectionDetailArt");
-        return JSON.stringify({ text:collectionDetailTextIds.map(detailText), keywords:detailChipValues("collectionDetailKeywords"), tags:detailChipValues("collectionDetailLibraryTags"), cover:art?.dataset.coverSrc || "", coverFit:art?.dataset.coverFit || "contain" });
+        return JSON.stringify({ text:collectionDetailTextIds.map(detailText), keywords:detailChipValues("collectionDetailKeywords"), tags:detailChipValues("collectionDetailLibraryTags"), cover:art?.dataset.coverStoredSrc || "", coverFit:art?.dataset.coverFit || "contain" });
       }
       function openDetail(id) {
         const r = records.find(x => String(x.id) === String(id));
@@ -9904,7 +10613,7 @@
         renderDetailChips("collectionDetailKeywords", String(r.keywords || "").split(" / ").filter(Boolean));
         renderDetailChips("collectionDetailLibraryTags", r.tags || []);
         renderCollectionDetailRatings(r);
-        setCollectionDetailCover(r.cover || "", r.coverFit || "contain");
+        void setCollectionDetailCoverValue(r.cover || "", r.coverFit || "contain");
         collectionDetailInitialSnapshot = collectionDetailSnapshot();
         page.hidden = true;
         if (collectionDetailPage) collectionDetailPage.hidden = false;
@@ -9921,7 +10630,7 @@
         renderDetailChips("collectionDetailKeywords", []);
         renderDetailChips("collectionDetailLibraryTags", []);
         renderCollectionDetailRatings(null);
-        setCollectionDetailCover("", "contain");
+        void setCollectionDetailCoverValue("", "contain");
         collectionDetailInitialSnapshot = collectionDetailSnapshot();
         page.hidden = true;
         if (collectionDetailPage) collectionDetailPage.hidden = false;
@@ -10093,9 +10802,12 @@
       collectionMobileListBtn?.addEventListener("click", () => setCollectionListMode(true));
       function returnToCollectionList() {
         localStorage.removeItem(COLLECTION_DETAIL_KEY);
+        collectionDetailCoverLoadToken += 1;
+        collectionDetailStoredCoverValue = "";
         if (collectionDetailPage) collectionDetailPage.hidden = true;
         page.hidden = false;
         if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES.collection;
+        render();
         requestAnimationFrame(() => { if (collectionScroller) collectionScroller.scrollTo({ top:scrollY, behavior:"instant" }); else window.scrollTo(0,scrollY); });
       }
       ["collectionDetailKeywords","collectionDetailLibraryTags"].forEach(id => {
@@ -10127,7 +10839,7 @@
         reader.onload = async () => {
           try {
             const src = await grid9CoverStorageDataUrl(await rasterizeImageToPngDataUrl(reader.result), true);
-            setCollectionDetailCover(src, collectionDetailArt.dataset.coverFit || "contain");
+            await setCollectionDetailCoverValue(src, collectionDetailArt.dataset.coverFit || "contain");
           } catch (error) {
             console.error("Collection detail cover upload failed", error);
             showAppAlert("图片处理失败，请重新选择图片。");
@@ -10137,10 +10849,10 @@
         };
         reader.readAsDataURL(file);
       };
-      document.getElementById("collectionDetailContainButton").onclick = () => setCollectionDetailCover(collectionDetailArt.dataset.coverSrc || "", "contain");
-      document.getElementById("collectionDetailCoverButton").onclick = () => setCollectionDetailCover(collectionDetailArt.dataset.coverSrc || "", "cover");
+      document.getElementById("collectionDetailContainButton").onclick = () => void setCollectionDetailCoverValue(collectionDetailArt.dataset.coverStoredSrc || "", "contain");
+      document.getElementById("collectionDetailCoverButton").onclick = () => void setCollectionDetailCoverValue(collectionDetailArt.dataset.coverStoredSrc || "", "cover");
       document.getElementById("collectionDetailImageEditButton").onclick = () => void openCollectionDetailImageEditor();
-      document.getElementById("collectionDetailRemoveCoverButton").onclick = () => setCollectionDetailCover("", collectionDetailArt.dataset.coverFit || "contain");
+      document.getElementById("collectionDetailRemoveCoverButton").onclick = () => void setCollectionDetailCoverValue("", collectionDetailArt.dataset.coverFit || "contain");
       async function importCollectionDetailByRj() {
         const button = document.getElementById("collectionDetailImportButton");
         const workno = normalizeWorkno(detailText("collectionDetailRj"));
@@ -10249,7 +10961,7 @@
           if (targets.cover) {
             if (product.coverUrl) {
               try {
-                setCollectionDetailCover(await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true), "cover");
+                await setCollectionDetailCoverValue(await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true, rebuildableRemoteCoverOptions(product.coverUrl, 480, true, workno)), "cover");
                 importedField = true;
               } catch (coverError) {
                 missingFields.push(unavailableImportField("BK", UI_IMPORT_IMAGE_FAILED));
@@ -10282,7 +10994,7 @@
         const numericText = id => detailText(id).replace(/^¥\s*/, "").replace(/\s*%off$/i, "").trim();
         const optionalNumber = value => value === "" ? "" : Number(value);
         const now = Date.now();
-        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), purchaseDate:normalizeCardDateValue(detailText("collectionDetailPurchaseDate")), listenedDate:normalizeCardDateValue(detailText("collectionDetailListenedDate")), releaseDate:normalizeCardDateValue(detailText("collectionDetailReleaseDate")), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
+        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), purchaseDate:normalizeCardDateValue(detailText("collectionDetailPurchaseDate")), listenedDate:normalizeCardDateValue(detailText("collectionDetailListenedDate")), releaseDate:normalizeCardDateValue(detailText("collectionDetailReleaseDate")), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverStoredSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
         try {
           if (work && nextWork.id !== work.id) await deleteWork(work.id);
           await putWorks([nextWork]);
@@ -10341,7 +11053,8 @@
         );
         if (hasCurrentFullInformation && !await showAppConfirm(String.fromCharCode(0x5f53, 0x524d, 0x5b8c, 0x6574, 0x7248, 0x5df2, 0x6709, 0x4fe1, 0x606f, 0xff0c, 0x5236, 0x4f5c, 0x20, 0x72, 0x65, 0x70, 0x6f, 0x20, 0x4f1a, 0x8986, 0x76d6, 0x73b0, 0x6709, 0x5185, 0x5bb9, 0x3002, 0x786e, 0x5b9a, 0x7ee7, 0x7eed, 0x5417, 0xff1f))) return;
         const ratings = [work.rating, work.cvRating, work.storyRating, work.seRating].map(value => value === "" || value == null ? 0 : Number(value) || 0);
-        applyState({ ...state, template:"full", theme:"matcha-berry-cheese", recordTitle:work.title || "", cvText:work.cv || "", circleText:work.circle || "", rjText:work.rj || "", durationText:work.time || "", purchaseDate:work.purchaseDate || "", listenedDate:work.listenedDate || "", cardInfoType:normalizeCardInfoType(work.cardInfoType), originalPrice:work.originalPrice === "" || work.originalPrice == null ? "" : work.originalPrice, currentPrice:work.price === "" || work.price == null ? "" : work.price, currentDiscount:work.currentDiscount === "" || work.currentDiscount == null ? "" : work.currentDiscount, lowestPrice:work.lowestPrice === "" || work.lowestPrice == null ? "" : work.lowestPrice, cnChoice:work.cn || CHOICE_SUBTITLE, ratings, tags:String(work.keywords || "").split(" / ").filter(Boolean), reviewText:work.review || "", coverSrc:work.cover || "", coverOriginalSrc:work.cover || "", coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverWhiteFogMaskSrc:"", coverStickers:[] }, true);
+        const workCover = await resolveStoredImageReferenceSafely(work.cover);
+        applyState({ ...state, template:"full", theme:"matcha-berry-cheese", recordTitle:work.title || "", cvText:work.cv || "", circleText:work.circle || "", rjText:work.rj || "", durationText:work.time || "", purchaseDate:work.purchaseDate || "", listenedDate:work.listenedDate || "", cardInfoType:normalizeCardInfoType(work.cardInfoType), originalPrice:work.originalPrice === "" || work.originalPrice == null ? "" : work.originalPrice, currentPrice:work.price === "" || work.price == null ? "" : work.price, currentDiscount:work.currentDiscount === "" || work.currentDiscount == null ? "" : work.currentDiscount, lowestPrice:work.lowestPrice === "" || work.lowestPrice == null ? "" : work.lowestPrice, cnChoice:work.cn || CHOICE_SUBTITLE, ratings, tags:String(work.keywords || "").split(" / ").filter(Boolean), reviewText:work.review || "", coverSrc:workCover || "", coverOriginalSrc:workCover || "", coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverWhiteFogMaskSrc:"", coverEditorUndoStack:[], coverEditorRedoStack:[], coverEditorHistoryCheckpoint:null, coverEditorOperations:[], coverEditorRedoOperations:[], coverEditorHistoryFormat:"operations-v1", coverStickers:[] }, true);
         setMainPage("template");
       };
       function closeCollectionDetailMobileMenu() {
@@ -10398,12 +11111,8 @@
           request.onsuccess = () => resolve(request.result);
         });
       }
-      async function hydrateCollectionWorkImage(work) {
-        if (!work || typeof work !== "object") return work;
-        return { ...work, cover: await resolveStoredImageReferenceSafely(work.cover) };
-      }
-      function serializeCollectionWorkImage(work) {
-        return { ...work, cover: storedImageReference(work?.cover) };
+      async function serializeCollectionWorkImage(work) {
+        return { ...work, cover: await ensureStoredImageReference(work?.cover) };
       }
       async function loadWorks() {
         const database = await openWorksDatabase();
@@ -10412,15 +11121,27 @@
           request.onsuccess = () => { database.close(); resolve(request.result || []); };
           request.onerror = () => { database.close(); reject(request.error); };
         });
-        return Promise.all(storedWorks.map(hydrateCollectionWorkImage));
+        if (storedWorks.some((work) => String(work?.cover || "").startsWith("data:image/"))) {
+          await putWorks(storedWorks);
+        }
+        return storedWorks;
       }
       async function putWorks(works) {
+        const storedWorks = [];
+        for (const work of works) storedWorks.push(await serializeCollectionWorkImage(work));
         const database = await openWorksDatabase();
         return new Promise((resolve, reject) => {
           const transaction = database.transaction("works", "readwrite");
           const store = transaction.objectStore("works");
-          works.forEach(work => store.put(serializeCollectionWorkImage(work)));
-          transaction.oncomplete = () => { database.close(); resolve(); };
+          storedWorks.forEach(work => store.put(work));
+          transaction.oncomplete = () => {
+            database.close();
+            storedWorks.forEach((storedWork, index) => {
+              if (works[index] && typeof works[index] === "object") works[index].cover = storedWork.cover;
+            });
+            scheduleStoredImageGarbageCollection();
+            resolve();
+          };
           transaction.onerror = () => { database.close(); reject(transaction.error); };
         });
       }
@@ -10428,23 +11149,49 @@
         return new Promise((resolve, reject) => {
           openWorksDatabase().then(database => {
             const request = database.transaction("works", "readwrite").objectStore("works").delete(id);
-            request.onsuccess = () => { database.close(); resolve(); };
+            request.onsuccess = () => {
+              database.close();
+              scheduleStoredImageGarbageCollection();
+              resolve();
+            };
             request.onerror = () => { database.close(); reject(request.error); };
           }).catch(reject);
         });
       }
-      function exportCollectionBackup() {
-        const payload = { type:COLLECTION_BACKUP_TYPE, version:COLLECTION_BACKUP_VERSION, exportedAt:new Date().toISOString(), works:records, customTags:customCollectionTags, removedTags:removedCollectionTags };
-        const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-        link.download = "my_collection_backup_" + stamp + ".json";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      collectionStoredImageReferencesReader = async () => {
+        const database = await openWorksDatabase();
+        try {
+          const storedWorks = await new Promise((resolve, reject) => {
+            const request = database.transaction("works", "readonly").objectStore("works").getAll();
+            request.onsuccess = () => resolve(request.result || []);
+            request.onerror = () => reject(request.error || new Error("Collection image reference read failed"));
+          });
+          return Array.from(collectStoredImageReferences(storedWorks));
+        } finally {
+          database.close();
+        }
+      };
+      collectionStorageReadyForGc = true;
+      async function exportCollectionBackup() {
+        try {
+          const backupWorks = [];
+          for (const work of records) backupWorks.push({ ...work, cover: await resolveStoredImageReferenceSafely(work.cover) });
+          const payload = { type:COLLECTION_BACKUP_TYPE, version:COLLECTION_BACKUP_VERSION, exportedAt:new Date().toISOString(), works:backupWorks, customTags:customCollectionTags, removedTags:removedCollectionTags };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+          link.download = "my_collection_backup_" + stamp + ".json";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (error) {
+          console.error("Collection backup export failed", error);
+          const detail = error && (error.name || error.message) ? [error.name, error.message].filter(Boolean).join(": ") : "";
+          showAppAlert(String.fromCharCode(0x6536, 0x85cf, 0x5907, 0x4efd, 0x5bfc, 0x51fa, 0x5931, 0x8d25, 0xff1a) + (detail || UI_AUTO_SAVE_UNAVAILABLE_REASON));
+        }
       }
       async function importCollectionBackup(file) {
         try {
@@ -10628,7 +11375,7 @@
               if (targetCover) {
                 if (product.coverUrl) {
                   try {
-                    nextWork.cover = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true);
+                    nextWork.cover = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true, rebuildableRemoteCoverOptions(product.coverUrl, 480, true, job.rj));
                     nextWork.coverFit = "cover";
                     importedField = true;
                   } catch (coverError) {
@@ -10802,7 +11549,7 @@
         let cover = "";
         if (product.coverUrl) {
           try {
-            cover = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true);
+            cover = await grid9CoverStorageDataUrl(await fetchImageAsPngDataUrl(product.coverUrl), true, rebuildableRemoteCoverOptions(product.coverUrl, 480, true, rj));
           } catch (error) {
             missingFields.push(unavailableImportField("BK", UI_IMPORT_IMAGE_FAILED));
             console.warn("Collection batch add cover import failed", rj, error);
@@ -10963,7 +11710,7 @@
       document.getElementById("collectionRjImportButton").onclick = importCollectionByRj;
       document.getElementById("collectionBatchAddButton").onclick = openCollectionBatchAdd;
       document.getElementById("collectionImportButton").onclick = () => collectionImportInput.click();
-      document.getElementById("collectionExportButton").onclick = exportCollectionBackup;
+      document.getElementById("collectionExportButton").onclick = () => void exportCollectionBackup();
       document.getElementById("collectionNewRecordButton").onclick = openNewDetail;
       collectionImportInput.onchange = () => { const file = collectionImportInput.files?.[0]; if (file) void importCollectionBackup(file); collectionImportInput.value = ""; };
       loadWorks().then(items => {

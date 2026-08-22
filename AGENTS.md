@@ -11,7 +11,7 @@ deployed on GitHub Pages.
 - `css/style.css` — all styles. Note: relative URLs inside CSS resolve against
   this file (e.g. `../font/BlackSugarPlumCandy-Bold.ttf`).
 - `js/app.js` — all application logic: card rendering, image editor, stickers,
-  DLsite import, localStorage state.
+  DLsite import, IndexedDB state and image storage.
 - `font/` — card display font.
 - `stamp/` — built-in sticker PNGs (source files).
 - `stamp-data/` — legacy per-sticker base64 fallback data retained by the
@@ -24,7 +24,8 @@ deployed on GitHub Pages.
 - Chinese UI strings in JS use `String.fromCharCode(0x....)`; fixed HTML text
   uses HTML entities; Unicode punctuation in regexes uses `\uXXXX`. See
   `ENCODING_NOTES.md` for the full rules (previously corrupted by encoding bugs).
-- State is persisted to `localStorage` under key `otome-record-card-v1`.
+- App state is persisted primarily in IndexedDB. `localStorage` is reserved for
+  lightweight UI preferences and legacy-state migration.
 
 ## Design rules for new card templates
 
