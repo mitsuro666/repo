@@ -96,9 +96,13 @@
     const templateDeletePage = document.getElementById("templateDeletePage");
     const reviewEditModal = document.getElementById("reviewEditModal");
     const reviewEditTitle = document.getElementById("reviewEditTitle");
+    const reviewEditLineStatus = document.getElementById("reviewEditLineStatus");
     const reviewEditArea = document.getElementById("reviewEditArea");
+    const reviewEditPreview = document.getElementById("reviewEditPreview");
     const reviewEditConfirm = document.getElementById("reviewEditConfirm");
-    const reviewEditCancel = document.getElementById("reviewEditCancel");
+    const reviewPreviewToolbar = document.getElementById("reviewPreviewToolbar");
+    const reviewPreviewContinue = document.getElementById("reviewPreviewContinue");
+    const reviewPreviewDone = document.getElementById("reviewPreviewDone");
     const imageEditModal = document.getElementById("imageEditModal");
     const imageEditCloseButton = document.getElementById("imageEditCloseButton");
     const usageGuideButton = document.getElementById("usageGuideButton");
@@ -596,6 +600,12 @@
     let currentThemeId = DEFAULT_THEME_ID;
     let themePageIndex = 0;
     let mobileFocusTarget = null;
+    let reviewFocusSessionActive = false;
+    let reviewEditorSelectionStart = 0;
+    let reviewEditorSelectionEnd = 0;
+    let reviewEditorScrollTop = 0;
+    let reviewEditorAppScrollTop = 0;
+    let reviewViewportFrame = 0;
     let lastExportUrl = "";
     let lastExportFileName = "record-card.png";
     let lastExportPages = [];
@@ -743,8 +753,10 @@
     const UI_IMPORT_REQUEST_TIMEOUT = String.fromCharCode(0x8bf7, 0x6c42, 0x8d85, 0x65f6, 0x3002);
     const UI_IMPORT_REQUEST_NETWORK = String.fromCharCode(0x65e0, 0x6cd5, 0x8fde, 0x63a5, 0x63a5, 0x53e3, 0xff0c, 0x8bf7, 0x68c0, 0x67e5, 0x20, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x20, 0x662f, 0x5426, 0x5df2, 0x90e8, 0x7f72, 0x5e76, 0x53ef, 0x8bbf, 0x95ee, 0x3002);
     const UI_IMPORT_HTTP_PREFIX = String.fromCharCode(0x63a5, 0x53e3, 0x8fd4, 0x56de, 0x20);
-    const UI_REVIEW_EDIT_TITLE = String.fromCharCode(0x7f16, 0x8f91, 0x8bc4, 0x4ef7);
-    const UI_REVIEW_CONFIRM = String.fromCharCode(0x786e, 0x5b9a);
+    const UI_REVIEW_EDIT_TITLE = String.fromCharCode(0x8bc4, 0x4ef7, 0x4e13, 0x6ce8, 0x7f16, 0x8f91);
+    const UI_REVIEW_PREVIEW = String.fromCharCode(0x5168, 0x56fe, 0x9884, 0x89c8);
+    const UI_REVIEW_CONTINUE = String.fromCharCode(0x7ee7, 0x7eed, 0x7f16, 0x8f91);
+    const UI_REVIEW_DONE = String.fromCharCode(0x5b8c, 0x6210);
     const UI_REVIEW_CANCEL = String.fromCharCode(0x53d6, 0x6d88);
     const UI_IMPORT_DATA_FAILED = String.fromCharCode(0x5bfc, 0x5165, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x786e, 0x8ba4, 0x6587, 0x4ef6, 0x662f, 0x672c, 0x9879, 0x76ee, 0x5bfc, 0x51fa, 0x7684, 0x20, 0x4a, 0x53, 0x4f, 0x4e, 0x3002);
     const UI_RESET_CONFIRM = String.fromCharCode(0x786e, 0x5b9a, 0x8981, 0x6e05, 0x7a7a, 0x5f53, 0x524d, 0x586b, 0x5199, 0x7684, 0x5168, 0x90e8, 0x5185, 0x5bb9, 0x5417, 0xff1f, 0x8fd9, 0x4e2a, 0x64cd, 0x4f5c, 0x4e0d, 0x80fd, 0x64a4, 0x9500, 0x3002);
@@ -813,8 +825,10 @@
     importHelpButton.title = UI_IMPORT_HELP;
     if (importHelpPopover) importHelpPopover.textContent = UI_IMPORT_HELP;
     reviewEditTitle.textContent = UI_REVIEW_EDIT_TITLE;
-    reviewEditConfirm.textContent = UI_REVIEW_CONFIRM;
-    reviewEditCancel.textContent = UI_REVIEW_CANCEL;
+    reviewEditPreview.textContent = UI_REVIEW_PREVIEW;
+    reviewEditConfirm.textContent = UI_REVIEW_DONE;
+    reviewPreviewContinue.textContent = UI_REVIEW_CONTINUE;
+    reviewPreviewDone.textContent = UI_REVIEW_DONE;
 
     function openAppDialog(message, confirmMode, title = "", options = null) {
       const previousFocus = document.activeElement;
@@ -1319,6 +1333,29 @@
         limited += character;
       }
       return limited;
+    }
+
+    function measuredWrappedLineCount(value, node, maxWidth) {
+      const text = String(value || "").replace(/\r\n?/g, "\n");
+      if (!text) return 0;
+      const ctx = measuredTextContext(node);
+      let line = "";
+      let lineCount = 1;
+      for (const character of wrappingCharacters(text)) {
+        if (character === "\n") {
+          line = "";
+          lineCount += 1;
+          continue;
+        }
+        const nextLine = line + character;
+        if (line && ctx.measureText(nextLine).width > maxWidth) {
+          line = character;
+          lineCount += 1;
+        } else {
+          line = nextLine;
+        }
+      }
+      return lineCount;
     }
 
     function limitedFullFieldText(node, value = editableInputText(node)) {
@@ -1835,19 +1872,136 @@
       mobileFocusBack.classList.add("hidden");
     }
 
-    function openReviewEditor() {
-      if (!isMobileView()) return;
-      reviewEditArea.value = document.getElementById("reviewText").value || "";
-      reviewEditModal.hidden = false;
-      window.setTimeout(() => reviewEditArea.focus(), 50);
+    function updateReviewEditLineStatus() {
+      const lineCount = measuredWrappedLineCount(reviewEditArea.value, reviewText, FULL_REVIEW_LINE_WIDTH);
+      reviewEditLineStatus.textContent = String.fromCharCode(0x672c, 0x9875) + " " + lineCount + " / " + FULL_REVIEW_MAX_LINES + " " + String.fromCharCode(0x884c);
+      reviewEditLineStatus.classList.toggle("is-full", lineCount >= FULL_REVIEW_MAX_LINES);
     }
 
-    function closeReviewEditor(save) {
-      if (save) {
-        document.getElementById("reviewText").value = reviewEditArea.value;
-        document.getElementById("reviewText").dispatchEvent(new Event("input", { bubbles: true }));
+    function updateReviewFocusViewport() {
+      if (reviewEditModal.hidden) return;
+      const viewport = window.visualViewport;
+      reviewEditModal.style.setProperty("--review-focus-vv-left", Math.round(viewport?.offsetLeft || 0) + "px");
+      reviewEditModal.style.setProperty("--review-focus-vv-top", Math.round(viewport?.offsetTop || 0) + "px");
+      reviewEditModal.style.setProperty("--review-focus-vv-width", Math.max(1, Math.round(viewport?.width || window.innerWidth || document.documentElement.clientWidth)) + "px");
+      reviewEditModal.style.setProperty("--review-focus-vv-height", Math.max(1, Math.round(viewport?.height || window.innerHeight || document.documentElement.clientHeight)) + "px");
+    }
+
+    function scheduleReviewFocusViewportUpdate() {
+      window.cancelAnimationFrame(reviewViewportFrame);
+      reviewViewportFrame = window.requestAnimationFrame(updateReviewFocusViewport);
+    }
+
+    function startReviewFocusViewportTracking() {
+      stopReviewFocusViewportTracking();
+      updateReviewFocusViewport();
+      window.visualViewport?.addEventListener("resize", scheduleReviewFocusViewportUpdate);
+      window.visualViewport?.addEventListener("scroll", scheduleReviewFocusViewportUpdate);
+    }
+
+    function stopReviewFocusViewportTracking() {
+      window.cancelAnimationFrame(reviewViewportFrame);
+      reviewViewportFrame = 0;
+      window.visualViewport?.removeEventListener("resize", scheduleReviewFocusViewportUpdate);
+      window.visualViewport?.removeEventListener("scroll", scheduleReviewFocusViewportUpdate);
+    }
+
+    function saveReviewEditorPosition() {
+      reviewEditorSelectionStart = reviewEditArea.selectionStart ?? reviewEditArea.value.length;
+      reviewEditorSelectionEnd = reviewEditArea.selectionEnd ?? reviewEditorSelectionStart;
+      reviewEditorScrollTop = reviewEditArea.scrollTop;
+    }
+
+    function focusReviewEditArea() {
+      try {
+        reviewEditArea.focus({ preventScroll: true });
+      } catch (error) {
+        reviewEditArea.focus();
       }
+      const textLength = reviewEditArea.value.length;
+      reviewEditArea.setSelectionRange(
+        Math.min(reviewEditorSelectionStart, textLength),
+        Math.min(reviewEditorSelectionEnd, textLength)
+      );
+      window.requestAnimationFrame(() => {
+        reviewEditArea.scrollTop = reviewEditorScrollTop;
+      });
+    }
+
+    function syncReviewEditorToCard() {
+      reviewText.value = reviewEditArea.value;
+      reviewText.dispatchEvent(new Event("input", { bubbles: true }));
+      if (reviewText.value !== reviewEditArea.value) {
+        const caret = Math.min(reviewEditArea.selectionStart ?? reviewText.value.length, reviewText.value.length);
+        reviewEditArea.value = reviewText.value;
+        reviewEditArea.setSelectionRange(caret, caret);
+      }
+      updateReviewEditLineStatus();
+    }
+
+    function openReviewEditor() {
+      if (!isMobileView() || currentTemplate() !== "full" || continuationState.full.current !== 0) return;
+      const app = document.querySelector(".app");
+      reviewFocusSessionActive = true;
+      reviewEditorAppScrollTop = app?.scrollTop || 0;
+      reviewEditArea.value = reviewText.value || "";
+      reviewEditorSelectionStart = reviewEditArea.value.length;
+      reviewEditorSelectionEnd = reviewEditorSelectionStart;
+      reviewEditorScrollTop = 0;
+      updateReviewEditLineStatus();
+      reviewPreviewToolbar.hidden = true;
+      document.body.classList.remove("review-focus-preview");
+      document.body.classList.add("review-focus-active");
+      reviewEditModal.hidden = false;
+      startReviewFocusViewportTracking();
+      focusReviewEditArea();
+    }
+
+    function openReviewFullPreview() {
+      if (!reviewFocusSessionActive) return;
+      saveReviewEditorPosition();
+      syncReviewEditorToCard();
+      reviewEditArea.blur();
       reviewEditModal.hidden = true;
+      stopReviewFocusViewportTracking();
+      document.body.classList.remove("review-focus-active");
+      document.body.classList.add("review-focus-preview");
+      reviewPreviewToolbar.hidden = false;
+      window.requestAnimationFrame(() => {
+        const app = document.querySelector(".app");
+        if (app) app.scrollTop = 0;
+        fitStage();
+      });
+    }
+
+    function resumeReviewEditor() {
+      if (!reviewFocusSessionActive) return;
+      reviewPreviewToolbar.hidden = true;
+      document.body.classList.remove("review-focus-preview");
+      document.body.classList.add("review-focus-active");
+      reviewEditModal.hidden = false;
+      startReviewFocusViewportTracking();
+      focusReviewEditArea();
+    }
+
+    function finishReviewEditor() {
+      if (!reviewFocusSessionActive) return;
+      if (!reviewEditModal.hidden) {
+        saveReviewEditorPosition();
+        syncReviewEditorToCard();
+      }
+      reviewEditArea.blur();
+      reviewEditModal.hidden = true;
+      reviewPreviewToolbar.hidden = true;
+      stopReviewFocusViewportTracking();
+      document.body.classList.remove("review-focus-active", "review-focus-preview");
+      reviewFocusSessionActive = false;
+      scheduleSave();
+      window.requestAnimationFrame(() => {
+        fitStage();
+        const app = document.querySelector(".app");
+        if (app) app.scrollTop = reviewEditorAppScrollTop;
+      });
     }
 
     function setTemplate(template, persist = true) {
@@ -8580,7 +8734,8 @@
         if (isMobileView() && currentTemplate() === "full" && area.classList.contains("review-panel")) {
           event.preventDefault();
           event.stopPropagation();
-          openReviewEditor();
+          if (reviewFocusSessionActive) resumeReviewEditor();
+          else openReviewEditor();
           return;
         }
       }, true);
@@ -9594,11 +9749,14 @@
       saveState();
     });
 
-    reviewEditConfirm.addEventListener("click", () => closeReviewEditor(true));
-    reviewEditCancel.addEventListener("click", () => closeReviewEditor(false));
-    reviewEditModal.addEventListener("click", (event) => {
-      if (event.target === reviewEditModal) closeReviewEditor(false);
+    reviewEditArea.addEventListener("input", () => {
+      if (!fullReviewComposing.has(reviewEditArea)) syncReviewEditorToCard();
     });
+    reviewEditArea.addEventListener("compositionend", syncReviewEditorToCard);
+    reviewEditPreview.addEventListener("click", openReviewFullPreview);
+    reviewEditConfirm.addEventListener("click", finishReviewEditor);
+    reviewPreviewContinue.addEventListener("click", resumeReviewEditor);
+    reviewPreviewDone.addEventListener("click", finishReviewEditor);
     imageToolMosaic.addEventListener("click", () => setEditorTool("mosaic"));
     imageToolBlur.addEventListener("click", () => setEditorTool("blur"));
     imageToolWhiteFog.addEventListener("click", () => setEditorTool("white-fog"));

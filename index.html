@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>&#20057;&#25235;&#35760;&#24405;&#27169;&#26495;</title>
-  <link rel="stylesheet" href="css/style.css?v=20260820-collection-jump-center">
+  <link rel="stylesheet" href="css/style.css?v=20260822-review-focus">
   <script>
     if (location.hostname === "mitsuro666.github.io" && location.pathname.startsWith("/repo/")) {
       const goatCounterScript = document.createElement("script");
@@ -427,14 +427,21 @@
     </div>
 
     <div class="review-edit-modal" id="reviewEditModal" hidden>
-      <div class="review-edit-sheet">
-        <h2 class="review-edit-title" id="reviewEditTitle"></h2>
-        <textarea class="review-edit-area" id="reviewEditArea"></textarea>
+      <div class="review-edit-sheet" role="dialog" aria-modal="true" aria-labelledby="reviewEditTitle">
+        <div class="review-edit-heading">
+          <h2 class="review-edit-title" id="reviewEditTitle"></h2>
+          <span class="review-edit-line-status" id="reviewEditLineStatus" aria-live="polite"></span>
+        </div>
+        <textarea class="review-edit-area" id="reviewEditArea" aria-label="&#35780;&#20215;&#19987;&#27880;&#32534;&#36753;"></textarea>
         <div class="review-edit-actions">
+          <button class="action-button" id="reviewEditPreview" type="button"></button>
           <button class="action-button primary" id="reviewEditConfirm" type="button"></button>
-          <button class="action-button" id="reviewEditCancel" type="button"></button>
         </div>
       </div>
+    </div>
+    <div class="review-preview-toolbar" id="reviewPreviewToolbar" hidden>
+      <button class="action-button" id="reviewPreviewContinue" type="button"></button>
+      <button class="action-button primary" id="reviewPreviewDone" type="button"></button>
     </div>
 
 
@@ -616,6 +623,6 @@
         </div>
       </div>
     </div>
-  <script src="js/app.js?v=20260820-collection-page-scroll-lock"></script>
+  <script src="js/app.js?v=20260822-review-focus"></script>
 </body>
 </html>
