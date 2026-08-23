@@ -701,6 +701,7 @@
     let editorPinching = false;
     let editorSessionSnapshot = null;
     let editorRenderFrame = 0;
+    let imageEditorOpening = false;
     const editCtx = imageEditCanvas.getContext("2d");
     const editOriginalCanvas = document.createElement("canvas");
     const editOriginalCtx = editOriginalCanvas.getContext("2d");
@@ -714,6 +715,8 @@
     const editBlurMaskCtx = editBlurMaskCanvas.getContext("2d");
     const editWhiteFogMaskCanvas = document.createElement("canvas");
     const editWhiteFogMaskCtx = editWhiteFogMaskCanvas.getContext("2d");
+    const editEffectCompositeCanvas = document.createElement("canvas");
+    const editEffectCompositeCtx = editEffectCompositeCanvas.getContext("2d");
     const UI_BACK_FULL = String.fromCharCode(0x8fd4, 0x56de, 0x5168, 0x56fe);
     const UI_EXPORT_SHORT = String.fromCharCode(0x5bfc, 0x51fa);
     const UI_EXPORT_DOWNLOAD_PAGE = String.fromCharCode(0x4e0b, 0x8f7d, 0x5f53, 0x524d, 0x9875);
@@ -779,6 +782,7 @@
     const UI_STORAGE_NOT_PERSISTED = String.fromCharCode(0x6301, 0x4e45, 0x5b58, 0x50a8, 0x4fdd, 0x62a4, 0xff1a, 0x672a, 0x542f, 0x7528);
     const UI_STORAGE_PERSIST_UNSUPPORTED = String.fromCharCode(0x6301, 0x4e45, 0x5b58, 0x50a8, 0x4fdd, 0x62a4, 0xff1a, 0x6d4f, 0x89c8, 0x5668, 0x4e0d, 0x652f, 0x6301);
     const UI_CUSTOM_STICKER_DELETE_CONFIRM = String.fromCharCode(0x786e, 0x5b9a, 0x5220, 0x9664, 0x8fd9, 0x4e2a, 0x81ea, 0x5b9a, 0x4e49, 0x8d34, 0x7eb8, 0x5417, 0xff1f);
+    const UI_IMAGE_EDITOR_OPEN_FAILED = String.fromCharCode(0x56fe, 0x7247, 0x7f16, 0x8f91, 0x5668, 0x6253, 0x5f00, 0x5931, 0x8d25, 0xff1a);
     const UI_EXPORT_BACKUP = String.fromCharCode(0x5bfc, 0x51fa, 0x5907, 0x4efd);
     const UI_DEFER_ACTION = String.fromCharCode(0x6682, 0x4e0d, 0x5904, 0x7406);
     const UI_DIALOG_NOTICE = String.fromCharCode(0x5c0f, 0x63d0, 0x793a);
@@ -2098,6 +2102,12 @@
       });
     }
 
+    function releaseCanvas(canvas) {
+      if (!canvas) return;
+      canvas.width = 0;
+      canvas.height = 0;
+    }
+
     function renderExportPagePreview() {
       if (!lastExportPages.length) return;
       exportPageIndex = Math.max(0, Math.min(lastExportPages.length - 1, exportPageIndex));
@@ -3029,15 +3039,29 @@
           reject(new Error("IndexedDB is unavailable"));
           return;
         }
+        let openRejected = false;
         const request = indexedDB.open(IMAGE_DB_NAME, IMAGE_DB_VERSION);
         request.onupgradeneeded = () => {
           const db = request.result;
           if (!db.objectStoreNames.contains(IMAGE_DB_STORE)) db.createObjectStore(IMAGE_DB_STORE);
           if (!db.objectStoreNames.contains(IMAGE_DB_META_STORE)) db.createObjectStore(IMAGE_DB_META_STORE);
         };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error || new Error("Image database open failed"));
-        request.onblocked = () => reject(new Error("Image database open blocked"));
+        request.onsuccess = () => {
+          if (openRejected) {
+            request.result.close();
+            return;
+          }
+          request.result.onversionchange = () => request.result.close();
+          resolve(request.result);
+        };
+        request.onerror = () => {
+          openRejected = true;
+          reject(request.error || new Error("Image database open failed"));
+        };
+        request.onblocked = () => {
+          openRejected = true;
+          reject(new Error("Image database open blocked"));
+        };
       });
     }
 
@@ -3225,6 +3249,7 @@
       const dataUrl = metadata.rebuildForceJpeg || !canvasHasTransparency(ctx, outWidth, outHeight)
         ? canvas.toDataURL("image/jpeg", COVER_JPEG_QUALITY)
         : canvas.toDataURL("image/png");
+      releaseCanvas(canvas);
       return dataUrlToBlob(dataUrl);
     }
 
@@ -3416,6 +3441,7 @@
       const output = canvasHasTransparency(ctx, outWidth, outHeight)
         ? canvas.toDataURL("image/png")
         : canvas.toDataURL("image/jpeg", COVER_JPEG_QUALITY);
+      releaseCanvas(canvas);
       await registerNewStoredImage(output, storageOptions);
       return output;
     }
@@ -3677,7 +3703,9 @@
       canvas.height = height;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(image, 0, 0, width, height);
-      return canvas.toDataURL("image/png");
+      const output = canvas.toDataURL("image/png");
+      releaseCanvas(canvas);
+      return output;
     }
 
     const scriptLoadCache = new Map();
@@ -3692,6 +3720,7 @@
         document.head.appendChild(script);
       });
       scriptLoadCache.set(src, promise);
+      promise.catch(() => scriptLoadCache.delete(src));
       return promise;
     }
 
@@ -3730,7 +3759,7 @@
     }
 
     function resizeEditorCanvases(width, height) {
-      [imageEditCanvas, editOriginalCanvas, editMosaicCanvas, editBlurCanvas, editMosaicMaskCanvas, editBlurMaskCanvas, editWhiteFogMaskCanvas].forEach((canvas) => {
+      [imageEditCanvas, editOriginalCanvas, editMosaicCanvas, editBlurCanvas, editMosaicMaskCanvas, editBlurMaskCanvas, editWhiteFogMaskCanvas, editEffectCompositeCanvas].forEach((canvas) => {
         canvas.width = width;
         canvas.height = height;
       });
@@ -4044,7 +4073,9 @@
       mosaic.getContext("2d").putImageData(snapshot.mosaic, 0, 0);
       blur.getContext("2d").putImageData(snapshot.blur, 0, 0);
       if (snapshot.whiteFog) whiteFog.getContext("2d").putImageData(snapshot.whiteFog, 0, 0);
-      return { mosaic: mosaic.toDataURL("image/png"), blur: blur.toDataURL("image/png"), whiteFog: whiteFog.toDataURL("image/png"), stickers: cloneStickerList(snapshot.stickers) };
+      const dataUrls = { mosaic: mosaic.toDataURL("image/png"), blur: blur.toDataURL("image/png"), whiteFog: whiteFog.toDataURL("image/png"), stickers: cloneStickerList(snapshot.stickers) };
+      [mosaic, blur, whiteFog].forEach(releaseCanvas);
+      return dataUrls;
     }
 
     async function dataUrlToImageData(src, width, height) {
@@ -4057,7 +4088,9 @@
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, width, height);
       ctx.drawImage(img, 0, 0, width, height);
-      return ctx.getImageData(0, 0, width, height);
+      const imageData = ctx.getImageData(0, 0, width, height);
+      releaseCanvas(canvas);
+      return imageData;
     }
 
     async function restoreMaskCanvasFromSrc(ctx, src, width, height) {
@@ -4210,6 +4243,7 @@
         blurSmallCtx.drawImage(editOriginalCanvas, 0, 0, blurSmall.width, blurSmall.height);
         editBlurCtx.imageSmoothingEnabled = true;
         editBlurCtx.drawImage(blurSmall, 0, 0, blurSmall.width, blurSmall.height, 0, 0, width, height);
+        releaseCanvas(blurSmall);
       }
     }
 
@@ -4226,20 +4260,19 @@
       editMosaicCtx.imageSmoothingEnabled = false;
       editMosaicCtx.drawImage(small, 0, 0, small.width, small.height, 0, 0, width, height);
       editMosaicCtx.imageSmoothingEnabled = true;
+      releaseCanvas(small);
 
       buildBlurEffectCanvas(width, height);
     }
 
     function drawMaskedEffect(targetCtx, effectCanvas, maskCanvas) {
-      const temp = document.createElement("canvas");
-      temp.width = effectCanvas.width;
-      temp.height = effectCanvas.height;
-      const tempCtx = temp.getContext("2d");
-      tempCtx.drawImage(effectCanvas, 0, 0);
-      tempCtx.globalCompositeOperation = "destination-in";
-      tempCtx.drawImage(maskCanvas, 0, 0);
-      tempCtx.globalCompositeOperation = "source-over";
-      targetCtx.drawImage(temp, 0, 0);
+      editEffectCompositeCtx.clearRect(0, 0, editEffectCompositeCanvas.width, editEffectCompositeCanvas.height);
+      editEffectCompositeCtx.globalCompositeOperation = "source-over";
+      editEffectCompositeCtx.drawImage(effectCanvas, 0, 0);
+      editEffectCompositeCtx.globalCompositeOperation = "destination-in";
+      editEffectCompositeCtx.drawImage(maskCanvas, 0, 0);
+      editEffectCompositeCtx.globalCompositeOperation = "source-over";
+      targetCtx.drawImage(editEffectCompositeCanvas, 0, 0);
     }
 
     function drawRoundRectPath(ctx, x, y, w, h, r) {
@@ -4645,6 +4678,50 @@
       renderStickerPicker();
     }
 
+    function releaseImageEditorTransientResources() {
+      if (editorRenderFrame) {
+        window.cancelAnimationFrame(editorRenderFrame);
+        editorRenderFrame = 0;
+      }
+      editorImage = null;
+      editorSourceSrc = "";
+      editorSessionSnapshot = null;
+      editorDrawing = false;
+      editorLastPoint = null;
+      editorStickerDrag = null;
+      pendingEditorBrushOperation = null;
+      editorUndoStack = [];
+      editorRedoStack = [];
+      editorUndoOperations = [];
+      editorRedoOperations = [];
+      editorTouchPointers.clear();
+      editorPinching = false;
+      [imageEditCanvas, editOriginalCanvas, editMosaicCanvas, editBlurCanvas, editMosaicMaskCanvas, editBlurMaskCanvas, editWhiteFogMaskCanvas, editEffectCompositeCanvas].forEach(releaseCanvas);
+    }
+
+    async function openImageEditorSafely(openEditor) {
+      if (imageEditorOpening) return;
+      imageEditorOpening = true;
+      try {
+        await openEditor();
+      } catch (error) {
+        console.error("Image editor open failed", error);
+        imageEditModal.hidden = true;
+        if (imageEditorMode !== "template") {
+          imageEditorMode = "template";
+          restoreTemplateEditorGlobals();
+          placeImageEditorForTemplate();
+        }
+        releaseImageEditorTransientResources();
+        const detail = error && (error.name || error.message)
+          ? [error.name, error.message].filter(Boolean).join(": ")
+          : UI_AUTO_SAVE_UNAVAILABLE_REASON;
+        await showAppAlert(UI_IMAGE_EDITOR_OPEN_FAILED + detail);
+      } finally {
+        imageEditorOpening = false;
+      }
+    }
+
     function layoutTemplateImageEditorActions() {
       if (isMobileView()) {
         imageActionRow?.append(imageClearButton, imageDoneButton);
@@ -4835,14 +4912,13 @@
 
     function prepareStandaloneImageTool() {
       if (standaloneOriginalSrc || standaloneEditedSrc) {
-        void openStandaloneImageEditor();
+        void openImageEditorSafely(() => openStandaloneImageEditor());
         return;
       }
       if (imageEditorMode !== "standalone") templateEditorGlobalsBackup = editorGlobals();
       imageEditorMode = "standalone";
       placeImageEditorForStandalone();
-      editorImage = null;
-      editorSessionSnapshot = null;
+      releaseImageEditorTransientResources();
       if (imageEditCanvas) imageEditCanvas.hidden = true;
       if (imageToolEmpty) imageToolEmpty.hidden = false;
       imageEditModal.hidden = false;
@@ -4875,9 +4951,8 @@
       applyEditorGlobals(standaloneEditorGlobals(""));
       if (imageEditCanvas) {
         imageEditCanvas.hidden = true;
-        imageEditCanvas.width = 0;
-        imageEditCanvas.height = 0;
       }
+      releaseImageEditorTransientResources();
       if (imageToolEmpty) imageToolEmpty.hidden = false;
       imageEditModal.hidden = false;
       renderStickerPicker();
@@ -4899,6 +4974,7 @@
       imageEditorMode = "template";
       restoreTemplateEditorGlobals();
       placeImageEditorForTemplate();
+      releaseImageEditorTransientResources();
     }
 
     async function exportStandaloneImageFromEditor() {
@@ -4913,16 +4989,20 @@
         const canvas = document.createElement("canvas");
         canvas.width = imageEditCanvas.width;
         canvas.height = imageEditCanvas.height;
-        renderImageEditor(canvas, { controls: false });
-        const blob = await canvasToBlob(canvas);
-        handleExportBlob(blob, standaloneExportFileName(), "", currentThemeId, UI_EXPORT_DOWNLOAD_IMAGE);
-        standaloneOriginalSrc = editorSourceSrc || standaloneOriginalSrc;
         try {
-          saveEditorProject();
-          standaloneEditedSrc = canvas.toDataURL("image/png");
-          saveState();
-        } catch (saveError) {
-          console.warn("Standalone image state save failed after export", saveError);
+          renderImageEditor(canvas, { controls: false });
+          const blob = await canvasToBlob(canvas);
+          handleExportBlob(blob, standaloneExportFileName(), "", currentThemeId, UI_EXPORT_DOWNLOAD_IMAGE);
+          standaloneOriginalSrc = editorSourceSrc || standaloneOriginalSrc;
+          try {
+            saveEditorProject();
+            standaloneEditedSrc = canvas.toDataURL("image/png");
+            saveState();
+          } catch (saveError) {
+            console.warn("Standalone image state save failed after export", saveError);
+          }
+        } finally {
+          releaseCanvas(canvas);
         }
       } catch (error) {
         console.error(error);
@@ -4947,7 +5027,9 @@
       result.width = imageEditCanvas.width;
       result.height = imageEditCanvas.height;
       renderImageEditor(result, { controls: false });
-      return result.toDataURL("image/png");
+      const output = result.toDataURL("image/png");
+      releaseCanvas(result);
+      return output;
     }
 
     function restoreEditorSessionSnapshot() {
@@ -4974,6 +5056,7 @@
         imageEditorMode = "template";
         restoreTemplateEditorGlobals();
         placeImageEditorForTemplate();
+        releaseImageEditorTransientResources();
         if (imageToolEmpty) imageToolEmpty.hidden = false;
         return;
       }
@@ -5005,6 +5088,7 @@
             imageEditorMode = "template";
             restoreTemplateEditorGlobals();
             placeImageEditorForTemplate();
+            releaseImageEditorTransientResources();
           }
         }
         return;
@@ -5039,6 +5123,7 @@
             imageEditorMode = "template";
             restoreTemplateEditorGlobals();
             placeImageEditorForTemplate();
+            releaseImageEditorTransientResources();
             requestAnimationFrame(() => fitStage());
           }
         }
@@ -5074,6 +5159,7 @@
             imageEditorMode = "template";
             restoreTemplateEditorGlobals();
             placeImageEditorForTemplate();
+            releaseImageEditorTransientResources();
             requestAnimationFrame(() => fitStage());
           }
         }
@@ -5109,6 +5195,7 @@
             imageEditorMode = "template";
             restoreTemplateEditorGlobals();
             placeImageEditorForTemplate();
+            releaseImageEditorTransientResources();
             requestAnimationFrame(() => fitStage());
           }
         }
@@ -5155,6 +5242,7 @@
           editorStickerDrag = null;
           selectedStickerId = null;
           imageEditModal.hidden = true;
+          releaseImageEditorTransientResources();
           if (imageEditorMode === "template") requestAnimationFrame(() => fitStage());
         }
       }
@@ -5333,6 +5421,7 @@
           reject(new Error("IndexedDB is unavailable"));
           return;
         }
+        let openRejected = false;
         const request = indexedDB.open(STATE_DB_NAME, STATE_DB_VERSION);
         request.onupgradeneeded = () => {
           const db = request.result;
@@ -5340,9 +5429,22 @@
           if (!db.objectStoreNames.contains(STATE_DB_SETTINGS_STORE)) db.createObjectStore(STATE_DB_SETTINGS_STORE);
           if (!db.objectStoreNames.contains(STATE_DB_EDITOR_STORE)) db.createObjectStore(STATE_DB_EDITOR_STORE);
         };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error || new Error("IndexedDB open failed"));
-        request.onblocked = () => reject(new Error("IndexedDB open blocked"));
+        request.onsuccess = () => {
+          if (openRejected) {
+            request.result.close();
+            return;
+          }
+          request.result.onversionchange = () => request.result.close();
+          resolve(request.result);
+        };
+        request.onerror = () => {
+          openRejected = true;
+          reject(request.error || new Error("IndexedDB open failed"));
+        };
+        request.onblocked = () => {
+          openRejected = true;
+          reject(new Error("IndexedDB open blocked"));
+        };
       });
     }
 
@@ -5637,7 +5739,7 @@
 
     document.getElementById("imageEditButton").addEventListener("click", (event) => {
       event.preventDefault();
-      openImageEditor();
+      void openImageEditorSafely(() => openImageEditor());
     });
 
     removeCoverButton.addEventListener("click", (event) => {
@@ -6870,10 +6972,14 @@
       const pages = [];
       for (let index = 0; index < total; index += 1) {
         let canvas;
-        if (index === 0) canvas = template === "compact" ? await renderCompactHomeCanvas() : await renderFullHomeCanvas();
-        else if (template === "compact") canvas = await renderCompactContinuationCanvas(pageState.pages[index - 1], index, total);
-        else canvas = await renderFullContinuationCanvas(pageState.pages[index - 1], index, total);
-        pages.push({ blob: await canvasToBlob(canvas), fileName: templatePageExportFileName(template, index, total) });
+        try {
+          if (index === 0) canvas = template === "compact" ? await renderCompactHomeCanvas() : await renderFullHomeCanvas();
+          else if (template === "compact") canvas = await renderCompactContinuationCanvas(pageState.pages[index - 1], index, total);
+          else canvas = await renderFullContinuationCanvas(pageState.pages[index - 1], index, total);
+          pages.push({ blob: await canvasToBlob(canvas), fileName: templatePageExportFileName(template, index, total) });
+        } finally {
+          releaseCanvas(canvas);
+        }
       }
       if (isMobileView()) showExportPreviewPages(pages, pageState.current);
       else pages.forEach((page) => downloadBlob(page.blob, page.fileName));
@@ -7188,6 +7294,7 @@
       ctx.fillRect(0, 0, outWidth, outHeight);
       ctx.drawImage(img, 0, 0, outWidth, outHeight);
       const output = canvas.toDataURL("image/jpeg", COVER_JPEG_QUALITY);
+      releaseCanvas(canvas);
       if (storeAsBlob) await registerNewStoredImage(output, storageOptions);
       return output;
     }
@@ -7520,12 +7627,14 @@
       if (!(await ensureCanvasFontReady())) return null;
       await waitGrid9ImagesReady();
       const snapshot = await createGrid9ExportSnapshot();
+      let canvas = null;
       try {
-        const canvas = await grid9SnapshotCanvas(snapshot.clone);
+        canvas = await grid9SnapshotCanvas(snapshot.clone);
         const blob = await canvasToBlob(canvas);
         if (!blob || blob.size < 1024) throw new Error("Grid9 DOM export returned an empty image");
         return blob;
       } finally {
+        releaseCanvas(canvas);
         snapshot.host.remove();
       }
     }
@@ -7541,8 +7650,14 @@
       const canvas = document.createElement("canvas");
       canvas.width = 1080;
       canvas.height = 1440;
-      drawGrid9Card(canvas.getContext("2d"));
-      handleExportBlob(await canvasToBlob(canvas), grid9ExportFileName(), "grid9", exportThemeId);
+      let blob;
+      try {
+        drawGrid9Card(canvas.getContext("2d"));
+        blob = await canvasToBlob(canvas);
+      } finally {
+        releaseCanvas(canvas);
+      }
+      handleExportBlob(blob, grid9ExportFileName(), "grid9", exportThemeId);
     }
 
     async function downloadGrid9Card() {
@@ -8043,7 +8158,7 @@
         const action = tool.dataset.grid9Tool;
         if (action === "contain") setGrid9Fit(index, "contain");
         else if (action === "cover") setGrid9Fit(index, "cover");
-        else if (action === "edit") openGrid9ImageEditor(index);
+        else if (action === "edit") void openImageEditorSafely(() => openGrid9ImageEditor(index));
         else if (action === "remove") setGrid9Cover(index, "");
         return;
       }
@@ -8261,7 +8376,7 @@
           const action = btn.dataset.quickTool;
           if (action === "contain") setQuickFit(index, "contain");
           else if (action === "cover") setQuickFit(index, "cover");
-          else if (action === "edit") openQuickImageEditor(index);
+          else if (action === "edit") void openImageEditorSafely(() => openQuickImageEditor(index));
           else if (action === "remove") setQuickCover(index, "");
         });
       }
@@ -8517,8 +8632,14 @@
       const canvas = document.createElement("canvas");
       canvas.width = 1080;
       canvas.height = 1440;
-      drawQuickCard(canvas.getContext("2d"));
-      handleExportBlob(await canvasToBlob(canvas), quickExportFileName(), "quick", exportThemeId);
+      let blob;
+      try {
+        drawQuickCard(canvas.getContext("2d"));
+        blob = await canvasToBlob(canvas);
+      } finally {
+        releaseCanvas(canvas);
+      }
+      handleExportBlob(blob, quickExportFileName(), "quick", exportThemeId);
     }
 
     function drawQuickStar(ctx, cx, cy, outerR, fill) {
@@ -8948,7 +9069,7 @@
           const action = btn.dataset.trioTool;
           if (action === "contain") setTrioFit(index, "contain");
           else if (action === "cover") setTrioFit(index, "cover");
-          else if (action === "edit") openTrioImageEditor(index);
+          else if (action === "edit") void openImageEditorSafely(() => openTrioImageEditor(index));
           else if (action === "remove") setTrioCover(index, "");
         });
 
@@ -9337,8 +9458,14 @@
         console.warn("Trio DOM layout measurement failed, using legacy coordinates", error);
       }
       const exportThemeId = currentThemeId;
-      drawTrioCard(canvas.getContext("2d"), measuredLayout);
-      handleExportBlob(await canvasToBlob(canvas), trioExportFileName(), "trio", exportThemeId);
+      let blob;
+      try {
+        drawTrioCard(canvas.getContext("2d"), measuredLayout);
+        blob = await canvasToBlob(canvas);
+      } finally {
+        releaseCanvas(canvas);
+      }
+      handleExportBlob(blob, trioExportFileName(), "trio", exportThemeId);
     }
 
     function drawTrioStar(ctx, cx, cy, outerR, fill) {
@@ -10163,7 +10290,7 @@
           standaloneStickers = [];
           standaloneStickerSources = [];
           saveState();
-          void openStandaloneImageEditor(standaloneOriginalSrc);
+          void openImageEditorSafely(() => openStandaloneImageEditor(standaloneOriginalSrc));
         } catch (error) {
           console.error("Standalone image normalize failed", error);
           showAppAlert(String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x4e0a, 0x4f20, 0x3002));
@@ -10306,6 +10433,7 @@
       const collectionScroller = page.parentElement;
       const collectionCoverObjectUrls = new Map();
       const collectionCoverObjectUrlPromises = new Map();
+      let visibleCollectionCoverReferences = new Set();
       let collectionCoverRenderToken = 0;
       let collectionDetailStoredCoverValue = "";
       const collectionSavePrompt = document.getElementById("collectionSavePrompt");
@@ -10366,6 +10494,9 @@
       try { customCollectionTags = JSON.parse(localStorage.getItem(COLLECTION_TAGS_KEY) || "[]"); } catch { customCollectionTags = []; }
       try { removedCollectionTags = JSON.parse(localStorage.getItem(COLLECTION_REMOVED_TAGS_KEY) || "[]"); } catch { removedCollectionTags = []; }
       const defaultCollectionTags = [];
+      function collectionCoverReferenceIsUsed(reference) {
+        return visibleCollectionCoverReferences.has(reference) || collectionDetailStoredCoverValue === reference;
+      }
       async function collectionCoverDisplayUrl(value) {
         const source = String(value || "");
         if (!source || !source.startsWith(STATE_IMAGE_REFERENCE_PREFIX)) return source;
@@ -10374,6 +10505,10 @@
         const pending = (async () => {
           const blob = await readOrRebuildStoredImageBlob(source);
           const url = URL.createObjectURL(blob);
+          if (!collectionCoverReferenceIsUsed(source)) {
+            URL.revokeObjectURL(url);
+            return "";
+          }
           collectionCoverObjectUrls.set(source, url);
           return url;
         })();
@@ -10384,9 +10519,9 @@
           collectionCoverObjectUrlPromises.delete(source);
         }
       }
-      function releaseUnusedCollectionCoverUrls(keptReferences) {
+      function releaseUnusedCollectionCoverUrls() {
         collectionCoverObjectUrls.forEach((url, reference) => {
-          if (keptReferences.has(reference)) return;
+          if (collectionCoverReferenceIsUsed(reference)) return;
           URL.revokeObjectURL(url);
           collectionCoverObjectUrls.delete(reference);
         });
@@ -10522,9 +10657,8 @@
         const pageCount = Math.max(1, Math.ceil(a.length / pageSize));
         collectionPageIndex = Math.max(0, Math.min(collectionPageIndex, pageCount - 1));
         const visible = a.slice(collectionPageIndex * pageSize, (collectionPageIndex + 1) * pageSize);
-        const keptCoverReferences = collectStoredImageReferences(visible.map((work) => work.cover));
-        collectStoredImageReferences(collectionDetailStoredCoverValue, keptCoverReferences);
-        releaseUnusedCollectionCoverUrls(keptCoverReferences);
+        visibleCollectionCoverReferences = collectStoredImageReferences(visible.map((work) => work.cover));
+        releaseUnusedCollectionCoverUrls();
         const placeholderCount = a.length > pageSize ? pageSize - visible.length : 0;
         const placeholderMarkup = "<article class=\"collection-record collection-record-placeholder\" aria-hidden=\"true\"><div class=\"collection-cover\"></div><div class=\"collection-meta\"><strong class=\"collection-list-title\">&nbsp;</strong><b class=\"collection-list-cv\">&nbsp;</b><div class=\"collection-list-bottom\"><small>&nbsp;</small></div><div class=\"collection-meta-row\"><b>&nbsp;</b><small>&nbsp;</small></div><i class=\"collection-tag-mini\">&nbsp;</i></div></article>".repeat(placeholderCount);
         grid.classList.toggle("list-mode", listMode);
@@ -10738,6 +10872,7 @@
         const source = String(value || "");
         const loadToken = ++collectionDetailCoverLoadToken;
         collectionDetailStoredCoverValue = source;
+        releaseUnusedCollectionCoverUrls();
         collectionDetailArt.dataset.coverStoredSrc = source;
         if (!source.startsWith(STATE_IMAGE_REFERENCE_PREFIX)) {
           setCollectionDetailCover(source, fit);
@@ -11016,7 +11151,7 @@
       };
       document.getElementById("collectionDetailContainButton").onclick = () => void setCollectionDetailCoverValue(collectionDetailArt.dataset.coverStoredSrc || "", "contain");
       document.getElementById("collectionDetailCoverButton").onclick = () => void setCollectionDetailCoverValue(collectionDetailArt.dataset.coverStoredSrc || "", "cover");
-      document.getElementById("collectionDetailImageEditButton").onclick = () => void openCollectionDetailImageEditor();
+      document.getElementById("collectionDetailImageEditButton").onclick = () => void openImageEditorSafely(() => openCollectionDetailImageEditor());
       document.getElementById("collectionDetailRemoveCoverButton").onclick = () => void setCollectionDetailCoverValue("", collectionDetailArt.dataset.coverFit || "contain");
       async function importCollectionDetailByRj() {
         const button = document.getElementById("collectionDetailImportButton");
@@ -11268,12 +11403,31 @@
       render();
       function openWorksDatabase() {
         return new Promise((resolve, reject) => {
+          if (!window.indexedDB) {
+            reject(new Error("Collection database is unavailable"));
+            return;
+          }
+          let openRejected = false;
           const request = indexedDB.open("otome-record-card-collection", 2);
           request.onupgradeneeded = () => {
             if (!request.result.objectStoreNames.contains("works")) request.result.createObjectStore("works", { keyPath: "id" });
           };
-          request.onerror = () => reject(request.error);
-          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => {
+            openRejected = true;
+            reject(request.error || new Error("Collection database open failed"));
+          };
+          request.onblocked = () => {
+            openRejected = true;
+            reject(new Error("Collection database open blocked"));
+          };
+          request.onsuccess = () => {
+            if (openRejected) {
+              request.result.close();
+              return;
+            }
+            request.result.onversionchange = () => request.result.close();
+            resolve(request.result);
+          };
         });
       }
       async function serializeCollectionWorkImage(work) {
@@ -11281,11 +11435,18 @@
       }
       async function loadWorks() {
         const database = await openWorksDatabase();
-        const storedWorks = await new Promise((resolve, reject) => {
-          const request = database.transaction("works", "readonly").objectStore("works").getAll();
-          request.onsuccess = () => { database.close(); resolve(request.result || []); };
-          request.onerror = () => { database.close(); reject(request.error); };
-        });
+        let storedWorks;
+        try {
+          storedWorks = await new Promise((resolve, reject) => {
+            const transaction = database.transaction("works", "readonly");
+            const request = transaction.objectStore("works").getAll();
+            transaction.oncomplete = () => resolve(request.result || []);
+            transaction.onerror = () => reject(transaction.error || new Error("Collection records read failed"));
+            transaction.onabort = () => reject(transaction.error || new Error("Collection records read aborted"));
+          });
+        } finally {
+          database.close();
+        }
         if (storedWorks.some((work) => String(work?.cover || "").startsWith("data:image/"))) {
           await putWorks(storedWorks);
         }
@@ -11307,19 +11468,22 @@
             scheduleStoredImageGarbageCollection();
             resolve();
           };
-          transaction.onerror = () => { database.close(); reject(transaction.error); };
+          transaction.onerror = () => { database.close(); reject(transaction.error || new Error("Collection records write failed")); };
+          transaction.onabort = () => { database.close(); reject(transaction.error || new Error("Collection records write aborted")); };
         });
       }
       function deleteWork(id) {
         return new Promise((resolve, reject) => {
           openWorksDatabase().then(database => {
-            const request = database.transaction("works", "readwrite").objectStore("works").delete(id);
-            request.onsuccess = () => {
+            const transaction = database.transaction("works", "readwrite");
+            transaction.objectStore("works").delete(id);
+            transaction.oncomplete = () => {
               database.close();
               scheduleStoredImageGarbageCollection();
               resolve();
             };
-            request.onerror = () => { database.close(); reject(request.error); };
+            transaction.onerror = () => { database.close(); reject(transaction.error || new Error("Collection record delete failed")); };
+            transaction.onabort = () => { database.close(); reject(transaction.error || new Error("Collection record delete aborted")); };
           }).catch(reject);
         });
       }
@@ -11327,9 +11491,11 @@
         const database = await openWorksDatabase();
         try {
           const storedWorks = await new Promise((resolve, reject) => {
-            const request = database.transaction("works", "readonly").objectStore("works").getAll();
-            request.onsuccess = () => resolve(request.result || []);
-            request.onerror = () => reject(request.error || new Error("Collection image reference read failed"));
+            const transaction = database.transaction("works", "readonly");
+            const request = transaction.objectStore("works").getAll();
+            transaction.oncomplete = () => resolve(request.result || []);
+            transaction.onerror = () => reject(transaction.error || new Error("Collection image reference read failed"));
+            transaction.onabort = () => reject(transaction.error || new Error("Collection image reference read aborted"));
           });
           return Array.from(collectStoredImageReferences(storedWorks));
         } finally {
