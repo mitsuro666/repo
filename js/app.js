@@ -20,6 +20,7 @@
     const collectionMobileImportButton = document.getElementById("collectionMobileImportButton");
     const collectionMobileExportButton = document.getElementById("collectionMobileExportButton");
     const collectionMobileBatchAddButton = document.getElementById("collectionMobileBatchAddButton");
+    const collectionMobileBatchManageButton = document.getElementById("collectionMobileBatchManageButton");
     const standaloneImageInput = document.getElementById("standaloneImageInput");
     const standaloneImageUploadButton = document.getElementById("standaloneImageUploadButton");
     const imageToolEmpty = document.getElementById("imageToolEmpty");
@@ -36,6 +37,7 @@
     const cardInfoType = document.getElementById("cardInfoType");
     const recordTitle = document.getElementById("recordTitle");
     const reviewText = document.getElementById("reviewText");
+    const reviewCharacterCount = document.getElementById("reviewCharacterCount");
     const coverInput = document.getElementById("coverInput");
     const coverBox = document.getElementById("coverBox");
     const coverImage = document.getElementById("coverImage");
@@ -62,6 +64,9 @@
     const themePrevButton = document.getElementById("themePrevButton");
     const themeNextButton = document.getElementById("themeNextButton");
     const themePageText = document.getElementById("themePageText");
+    const fontBar = document.getElementById("fontBar");
+    const fontOptions = document.getElementById("fontOptions");
+    const fontButtons = Array.from(document.querySelectorAll(".font-button"));
     const pickerNextArrow = document.getElementById("pickerNextArrow");
     const mobileFocusBack = document.getElementById("mobileFocusBack");
     const exportModal = document.getElementById("exportModal");
@@ -79,12 +84,14 @@
     const fullContinuationCv = document.getElementById("fullContinuationCv");
     const fullContinuationRj = document.getElementById("fullContinuationRj");
     const fullContinuationReview = document.getElementById("fullContinuationReview");
+    const fullContinuationReviewCharacterCount = document.getElementById("fullContinuationReviewCharacterCount");
     const fullContinuationPageNumber = document.getElementById("fullContinuationPageNumber");
     const compactContinuationCard = document.getElementById("compactContinuationCard");
     const compactContinuationTitle = document.getElementById("compactContinuationTitle");
     const compactContinuationCv = document.getElementById("compactContinuationCv");
     const compactContinuationRj = document.getElementById("compactContinuationRj");
     const compactContinuationReview = document.getElementById("compactContinuationReview");
+    const compactContinuationReviewCharacterCount = document.getElementById("compactContinuationReviewCharacterCount");
     const compactContinuationPageNumber = document.getElementById("compactContinuationPageNumber");
     const templatePageControls = document.getElementById("templatePageControls");
     const templatePrevPage = document.getElementById("templatePrevPage");
@@ -216,7 +223,7 @@
     const grid9Cells = document.getElementById("grid9Cells");
     const grid9ExternalTools = document.getElementById("grid9ExternalTools");
     const grid9ImportAllButton = document.getElementById("grid9ImportAllButton");
-    const grid9ClearBkButton = document.getElementById("grid9ClearBkButton");
+    const grid9BatchRjButton = document.getElementById("grid9BatchRjButton");
     const grid9PresetButton = document.getElementById("grid9PresetButton");
     const grid9PresetMenu = document.getElementById("grid9PresetMenu");
     const grid9ClearRepoButton = document.getElementById("grid9ClearRepoButton");
@@ -252,7 +259,7 @@
     const quickExternalTools = document.getElementById("quickExternalTools");
     const quickShowRjButton = document.getElementById("quickShowRjButton");
     const quickImportAllButton = document.getElementById("quickImportAllButton");
-    const quickClearBkButton = document.getElementById("quickClearBkButton");
+    const quickBatchRjButton = document.getElementById("quickBatchRjButton");
     const quickClearRepoButton = document.getElementById("quickClearRepoButton");
     let quickCellEditors = [];
     let activeQuickIndex = -1;
@@ -289,6 +296,49 @@
     const DLSITE_PROXY_URL = "https://dlsite-rj-import.shuiyingsheng.workers.dev/";
     const DLSITE_PROXY_CACHE_VERSION = "20260816-bj2";
     const DEFAULT_THEME_ID = "matcha-berry-cheese";
+    const TEMPLATE_FONT_PREFERENCES_KEY = "otome-record-card-template-fonts-v1";
+    const DEFAULT_TEMPLATE_FONT_ID = "default";
+    const TEMPLATE_IDS = Object.freeze(["full", "compact", "grid9", "quick", "trio"]);
+    const TEMPLATE_FONT_TEST_TEXT = String.fromCharCode(
+      0x4e59, 0x97f3, 0x8bb0, 0x5f55, 0x4e2d, 0x6587, 0x6d4b, 0x8bd5,
+      0x3053, 0x306e, 0x4f5c, 0x54c1, 0x304c, 0x597d, 0x304d, 0x3067, 0x3059
+    );
+    const TEMPLATE_FONTS = Object.freeze({
+      default: Object.freeze({
+        family: "BlackSugarPlumCandy",
+        url: "./font/black-sugar-plum-candy.woff2",
+        format: "woff2",
+        weight: "400 950"
+      }),
+      "yomeng-script": Object.freeze({
+        family: "OtomeTemplateYomengScript",
+        url: "./font/yomeng-script.woff2",
+        format: "woff2",
+        weight: "400"
+      }),
+      "keinan-pop": Object.freeze({
+        family: "OtomeTemplateKeinanPop",
+        url: "./font/keinan-pop.woff2",
+        format: "woff2",
+        weight: "400 950"
+      }),
+      "moon-stars-kai": Object.freeze({
+        family: "OtomeTemplateMoonStarsKai",
+        url: "./font/moon-stars-kai-bold.woff2",
+        format: "woff2",
+        weight: "400 950"
+      }),
+      "chill-round": Object.freeze({
+        family: "OtomeTemplateChillRound",
+        url: "./font/chill-round-m.woff2",
+        format: "woff2",
+        weight: "400 950"
+      })
+    });
+    const TEMPLATE_FONT_FALLBACK = '"BlackSugarPlumCandy", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif';
+    const templateFontLoadPromises = new Map();
+    let templateFontPreferences = loadTemplateFontPreferences();
+    let pendingTemplateFontId = "";
     const IS_USAGE_TRACKING_PRODUCTION = window.location.hostname === "mitsuro666.github.io"
       && window.location.pathname.startsWith("/repo/");
     const TEMPLATE_USAGE_LABELS = Object.freeze({
@@ -308,7 +358,18 @@
       "glass-glimmer": String.fromCharCode(0x73bb, 0x7483, 0x5fae, 0x5149),
       "madder-melt": String.fromCharCode(0x6eb6, 0x4e8e, 0x831c, 0x8272),
       "ultramarine-sleep": String.fromCharCode(0x7fa4, 0x9752, 0x6c89, 0x7720),
-      "apricot-souffle": String.fromCharCode(0x674f, 0x6843, 0x8212, 0x8299)
+      "apricot-souffle": String.fromCharCode(0x674f, 0x6843, 0x8212, 0x8299),
+      "rui-dream-weave": String.fromCharCode(0x82ae, 0x82ae, 0x7ec7, 0x68a6),
+      "willow-bank-spring-breeze": String.fromCharCode(0x67f3, 0x5cb8, 0x6625, 0x98ce),
+      "bamboo-shadow-breeze": String.fromCharCode(0x7af9, 0x5f71, 0x6e05, 0x98ce),
+      "dream-rainbow": String.fromCharCode(0x68a6, 0x5883, 0x5f69, 0x8679),
+      "cherry-fall-peach-crisp": String.fromCharCode(0x6a31, 0x843d, 0x6843, 0x9165),
+      "berry-whisper-purple": String.fromCharCode(0x8393, 0x8bed, 0x8f7b, 0x7d2b),
+      "apple-fragrance-green": String.fromCharCode(0x679c, 0x9999, 0x9752, 0x82f9),
+      "glass-color-milk-hibiscus": String.fromCharCode(0x7483, 0x5f69, 0x5976, 0x8299),
+      "sweet-peach-hazelnut": String.fromCharCode(0x751c, 0x6843, 0x699b, 0x679c),
+      "deep-red-tranquility": String.fromCharCode(0x6df1, 0x7ea2, 0x9759, 0x8c27),
+      "sea-breeze-tuning": String.fromCharCode(0x6f6e, 0x98ce, 0x8c03, 0x97f3)
     });
     const USAGE_EVENT_TITLES = (() => {
       const titles = Object.create(null);
@@ -392,6 +453,7 @@
     const FULL_CONTINUATION_REVIEW_MAX_LINES = 34;
     const COMPACT_CONTINUATION_COLUMN_WIDTH = 237;
     const COMPACT_CONTINUATION_LINES_PER_COLUMN = 20;
+    const REVIEW_CHARACTER_LIMIT_SAMPLE_LENGTH = 4096;
     const GRID9_REVIEW_LINE_WIDTH = (1080 - 58 * 2 - 18 * 2) / 3 - 19;
     const GRID9_REVIEW_MAX_LINES = 4;
     let stateRestoreComplete = false;
@@ -595,6 +657,215 @@
         bgStops: ["#fff8ef", "#fffdf8", "#fff5e7"],
         playDeep: "#e87955",
         starFill: "#e87955"
+      },
+      "rui-dream-weave": {
+        id: "rui-dream-weave",
+        accent: "#fbafaf",
+        accentDeep: "#cb777d",
+        line: "#f2c6b4",
+        lineSoftAlpha: .68,
+        dash: "#99e1e5",
+        dashAlpha: .72,
+        mint: "#99e1e5",
+        ink: "#6d5258",
+        muted: "#94777a",
+        coverBg: "#f3e8cb",
+        chipBg: "rgba(243,232,203,.78)",
+        panelBg: "rgba(255,255,255,.64)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#fff7f7", "#fffdf8", "#f4fcfc"],
+        playDeep: "#cb777d",
+        starFill: "#cb777d"
+      },
+      "willow-bank-spring-breeze": {
+        id: "willow-bank-spring-breeze",
+        accent: "#b3e55e",
+        accentDeep: "#51af5b",
+        line: "#b3e55e",
+        lineSoftAlpha: .66,
+        dash: "#fae76c",
+        dashAlpha: .76,
+        mint: "#51af5b",
+        ink: "#356b3d",
+        muted: "#648266",
+        coverBg: "#f7ffa3",
+        chipBg: "rgba(247,255,163,.72)",
+        panelBg: "rgba(255,255,255,.64)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#fbfff1", "#fefff8", "#f4fbe9"],
+        playDeep: "#51af5b",
+        starFill: "#51af5b"
+      },
+      "bamboo-shadow-breeze": {
+        id: "bamboo-shadow-breeze",
+        accent: "#79bd8f",
+        accentDeep: "#00a388",
+        line: "#beeb9f",
+        lineSoftAlpha: .68,
+        dash: "#00a388",
+        dashAlpha: .58,
+        mint: "#00a388",
+        ink: "#285f55",
+        muted: "#5d8375",
+        coverBg: "#beeb9f",
+        chipBg: "rgba(255,255,157,.68)",
+        panelBg: "rgba(255,255,255,.64)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#f4fcf5", "#fbfff8", "#eefaf6"],
+        playDeep: "#00a388",
+        starFill: "#00a388"
+      },
+      "dream-rainbow": {
+        id: "dream-rainbow",
+        accent: "#ffa8a8",
+        accentDeep: "#aa78cb",
+        line: "#ffc4a3",
+        lineSoftAlpha: .68,
+        dash: "#ffe5a1",
+        dashAlpha: .8,
+        mint: "#d8c2f9",
+        ink: "#69546f",
+        muted: "#8b758f",
+        coverBg: "#d8c2f9",
+        chipBg: "rgba(255,229,161,.7)",
+        panelBg: "rgba(255,255,255,.64)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#fff7f7", "#fffaf4", "#faf6ff"],
+        playDeep: "#aa78cb",
+        starFill: "#aa78cb"
+      },
+      "cherry-fall-peach-crisp": {
+        id: "cherry-fall-peach-crisp",
+        accent: "#ff78ae",
+        accentDeep: "#f54291",
+        line: "#ffa0d2",
+        lineSoftAlpha: 0.66,
+        dash: "#ffdbf2",
+        dashAlpha: 0.8,
+        mint: "#ffa0d2",
+        ink: "#704257",
+        muted: "#987081",
+        coverBg: "#ffdbf2",
+        chipBg: "rgba(255,160,210,.68)",
+        panelBg: "rgba(255,255,255,.64)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#fff5fb", "#fffafd", "#fff2f7"],
+        playDeep: "#f54291",
+        starFill: "#f54291"
+      },
+      "berry-whisper-purple": {
+        id: "berry-whisper-purple",
+        accent: "#b94e8a",
+        accentDeep: "#7d156d",
+        line: "#d87ca1",
+        lineSoftAlpha: 0.66,
+        dash: "#ffd7f1",
+        dashAlpha: 0.78,
+        mint: "#d87ca1",
+        ink: "#572749",
+        muted: "#815a72",
+        coverBg: "#ffd7f1",
+        chipBg: "rgba(216,124,161,.52)",
+        panelBg: "rgba(255,255,255,.64)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#fff5fb", "#fdf8fb", "#faf2f7"],
+        playDeep: "#7d156d",
+        starFill: "#7d156d"
+      },
+      "apple-fragrance-green": {
+        id: "apple-fragrance-green",
+        accent: "#f46060",
+        accentDeep: "#c84549",
+        line: "#ffa781",
+        lineSoftAlpha: 0.68,
+        dash: "#bbdc2f",
+        dashAlpha: 0.65,
+        mint: "#bbdc2f",
+        ink: "#6a3f3b",
+        muted: "#956a5c",
+        coverBg: "#ffecbb",
+        chipBg: "rgba(187,220,47,.55)",
+        panelBg: "rgba(255,255,255,.64)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#fff7f3", "#fffdf5", "#f9fce9"],
+        playDeep: "#c84549",
+        starFill: "#c84549"
+      },
+      "glass-color-milk-hibiscus": {
+        id: "glass-color-milk-hibiscus",
+        accent: "#ff5da2",
+        accentDeep: "#cf3f7d",
+        line: "#daec8b",
+        lineSoftAlpha: 0.68,
+        dash: "#ff5da2",
+        dashAlpha: 0.72,
+        mint: "#47d0bd",
+        ink: "#624a5d",
+        muted: "#8b7080",
+        coverBg: "#fffdd6",
+        chipBg: "rgba(218,236,139,.66)",
+        panelBg: "rgba(255,255,255,.64)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#fff5fa", "#fffef5", "#f1fcfa"],
+        playDeep: "#cf3f7d",
+        starFill: "#cf3f7d"
+      },
+      "sweet-peach-hazelnut": {
+        id: "sweet-peach-hazelnut",
+        accent: "#dda4b4",
+        accentDeep: "#7c5549",
+        line: "#78a5ce",
+        lineSoftAlpha: 0.68,
+        dash: "#7c5549",
+        dashAlpha: 0.5,
+        mint: "#fff0d9",
+        ink: "#7c5549",
+        muted: "#96756f",
+        coverBg: "#fff0d9",
+        chipBg: "rgba(221,164,180,.58)",
+        panelBg: "rgba(255,255,255,.64)",
+        reviewBg: "rgba(255,255,255,.64)",
+        bgStops: ["#fff7f4", "#fffaf1", "#f7f9fc"],
+        playDeep: "#7c5549",
+        starFill: "#7c5549"
+      },
+      "deep-red-tranquility": {
+        id: "deep-red-tranquility",
+        accent: "#971c1e",
+        accentDeep: "#561918",
+        line: "#ada194",
+        lineSoftAlpha: 0.7,
+        dash: "#561918",
+        dashAlpha: 0.64,
+        mint: "#dcd9d4",
+        ink: "#161718",
+        muted: "#561918",
+        coverBg: "#dcd9d4",
+        chipBg: "rgba(173,161,148,.62)",
+        panelBg: "rgba(255,255,255,.68)",
+        reviewBg: "rgba(255,255,255,.68)",
+        bgStops: ["#f8f6f5", "#fcfbfa", "#f2efed"],
+        playDeep: "#561918",
+        starFill: "#971c1e"
+      },
+      "sea-breeze-tuning": {
+        id: "sea-breeze-tuning",
+        accent: "#599db5",
+        accentDeep: "#396b8d",
+        line: "#b0b57f",
+        lineSoftAlpha: 0.68,
+        dash: "#5e6b49",
+        dashAlpha: 0.62,
+        mint: "#c6d1cd",
+        ink: "#396b8d",
+        muted: "#5e6b49",
+        coverBg: "#c6d1cd",
+        chipBg: "rgba(176,181,127,.56)",
+        panelBg: "rgba(255,255,255,.66)",
+        reviewBg: "rgba(255,255,255,.66)",
+        bgStops: ["#f3f8f9", "#f7f8f1", "#edf3f2"],
+        playDeep: "#396b8d",
+        starFill: "#396b8d"
       }
     };
     let currentThemeId = DEFAULT_THEME_ID;
@@ -615,6 +886,7 @@
       compact: { current: 0, pages: [] }
     };
     let currentDiscountManual = false;
+    let reviewChineseCharacterLimits = null;
     const PLAYER_BAR_WIDTH = 484;
     const PLAYER_DOT_SIZE = 16;
     const PLAYER_DEFAULT_TOTAL = 30 * 60;
@@ -723,7 +995,7 @@
     const UI_EXPORT_DOWNLOAD_IMAGE = String.fromCharCode(0x4e0b, 0x8f7d, 0x56fe, 0x7247);
     const UI_REMOVE_SHORT = String.fromCharCode(0x79fb, 0x9664);
     const UI_CLOSE = String.fromCharCode(0x5173, 0x95ed);
-    const UI_LONG_PRESS_SAVE = String.fromCharCode(0x53ef, 0x4ee5, 0x957f, 0x6309, 0x56fe, 0x7247, 0x4fdd, 0x5b58, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x70b9, 0x51fb, 0x4e0b, 0x8f7d, 0x3002);
+    const UI_LONG_PRESS_SAVE = String.fromCharCode(0x53ef, 0x4ee5, 0x957f, 0x6309, 0x56fe, 0x7247, 0x4fdd, 0x5b58, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x70b9, 0x51fb, 0x4e0b, 0x8f7d, 0x3002, 0x4e0b, 0x8f7d, 0x4fdd, 0x5b58, 0x66f4, 0x6e05, 0x6670, 0x3002);
     const UI_IMPORT_INFO = String.fromCharCode(0x5bfc, 0x5165, 0x4fe1, 0x606f);
     const UI_IMPORT_HELP = [
       String.fromCharCode(0x5bfc, 0x5165, 0x4fe1, 0x606f, 0x4f1a, 0x5c1d, 0x8bd5, 0x586b, 0x5165, 0xff1a),
@@ -794,6 +1066,9 @@
     const UI_FONT_FALLBACK_TITLE = String.fromCharCode(0x5bfc, 0x51fa, 0x63d0, 0x793a);
     const UI_FONT_FALLBACK_CONTINUE = String.fromCharCode(0x7528, 0x7cfb, 0x7edf, 0x5b57, 0x4f53, 0x7ee7, 0x7eed, 0x5bfc, 0x51fa);
     const UI_FONT_FALLBACK_UNKNOWN = String.fromCharCode(0x672a, 0x77e5, 0x539f, 0x56e0);
+    const UI_TEMPLATE_FONT_TITLE = String.fromCharCode(0x6a21, 0x677f, 0x5b57, 0x4f53);
+    const UI_TEMPLATE_FONT_EXPORT_OVERFLOW = String.fromCharCode(0x5f53, 0x524d, 0x5b57, 0x4f53, 0x4e0b, 0x6709, 0x5185, 0x5bb9, 0x53ef, 0x80fd, 0x8d85, 0x51fa, 0x6392, 0x7248, 0x8303, 0x56f4, 0x3002, 0x662f, 0x5426, 0x4ecd, 0x7136, 0x5bfc, 0x51fa, 0xff1f);
+    const UI_TEMPLATE_FONT_LOAD_FAILED = String.fromCharCode(0x5b57, 0x4f53, 0x52a0, 0x8f7d, 0x5931, 0x8d25, 0xff1a);
     const UI_FONT_FALLBACK_BODY_PREFIX = String.fromCharCode(0x5361, 0x7247, 0x4e13, 0x7528, 0x5b57, 0x4f53, 0x52a0, 0x8f7d, 0x5931, 0x8d25, 0xff08);
     const UI_FONT_FALLBACK_BODY_SUFFIX = String.fromCharCode(
       0xff09, 0xff0c, 0x6682, 0x65f6, 0x65e0, 0x6cd5, 0x7528, 0x539f, 0x5b57, 0x4f53, 0x751f, 0x6210, 0x5bfc, 0x51fa, 0x56fe, 0x3002,
@@ -806,24 +1081,18 @@
       0x0a, 0x0a,
       0x5982, 0x679c, 0x4ecd, 0x60f3, 0x7ee7, 0x7eed, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x9009, 0x62e9, 0x6539, 0x7528, 0x624b, 0x673a, 0x81ea, 0x5e26, 0x5b57, 0x4f53, 0x5bfc, 0x51fa, 0xff0c, 0x5361, 0x7247, 0x6587, 0x5b57, 0x6837, 0x5f0f, 0x4f1a, 0x548c, 0x9884, 0x89c8, 0x7565, 0x6709, 0x5dee, 0x5f02, 0x3002, 0x662f, 0x5426, 0x7ee7, 0x7eed, 0xff1f
     );
-    const UPDATE_NOTICE_STORAGE_KEY = "otome-record-card-update-notice-20260822-v2";
-    const UPDATE_NOTICE_START_AT = Date.parse("2026-08-22T17:00:00+08:00");
-    const UPDATE_NOTICE_TITLE = String.fromCharCode(0x38, 0x6708, 0x32, 0x32, 0x65e5, 0x66f4, 0x65b0);
+    const UPDATE_NOTICE_STORAGE_KEY = "otome-record-card-update-notice-20260829-v1";
+    const UPDATE_NOTICE_START_AT = Date.parse("2026-08-29T08:00:00+08:00");
+    const UPDATE_NOTICE_TITLE = String.fromCharCode(0x38, 0x6708, 0x32, 0x39, 0x65e5, 0x66f4, 0x65b0, 0xff5c, 0x76, 0x31, 0x2e, 0x30, 0x2e, 0x30);
     const UPDATE_NOTICE_MESSAGE = [
-      String.fromCharCode(0x672c, 0x6b21, 0x66f4, 0x65b0, 0x4e3b, 0x8981, 0x4f18, 0x5316, 0x4e86, 0x624b, 0x673a, 0x7aef, 0x7f16, 0x8f91, 0x3001, 0x6536, 0x85cf, 0x7ba1, 0x7406, 0x548c, 0x56fe, 0x7247, 0x5b58, 0x50a8, 0x4f53, 0x9a8c, 0xff0c, 0x8bf7, 0x4e0b, 0x6ed1, 0x67e5, 0x770b, 0x5168, 0x90e8, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x624b, 0x673a, 0x7aef, 0x5b8c, 0x6574, 0x7248, 0x8bc4, 0x4ef7, 0x7f16, 0x8f91, 0x0a, 0x65b0, 0x589e, 0x4e13, 0x6ce8, 0x7f16, 0x8f91, 0x6a21, 0x5f0f, 0x3001, 0x5b9e, 0x65f6, 0x540c, 0x6b65, 0x4e0e, 0x5168, 0x56fe, 0x9884, 0x89c8, 0x3002, 0x7eed, 0x9875, 0x6682, 0x65f6, 0x4fdd, 0x6301, 0x65e0, 0x5f39, 0x7a97, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x6279, 0x91cf, 0x52, 0x4a, 0x53f7, 0x65b0, 0x589e, 0x0a, 0x6536, 0x85cf, 0x9875, 0x65b0, 0x589e, 0x201c, 0x6279, 0x91cf, 0x65b0, 0x589e, 0x201d, 0xff0c, 0x4e00, 0x6b21, 0x6700, 0x591a, 0x53ef, 0x4ee5, 0x8f93, 0x5165, 0x20, 0x32, 0x30, 0x20, 0x4e2a, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0xff0c, 0x652f, 0x6301, 0x4f7f, 0x7528, 0x6362, 0x884c, 0x3001, 0x7a7a, 0x683c, 0x6216, 0x9017, 0x53f7, 0x5206, 0x9694, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x6536, 0x85cf, 0x8be6, 0x60c5, 0x9875, 0x4f18, 0x5316, 0x0a, 0x65b0, 0x589e, 0x201c, 0x4e2d, 0x6587, 0x201d, 0x548c, 0x201c, 0x53d1, 0x552e, 0x65e5, 0x671f, 0x201d, 0x5b57, 0x6bb5, 0xff0c, 0x5747, 0x53ef, 0x81ea, 0x7531, 0x7f16, 0x8f91, 0xff0c, 0x5e76, 0x7cbe, 0x7b80, 0x4e86, 0x624b, 0x673a, 0x7aef, 0x8be6, 0x60c5, 0x9875, 0x6309, 0x94ae, 0x3002, 0x0a, 0x201c, 0x7f16, 0x8f91, 0x72, 0x65, 0x70, 0x6f, 0x201d, 0x66f4, 0x540d, 0x4e3a, 0x201c, 0x5236, 0x4f5c, 0x72, 0x65, 0x70, 0x6f, 0x201d, 0x3002, 0x0a, 0x8be6, 0x60c5, 0x9875, 0x65b0, 0x589e, 0x201c, 0x5bfc, 0x5165, 0x4fe1, 0x606f, 0x201d, 0xff0c, 0x53ef, 0x4ee5, 0x6839, 0x636e, 0x5f53, 0x524d, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x5355, 0x72ec, 0x8865, 0x5145, 0x8fd9, 0x90e8, 0x4f5c, 0x54c1, 0x7684, 0x8d44, 0x6599, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x6536, 0x85cf, 0x4fe1, 0x606f, 0x5bfc, 0x5165, 0x0a, 0x201c, 0x6309, 0x52, 0x4a, 0x53f7, 0x5bfc, 0x5165, 0x4fe1, 0x606f, 0x201d, 0x4f18, 0x5316, 0x4e2d, 0x6587, 0x72b6, 0x6001, 0x548c, 0x53f2, 0x4f4e, 0x6298, 0x6263, 0x5bfc, 0x5165, 0x903b, 0x8f91, 0xff0c, 0x65b0, 0x589e, 0x5bfc, 0x5165, 0x53d1, 0x552e, 0x65e5, 0x671f, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x6536, 0x85cf, 0x5206, 0x9875, 0x0a, 0x6536, 0x85cf, 0x5217, 0x8868, 0x6539, 0x4e3a, 0x5b8c, 0x6574, 0x7684, 0x6570, 0x5b57, 0x5206, 0x9875, 0xff0c, 0x5e76, 0x65b0, 0x589e, 0x9875, 0x7801, 0x8f93, 0x5165, 0x6846, 0xff0c, 0x53ef, 0x4ee5, 0x76f4, 0x63a5, 0x8df3, 0x8f6c, 0x5230, 0x6307, 0x5b9a, 0x9875, 0x9762, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x56fe, 0x7247, 0x5b58, 0x50a8, 0x0a, 0x65b0, 0x589e, 0x201c, 0x5b58, 0x50a8, 0x7ba1, 0x7406, 0x201d, 0xff0c, 0x53ef, 0x4ee5, 0x67e5, 0x770b, 0x7a7a, 0x95f4, 0x7528, 0x91cf, 0x5e76, 0x6e05, 0x7406, 0x65e0, 0x6548, 0x56fe, 0x7247, 0x3002, 0x0a, 0x6d4f, 0x89c8, 0x5668, 0x652f, 0x6301, 0x65f6, 0x8fd8, 0x4f1a, 0x81ea, 0x52a8, 0x7533, 0x8bf7, 0x957f, 0x671f, 0x5b58, 0x50a8, 0x4fdd, 0x62a4, 0xff0c, 0x964d, 0x4f4e, 0x672c, 0x5730, 0x6570, 0x636e, 0x88ab, 0x81ea, 0x52a8, 0x6e05, 0x7406, 0x7684, 0x98ce, 0x9669, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x81ea, 0x52a8, 0x4fdd, 0x5b58, 0x4e0e, 0x5907, 0x4efd, 0x0a, 0x81ea, 0x52a8, 0x4fdd, 0x5b58, 0x5931, 0x8d25, 0x65f6, 0xff0c, 0x540c, 0x4e00, 0x6b21, 0x6253, 0x5f00, 0x671f, 0x95f4, 0x53ea, 0x63d0, 0x9192, 0x4e00, 0x6b21, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x76f4, 0x63a5, 0x5bfc, 0x51fa, 0x5907, 0x4efd, 0x3002),
-      String.fromCharCode(0x540e, 0x7eed, 0x4f18, 0x5316, 0x65b9, 0x5411, 0xff1a),
-      String.fromCharCode(0x2022, 0x20, 0x6a21, 0x677f, 0x4e2d, 0x53ef, 0x4ee5, 0x76f4, 0x63a5, 0x5bfc, 0x5165, 0x6536, 0x85cf, 0x7684, 0x4f5c, 0x54c1, 0x4fe1, 0x606f),
-      String.fromCharCode(0x2022, 0x20, 0x6536, 0x85cf, 0x5217, 0x8868, 0x65b0, 0x589e, 0x6279, 0x91cf, 0x7ba1, 0x7406, 0x529f, 0x80fd, 0xff0c, 0x5305, 0x62ec, 0x6279, 0x91cf, 0x5220, 0x9664, 0x3001, 0x6279, 0x91cf, 0x589e, 0x52a0, 0x6807, 0x7b7e, 0x7b49),
-      String.fromCharCode(0x2022, 0x20, 0x6536, 0x85cf, 0x8be6, 0x60c5, 0x9875, 0x65b0, 0x589e, 0x66f4, 0x591a, 0x5b57, 0x6bb5, 0xff0c, 0x5305, 0x62ec, 0x5267, 0x672c, 0x4f5c, 0x8005, 0x3001, 0x753b, 0x5e08, 0x7b49),
-      String.fromCharCode(0x2022, 0x20, 0x5b8c, 0x6574, 0x7248, 0x548c, 0x7b80, 0x7565, 0x7248, 0x72, 0x65, 0x70, 0x6f, 0x7f16, 0x8f91, 0x533a, 0x589e, 0x52a0, 0x5b57, 0x6570, 0x63d0, 0x793a),
-      String.fromCharCode(0x2022, 0x20, 0x589e, 0x52a0, 0x957f, 0x8bc4, 0x7248, 0x548c, 0x516d, 0x5bab, 0x683c),
+      String.fromCharCode(0x672c, 0x6b21, 0x66f4, 0x65b0, 0x5e26, 0x6765, 0x4e86, 0x66f4, 0x591a, 0x914d, 0x8272, 0x4e0e, 0x5b57, 0x4f53, 0x9009, 0x62e9, 0xff0c, 0x5e76, 0x5b8c, 0x5584, 0x4e86, 0x6a21, 0x677f, 0x586b, 0x5199, 0x548c, 0x6536, 0x85cf, 0x7ba1, 0x7406, 0x529f, 0x80fd, 0x3002, 0x7f51, 0x7ad9, 0x4e5f, 0x6b63, 0x5f0f, 0x66f4, 0x540d, 0x4e3a, 0x3010, 0x4e59, 0x97f3, 0x8bb0, 0x5f55, 0x6a21, 0x677f, 0x3011, 0xff0c, 0x8bf7, 0x4e0b, 0x6ed1, 0x67e5, 0x770b, 0x5168, 0x90e8, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x7f51, 0x7ad9, 0x540d, 0x79f0, 0x4e0e, 0x7248, 0x672c, 0xa, 0x7f51, 0x7ad9, 0x6b63, 0x5f0f, 0x66f4, 0x540d, 0x4e3a, 0x3010, 0x4e59, 0x97f3, 0x8bb0, 0x5f55, 0x6a21, 0x677f, 0x3011, 0x3002, 0xa, 0x4ece, 0x672c, 0x6b21, 0x66f4, 0x65b0, 0x5f00, 0x59cb, 0x542f, 0x7528, 0x7248, 0x672c, 0x53f7, 0xff0c, 0x5f53, 0x524d, 0x7248, 0x672c, 0x4e3a, 0x20, 0x76, 0x31, 0x2e, 0x30, 0x2e, 0x30, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x8272, 0x5361, 0x4e0e, 0x5b57, 0x4f53, 0xa, 0x65b0, 0x589e, 0x20, 0x31, 0x30, 0x20, 0x4e2a, 0x8272, 0x5361, 0x548c, 0x20, 0x34, 0x20, 0x6b3e, 0x53ef, 0x9009, 0x5b57, 0x4f53, 0xff0c, 0x53ef, 0x4ee5, 0x81ea, 0x7531, 0x642d, 0x914d, 0x559c, 0x6b22, 0x7684, 0x6a21, 0x677f, 0x98ce, 0x683c, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x52, 0x65, 0x70, 0x6f, 0x20, 0x586b, 0x5199, 0x4f18, 0x5316, 0xa, 0x5b8c, 0x6574, 0x7248, 0x548c, 0x7b80, 0x7565, 0x7248, 0x7684, 0x20, 0x72, 0x65, 0x70, 0x6f, 0x20, 0x586b, 0x5199, 0x754c, 0x9762, 0x65b0, 0x589e, 0x5b57, 0x6570, 0x63d0, 0x793a, 0xff0c, 0x586b, 0x5199, 0x957f, 0x8bc4, 0x65f6, 0x53ef, 0x4ee5, 0x66f4, 0x76f4, 0x89c2, 0x5730, 0x67e5, 0x770b, 0x5f53, 0x524d, 0x5185, 0x5bb9, 0x957f, 0x5ea6, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x4e5d, 0x5bab, 0x683c, 0x4e0e, 0x901f, 0x8bc4, 0x7248, 0xa, 0x4e5d, 0x5bab, 0x683c, 0x548c, 0x901f, 0x8bc4, 0x7248, 0x65b0, 0x589e, 0x6279, 0x91cf, 0x586b, 0x5199, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x529f, 0x80fd, 0xff0c, 0x6574, 0x7406, 0x591a, 0x90e8, 0x4f5c, 0x54c1, 0x65f6, 0x66f4, 0x52a0, 0x65b9, 0x4fbf, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x6a21, 0x677f, 0x5bfc, 0x5165, 0x6536, 0x85cf, 0xa, 0x6a21, 0x677f, 0x7f16, 0x8f91, 0x6a21, 0x5f0f, 0x65b0, 0x589e, 0x3010, 0x5bfc, 0x5165, 0x6536, 0x85cf, 0x3011, 0x529f, 0x80fd, 0xff0c, 0x53ef, 0x4ee5, 0x76f4, 0x63a5, 0x9009, 0x62e9, 0x6536, 0x85cf, 0x4e2d, 0x7684, 0x6761, 0x76ee, 0x5e76, 0x5bfc, 0x5165, 0x6a21, 0x677f, 0xff0c, 0x51cf, 0x5c11, 0x91cd, 0x590d, 0x586b, 0x5199, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x6536, 0x85cf, 0x6279, 0x91cf, 0x7ba1, 0x7406, 0xa, 0x3010, 0x6211, 0x7684, 0x6536, 0x85cf, 0x3011, 0x65b0, 0x589e, 0x6279, 0x91cf, 0x7ba1, 0x7406, 0x529f, 0x80fd, 0xff0c, 0x53ef, 0x4ee5, 0x4e00, 0x6b21, 0x9009, 0x62e9, 0x591a, 0x6761, 0x8bb0, 0x5f55, 0xff0c, 0x8fdb, 0x884c, 0x6279, 0x91cf, 0x5220, 0x9664, 0x3001, 0x6279, 0x91cf, 0x6dfb, 0x52a0, 0x6807, 0x7b7e, 0x6216, 0x6279, 0x91cf, 0x79fb, 0x9664, 0x6807, 0x7b7e, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x6536, 0x85cf, 0x8be6, 0x60c5, 0x9875, 0xa, 0x65b0, 0x589e, 0x201c, 0x753b, 0x5e08, 0x201d, 0x548c, 0x201c, 0x5267, 0x672c, 0x4f5c, 0x8005, 0x201d, 0x5b57, 0x6bb5, 0x3002, 0xa, 0x8be6, 0x60c5, 0x9875, 0x65b0, 0x589e, 0x6253, 0x5f00, 0x5bf9, 0x5e94, 0x20, 0x44, 0x4c, 0x73, 0x69, 0x74, 0x65, 0x20, 0x9875, 0x9762, 0x7684, 0x6309, 0x94ae, 0xff0c, 0x53ef, 0x4ee5, 0x76f4, 0x63a5, 0x524d, 0x5f80, 0x4f5c, 0x54c1, 0x9875, 0x9762, 0x67e5, 0x770b, 0x8be6, 0x60c5, 0x3002),
       String.fromCharCode(0x611f, 0x8c22, 0x5927, 0x5bb6, 0x7684, 0x53cd, 0x9988, 0x4e0e, 0x4f7f, 0x7528, 0xff01, 0x5982, 0x679c, 0x66f4, 0x65b0, 0x540e, 0x4ecd, 0x9047, 0x5230, 0x95ee, 0x9898, 0xff0c, 0x6216, 0x662f, 0x6709, 0x5176, 0x4ed6, 0x5efa, 0x8bae, 0x548c, 0x60f3, 0x8981, 0x7684, 0x529f, 0x80fd, 0xff0c, 0x6b22, 0x8fce, 0x901a, 0x8fc7, 0x7f51, 0x7ad9, 0x5185, 0x7684, 0x53cd, 0x9988, 0x5165, 0x53e3, 0x544a, 0x8bc9, 0x6211, 0xff5e)
     ].join("\n\n");
     let storageFullWarned = false;
@@ -1041,6 +1310,146 @@
       return card.classList.contains("compact") ? "compact" : "full";
     }
 
+    function normalizeTemplateId(template) {
+      return TEMPLATE_IDS.includes(template) ? template : "full";
+    }
+
+    function normalizeTemplateFontId(fontId) {
+      return TEMPLATE_FONTS[fontId] ? fontId : DEFAULT_TEMPLATE_FONT_ID;
+    }
+
+    function loadTemplateFontPreferences() {
+      let saved = null;
+      try {
+        saved = JSON.parse(localStorage.getItem(TEMPLATE_FONT_PREFERENCES_KEY) || "null");
+      } catch {
+        saved = null;
+      }
+      return Object.fromEntries(TEMPLATE_IDS.map((template) => [
+        template,
+        normalizeTemplateFontId(saved && typeof saved === "object" ? saved[template] : DEFAULT_TEMPLATE_FONT_ID)
+      ]));
+    }
+
+    function saveTemplateFontPreferences() {
+      try {
+        localStorage.setItem(TEMPLATE_FONT_PREFERENCES_KEY, JSON.stringify(templateFontPreferences));
+      } catch (error) {
+        console.warn("Template font preference save failed", error);
+      }
+    }
+
+    function templateFontId(template = currentTemplate()) {
+      return normalizeTemplateFontId(templateFontPreferences[normalizeTemplateId(template)]);
+    }
+
+    function templateFontStack(fontId = templateFontId()) {
+      const config = TEMPLATE_FONTS[normalizeTemplateFontId(fontId)];
+      if (config.family === TEMPLATE_FONTS.default.family) return '"' + config.family + '", ' + TEMPLATE_FONT_FALLBACK.replace(/^"BlackSugarPlumCandy",\s*/, "");
+      return '"' + config.family + '", ' + TEMPLATE_FONT_FALLBACK;
+    }
+
+    function templateFontRoots(template) {
+      const normalizedTemplate = normalizeTemplateId(template);
+      if (normalizedTemplate === "grid9") return [grid9Card];
+      if (normalizedTemplate === "quick") return [quickCard];
+      if (normalizedTemplate === "trio") return [trioCard];
+      if (normalizedTemplate === "compact") return [compactContinuationCard, currentTemplate() === "compact" ? card : null];
+      return [fullContinuationCard, currentTemplate() === "full" ? card : null];
+    }
+
+    function applyTemplateFont(template, fontId = templateFontId(template)) {
+      const normalizedTemplate = normalizeTemplateId(template);
+      const normalizedFontId = normalizeTemplateFontId(fontId);
+      const stack = templateFontStack(normalizedFontId);
+      templateFontRoots(normalizedTemplate).filter(Boolean).forEach((root) => {
+        root.dataset.font = normalizedFontId;
+        root.style.setProperty("--template-font-family", stack);
+      });
+    }
+
+    async function ensureTemplateFontLoaded(fontId) {
+      const normalizedFontId = normalizeTemplateFontId(fontId);
+      if (templateFontLoadPromises.has(normalizedFontId)) return templateFontLoadPromises.get(normalizedFontId);
+      const task = (async () => {
+        if (!document.fonts || !window.FontFace) {
+          if (normalizedFontId === DEFAULT_TEMPLATE_FONT_ID) return true;
+          throw new Error("Font Loading API is unavailable");
+        }
+        if (normalizedFontId !== DEFAULT_TEMPLATE_FONT_ID) await ensureTemplateFontLoaded(DEFAULT_TEMPLATE_FONT_ID);
+        const config = TEMPLATE_FONTS[normalizedFontId];
+        const fontSpec = '900 50px "' + config.family + '"';
+        const registeredFaces = Array.from(document.fonts).filter((face) => (
+          String(face.family || "").replace(/^["']|["']$/g, "") === config.family
+        ));
+        if (!registeredFaces.length) {
+          const sourceUrl = new URL(config.url, document.baseURI).href;
+          const face = new FontFace(config.family, 'url("' + sourceUrl + '") format("' + config.format + '")', {
+            style: "normal",
+            weight: config.weight
+          });
+          await face.load();
+          document.fonts.add(face);
+        } else {
+          await Promise.all(registeredFaces.map((face) => face.load()));
+        }
+        await document.fonts.load(fontSpec, TEMPLATE_FONT_TEST_TEXT);
+        await document.fonts.ready;
+        return true;
+      })();
+      templateFontLoadPromises.set(normalizedFontId, task);
+      try {
+        return await task;
+      } catch (error) {
+        templateFontLoadPromises.delete(normalizedFontId);
+        throw error;
+      }
+    }
+
+    function templateFontHasOverflow() {
+      const root = activeCardElement();
+      if (!root || root.hidden) return false;
+      return Array.from(root.querySelectorAll('textarea, input[type="text"], [contenteditable="true"]')).some((node) => {
+        if (node.closest("[data-editor-only]") || node.hidden) return false;
+        return node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1;
+      });
+    }
+
+    function syncTemplateFontMenu() {
+      const activeFontId = templateFontId();
+      fontButtons.forEach((button) => {
+        const selected = button.dataset.font === activeFontId;
+        button.classList.toggle("active", selected);
+        button.classList.toggle("is-loading", button.dataset.font === pendingTemplateFontId);
+        button.setAttribute("aria-pressed", selected ? "true" : "false");
+      });
+      if (fontBar && !fontBar.hidden) window.requestAnimationFrame(scrollActivePickerIntoView);
+    }
+
+    async function chooseTemplateFont(fontId) {
+      const normalizedFontId = normalizeTemplateFontId(fontId);
+      const targetTemplate = currentTemplate();
+      if (normalizedFontId === templateFontId(targetTemplate) || pendingTemplateFontId) return;
+      pendingTemplateFontId = normalizedFontId;
+      syncTemplateFontMenu();
+      try {
+        await ensureTemplateFontLoaded(normalizedFontId);
+        templateFontPreferences = { ...templateFontPreferences, [targetTemplate]: normalizedFontId };
+        saveTemplateFontPreferences();
+        applyTemplateFont(targetTemplate, normalizedFontId);
+        reviewChineseCharacterLimits = null;
+        updateReviewCharacterCounts();
+        fitStage();
+      } catch (error) {
+        console.warn("Template font load failed", error);
+        const detail = error && error.message ? error.message : UI_FONT_FALLBACK_UNKNOWN;
+        await showAppAlert(UI_TEMPLATE_FONT_LOAD_FAILED + detail, UI_TEMPLATE_FONT_TITLE);
+      } finally {
+        pendingTemplateFontId = "";
+        syncTemplateFontMenu();
+      }
+    }
+
     function isPagedTemplate(template = currentTemplate()) {
       return template === "full" || template === "compact";
     }
@@ -1079,6 +1488,28 @@
       return String(compactContinuationReview.innerText || compactContinuationReview.textContent || "").replace(/\r\n?/g, "\n");
     }
 
+    function reviewCharacterCountText(value, limit) {
+      return Array.from(String(value || "")).length + " / " + limit + " " + String.fromCharCode(0x5b57);
+    }
+
+    function currentReviewChineseCharacterLimits() {
+      if (reviewChineseCharacterLimits) return reviewChineseCharacterLimits;
+      const sample = String.fromCharCode(0x6c49).repeat(REVIEW_CHARACTER_LIMIT_SAMPLE_LENGTH);
+      reviewChineseCharacterLimits = {
+        fullHome: wrappingCharacters(limitedFullReviewText(sample)).length,
+        fullContinuation: wrappingCharacters(limitedFullContinuationReviewText(sample)).length,
+        compactContinuation: wrappingCharacters(limitedCompactContinuationReviewText(sample)).length
+      };
+      return reviewChineseCharacterLimits;
+    }
+
+    function updateReviewCharacterCounts() {
+      const limits = currentReviewChineseCharacterLimits();
+      reviewCharacterCount.textContent = reviewCharacterCountText(reviewText.value, limits.fullHome);
+      fullContinuationReviewCharacterCount.textContent = reviewCharacterCountText(fullContinuationReview.value, limits.fullContinuation);
+      compactContinuationReviewCharacterCount.textContent = reviewCharacterCountText(compactContinuationReviewText(), limits.compactContinuation);
+    }
+
     function limitedCompactContinuationReviewText(value) {
       return limitedByMeasuredLines(
         value,
@@ -1089,7 +1520,7 @@
     }
 
     function renderCompactContinuationReview(value) {
-      compactContinuationReview.textContent = limitedCompactContinuationReviewText(value);
+      compactContinuationReview.textContent = String(value || "");
     }
 
     function limitCompactContinuationReviewInput() {
@@ -1110,7 +1541,6 @@
     function commitCompactContinuationReviewText() {
       const pageState = continuationState.compact;
       if (compactContinuationCard.hidden || pageState.current <= 0) return false;
-      limitCompactContinuationReviewInput();
       const pageText = compactContinuationReviewText();
       const changed = pageState.pages[pageState.current - 1] !== pageText;
       updateCompactContinuationPageText(pageText);
@@ -1193,17 +1623,14 @@
         syncContinuationSharedInfo();
         const pageText = pageState.pages[pageState.current - 1] || "";
         if (template === "full") {
-          const limitedPageText = limitedFullContinuationReviewText(pageText);
-          pageState.pages[pageState.current - 1] = limitedPageText;
-          fullContinuationReview.value = limitedPageText;
+          fullContinuationReview.value = pageText;
           fullContinuationPageNumber.textContent = paddedPageNumber(pageState.current + 1) + " / " + paddedPageNumber(total);
         } else {
-          const limitedPageText = limitedCompactContinuationReviewText(pageText);
-          pageState.pages[pageState.current - 1] = limitedPageText;
-          renderCompactContinuationReview(limitedPageText);
+          renderCompactContinuationReview(pageText);
           compactContinuationPageNumber.textContent = paddedPageNumber(pageState.current + 1) + " / " + paddedPageNumber(total);
         }
       }
+      updateReviewCharacterCounts();
       renderTemplatePageMenu();
       if (fit) fitStage();
     }
@@ -1630,12 +2057,13 @@
     bindFullContinuationReviewLimit(fullContinuationReview);
 
     function setActiveMenu(menuName, persist = true) {
-      const allowedMenus = new Set(["template", "theme"]);
+      const allowedMenus = new Set(["template", "theme", "font"]);
       const nextMenu = allowedMenus.has(menuName) ? menuName : "template";
       menuTabs.forEach((button) => button.classList.toggle("active", button.dataset.menu === nextMenu));
       menuPanels.forEach((panel) => {
         panel.hidden = panel.dataset.menuPanel !== nextMenu;
       });
+      if (nextMenu === "font") syncTemplateFontMenu();
       if (persist) localStorage.setItem(MENU_STORAGE_KEY, nextMenu);
       fitStage();
       updatePickerArrow();
@@ -1719,11 +2147,11 @@
     }
 
     function themePageSize() {
-      return isMobileView() ? 6 : Math.max(1, themeButtons.length);
+      return 10;
     }
 
     function themePageCount() {
-      return Math.max(1, Math.ceil(themeButtons.length / themePageSize()));
+      return Math.max(1, Math.ceil(Math.max(0, themeButtons.length - themePageSize()) / 5) + 1);
     }
 
     function setThemePage(index) {
@@ -1734,11 +2162,15 @@
 
     function ensureThemePageForTheme(themeId) {
       const index = themeButtons.findIndex((button) => button.dataset.theme === themeId);
-      if (index >= 0) themePageIndex = Math.floor(index / themePageSize());
+      if (index < 0) return;
+      const start = themePageIndex * 5;
+      if (index >= start && index < start + themePageSize()) return;
+      themePageIndex = Math.max(0, Math.ceil((index - themePageSize() + 1) / 5));
     }
 
     function updateThemePager() {
       if (isMobileView()) {
+        themeButtons.forEach((button) => button.classList.remove("hidden"));
         updatePickerArrow();
         return;
       }
@@ -1746,18 +2178,19 @@
       const pageSize = themePageSize();
       const count = themePageCount();
       themePageIndex = Math.max(0, Math.min(count - 1, themePageIndex));
-      const start = themePageIndex * pageSize;
+      const start = themePageIndex * 5;
       const end = start + pageSize;
       themeButtons.forEach((button, index) => {
         button.classList.toggle("hidden", index < start || index >= end);
       });
       themePager.classList.toggle("hidden", count <= 1);
       if (themePageText) themePageText.textContent = (themePageIndex + 1) + " / " + count;
-      if (themePrevButton) themePrevButton.disabled = themePageIndex <= 0;
-      if (themeNextButton) themeNextButton.disabled = themePageIndex >= count - 1;
+      if (themePrevButton) themePrevButton.hidden = themePageIndex <= 0;
+      if (themeNextButton) themeNextButton.hidden = themePageIndex >= count - 1;
     }
 
     function activePicker() {
+      if (fontBar && !fontBar.hidden) return fontOptions;
       return themeBar && !themeBar.hidden ? themeBar : templateSwitch;
     }
 
@@ -1785,6 +2218,7 @@
     function scrollActivePickerIntoView() {
       if (!window.matchMedia("(max-width: 780px)").matches) return;
       const el = activePicker();
+      if (el === fontOptions) return;
       if (!el || el.scrollWidth <= el.clientWidth + 2) return;
       const active = el.querySelector(".active");
       if (active) active.scrollIntoView({ block: "nearest", inline: "start" });
@@ -1885,7 +2319,7 @@
 
     function updateReviewEditLineStatus() {
       const lineCount = measuredWrappedLineCount(reviewEditArea.value, reviewText, FULL_REVIEW_LINE_WIDTH);
-      reviewEditLineStatus.textContent = String.fromCharCode(0x672c, 0x9875) + " " + lineCount + " / " + FULL_REVIEW_MAX_LINES + " " + String.fromCharCode(0x884c);
+      reviewEditLineStatus.textContent = reviewCharacterCountText(reviewEditArea.value, currentReviewChineseCharacterLimits().fullHome) + " \u00b7 " + String.fromCharCode(0x672c, 0x9875) + " " + lineCount + " / " + FULL_REVIEW_MAX_LINES + " " + String.fromCharCode(0x884c);
       reviewEditLineStatus.classList.toggle("is-full", lineCount >= FULL_REVIEW_MAX_LINES);
     }
 
@@ -2022,7 +2456,11 @@
       card.classList.toggle("grid9", nextTemplate === "grid9");
       card.classList.toggle("quick", nextTemplate === "quick");
       card.classList.toggle("trio", nextTemplate === "trio");
-      if (nextTemplate === "full" || nextTemplate === "compact") limitAllCurrentFields();
+      if (nextTemplate === "full" || nextTemplate === "compact") {
+        card.style.setProperty("--template-font-family", templateFontStack(DEFAULT_TEMPLATE_FONT_ID));
+        limitAllCurrentFields();
+      }
+      applyTemplateFont(nextTemplate);
       templateButtons.forEach((button) => button.classList.toggle("active", button.dataset.template === nextTemplate));
       mobileFocusTarget = null;
       mobileFocusBack?.classList.add("hidden");
@@ -2030,6 +2468,15 @@
       syncTemplatePages();
       if (isPagedTemplate(nextTemplate)) renderTemplatePage(false);
       fitStage();
+      syncTemplateFontMenu();
+      void ensureTemplateFontLoaded(templateFontId(nextTemplate)).then(() => {
+        reviewChineseCharacterLimits = null;
+        updateReviewCharacterCounts();
+        fitStage();
+        syncTemplateFontMenu();
+      }).catch((error) => {
+        console.warn("Remembered template font load failed", error);
+      });
       if (persist) saveState();
     }
 
@@ -2832,6 +3279,8 @@
         title: firstText(product.work_name, product.title, product.name, product.work?.work_name),
         cv: firstText(findVoiceText(creators), findVoiceText(product), creatorText(creators, "voice_by"), product.voice_by, product.voice),
         circle: firstText(product.maker_name, product.circle, product.maker?.name, product.brand?.name),
+        scenarioWriter: firstText(creatorText(creators, "scenario_by"), creatorText(creators, "scenario"), product.scenario_by, product.scenario),
+        illustrator: firstText(creatorText(creators, "illust_by"), creatorText(creators, "illustration_by"), creatorText(creators, "illustrator"), product.illust_by, product.illustration_by, product.illustrator),
         releaseDate: normalizeCardDateValue(firstText(product.regist_date, product.release_date, product.sales_date)),
         originalPrice: originalPriceText,
         currentPrice: currentPriceText,
@@ -5334,7 +5783,7 @@
         cnChoice: document.querySelector(".choice-button.active")?.textContent.trim() || "",
         ratings: currentRatings(),
         tags: Array.from(document.querySelectorAll(".tag")).map((tag) => tag.textContent.trim()).filter(Boolean),
-        reviewText: currentTemplate() === "full" ? limitedFullReviewText(reviewText.value) : reviewText.value,
+        reviewText: reviewText.value,
         coverSrc: activeCoverSrc === originalCoverSrc || activeCoverSrc === editedCoverSrc ? "" : activeCoverSrc,
         coverOriginalSrc: originalCoverSrc,
         coverEditedSrc: editedCoverSrc,
@@ -5569,7 +6018,8 @@
       });
       document.querySelectorAll(".rating-row").forEach((row, index) => setRating(row, state.ratings?.[index] ?? 4));
       renderTags(state.tags);
-      reviewText.value = currentTemplate() === "full" ? limitedFullReviewText(state.reviewText || "") : (state.reviewText || "");
+      reviewText.value = state.reviewText || "";
+      updateReviewCharacterCounts();
       coverOriginalSrc = state.coverOriginalSrc || "";
       coverEditedSrc = state.coverEditedSrc || "";
       coverMosaicMaskSrc = state.coverMosaicMaskSrc || "";
@@ -5658,7 +6108,15 @@
         }
         state = await hydrateStateImageReferences(state);
       }
+      const restoredTemplate = normalizeTemplateId(state && typeof state === "object" ? state.template : "full");
+      try {
+        await ensureTemplateFontLoaded(templateFontId(restoredTemplate));
+      } catch (error) {
+        console.warn("Saved template font preload failed", error);
+      }
       if (!applyState(state, false)) applyCardTheme(DEFAULT_THEME_ID, false);
+      applyTemplateFont(currentTemplate());
+      syncTemplateFontMenu();
       stateRestoreComplete = true;
     }
 
@@ -5882,24 +6340,13 @@
       saveState();
     });
 
-    const CANVAS_FONT = 'BlackSugarPlumCandy';
-    const CANVAS_FALLBACK = '"Microsoft YaHei", "PingFang SC", Arial, sans-serif';
-
-    function canvasFont(weight, size) {
-      return weight + ' ' + size + 'px "' + CANVAS_FONT + '", ' + CANVAS_FALLBACK;
+    function canvasFont(weight, size, template = currentTemplate()) {
+      return weight + ' ' + size + 'px ' + templateFontStack(templateFontId(template));
     }
 
-    async function ensureCanvasFontReady(promptOnFailure = true) {
-      if (!document.fonts || !window.FontFace) return true;
+    async function ensureCanvasFontReady(promptOnFailure = true, template = currentTemplate()) {
       try {
-        const alreadyLoaded = Array.from(document.fonts).some((font) => font.family === CANVAS_FONT && font.status === 'loaded');
-        if (!alreadyLoaded) {
-          const font = new FontFace(CANVAS_FONT, 'url("./font/BlackSugarPlumCandy-Bold.ttf")');
-          await font.load();
-          document.fonts.add(font);
-        }
-        await document.fonts.load(canvasFont('900', 50), '乙抓记录中文测试');
-        await document.fonts.ready;
+        await ensureTemplateFontLoaded(templateFontId(template));
         return true;
       } catch (error) {
         console.warn("Export font load failed", error);
@@ -6251,7 +6698,7 @@
       ctx.fillText(label, x, top + 19);
       drawFieldRule(ctx, x, top + 11, w);
       ctx.fillStyle = currentCardTheme().ink;
-      ctx.font = canvasFont('900', 26);
+      ctx.font = canvasFont('900', options.fontSize || 26);
       if (options.fullWidthTwoLine) drawFullWidthWrappedText(ctx, value, x, top + 61, options.lineWidth, 31, TWO_LINE_FIELD_MAX_LINES);
       else if (options.twoLine) drawFixedCharWrappedText(ctx, value, x, top + 61, Math.max(1, Math.floor(w / 26)), 31, 2);
       else drawWrappedText(ctx, value, x, top + 61, w, 31, 1);
@@ -6650,9 +7097,9 @@
       ctx.font = canvasFont('900', 21);
       drawCenteredWrappedText(ctx, editableText("recordTitle"), 20, 470, 560, 29, 3);
 
-      drawCompactInfoField(ctx, LABEL_RJ, textOf('#rjText'), 32, 542, 162.67);
-      drawCompactInfoField(ctx, "CV", textOf('#cvText'), 218.67, 542, 162.66, { fullWidthTwoLine: true });
-      drawCompactInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 405.33, 542, 162.67, { fullWidthTwoLine: true });
+      drawCompactInfoField(ctx, LABEL_RJ, textOf('#rjText'), 32, 552, 162.67);
+      drawCompactInfoField(ctx, "CV", textOf('#cvText'), 218.67, 552, 162.66, { fullWidthTwoLine: true });
+      drawCompactInfoField(ctx, LABEL_CIRCLE, textOf('#circleText'), 405.33, 552, 162.67, { fullWidthTwoLine: true });
 
       drawPlayerDecoration(ctx);
       return canvas;
@@ -6781,7 +7228,11 @@
       strokeRound(ctx, 508, 83.5, 508, 315, 26, themeAlpha("line", theme.lineSoftAlpha), 2);
       drawStickerLabel(ctx, LABEL_BASIC, 526, 62.5);
       drawPreviewInfoField(ctx, "CV", limitedFullFieldText(cvText, textOf('#cvText')), 532, 127.5, 221, { fullWidthTwoLine: true, lineWidth: FULL_CV_LINE_WIDTH });
-      drawPreviewInfoField(ctx, LABEL_CIRCLE, limitedFullFieldText(circleText, textOf('#circleText')), 771, 127.5, 221, { fullWidthTwoLine: true, lineWidth: FULL_CIRCLE_LINE_WIDTH });
+      drawPreviewInfoField(ctx, LABEL_CIRCLE, limitedFullFieldText(circleText, textOf('#circleText')), 771, 127.5, 221, {
+        fullWidthTwoLine: true,
+        lineWidth: FULL_CIRCLE_LINE_WIDTH,
+        fontSize: templateFontId("full") === "keinan-pop" ? 24 : 26
+      });
       drawPreviewInfoField(ctx, LABEL_RJ, limitedFullFieldText(rjText, textOf('#rjText')), 532, 240.5, 221);
       const selectedCardInfoType = normalizeCardInfoType(cardInfoType.value);
       if (selectedCardInfoType !== "hidden") {
@@ -6991,6 +7442,9 @@
       downloadButton.disabled = true;
       try {
         const template = currentTemplate();
+        if (!(await ensureCanvasFontReady(true, template))) return;
+        await new Promise((resolve) => window.requestAnimationFrame(resolve));
+        if (templateFontHasOverflow() && !(await showAppConfirm(UI_TEMPLATE_FONT_EXPORT_OVERFLOW))) return;
         if (template === "grid9") {
           await downloadGrid9Card();
           return;
@@ -7043,6 +7497,18 @@
     const grid9ImportOverwriteButton = document.getElementById("grid9ImportOverwriteButton");
     const grid9ImportFillButton = document.getElementById("grid9ImportFillButton");
     const grid9ImportCancelButton = document.getElementById("grid9ImportCancelButton");
+    const batchTemplateRjModal = document.getElementById("batchTemplateRjModal");
+    const batchTemplateRjTitle = document.getElementById("batchTemplateRjTitle");
+    const batchTemplateRjHelp = document.getElementById("batchTemplateRjHelp");
+    const batchTemplateRjInput = document.getElementById("batchTemplateRjInput");
+    const batchTemplateRjModeInputs = Array.from(document.querySelectorAll('input[name="batchTemplateRjMode"]'));
+    const batchTemplateRjStatus = document.getElementById("batchTemplateRjStatus");
+    const batchTemplateRjPreview = document.getElementById("batchTemplateRjPreview");
+    const batchTemplateRjError = document.getElementById("batchTemplateRjError");
+    const batchTemplateRjCancel = document.getElementById("batchTemplateRjCancel");
+    const batchTemplateRjFillOnly = document.getElementById("batchTemplateRjFillOnly");
+    const batchTemplateRjFillImport = document.getElementById("batchTemplateRjFillImport");
+    let batchTemplateRjTemplate = "grid9";
     const GRID9_PRESET_SUMMARY = [
       String.fromCharCode(0x6700, 0x559c, 0x6b22),
       String.fromCharCode(0x6700, 0x60ca, 0x559c),
@@ -7166,16 +7632,11 @@
       saveState();
     }
 
-    const grid9RjMeasureCanvas = document.createElement("canvas");
+    const MULTI_TEMPLATE_RJ_FIELD_WIDTH = 95;
 
     function fitGrid9RjWidth(input) {
       if (!input) return;
-      const ctx = grid9RjMeasureCanvas.getContext("2d");
-      ctx.font = canvasFont('800', 11);
-      const baseWidth = Math.ceil(ctx.measureText("RJ00000000").width);
-      const text = input.value || "";
-      const textWidth = text ? Math.ceil(ctx.measureText(text).width) : 0;
-      input.style.width = Math.max(baseWidth + 16, textWidth + 16) + "px";
+      input.style.width = MULTI_TEMPLATE_RJ_FIELD_WIDTH + "px";
     }
 
     function setGrid9Fit(index, fit) {
@@ -7400,6 +7861,134 @@
       grid9ImportModal.hidden = false;
     }
 
+    function parseBatchTemplateRjs(value) {
+      const tokens = String(value || "").split(/[\s,\uff0c;\uff1b]+/).map((item) => item.trim()).filter(Boolean);
+      const rjs = [];
+      const invalid = [];
+      const duplicates = [];
+      const seen = new Set();
+      tokens.forEach((token) => {
+        const clean = token.toUpperCase();
+        if (!/^(?:RJ|BJ)?\d+$/.test(clean)) {
+          invalid.push(token);
+          return;
+        }
+        const rj = normalizeWorkno(clean);
+        if (!rj) {
+          invalid.push(token);
+          return;
+        }
+        if (seen.has(rj)) {
+          duplicates.push(rj);
+          return;
+        }
+        seen.add(rj);
+        rjs.push(rj);
+      });
+      return { rjs, invalid, duplicates };
+    }
+
+    function batchTemplateRjContext(template = batchTemplateRjTemplate) {
+      if (template === "quick") {
+        return {
+          template,
+          label: String.fromCharCode(0x901f, 0x8bc4, 0x7248),
+          cells: quickCellEditors,
+          selector: ".quick-rj",
+          max: 12,
+          fit: fitQuickRjWidth
+        };
+      }
+      return {
+        template: "grid9",
+        label: String.fromCharCode(0x4e5d, 0x5bab, 0x683c),
+        cells: grid9CellEditors,
+        selector: ".grid9-cell-rj-input",
+        max: 9,
+        fit: fitGrid9RjWidth
+      };
+    }
+
+    function batchTemplateRjMode() {
+      return batchTemplateRjModeInputs.find((input) => input.checked)?.value === "overwrite" ? "overwrite" : "fill";
+    }
+
+    function batchTemplateRjPlan() {
+      const context = batchTemplateRjContext();
+      const parsed = parseBatchTemplateRjs(batchTemplateRjInput.value);
+      const targetIndexes = context.cells.reduce((indexes, cell, index) => {
+        const input = cell.querySelector(context.selector);
+        if (batchTemplateRjMode() === "overwrite" || !String(input?.value || "").trim()) indexes.push(index);
+        return indexes;
+      }, []);
+      const errors = [];
+      if (parsed.invalid.length) {
+        errors.push(String.fromCharCode(0x65e0, 0x6548, 0xff1a) + parsed.invalid.join(String.fromCharCode(0x3001)));
+      }
+      if (parsed.duplicates.length) {
+        errors.push(String.fromCharCode(0x91cd, 0x590d, 0xff1a) + parsed.duplicates.join(String.fromCharCode(0x3001)));
+      }
+      if (parsed.rjs.length > targetIndexes.length) {
+        errors.push(
+          String.fromCharCode(0x5f53, 0x524d, 0x586b, 0x5199, 0x65b9, 0x5f0f, 0x53ea, 0x80fd, 0x653e, 0x5165) +
+          " " + targetIndexes.length + " " +
+          String.fromCharCode(0x4e2a, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x3002)
+        );
+      }
+      const assignments = parsed.rjs.slice(0, targetIndexes.length).map((rj, index) => ({ index: targetIndexes[index], rj }));
+      return { context, parsed, errors, assignments };
+    }
+
+    function renderBatchTemplateRjDialog() {
+      const plan = batchTemplateRjPlan();
+      batchTemplateRjStatus.textContent = plan.parsed.rjs.length + " / " + plan.context.max;
+      batchTemplateRjPreview.textContent = "";
+      plan.assignments.forEach((assignment) => {
+        const item = document.createElement("span");
+        item.textContent = String(assignment.index + 1) + " \u2192 " + assignment.rj;
+        batchTemplateRjPreview.appendChild(item);
+      });
+      const valid = plan.parsed.rjs.length > 0 && plan.errors.length === 0;
+      batchTemplateRjError.hidden = plan.errors.length === 0;
+      batchTemplateRjError.textContent = plan.errors.join("\n");
+      batchTemplateRjFillOnly.disabled = !valid;
+      batchTemplateRjFillImport.disabled = !valid;
+    }
+
+    function openBatchTemplateRjDialog(template) {
+      batchTemplateRjTemplate = template === "quick" ? "quick" : "grid9";
+      const context = batchTemplateRjContext();
+      batchTemplateRjTitle.textContent = String.fromCharCode(0x6279, 0x91cf, 0x586b, 0x5199, 0x20, 0x52, 0x4a);
+      batchTemplateRjHelp.textContent = context.label + " \u00b7 " + String.fromCharCode(0x6309, 0x987a, 0x5e8f, 0x7c98, 0x8d34, 0xff0c, 0x6700, 0x591a) + " " + context.max + " " + String.fromCharCode(0x4e2a, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x3002);
+      batchTemplateRjInput.value = "";
+      batchTemplateRjModeInputs.forEach((input) => { input.checked = input.value === "fill"; });
+      renderBatchTemplateRjDialog();
+      batchTemplateRjModal.hidden = false;
+      if (!window.matchMedia("(max-width: 780px)").matches) batchTemplateRjInput.focus();
+    }
+
+    function closeBatchTemplateRjDialog() {
+      batchTemplateRjModal.hidden = true;
+    }
+
+    async function applyBatchTemplateRjs(importInfo) {
+      const plan = batchTemplateRjPlan();
+      if (!plan.parsed.rjs.length || plan.errors.length) {
+        renderBatchTemplateRjDialog();
+        return;
+      }
+      plan.assignments.forEach((assignment) => {
+        const input = plan.context.cells[assignment.index].querySelector(plan.context.selector);
+        input.value = assignment.rj;
+        plan.context.fit(input);
+      });
+      saveState();
+      closeBatchTemplateRjDialog();
+      if (!importInfo) return;
+      if (plan.context.template === "quick") await importAllQuickCovers();
+      else await importAllGrid9Covers();
+    }
+
     async function importAllGrid9Covers() {
       const mode = await chooseBatchImportMode(grid9CellEditors.some((cell) => grid9HasCover(Number(cell.dataset.grid9Index))));
       if (!mode) return;
@@ -7474,8 +8063,8 @@
       return templateExportFileName("grid9");
     }
 
-    let grid9ExportCssPromise = null;
-    let grid9ExportFontDataUrlPromise = null;
+    const grid9ExportCssPromises = new Map();
+    const grid9ExportFontDataUrlPromises = new Map();
 
     function collectGrid9ExportCss() {
       const blocks = [];
@@ -7496,29 +8085,36 @@
       return cssText;
     }
 
-    async function grid9ExportFontDataUrl() {
-      if (!grid9ExportFontDataUrlPromise) {
-        grid9ExportFontDataUrlPromise = (async () => {
-          const fontUrl = new URL("font/BlackSugarPlumCandy-Bold.ttf", document.baseURI);
+    async function grid9ExportFontDataUrl(fontId) {
+      const normalizedFontId = normalizeTemplateFontId(fontId);
+      if (!grid9ExportFontDataUrlPromises.has(normalizedFontId)) {
+        grid9ExportFontDataUrlPromises.set(normalizedFontId, (async () => {
+          const fontUrl = new URL(TEMPLATE_FONTS[normalizedFontId].url, document.baseURI);
           const response = await fetch(fontUrl.href, { credentials: "same-origin" });
           if (!response.ok) throw new Error("Grid9 export font HTTP " + response.status);
           return blobToDataUrl(await response.blob());
-        })();
+        })());
       }
-      return grid9ExportFontDataUrlPromise;
+      return grid9ExportFontDataUrlPromises.get(normalizedFontId);
     }
 
-    async function grid9ExportCss() {
-      if (!grid9ExportCssPromise) {
-        grid9ExportCssPromise = (async () => {
+    async function grid9ExportCss(fontId = templateFontId("grid9")) {
+      const normalizedFontId = normalizeTemplateFontId(fontId);
+      if (!grid9ExportCssPromises.has(normalizedFontId)) {
+        grid9ExportCssPromises.set(normalizedFontId, (async () => {
           const cssText = collectGrid9ExportCss();
-          const fontDataUrl = await grid9ExportFontDataUrl();
+          const config = TEMPLATE_FONTS[normalizedFontId];
+          const fontDataUrl = await grid9ExportFontDataUrl(normalizedFontId);
+          const defaultFontDataUrl = normalizedFontId === DEFAULT_TEMPLATE_FONT_ID
+            ? ""
+            : await grid9ExportFontDataUrl(DEFAULT_TEMPLATE_FONT_ID);
           return cssText + "\n" +
-            '@font-face{font-family:"' + CANVAS_FONT + '";src:url("' + fontDataUrl + '") format("truetype");font-weight:400 900;font-style:normal;font-display:block;}' +
-            '.grid9-export-host,.grid9-export-host *{font-family:"' + CANVAS_FONT + '",' + CANVAS_FALLBACK + ';}';
-        })();
+            '@font-face{font-family:"' + config.family + '";src:url("' + fontDataUrl + '") format("' + config.format + '");font-weight:' + config.weight + ';font-style:normal;font-display:block;}' +
+            (defaultFontDataUrl ? '@font-face{font-family:"' + TEMPLATE_FONTS.default.family + '";src:url("' + defaultFontDataUrl + '") format("woff2");font-weight:' + TEMPLATE_FONTS.default.weight + ';font-style:normal;font-display:block;}' : "") +
+            '.grid9-export-host,.grid9-export-host *{font-family:' + templateFontStack(normalizedFontId) + ';}';
+        })());
       }
-      return grid9ExportCssPromise;
+      return grid9ExportCssPromises.get(normalizedFontId);
     }
 
     function replaceGrid9ExportControl(sourceRoot, cloneRoot, selector, exportClass) {
@@ -7603,7 +8199,7 @@
         if (value) wrapper.style.setProperty(name, value.trim());
       });
       const style = document.createElement("style");
-      style.textContent = await grid9ExportCss();
+      style.textContent = await grid9ExportCss(templateFontId("grid9"));
       wrapper.append(style, snapshot.cloneNode(true));
       foreignObject.appendChild(wrapper);
       svg.appendChild(foreignObject);
@@ -8076,16 +8672,14 @@
       const rjText = (state.showRj && cell.rj) ? cell.rj : "";
       if (rjText) {
         ctx.font = canvasFont('800', 11);
-        const baseBadgeTextWidth = Math.ceil(ctx.measureText("RJ00000000").width);
-        const badgeTextWidth = Math.ceil(ctx.measureText(rjText).width);
-        const badgeWidth = Math.max(baseBadgeTextWidth, badgeTextWidth) + 14;
+        const badgeWidth = MULTI_TEMPLATE_RJ_FIELD_WIDTH;
         const badgeHeight = 24;
         const bx = coverX + coverWidth - badgeWidth - 9;
         const by = coverY + coverHeight - badgeHeight - 9;
         fillRound(ctx, bx, by, badgeWidth, badgeHeight, 7, "rgba(255,255,255,.82)");
         ctx.fillStyle = theme.accentDeep;
-        ctx.textAlign = "center";
-        ctx.fillText(rjText, bx + badgeWidth / 2, by + badgeHeight / 2 + 4);
+        ctx.textAlign = "left";
+        ctx.fillText(rjText, bx + 12, by + badgeHeight / 2 + 4);
         ctx.textAlign = "left";
       }
 
@@ -8114,11 +8708,17 @@
     }
 
     grid9ImportAllButton.addEventListener("click", importAllGrid9Covers);
-    grid9ClearBkButton.addEventListener("click", () => {
-      grid9CellEditors.forEach((cell, index) => {
-        applyGrid9Cover(index, "");
-      });
-      saveState();
+    grid9BatchRjButton.addEventListener("click", () => openBatchTemplateRjDialog("grid9"));
+    batchTemplateRjInput.addEventListener("input", renderBatchTemplateRjDialog);
+    batchTemplateRjModeInputs.forEach((input) => input.addEventListener("change", renderBatchTemplateRjDialog));
+    batchTemplateRjCancel.addEventListener("click", closeBatchTemplateRjDialog);
+    batchTemplateRjFillOnly.addEventListener("click", () => void applyBatchTemplateRjs(false));
+    batchTemplateRjFillImport.addEventListener("click", () => void applyBatchTemplateRjs(true));
+    batchTemplateRjModal.addEventListener("click", (event) => {
+      if (event.target === batchTemplateRjModal) closeBatchTemplateRjDialog();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !batchTemplateRjModal.hidden) closeBatchTemplateRjDialog();
     });
     grid9PresetButton.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -8200,7 +8800,7 @@
     const UI_QUICK_EDIT = String.fromCharCode(0x7f16, 0x8f91);
     const UI_QUICK_REMOVE = String.fromCharCode(0x79fb, 0x9664);
     const UI_QUICK_UPLOAD_FAILED = String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x9009, 0x62e9, 0x56fe, 0x7247, 0x3002);
-    const UI_QUICK_WATERMARK = String.fromCharCode(0x4e59, 0x6293, 0x8bb0, 0x5f55) + " \u00b7 QUICK VOICE NOTES";
+    const UI_QUICK_WATERMARK = String.fromCharCode(0x4e59, 0x97f3, 0x8bb0, 0x5f55) + " \u00b7 QUICK VOICE NOTES";
     const QUICK_CV_MAX_WIDTH = 12;
     const QUICK_REVIEW_MAX_WIDTH = 44;
     const QUICK_REVIEW_LINE_WIDTH = 22 * 11;
@@ -8475,17 +9075,9 @@
       saveState();
     }
 
-    const quickRjMeasureCanvas = document.createElement("canvas");
-
     function fitQuickRjWidth(input) {
       if (!input) return;
-      const ctx = quickRjMeasureCanvas.getContext("2d");
-      ctx.font = canvasFont('800', 10.5);
-      const baseWidth = Math.ceil(ctx.measureText("RJ00000000").width);
-      const text = input.value || "";
-      const textWidth = text ? Math.ceil(ctx.measureText(text).width) : 0;
-      // Keep the right edge fixed; the width grows toward the left for longer RJ numbers.
-      input.style.width = Math.max(baseWidth + 14, textWidth + 14) + "px";
+      input.style.width = MULTI_TEMPLATE_RJ_FIELD_WIDTH + "px";
     }
 
     async function waitQuickImagesReady() {
@@ -8789,14 +9381,14 @@
       const rjText = (state.showRj && cell.rj) ? cell.rj : "";
       if (rjText) {
         ctx.font = canvasFont('800', 10.5);
-        const badgeWidth = Math.ceil(ctx.measureText(rjText).width) + 14;
+        const badgeWidth = MULTI_TEMPLATE_RJ_FIELD_WIDTH;
         const badgeHeight = 24;
         const bx = coverX + coverWidth - badgeWidth - 7;
         const by = coverY + coverHeight - badgeHeight - 7;
         fillRound(ctx, bx, by, badgeWidth, badgeHeight, 8, "rgba(255,255,255,.86)");
         ctx.fillStyle = theme.accentDeep;
         ctx.textAlign = "left";
-        ctx.fillText(rjText, bx + 7, by + badgeHeight / 2 + 3.5);
+        ctx.fillText(rjText, bx + 12, by + badgeHeight / 2 + 3.5);
         ctx.textAlign = "left";
       }
 
@@ -8843,12 +9435,7 @@
       saveState();
     });
     quickImportAllButton.addEventListener("click", importAllQuickCovers);
-    quickClearBkButton.addEventListener("click", () => {
-      quickCellEditors.forEach((cell, index) => {
-        applyQuickCover(index, "");
-      });
-      saveState();
-    });
+    quickBatchRjButton.addEventListener("click", () => openBatchTemplateRjDialog("quick"));
     quickClearRepoButton.addEventListener("click", () => {
       quickCellEditors.forEach((cell) => {
         cell.querySelector(".quick-review").value = "";
@@ -8877,7 +9464,7 @@
     const UI_TRIO_EDIT = String.fromCharCode(0x7f16, 0x8f91);
     const UI_TRIO_REMOVE = String.fromCharCode(0x79fb, 0x9664);
     const UI_TRIO_UPLOAD_FAILED = String.fromCharCode(0x56fe, 0x7247, 0x5904, 0x7406, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x91cd, 0x65b0, 0x9009, 0x62e9, 0x56fe, 0x7247, 0x3002);
-    const UI_TRIO_WATERMARK = String.fromCharCode(0x4e59, 0x6293, 0x8bb0, 0x5f55) + " \u00b7 THREE VOICE NOTES";
+    const UI_TRIO_WATERMARK = String.fromCharCode(0x4e59, 0x97f3, 0x8bb0, 0x5f55) + " \u00b7 THREE VOICE NOTES";
     const UI_TRIO_PRICE = String.fromCharCode(0x73b0, 0x4ef7);
     const UI_TRIO_RATING = String.fromCharCode(0x8bc4, 0x5206);
     const UI_TRIO_REPO_LABEL = "REPO";
@@ -10256,7 +10843,8 @@
       [collectionMobileRjImportButton, "collectionRjImportButton"],
       [collectionMobileImportButton, "collectionImportButton"],
       [collectionMobileExportButton, "collectionExportButton"],
-      [collectionMobileBatchAddButton, "collectionBatchAddButton"]
+      [collectionMobileBatchAddButton, "collectionBatchAddButton"],
+      [collectionMobileBatchManageButton, "collectionBatchManageButton"]
     ].forEach(([button, targetId]) => {
       button?.addEventListener("click", () => {
         closeCollectionMobileDataMenu();
@@ -10328,10 +10916,12 @@
     fullContinuationReview.addEventListener("input", () => {
       const pageState = continuationState.full;
       if (pageState.current > 0) pageState.pages[pageState.current - 1] = fullContinuationReview.value;
+      updateReviewCharacterCounts();
       scheduleSave();
     });
     compactContinuationReview.addEventListener("input", () => {
       commitCompactContinuationReviewText();
+      updateReviewCharacterCounts();
       scheduleSave();
     });
     compactContinuationReview.addEventListener("paste", () => {
@@ -10359,6 +10949,9 @@
     themeButtons.forEach((button) => {
       button.addEventListener("click", () => applyCardTheme(button.dataset.theme || DEFAULT_THEME_ID));
     });
+    fontButtons.forEach((button) => {
+      button.addEventListener("click", () => void chooseTemplateFont(button.dataset.font || DEFAULT_TEMPLATE_FONT_ID));
+    });
     themePrevButton?.addEventListener("click", () => setThemePage(themePageIndex - 1));
     themeNextButton?.addEventListener("click", () => setThemePage(themePageIndex + 1));
     pickerNextArrow?.addEventListener("click", nextPickerPage);
@@ -10370,6 +10963,7 @@
     document.addEventListener("input", (event) => {
       if (event.target && event.target.id === "circleText") syncCircleTextLayout();
       if (event.target && ["recordTitle", "cvText", "rjText"].includes(event.target.id)) syncContinuationSharedInfo();
+      if (event.target === reviewText) updateReviewCharacterCounts();
       if (fullFieldComposing.has(event.target)) return;
       scheduleSave();
     });
@@ -10380,9 +10974,14 @@
     buildGrid9Cells();
     buildQuickCells();
     buildTrioCells();
+    updateReviewCharacterCounts();
     void ensureCanvasFontReady(false).catch((error) => {
       console.warn("Template font preload failed; using the active fallback metrics", error);
-    }).then(() => restoreState()).then(() => {
+    }).then(() => {
+      reviewChineseCharacterLimits = null;
+      return restoreState();
+    }).then(() => {
+      updateReviewCharacterCounts();
       void requestPersistentStorage();
       void migrateGrid9CoversToCompact();
       void migrateQuickCoversToCompact();
@@ -10427,6 +11026,10 @@
       if (!page) return;
       let records = [];
       let tag = "all", listMode = false, collectionTagEditMode = false, collectionTagRemoveMode = false, collectionTagDraftActive = false, scrollY = 0, collectionPageIndex = 0, activeCollectionRecordId = null, collectionDetailInitialSnapshot = "";
+      let collectionBatchMode = false, collectionBatchTagMode = "", collectionBatchOperationPending = false, collectionFilteredRecords = [], visibleCollectionRecords = [];
+      const selectedCollectionIds = new Set();
+      const collectionBatchTagSelection = new Set();
+      const collectionBatchNewTags = new Set();
       const COLLECTION_GRID_PAGE_SIZE = 8;
       const COLLECTION_LIST_PAGE_SIZE = 4;
       const grid = document.getElementById("collectionGrid");
@@ -10434,8 +11037,35 @@
       const collectionCoverObjectUrls = new Map();
       const collectionCoverObjectUrlPromises = new Map();
       let visibleCollectionCoverReferences = new Set();
+      let collectionPickerCoverReferences = new Set();
       let collectionCoverRenderToken = 0;
       let collectionDetailStoredCoverValue = "";
+      const collectionPickerModal = document.getElementById("collectionPickerModal");
+      const collectionPickerSheet = collectionPickerModal?.querySelector(".collection-picker-sheet");
+      const collectionPickerTip = document.getElementById("collectionPickerTip");
+      const collectionPickerSearch = document.getElementById("collectionPickerSearch");
+      const collectionPickerSort = document.getElementById("collectionPickerSort");
+      const collectionPickerScroller = document.getElementById("collectionPickerScroller");
+      const collectionPickerGrid = document.getElementById("collectionPickerGrid");
+      const collectionPickerEmpty = document.getElementById("collectionPickerEmpty");
+      const collectionPickerClear = document.getElementById("collectionPickerClear");
+      const collectionPickerCancel = document.getElementById("collectionPickerCancel");
+      const collectionPickerImport = document.getElementById("collectionPickerImport");
+      const collectionPickerClose = document.getElementById("collectionPickerClose");
+      const importFromCollectionButton = document.getElementById("importFromCollectionButton");
+      const mobileImportFromCollectionButton = document.getElementById("mobileImportFromCollectionButton");
+      const COLLECTION_PICKER_CONFIG = Object.freeze({
+        full:{ max:1, label:TEMPLATE_USAGE_LABELS.full },
+        compact:{ max:1, label:TEMPLATE_USAGE_LABELS.compact },
+        grid9:{ max:9, label:TEMPLATE_USAGE_LABELS.grid9 },
+        quick:{ max:12, label:TEMPLATE_USAGE_LABELS.quick },
+        trio:{ max:3, label:TEMPLATE_USAGE_LABELS.trio }
+      });
+      let collectionPickerTemplate = "full";
+      let collectionPickerSelection = [];
+      let collectionPickerRenderToken = 0;
+      let collectionPickerCoverObserver = null;
+      let collectionPickerReturnFocus = null;
       const collectionSavePrompt = document.getElementById("collectionSavePrompt");
       const collectionSavePromptCancel = document.getElementById("collectionSavePromptCancel");
       const collectionSavePromptConfirm = document.getElementById("collectionSavePromptConfirm");
@@ -10475,6 +11105,34 @@
       const collectionPageJumpInput = document.getElementById("collectionPageJumpInput");
       const collectionSearchInput = document.getElementById("collectionSearch");
       const collectionSearchDesktopPlaceholder = collectionSearchInput.placeholder;
+      const collectionBatchManageButton = document.getElementById("collectionBatchManageButton");
+      const collectionBatchSelectionBar = document.getElementById("collectionBatchSelectionBar");
+      const collectionBatchSelectPage = document.getElementById("collectionBatchSelectPage");
+      const collectionBatchSelectResults = document.getElementById("collectionBatchSelectResults");
+      const collectionBatchSelectionCount = document.getElementById("collectionBatchSelectionCount");
+      const collectionBatchClear = document.getElementById("collectionBatchClear");
+      const collectionBatchActionBar = document.getElementById("collectionBatchActionBar");
+      const collectionMobileBatchToolbarState = document.getElementById("collectionMobileBatchToolbarState");
+      const collectionMobileBatchActionCount = document.getElementById("collectionMobileBatchActionCount");
+      const collectionMobileBatchSelectPage = document.getElementById("collectionMobileBatchSelectPage");
+      const collectionMobileBatchSelectResults = document.getElementById("collectionMobileBatchSelectResults");
+      const collectionMobileBatchClear = document.getElementById("collectionMobileBatchClear");
+      const collectionMobileBatchAddTags = document.getElementById("collectionMobileBatchAddTags");
+      const collectionMobileBatchRemoveTags = document.getElementById("collectionMobileBatchRemoveTags");
+      const collectionMobileBatchDelete = document.getElementById("collectionMobileBatchDelete");
+      const collectionMobileBatchExitButton = document.getElementById("collectionMobileBatchExitButton");
+      const collectionBatchAddTags = document.getElementById("collectionBatchAddTags");
+      const collectionBatchRemoveTags = document.getElementById("collectionBatchRemoveTags");
+      const collectionBatchDelete = document.getElementById("collectionBatchDelete");
+      const collectionBatchTagModal = document.getElementById("collectionBatchTagModal");
+      const collectionBatchTagTitle = document.getElementById("collectionBatchTagTitle");
+      const collectionBatchTagSearch = document.getElementById("collectionBatchTagSearch");
+      const collectionBatchNewTag = document.getElementById("collectionBatchNewTag");
+      const collectionBatchNewTagInput = document.getElementById("collectionBatchNewTagInput");
+      const collectionBatchNewTagAdd = document.getElementById("collectionBatchNewTagAdd");
+      const collectionBatchTagList = document.getElementById("collectionBatchTagList");
+      const collectionBatchTagCancel = document.getElementById("collectionBatchTagCancel");
+      const collectionBatchTagConfirm = document.getElementById("collectionBatchTagConfirm");
       const collectionMobileLayoutMedia = window.matchMedia("(max-width: 780px)");
       document.getElementById("collectionDetailTitle").dataset.placeholder = String.fromCharCode(0x6807, 0x9898);
       const COLLECTION_TAGS_KEY = "otome-record-card-collection-tags-v1";
@@ -10488,6 +11146,47 @@
       const COLLECTION_RENAME_TAG_TEXT = String.fromCharCode(0x91cd, 0x547d, 0x540d);
       const COLLECTION_DELETE_TAG_TEXT = String.fromCharCode(0x5220, 0x9664);
       const COLLECTION_TAG_COUNT_SUFFIX = String.fromCharCode(0x6761);
+      const COLLECTION_MISSING_TITLE_TEXT = String.fromCharCode(0x672a, 0x586b, 0x5199, 0x6807, 0x9898);
+      const COLLECTION_MISSING_CV_TEXT = String.fromCharCode(0x672a, 0x586b, 0x5199, 0x20, 0x43, 0x56);
+      const COLLECTION_MISSING_RJ_TEXT = String.fromCharCode(0x65e0, 0x20, 0x52, 0x4a);
+      const COLLECTION_PLACEHOLDER_TEXT = String.fromCharCode(0x5360, 0x4f4d);
+      const COLLECTION_EMPTY_RECORDS_TEXT = String.fromCharCode(0x6682, 0x65e0, 0x6536, 0x85cf, 0x8bb0, 0x5f55);
+      const COLLECTION_BATCH_TEXT = Object.freeze({
+        manage:String.fromCharCode(0x6279, 0x91cf, 0x7ba1, 0x7406),
+        exit:String.fromCharCode(0x9000, 0x51fa),
+        selectPage:String.fromCharCode(0x9009, 0x62e9, 0x672c, 0x9875),
+        cancelPage:String.fromCharCode(0x53d6, 0x6d88, 0x672c, 0x9875),
+        selectResults:String.fromCharCode(0x5168, 0x9009, 0x5f53, 0x524d, 0x7ed3, 0x679c),
+        cancelResults:String.fromCharCode(0x53d6, 0x6d88, 0x5f53, 0x524d, 0x7ed3, 0x679c),
+        selected:String.fromCharCode(0x5df2, 0x9009),
+        item:String.fromCharCode(0x9879),
+        pageSelected:String.fromCharCode(0x672c, 0x9875, 0x5df2, 0x9009),
+        forPrefix:String.fromCharCode(0x4e3a),
+        addTitle:String.fromCharCode(0x9879, 0x6536, 0x85cf, 0x589e, 0x52a0, 0x6807, 0x7b7e),
+        fromPrefix:String.fromCharCode(0x4ece),
+        removeTitle:String.fromCharCode(0x9879, 0x6536, 0x85cf, 0x79fb, 0x9664, 0x6807, 0x7b7e),
+        add:String.fromCharCode(0x6dfb, 0x52a0),
+        remove:String.fromCharCode(0x79fb, 0x9664),
+        owned:String.fromCharCode(0x9879, 0x62e5, 0x6709),
+        emptyTags:String.fromCharCode(0x6ca1, 0x6709, 0x53ef, 0x9009, 0x62e9, 0x7684, 0x6807, 0x7b7e),
+        emptyNewTag:String.fromCharCode(0x65b0, 0x6807, 0x7b7e, 0x540d, 0x79f0, 0x4e0d, 0x80fd, 0x4e3a, 0x7a7a, 0x3002),
+        reservedTag:String.fromCharCode(0x4e0d, 0x80fd, 0x4f7f, 0x7528, 0x5168, 0x90e8, 0x4f5c, 0x4e3a, 0x6807, 0x7b7e, 0x540d, 0x79f0, 0x3002),
+        duplicateTag:String.fromCharCode(0x8fd9, 0x4e2a, 0x6807, 0x7b7e, 0x5df2, 0x7ecf, 0x5b58, 0x5728, 0x3002),
+        chooseTag:String.fromCharCode(0x8bf7, 0x9009, 0x62e9, 0x81f3, 0x5c11, 0x4e00, 0x4e2a, 0x6807, 0x7b7e, 0x3002),
+        addFailed:String.fromCharCode(0x6807, 0x7b7e, 0x589e, 0x52a0, 0x5931, 0x8d25, 0xff1a),
+        removeFailed:String.fromCharCode(0x6807, 0x7b7e, 0x79fb, 0x9664, 0x5931, 0x8d25, 0xff1a),
+        removeConfirmPrefix:String.fromCharCode(0x5c06, 0x4ece, 0x9009, 0x4e2d, 0x7684, 0x6536, 0x85cf, 0x4e2d, 0x79fb, 0x9664),
+        tagCountJoin:String.fromCharCode(0x4e2a, 0x6807, 0x7b7e, 0xff0c, 0x6d89, 0x53ca),
+        recordCountSuffix:String.fromCharCode(0x6761, 0x6536, 0x85cf, 0x8bb0, 0x5f55, 0x3002),
+        confirmRemove:String.fromCharCode(0x786e, 0x8ba4, 0x79fb, 0x9664),
+        deletePrefix:String.fromCharCode(0x786e, 0x5b9a, 0x6c38, 0x4e45, 0x5220, 0x9664, 0x8fd9),
+        deleteSuffix:String.fromCharCode(0x6761, 0x6536, 0x85cf, 0x8bb0, 0x5f55, 0x5417, 0xff1f, 0x6b64, 0x64cd, 0x4f5c, 0x65e0, 0x6cd5, 0x64a4, 0x9500, 0x3002),
+        deleteDetails:String.fromCharCode(0x76f8, 0x5173, 0x6536, 0x85cf, 0x4fe1, 0x606f, 0x548c, 0x4ec5, 0x88ab, 0x8fd9, 0x4e9b, 0x8bb0, 0x5f55, 0x4f7f, 0x7528, 0x7684, 0x5c01, 0x9762, 0x6570, 0x636e, 0x4e4b, 0x540e, 0x4e5f, 0x4f1a, 0x88ab, 0x6e05, 0x7406, 0x3002),
+        permanentDelete:String.fromCharCode(0x6c38, 0x4e45, 0x5220, 0x9664),
+        deleteFailed:String.fromCharCode(0x5220, 0x9664, 0x6761, 0x76ee, 0x5931, 0x8d25, 0xff1a),
+        unknownError:String.fromCharCode(0x672a, 0x63d0, 0x4f9b, 0x9519, 0x8bef, 0x4fe1, 0x606f),
+        finishTagEdit:String.fromCharCode(0x8bf7, 0x5148, 0x5b8c, 0x6210, 0x5f53, 0x524d, 0x7684, 0x6807, 0x7b7e, 0x7f16, 0x8f91, 0x3002)
+      });
       let customCollectionTags = [];
       let removedCollectionTags = [];
       let collectionTagManageDraft = null;
@@ -10495,7 +11194,7 @@
       try { removedCollectionTags = JSON.parse(localStorage.getItem(COLLECTION_REMOVED_TAGS_KEY) || "[]"); } catch { removedCollectionTags = []; }
       const defaultCollectionTags = [];
       function collectionCoverReferenceIsUsed(reference) {
-        return visibleCollectionCoverReferences.has(reference) || collectionDetailStoredCoverValue === reference;
+        return visibleCollectionCoverReferences.has(reference) || collectionPickerCoverReferences.has(reference) || collectionDetailStoredCoverValue === reference;
       }
       async function collectionCoverDisplayUrl(value) {
         const source = String(value || "");
@@ -10542,6 +11241,358 @@
         }
       }
       function escapeCollectionText(value) { return String(value ?? "").replace(/[&<>"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[character]); }
+      function activeCollectionPickerConfig() {
+        return COLLECTION_PICKER_CONFIG[collectionPickerTemplate] || COLLECTION_PICKER_CONFIG.full;
+      }
+      function collectionPickerSearchText(work) {
+        return [work.title, work.rj, work.cv, work.circle, work.keywords, ...(Array.isArray(work.tags) ? work.tags : [])].map(value => String(value || "")).join(" ").toLocaleLowerCase();
+      }
+      function filteredCollectionPickerRecords() {
+        const query = String(collectionPickerSearch?.value || "").trim().toLocaleLowerCase();
+        const visible = records.filter(work => !query || collectionPickerSearchText(work).includes(query)).slice();
+        const sort = collectionPickerSort?.value || "recent";
+        if (sort === "added") visible.sort((left, right) => Number(right.addedAt || 0) - Number(left.addedAt || 0));
+        else if (sort === "title") visible.sort((left, right) => String(left.title || "").localeCompare(String(right.title || ""), "zh-CN"));
+        else if (sort === "cv") visible.sort((left, right) => String(left.cv || "").localeCompare(String(right.cv || ""), "zh-CN"));
+        else if (sort === "rating") visible.sort((left, right) => Number(right.rating || 0) - Number(left.rating || 0));
+        else visible.sort((left, right) => Number(right.editedAt || right.addedAt || 0) - Number(left.editedAt || left.addedAt || 0));
+        return visible;
+      }
+      function selectedCollectionPickerWorks() {
+        return collectionPickerSelection.map(id => records.find(work => String(work.id) === String(id))).filter(Boolean);
+      }
+      function updateCollectionPickerCoverReferences(visible) {
+        const sources = visible.concat(selectedCollectionPickerWorks()).map(work => String(work.cover || ""));
+        collectionPickerCoverReferences = new Set(sources.filter(source => source.startsWith(STATE_IMAGE_REFERENCE_PREFIX)));
+        releaseUnusedCollectionCoverUrls();
+      }
+      function setCollectionPickerCoverBackground(element, source) {
+        if (!element || !source) return;
+        element.style.backgroundImage = `url("${String(source).replace(/["\\]/g, "\\$&")}")`;
+        element.classList.add("has-image");
+      }
+      async function loadCollectionPickerCover(element, work, renderToken) {
+        if (!element || !work?.cover) return;
+        try {
+          const source = await collectionCoverDisplayUrl(work.cover);
+          if (collectionPickerModal.hidden || renderToken !== collectionPickerRenderToken || !element.isConnected) return;
+          setCollectionPickerCoverBackground(element, source);
+        } catch (error) {
+          console.warn("Collection picker cover load failed", work.id, error);
+        }
+      }
+      function observeCollectionPickerCover(element, work, renderToken) {
+        const source = String(work.cover || "");
+        if (!source) return;
+        if (!source.startsWith(STATE_IMAGE_REFERENCE_PREFIX)) {
+          setCollectionPickerCoverBackground(element, source);
+          return;
+        }
+        if (!collectionPickerCoverObserver) {
+          void loadCollectionPickerCover(element, work, renderToken);
+          return;
+        }
+        element.dataset.collectionPickerId = String(work.id);
+        collectionPickerCoverObserver.observe(element);
+      }
+      function renderCollectionPickerGrid(resetScroll = false) {
+        if (!collectionPickerGrid || !collectionPickerScroller) return;
+        const previousScrollTop = resetScroll ? 0 : collectionPickerScroller.scrollTop;
+        const visible = filteredCollectionPickerRecords();
+        const renderToken = ++collectionPickerRenderToken;
+        collectionPickerCoverObserver?.disconnect();
+        collectionPickerCoverObserver = "IntersectionObserver" in window
+          ? new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+              if (!entry.isIntersecting) return;
+              collectionPickerCoverObserver?.unobserve(entry.target);
+              const work = records.find(item => String(item.id) === String(entry.target.dataset.collectionPickerId));
+              if (work) void loadCollectionPickerCover(entry.target, work, renderToken);
+            });
+          }, { root:collectionPickerScroller, rootMargin:"120px" })
+          : null;
+        updateCollectionPickerCoverReferences(visible);
+        const fragment = document.createDocumentFragment();
+        visible.forEach(work => {
+          const selectedIndex = collectionPickerSelection.findIndex(id => String(id) === String(work.id));
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "collection-picker-card" + (selectedIndex >= 0 ? " is-selected" : "");
+          button.dataset.collectionPickerId = String(work.id);
+          button.setAttribute("aria-pressed", String(selectedIndex >= 0));
+          const cover = document.createElement("div");
+          cover.className = "collection-picker-cover";
+          if (selectedIndex >= 0) {
+            const order = document.createElement("span");
+            order.className = "collection-picker-order";
+            order.textContent = String(selectedIndex + 1);
+            cover.appendChild(order);
+          }
+          const info = document.createElement("div");
+          info.className = "collection-picker-info";
+          const title = document.createElement("div");
+          title.className = "collection-picker-title";
+          title.textContent = work.title || String.fromCharCode(0x672a, 0x586b, 0x5199, 0x6807, 0x9898);
+          title.title = title.textContent;
+          const cv = document.createElement("div");
+          cv.className = "collection-picker-cv";
+          cv.textContent = "CV · " + (work.cv || String.fromCharCode(0x672a, 0x586b, 0x5199));
+          cv.title = cv.textContent;
+          info.append(title, cv);
+          button.append(cover, info);
+          fragment.appendChild(button);
+          observeCollectionPickerCover(cover, work, renderToken);
+        });
+        collectionPickerGrid.replaceChildren(fragment);
+        collectionPickerEmpty.hidden = Boolean(visible.length);
+        collectionPickerScroller.scrollTop = previousScrollTop;
+      }
+      function updateCollectionPickerCardSelection() {
+        collectionPickerGrid?.querySelectorAll(".collection-picker-card[data-collection-picker-id]").forEach(button => {
+          const selectedIndex = collectionPickerSelection.findIndex(id => String(id) === String(button.dataset.collectionPickerId));
+          const selected = selectedIndex >= 0;
+          button.classList.toggle("is-selected", selected);
+          button.setAttribute("aria-pressed", String(selected));
+          const cover = button.querySelector(".collection-picker-cover");
+          let order = cover?.querySelector(".collection-picker-order");
+          if (!selected) {
+            order?.remove();
+            return;
+          }
+          if (!order && cover) {
+            order = document.createElement("span");
+            order.className = "collection-picker-order";
+            cover.appendChild(order);
+          }
+          if (order) order.textContent = String(selectedIndex + 1);
+        });
+      }
+      function renderCollectionPickerTray() {
+        collectionPickerSheet?.classList.toggle("is-single", activeCollectionPickerConfig().max === 1);
+        collectionPickerClear.disabled = !collectionPickerSelection.length;
+        collectionPickerImport.disabled = !collectionPickerSelection.length;
+        collectionPickerImport.textContent = collectionPickerSelection.length
+          ? String.fromCharCode(0x5bfc, 0x5165) + " " + collectionPickerSelection.length + " " + String.fromCharCode(0x6761)
+          : String.fromCharCode(0x5bfc, 0x5165, 0x6240, 0x9009);
+      }
+      function renderCollectionPicker(resetScroll = false) {
+        renderCollectionPickerGrid(resetScroll);
+        renderCollectionPickerTray();
+      }
+      function closeCollectionPicker() {
+        if (!collectionPickerModal || collectionPickerModal.hidden) return;
+        collectionPickerModal.hidden = true;
+        collectionPickerCoverObserver?.disconnect();
+        collectionPickerCoverObserver = null;
+        collectionPickerCoverReferences = new Set();
+        releaseUnusedCollectionCoverUrls();
+        const returnFocus = collectionPickerReturnFocus;
+        collectionPickerReturnFocus = null;
+        returnFocus?.focus();
+      }
+      function openCollectionPicker(event) {
+        if (!collectionPickerModal) return;
+        collectionPickerTemplate = currentTemplate();
+        const config = activeCollectionPickerConfig();
+        collectionPickerSelection = [];
+        collectionPickerReturnFocus = event?.currentTarget || document.activeElement;
+        collectionPickerSearch.value = "";
+        collectionPickerSort.value = "recent";
+        collectionPickerTip.textContent = config.max === 1
+          ? config.label + " · " + String.fromCharCode(0x5355, 0x9009, 0x4e00, 0x6761, 0x6536, 0x85cf)
+          : config.label + " · " + String.fromCharCode(0x9009, 0x62e9, 0x987a, 0x5e8f, 0x20, 0x3d, 0x20, 0x653e, 0x5165, 0x6a21, 0x677f, 0x7684, 0x987a, 0x5e8f, 0x20, 0xb7, 0x20, 0x6700, 0x591a) + " " + config.max + " " + String.fromCharCode(0x6761);
+        collectionPickerModal.hidden = false;
+        renderCollectionPicker(true);
+      }
+      function toggleCollectionPickerSelection(id) {
+        const config = activeCollectionPickerConfig();
+        const selectedIndex = collectionPickerSelection.findIndex(value => String(value) === String(id));
+        if (selectedIndex >= 0) collectionPickerSelection.splice(selectedIndex, 1);
+        else if (config.max === 1) {
+          collectionPickerSelection = [id];
+        }
+        else if (collectionPickerSelection.length < config.max) collectionPickerSelection.push(id);
+        else {
+          showAppAlert(String.fromCharCode(0x5f53, 0x524d, 0x6a21, 0x677f, 0x6700, 0x591a, 0x9009, 0x62e9) + " " + config.max + " " + String.fromCharCode(0x6761, 0x6536, 0x85cf, 0x3002));
+          return;
+        }
+        updateCollectionPickerCardSelection();
+        renderCollectionPickerTray();
+      }
+      function collectionPickerValueHasContent(value) {
+        return Array.isArray(value) ? value.some(collectionPickerValueHasContent) : value != null && String(value).trim() !== "";
+      }
+      function collectionPickerTargetHasContent(template, count) {
+        const state = collectState();
+        if (template === "full") {
+          return [state.recordTitle, state.cvText, state.circleText, state.rjText, state.durationText, state.purchaseDate, state.listenedDate, state.originalPrice, state.currentPrice, state.currentDiscount, state.lowestPrice, state.reviewText, state.tags, state.continuationPages?.full?.pages, state.coverSrc, state.coverOriginalSrc, state.coverEditedSrc].some(collectionPickerValueHasContent)
+            || (state.cnChoice && state.cnChoice !== CHOICE_SUBTITLE)
+            || (state.ratings || []).some(value => Number(value) !== 4);
+        }
+        if (template === "compact") {
+          return [state.recordTitle, state.cvText, state.circleText, state.rjText, state.continuationPages?.compact?.pages, state.coverSrc, state.coverOriginalSrc, state.coverEditedSrc].some(collectionPickerValueHasContent);
+        }
+        const cells = template === "grid9" ? state.grid9?.cells : template === "quick" ? state.quick?.cells : state.trio?.cells;
+        return (cells || []).slice(0, count).some(cell => {
+          if (!cell) return false;
+          if (template === "grid9") return [cell.cover, cell.tag, cell.review, cell.rj].some(collectionPickerValueHasContent);
+          if (template === "quick") return [cell.cover, cell.cv, cell.rj, cell.review].some(collectionPickerValueHasContent);
+          return [cell.cover, cell.cv, cell.rj, cell.price, cell.repo].some(collectionPickerValueHasContent) || Number(cell.rating) > 0;
+        });
+      }
+      function splitCollectionRepoPages(value, limiter) {
+        let remaining = String(value || "").replace(/\r\n?/g, "\n");
+        const pages = [];
+        while (remaining) {
+          let pageText = limiter(remaining);
+          if (!pageText) pageText = wrappingCharacters(remaining)[0] || "";
+          if (!pageText) break;
+          pages.push(pageText);
+          remaining = remaining.slice(pageText.length);
+        }
+        return pages;
+      }
+      function paginateFullCollectionRepo(value) {
+        const normalized = String(value || "").replace(/\r\n?/g, "\n");
+        const main = limitedFullReviewText(normalized);
+        return {
+          main,
+          pages:splitCollectionRepoPages(normalized.slice(main.length), limitedFullContinuationReviewText)
+        };
+      }
+      function collectionPickerCoverState(cover, fit) {
+        return {
+          coverSrc:cover || "",
+          coverOriginalSrc:cover || "",
+          coverEditedSrc:"",
+          coverMosaicMaskSrc:"",
+          coverBlurMaskSrc:"",
+          coverWhiteFogMaskSrc:"",
+          coverEditorUndoStack:[],
+          coverEditorRedoStack:[],
+          coverEditorHistoryCheckpoint:null,
+          coverEditorOperations:[],
+          coverEditorRedoOperations:[],
+          coverEditorHistoryFormat:"operations-v1",
+          coverStickers:[],
+          stickerSources:[],
+          coverFit:fit === "cover" ? "cover" : "contain"
+        };
+      }
+      function collectionPickerOptionalNumber(value) {
+        return value === "" || value == null ? "" : Number(value);
+      }
+      function applySingleCollectionPickerWork(template, prepared) {
+        const work = prepared.work;
+        const state = collectState();
+        const basicState = {
+          ...state,
+          template,
+          recordTitle:work.title || "",
+          cvText:work.cv || "",
+          circleText:work.circle || "",
+          rjText:work.rj || "",
+          ...collectionPickerCoverState(prepared.cover, work.coverFit)
+        };
+        if (template === "compact") {
+          const pages = splitCollectionRepoPages(work.review, limitedCompactContinuationReviewText);
+          applyState({
+            ...basicState,
+            reviewText:"",
+            continuationPages:{
+              full:{ current:0, pages:[] },
+              compact:{ current:0, pages }
+            }
+          }, false);
+          return;
+        }
+        const repo = paginateFullCollectionRepo(work.review);
+        const ratings = [work.rating, work.cvRating, work.storyRating, work.seRating].map(value => value === "" || value == null ? 0 : Number(value) || 0);
+        applyState({
+          ...basicState,
+          durationText:work.time || "",
+          purchaseDate:normalizeCardDateValue(work.purchaseDate),
+          listenedDate:normalizeCardDateValue(work.listenedDate),
+          cardInfoType:normalizeCardInfoType(work.cardInfoType || "duration"),
+          originalPrice:collectionPickerOptionalNumber(work.originalPrice),
+          currentPrice:collectionPickerOptionalNumber(work.price),
+          currentDiscount:collectionPickerOptionalNumber(work.currentDiscount),
+          currentDiscountManual:false,
+          lowestPrice:collectionPickerOptionalNumber(work.lowestPrice),
+          cnChoice:work.cn || CHOICE_SUBTITLE,
+          ratings,
+          tags:String(work.keywords || "").split(" / ").filter(Boolean),
+          reviewText:repo.main,
+          continuationPages:{
+            full:{ current:0, pages:repo.pages },
+            compact:{ current:0, pages:[] }
+          }
+        }, false);
+      }
+      function applyMultiCollectionPickerWorks(template, preparedWorks) {
+        preparedWorks.forEach((prepared, index) => {
+          const work = prepared.work;
+          if (template === "grid9") {
+            writeGrid9Cell(index, {
+              cover:prepared.cover || "",
+              fit:work.coverFit === "contain" ? "contain" : "cover",
+              tag:"",
+              review:work.review || "",
+              rj:work.rj || ""
+            });
+          } else if (template === "quick") {
+            writeQuickCell(index, {
+              cover:prepared.cover || "",
+              coverFit:work.coverFit === "contain" ? "contain" : "cover",
+              cv:work.cv || "",
+              rj:work.rj || "",
+              review:work.review || ""
+            });
+          } else if (template === "trio") {
+            writeTrioCell(index, {
+              cover:prepared.cover || "",
+              coverFit:work.coverFit === "contain" ? "contain" : "cover",
+              cv:work.cv || "",
+              rj:work.rj || "",
+              price:work.price === "" || work.price == null ? "" : String(work.price),
+              rating:work.rating === "" || work.rating == null ? 0 : Number(work.rating) || 0,
+              repo:work.review || ""
+            });
+          }
+        });
+        fitStage();
+      }
+      async function importSelectedCollectionPickerWorks() {
+        const selectedWorks = selectedCollectionPickerWorks();
+        if (!selectedWorks.length) return;
+        const hasContent = collectionPickerTargetHasContent(collectionPickerTemplate, selectedWorks.length);
+        if (hasContent) {
+          const message = activeCollectionPickerConfig().max === 1
+            ? String.fromCharCode(0x5c06, 0x8986, 0x76d6, 0x5f53, 0x524d, 0x6a21, 0x677f, 0x5185, 0x5bf9, 0x5e94, 0x4f4d, 0x7f6e, 0x7684, 0x73b0, 0x6709, 0x5185, 0x5bb9, 0xff0c, 0x662f, 0x5426, 0x7ee7, 0x7eed, 0xff1f)
+            : String.fromCharCode(0x5c06, 0x8986, 0x76d6, 0x524d) + " " + selectedWorks.length + " " + String.fromCharCode(0x4e2a, 0x4f4d, 0x7f6e, 0x7684, 0x73b0, 0x6709, 0x5185, 0x5bb9, 0xff0c, 0x662f, 0x5426, 0x7ee7, 0x7eed, 0xff1f);
+          if (!await showAppConfirm(message)) return;
+        }
+        collectionPickerImport.disabled = true;
+        collectionPickerImport.setAttribute("aria-busy", "true");
+        try {
+          const preparedWorks = await Promise.all(selectedWorks.map(async work => ({
+            work,
+            cover:work.cover ? await resolveStoredImageReferenceSafely(work.cover) : ""
+          })));
+          if (collectionPickerTemplate === "full" || collectionPickerTemplate === "compact") applySingleCollectionPickerWork(collectionPickerTemplate, preparedWorks[0]);
+          else applyMultiCollectionPickerWorks(collectionPickerTemplate, preparedWorks);
+          await saveState();
+          closeCollectionPicker();
+          showAppAlert(String.fromCharCode(0x5df2, 0x4ece, 0x6536, 0x85cf, 0x5bfc, 0x5165, 0x5f53, 0x524d, 0x6a21, 0x677f, 0x3002));
+        } catch (error) {
+          console.error("Import from collection failed", error);
+          const reason = error && (error.name || error.message) ? [error.name, error.message].filter(Boolean).join(": ") : UI_GRID9_UNKNOWN;
+          showAppAlert(String.fromCharCode(0x5bfc, 0x5165, 0x6536, 0x85cf, 0x5931, 0x8d25, 0xff1a) + reason);
+        } finally {
+          collectionPickerImport.removeAttribute("aria-busy");
+          if (!collectionPickerModal.hidden) renderCollectionPickerTray();
+        }
+      }
       function collectionTagNames() { return Array.from(new Set(defaultCollectionTags.concat(customCollectionTags).concat(records.flatMap(work => work.tags || [])))).filter(name => !removedCollectionTags.includes(name)); }
       function renderMobileTagSelect() {
         if (!collectionMobileTagSelect) return;
@@ -10632,6 +11683,208 @@
           return `<button class="collection-page-number${active ? " active" : ""}" type="button" data-collection-page="${item - 1}" aria-label="${item}"${active ? " aria-current=\"page\" disabled" : ""}>${item}</button>`;
         }).join("")}</div>`;
       }
+      function collectionBatchSelectedWorks() {
+        return records.filter(work => selectedCollectionIds.has(String(work.id)));
+      }
+      function collectionBatchErrorReason(error) {
+        return String(error && (error.message || error.name) || COLLECTION_BATCH_TEXT.unknownError);
+      }
+      function renderCollectionBatchControls() {
+        const selectedCount = selectedCollectionIds.size;
+        const pageSelectedCount = visibleCollectionRecords.filter(work => selectedCollectionIds.has(String(work.id))).length;
+        const allPageSelected = visibleCollectionRecords.length > 0 && pageSelectedCount === visibleCollectionRecords.length;
+        const resultSelectedCount = collectionFilteredRecords.filter(work => selectedCollectionIds.has(String(work.id))).length;
+        const allResultsSelected = collectionFilteredRecords.length > 0 && resultSelectedCount === collectionFilteredRecords.length;
+        page.classList.toggle("collection-batch-mode", collectionBatchMode);
+        collectionBatchSelectionBar.hidden = !collectionBatchMode;
+        collectionBatchActionBar.hidden = !collectionBatchMode;
+        collectionMobileBatchToolbarState.hidden = !collectionBatchMode;
+        collectionBatchManageButton.textContent = collectionBatchMode ? COLLECTION_BATCH_TEXT.exit : COLLECTION_BATCH_TEXT.manage;
+        collectionBatchManageButton.disabled = collectionBatchOperationPending || (!collectionBatchMode && records.length === 0);
+        collectionBatchSelectPage.textContent = allPageSelected ? COLLECTION_BATCH_TEXT.cancelPage : COLLECTION_BATCH_TEXT.selectPage;
+        collectionBatchSelectPage.disabled = collectionBatchOperationPending || visibleCollectionRecords.length === 0;
+        collectionMobileBatchSelectPage.textContent = allPageSelected
+          ? String.fromCharCode(0x53d6, 0x6d88, 0x672c, 0x9875)
+          : String.fromCharCode(0x672c, 0x9875);
+        collectionMobileBatchSelectPage.disabled = collectionBatchSelectPage.disabled;
+        collectionBatchSelectResults.textContent = (allResultsSelected ? COLLECTION_BATCH_TEXT.cancelResults : COLLECTION_BATCH_TEXT.selectResults) + " (" + collectionFilteredRecords.length + ")";
+        collectionBatchSelectResults.disabled = collectionBatchOperationPending || collectionFilteredRecords.length === 0;
+        collectionMobileBatchSelectResults.textContent = allResultsSelected
+          ? String.fromCharCode(0x53d6, 0x6d88, 0x5168, 0x9009)
+          : String.fromCharCode(0x5168, 0x9009);
+        collectionMobileBatchSelectResults.disabled = collectionBatchSelectResults.disabled;
+        const countText = COLLECTION_BATCH_TEXT.selected + " " + selectedCount + " " + COLLECTION_BATCH_TEXT.item;
+        collectionBatchSelectionCount.textContent = countText + " · " + COLLECTION_BATCH_TEXT.pageSelected + " " + pageSelectedCount + " " + COLLECTION_BATCH_TEXT.item;
+        collectionMobileBatchActionCount.textContent = collectionBatchSelectionCount.textContent;
+        collectionBatchClear.disabled = collectionBatchOperationPending || selectedCount === 0;
+        collectionMobileBatchClear.disabled = collectionBatchClear.disabled;
+        collectionMobileBatchExitButton.disabled = collectionBatchOperationPending;
+        collectionBatchAddTags.disabled = selectedCount === 0 || collectionBatchOperationPending;
+        collectionBatchRemoveTags.disabled = selectedCount === 0 || collectionBatchOperationPending;
+        collectionBatchDelete.disabled = selectedCount === 0 || collectionBatchOperationPending;
+        collectionMobileBatchAddTags.disabled = collectionBatchAddTags.disabled;
+        collectionMobileBatchRemoveTags.disabled = collectionBatchRemoveTags.disabled;
+        collectionMobileBatchDelete.disabled = collectionBatchDelete.disabled;
+      }
+      function setCollectionBatchMode(nextMode) {
+        if (!nextMode && collectionBatchOperationPending) return;
+        collectionBatchMode = Boolean(nextMode);
+        if (!collectionBatchMode) {
+          selectedCollectionIds.clear();
+          closeCollectionBatchTagModal();
+        }
+        collectionMobileDataDropdown.hidden = true;
+        collectionMobileDataMenuButton.setAttribute("aria-expanded", "false");
+        render();
+      }
+      function toggleCollectionBatchSelection(id) {
+        if (collectionBatchOperationPending) return;
+        const key = String(id || "");
+        if (!key) return;
+        if (selectedCollectionIds.has(key)) selectedCollectionIds.delete(key);
+        else selectedCollectionIds.add(key);
+        render();
+      }
+      function collectionBatchTagCandidates() {
+        if (collectionBatchTagMode === "add") {
+          return Array.from(new Set(collectionTagNames().concat(Array.from(collectionBatchNewTags)))).map(name => ({ name, count:0 }));
+        }
+        const counts = new Map();
+        collectionBatchSelectedWorks().forEach(work => {
+          Array.from(new Set(work.tags || [])).forEach(name => counts.set(name, (counts.get(name) || 0) + 1));
+        });
+        return Array.from(counts, ([name, count]) => ({ name, count }));
+      }
+      function renderCollectionBatchTagList() {
+        const query = String(collectionBatchTagSearch.value || "").trim().toLocaleLowerCase();
+        const candidates = collectionBatchTagCandidates().filter(item => !query || item.name.toLocaleLowerCase().includes(query));
+        const selectedTotal = selectedCollectionIds.size;
+        collectionBatchTagList.innerHTML = candidates.length ? candidates.map(item => {
+          const checked = collectionBatchTagSelection.has(item.name);
+          const count = collectionBatchTagMode === "remove" ? `<small>${item.count} / ${selectedTotal} ${COLLECTION_BATCH_TEXT.owned}</small>` : "";
+          return `<label class="collection-batch-tag-option"><input type="checkbox" data-collection-batch-tag="${escapeCollectionText(item.name)}"${checked ? " checked" : ""} /><span>${escapeCollectionText(item.name)}</span>${count}</label>`;
+        }).join("") : `<p class="collection-batch-tag-empty">${COLLECTION_BATCH_TEXT.emptyTags}</p>`;
+        collectionBatchTagConfirm.disabled = collectionBatchTagSelection.size === 0 || collectionBatchOperationPending;
+      }
+      function closeCollectionBatchTagModal(force = false) {
+        if (collectionBatchOperationPending && !force) return;
+        collectionBatchTagMode = "";
+        collectionBatchTagSelection.clear();
+        collectionBatchNewTags.clear();
+        collectionBatchTagSearch.value = "";
+        collectionBatchNewTagInput.value = "";
+        collectionBatchTagModal.hidden = true;
+      }
+      function openCollectionBatchTagModal(mode) {
+        if (!selectedCollectionIds.size) return;
+        collectionBatchTagMode = mode;
+        collectionBatchTagSelection.clear();
+        collectionBatchNewTags.clear();
+        collectionBatchTagSearch.value = "";
+        collectionBatchNewTagInput.value = "";
+        const selectedCount = selectedCollectionIds.size;
+        collectionBatchTagTitle.textContent = mode === "add"
+          ? COLLECTION_BATCH_TEXT.forPrefix + " " + selectedCount + " " + COLLECTION_BATCH_TEXT.addTitle
+          : COLLECTION_BATCH_TEXT.fromPrefix + " " + selectedCount + " " + COLLECTION_BATCH_TEXT.removeTitle;
+        collectionBatchTagConfirm.textContent = mode === "add" ? COLLECTION_BATCH_TEXT.add : COLLECTION_BATCH_TEXT.remove;
+        collectionBatchNewTag.hidden = mode !== "add";
+        renderCollectionBatchTagList();
+        collectionBatchTagModal.hidden = false;
+        if (!collectionMobileLayoutMedia.matches) collectionBatchTagSearch.focus();
+      }
+      async function addCollectionBatchNewTag() {
+        const name = String(collectionBatchNewTagInput.value || "").trim();
+        if (!name) { await showAppAlert(COLLECTION_BATCH_TEXT.emptyNewTag); return; }
+        if (name === COLLECTION_ALL_TAG_TEXT) { await showAppAlert(COLLECTION_BATCH_TEXT.reservedTag); return; }
+        if (collectionTagNames().includes(name) || collectionBatchNewTags.has(name)) { await showAppAlert(COLLECTION_BATCH_TEXT.duplicateTag); return; }
+        collectionBatchNewTags.add(name);
+        collectionBatchTagSelection.add(name);
+        collectionBatchNewTagInput.value = "";
+        collectionBatchTagSearch.value = "";
+        renderCollectionBatchTagList();
+      }
+      async function applyCollectionBatchTags() {
+        if (collectionBatchOperationPending) return;
+        const names = Array.from(collectionBatchTagSelection);
+        if (!names.length) { await showAppAlert(COLLECTION_BATCH_TEXT.chooseTag); return; }
+        collectionBatchOperationPending = true;
+        collectionBatchTagConfirm.disabled = true;
+        const selectedIds = new Set(selectedCollectionIds);
+        if (collectionBatchTagMode === "remove") {
+          const affectedCount = records.filter(work => selectedIds.has(String(work.id)) && (work.tags || []).some(name => names.includes(name))).length;
+          const message = COLLECTION_BATCH_TEXT.removeConfirmPrefix + " " + names.length + " " + COLLECTION_BATCH_TEXT.tagCountJoin + " " + affectedCount + " " + COLLECTION_BATCH_TEXT.recordCountSuffix;
+          if (!await queueAppDialog(message, true, "", { confirmLabel:COLLECTION_BATCH_TEXT.confirmRemove })) {
+            collectionBatchOperationPending = false;
+            renderCollectionBatchTagList();
+            return;
+          }
+        }
+        const now = Date.now();
+        const changedWorks = [];
+        const nextRecords = records.map(work => {
+          if (!selectedIds.has(String(work.id))) return work;
+          const currentTags = Array.from(new Set(work.tags || []));
+          const nextTags = collectionBatchTagMode === "add"
+            ? Array.from(new Set(currentTags.concat(names)))
+            : currentTags.filter(name => !names.includes(name));
+          if (nextTags.length === currentTags.length && nextTags.every((name, index) => name === currentTags[index])) return work;
+          const nextWork = { ...work, tags:nextTags, editedAt:now };
+          changedWorks.push(nextWork);
+          return nextWork;
+        });
+        try {
+          if (changedWorks.length) await putWorks(changedWorks);
+          records = nextRecords;
+          if (collectionBatchTagMode === "add" && collectionBatchNewTags.size) {
+            customCollectionTags = Array.from(new Set(customCollectionTags.concat(Array.from(collectionBatchNewTags))));
+            removedCollectionTags = removedCollectionTags.filter(name => !collectionBatchNewTags.has(name));
+            localStorage.setItem(COLLECTION_TAGS_KEY, JSON.stringify(customCollectionTags));
+            localStorage.setItem(COLLECTION_REMOVED_TAGS_KEY, JSON.stringify(removedCollectionTags));
+          } else if (collectionBatchTagMode === "remove") {
+            customCollectionTags = Array.from(new Set(customCollectionTags.concat(names)));
+            removedCollectionTags = removedCollectionTags.filter(name => !names.includes(name));
+            localStorage.setItem(COLLECTION_TAGS_KEY, JSON.stringify(customCollectionTags));
+            localStorage.setItem(COLLECTION_REMOVED_TAGS_KEY, JSON.stringify(removedCollectionTags));
+          }
+          closeCollectionBatchTagModal(true);
+          render();
+        } catch (error) {
+          console.error("Batch collection tag update failed", error);
+          const prefix = collectionBatchTagMode === "add" ? COLLECTION_BATCH_TEXT.addFailed : COLLECTION_BATCH_TEXT.removeFailed;
+          await showAppAlert(prefix + collectionBatchErrorReason(error));
+        } finally {
+          collectionBatchOperationPending = false;
+          if (!collectionBatchTagModal.hidden) renderCollectionBatchTagList();
+          else renderCollectionBatchControls();
+        }
+      }
+      async function deleteSelectedCollectionWorks() {
+        if (collectionBatchOperationPending) return;
+        const selectedWorks = collectionBatchSelectedWorks();
+        const ids = selectedWorks.map(work => work.id);
+        if (!ids.length) return;
+        collectionBatchOperationPending = true;
+        renderCollectionBatchControls();
+        const message = COLLECTION_BATCH_TEXT.deletePrefix + " " + ids.length + " " + COLLECTION_BATCH_TEXT.deleteSuffix + "\n\n" + COLLECTION_BATCH_TEXT.deleteDetails;
+        if (!await queueAppDialog(message, true, "", { confirmLabel:COLLECTION_BATCH_TEXT.permanentDelete })) {
+          collectionBatchOperationPending = false;
+          renderCollectionBatchControls();
+          return;
+        }
+        try {
+          await deleteWorks(ids);
+          const deletedIds = new Set(ids.map(id => String(id)));
+          records = records.filter(work => !deletedIds.has(String(work.id)));
+          selectedCollectionIds.clear();
+          render();
+        } catch (error) {
+          console.error("Batch collection delete failed", error);
+          await showAppAlert(COLLECTION_BATCH_TEXT.deleteFailed + collectionBatchErrorReason(error));
+        } finally {
+          collectionBatchOperationPending = false;
+          renderCollectionBatchControls();
+        }
+      }
       function renderCollectionTags() {
         const links = document.getElementById("collectionTagLinks");
         links.classList.toggle("remove-mode", collectionTagRemoveMode);
@@ -10642,6 +11895,8 @@
       }
       function render() {
         const renderToken = ++collectionCoverRenderToken;
+        const recordIds = new Set(records.map(work => String(work.id)));
+        Array.from(selectedCollectionIds).forEach(id => { if (!recordIds.has(id)) selectedCollectionIds.delete(id); });
         renderCollectionTags();
         renderMobileTagSelect();
         const q = collectionSearchInput.value.trim().toLowerCase();
@@ -10653,17 +11908,24 @@
         if (["originalPrice","price","lowestPrice"].includes(s)) a.sort((x,y) => (y[s] || 0) - (x[s] || 0));
         if (s === "cv") a.sort((x,y) => (x.cv || "").localeCompare(y.cv || "","ja"));
         if (s === "title") a.sort((x,y) => (x.title || "").localeCompare(y.title || "","ja"));
+        collectionFilteredRecords = a;
         const pageSize = listMode ? COLLECTION_LIST_PAGE_SIZE : COLLECTION_GRID_PAGE_SIZE;
         const pageCount = Math.max(1, Math.ceil(a.length / pageSize));
         collectionPageIndex = Math.max(0, Math.min(collectionPageIndex, pageCount - 1));
         const visible = a.slice(collectionPageIndex * pageSize, (collectionPageIndex + 1) * pageSize);
+        visibleCollectionRecords = visible;
         visibleCollectionCoverReferences = collectStoredImageReferences(visible.map((work) => work.cover));
         releaseUnusedCollectionCoverUrls();
         const placeholderCount = a.length > pageSize ? pageSize - visible.length : 0;
         const placeholderMarkup = "<article class=\"collection-record collection-record-placeholder\" aria-hidden=\"true\"><div class=\"collection-cover\"></div><div class=\"collection-meta\"><strong class=\"collection-list-title\">&nbsp;</strong><b class=\"collection-list-cv\">&nbsp;</b><div class=\"collection-list-bottom\"><small>&nbsp;</small></div><div class=\"collection-meta-row\"><b>&nbsp;</b><small>&nbsp;</small></div><i class=\"collection-tag-mini\">&nbsp;</i></div></article>".repeat(placeholderCount);
         grid.classList.toggle("list-mode", listMode);
         page.classList.toggle("collection-list-mode", listMode);
-        grid.innerHTML = visible.length ? visible.map(r=>`<article class="collection-record" data-id="${escapeCollectionText(r.id)}"><div class="collection-cover"><span>${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><strong class="collection-list-title">${escapeCollectionText(r.title || "未填写标题")}</strong><b class="collection-list-cv">${escapeCollectionText(r.cv || "未填写 CV")}</b><div class="collection-list-bottom"><small>${escapeCollectionText(r.rj || "无 RJ")}</small>${r.tags?.[0] ? `<i class="collection-tag-mini">${escapeCollectionText(r.tags[0])}</i>` : ""}</div><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || "未填写 CV")}</b><small>${escapeCollectionText(r.rj || "无 RJ")}</small></div><i class="collection-tag-mini${r.tags?.[0] ? "" : " is-empty"}">${escapeCollectionText(r.tags?.[0] || "占位")}</i>${collectionMobileTagsMarkup(r.tags)}</div></article>`).join("") + placeholderMarkup : "<div class=\"collection-empty\">暂无收藏记录</div>";
+        grid.innerHTML = visible.length ? visible.map(r => {
+          const selected = selectedCollectionIds.has(String(r.id));
+          const batchAttributes = collectionBatchMode ? ` role="button" tabindex="0" aria-pressed="${selected}"` : "";
+          const batchCheck = collectionBatchMode ? `<span class="collection-batch-check" aria-hidden="true"></span>` : "";
+          return `<article class="collection-record${selected ? " is-selected" : ""}" data-id="${escapeCollectionText(r.id)}"${batchAttributes}><div class="collection-cover">${batchCheck}<span class="collection-cover-title">${escapeCollectionText(r.title || "")}</span></div><div class="collection-meta"><strong class="collection-list-title">${escapeCollectionText(r.title || COLLECTION_MISSING_TITLE_TEXT)}</strong><b class="collection-list-cv">${escapeCollectionText(r.cv || COLLECTION_MISSING_CV_TEXT)}</b><div class="collection-list-bottom"><small>${escapeCollectionText(r.rj || COLLECTION_MISSING_RJ_TEXT)}</small>${r.tags?.[0] ? `<i class="collection-tag-mini">${escapeCollectionText(r.tags[0])}</i>` : ""}</div><div class="collection-meta-row"><b>${escapeCollectionText(r.cv || COLLECTION_MISSING_CV_TEXT)}</b><small>${escapeCollectionText(r.rj || COLLECTION_MISSING_RJ_TEXT)}</small></div><i class="collection-tag-mini${r.tags?.[0] ? "" : " is-empty"}">${escapeCollectionText(r.tags?.[0] || COLLECTION_PLACEHOLDER_TEXT)}</i>${collectionMobileTagsMarkup(r.tags)}</div></article>`;
+        }).join("") + placeholderMarkup : `<div class="collection-empty">${COLLECTION_EMPTY_RECORDS_TEXT}</div>`;
         void loadVisibleCollectionCovers(visible, renderToken);
         scheduleCollectionMobileTagFit();
         document.getElementById("collectionCount").textContent = a.length + " 条记录";
@@ -10675,6 +11937,7 @@
         collectionPageNumbers.innerHTML = collectionPaginationMarkup(pageCount, collectionPageIndex + 1, 2, "desktop") + collectionPaginationMarkup(pageCount, collectionPageIndex + 1, 1, "mobile");
         document.getElementById("collectionPrevPage").disabled = collectionPageIndex === 0;
         document.getElementById("collectionNextPage").disabled = collectionPageIndex >= pageCount - 1;
+        renderCollectionBatchControls();
       }
       function renderCollectionTagManageDraft() {
         if (!collectionTagManageList || !collectionTagManageDraft) return;
@@ -10780,14 +12043,45 @@
           collectionRjImportOverwrite.onclick = () => finish("overwrite");
         });
       }
-      function showCollectionRjImportLoading() {
+      function showCollectionRjImportLoading(total = 0) {
         collectionRjImportPromptTitle.textContent = "正在导入信息…";
         collectionRjImportPromptBody.textContent = "";
+        if (total > 0) {
+          const progress = document.createElement("div");
+          progress.className = "collection-rj-import-progress";
+          const text = document.createElement("p");
+          text.className = "collection-rj-import-progress-text";
+          text.id = "collectionRjImportProgressText";
+          const track = document.createElement("div");
+          track.className = "collection-rj-import-progress-track";
+          track.id = "collectionRjImportProgressTrack";
+          track.setAttribute("role", "progressbar");
+          track.setAttribute("aria-valuemin", "0");
+          track.setAttribute("aria-valuemax", String(total));
+          track.setAttribute("aria-valuenow", "0");
+          const fill = document.createElement("div");
+          fill.className = "collection-rj-import-progress-fill";
+          fill.id = "collectionRjImportProgressFill";
+          track.appendChild(fill);
+          progress.append(text, track);
+          collectionRjImportPromptBody.appendChild(progress);
+          updateCollectionRjImportProgress(0, total);
+        }
         collectionRjImportOverwrite.hidden = true;
         collectionRjImportFill.hidden = true;
         collectionRjImportCancel.hidden = true;
         collectionRjImportDone.hidden = true;
         collectionRjImportPrompt.hidden = false;
+      }
+      function updateCollectionRjImportProgress(completed, total) {
+        const text = document.getElementById("collectionRjImportProgressText");
+        const track = document.getElementById("collectionRjImportProgressTrack");
+        const fill = document.getElementById("collectionRjImportProgressFill");
+        if (!text || !track || !fill || total <= 0) return;
+        const current = Math.max(0, Math.min(total, completed));
+        text.textContent = String.fromCharCode(0x5df2, 0x5b8c, 0x6210) + " " + current + " / " + total;
+        track.setAttribute("aria-valuenow", String(current));
+        fill.style.width = (current / total * 100) + "%";
       }
       function collectionImportFieldIssueText(fields) {
         return UI_IMPORT_MISSING_FIELDS + String.fromCharCode(0xff1a) + fields.join(String.fromCharCode(0x3001));
@@ -10826,6 +12120,8 @@
         "collectionDetailCircle",
         "collectionDetailRj",
         "collectionDetailTime",
+        "collectionDetailScenarioWriter",
+        "collectionDetailIllustrator",
         "collectionDetailPurchaseDate",
         "collectionDetailListenedDate",
         "collectionDetailReleaseDate",
@@ -10902,7 +12198,7 @@
         scrollY = collectionScroller ? collectionScroller.scrollTop : window.scrollY;
         document.getElementById("collectionDetailTitle").textContent = r.title || "";
         document.getElementById("collectionDetailCn").textContent = r.cn || "";
-        ["Cv","Circle","Rj","Time","PurchaseDate","ListenedDate","ReleaseDate"].forEach((key,index) => { document.getElementById("collectionDetail" + key).textContent = [r.cv,r.circle,r.rj,r.time,r.purchaseDate,r.listenedDate,r.releaseDate][index] || ""; });
+        ["Cv","Circle","Rj","Time","ScenarioWriter","Illustrator","PurchaseDate","ListenedDate","ReleaseDate"].forEach((key,index) => { document.getElementById("collectionDetail" + key).textContent = [r.cv,r.circle,r.rj,r.time,r.scenarioWriter,r.illustrator,r.purchaseDate,r.listenedDate,r.releaseDate][index] || ""; });
         document.getElementById("collectionDetailOriginalPrice").textContent = collectionDetailNumberText(r.originalPrice, "¥");
         document.getElementById("collectionDetailCurrentPrice").textContent = collectionDetailNumberText(r.price, "¥");
         document.getElementById("collectionDetailCurrentDiscount").textContent = collectionDetailNumberText(r.currentDiscount, "", "%off");
@@ -10941,8 +12237,84 @@
       grid.addEventListener("click", event => {
         const record = event.target.closest(".collection-record");
         if (!record || !grid.contains(record)) return;
+        if (collectionBatchMode) {
+          toggleCollectionBatchSelection(record.dataset.id);
+          return;
+        }
         openDetail(record.dataset.id);
       });
+      grid.addEventListener("keydown", event => {
+        if (!collectionBatchMode || !["Enter", " "].includes(event.key)) return;
+        const record = event.target.closest(".collection-record");
+        if (!record || !grid.contains(record)) return;
+        event.preventDefault();
+        toggleCollectionBatchSelection(record.dataset.id);
+      });
+      collectionBatchManageButton.onclick = async () => {
+        if (collectionBatchMode) {
+          setCollectionBatchMode(false);
+          return;
+        }
+        if (collectionTagEditMode || collectionTagDraftActive) {
+          await showAppAlert(COLLECTION_BATCH_TEXT.finishTagEdit);
+          return;
+        }
+        collectionTagRemoveMode = false;
+        document.getElementById("collectionRemoveTagButton").setAttribute("aria-pressed", "false");
+        setCollectionBatchMode(true);
+      };
+      collectionMobileBatchExitButton.onclick = () => setCollectionBatchMode(false);
+      collectionBatchClear.onclick = () => {
+        selectedCollectionIds.clear();
+        render();
+      };
+      collectionBatchSelectPage.onclick = () => {
+        const allSelected = visibleCollectionRecords.length > 0 && visibleCollectionRecords.every(work => selectedCollectionIds.has(String(work.id)));
+        visibleCollectionRecords.forEach(work => {
+          const id = String(work.id);
+          if (allSelected) selectedCollectionIds.delete(id);
+          else selectedCollectionIds.add(id);
+        });
+        render();
+      };
+      collectionBatchSelectResults.onclick = () => {
+        const allSelected = collectionFilteredRecords.length > 0 && collectionFilteredRecords.every(work => selectedCollectionIds.has(String(work.id)));
+        collectionFilteredRecords.forEach(work => {
+          const id = String(work.id);
+          if (allSelected) selectedCollectionIds.delete(id);
+          else selectedCollectionIds.add(id);
+        });
+        render();
+      };
+      collectionMobileBatchSelectPage.onclick = () => collectionBatchSelectPage.click();
+      collectionMobileBatchSelectResults.onclick = () => collectionBatchSelectResults.click();
+      collectionMobileBatchClear.onclick = () => collectionBatchClear.click();
+      collectionBatchAddTags.onclick = () => openCollectionBatchTagModal("add");
+      collectionBatchRemoveTags.onclick = () => openCollectionBatchTagModal("remove");
+      collectionBatchDelete.onclick = () => void deleteSelectedCollectionWorks();
+      collectionMobileBatchAddTags.onclick = () => collectionBatchAddTags.click();
+      collectionMobileBatchRemoveTags.onclick = () => collectionBatchRemoveTags.click();
+      collectionMobileBatchDelete.onclick = () => collectionBatchDelete.click();
+      collectionBatchTagSearch.oninput = renderCollectionBatchTagList;
+      collectionBatchTagList.onchange = event => {
+        const input = event.target.closest("[data-collection-batch-tag]");
+        if (!input) return;
+        const name = input.dataset.collectionBatchTag;
+        if (input.checked) collectionBatchTagSelection.add(name);
+        else collectionBatchTagSelection.delete(name);
+        collectionBatchTagConfirm.disabled = collectionBatchTagSelection.size === 0 || collectionBatchOperationPending;
+      };
+      collectionBatchNewTagAdd.onclick = () => void addCollectionBatchNewTag();
+      collectionBatchNewTagInput.onkeydown = event => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        void addCollectionBatchNewTag();
+      };
+      collectionBatchTagCancel.onclick = closeCollectionBatchTagModal;
+      collectionBatchTagConfirm.onclick = () => void applyCollectionBatchTags();
+      collectionBatchTagModal.onclick = event => {
+        if (event.target === collectionBatchTagModal) closeCollectionBatchTagModal();
+      };
       collectionSearchInput.oninput = () => { collectionPageIndex = 0; render(); };
       collectionSort.onchange = () => {
         if (collectionMobileSort) collectionMobileSort.value = collectionSort.value;
@@ -11153,6 +12525,14 @@
       document.getElementById("collectionDetailCoverButton").onclick = () => void setCollectionDetailCoverValue(collectionDetailArt.dataset.coverStoredSrc || "", "cover");
       document.getElementById("collectionDetailImageEditButton").onclick = () => void openImageEditorSafely(() => openCollectionDetailImageEditor());
       document.getElementById("collectionDetailRemoveCoverButton").onclick = () => void setCollectionDetailCoverValue("", collectionDetailArt.dataset.coverFit || "contain");
+      document.getElementById("collectionDetailOpenDlsiteButton").onclick = () => {
+        const workno = normalizeWorkno(detailText("collectionDetailRj"));
+        if (!workno) {
+          showAppAlert(String.fromCharCode(0x8bf7, 0x5148, 0x586b, 0x5199, 0x6709, 0x6548, 0x7684, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x3002));
+          return;
+        }
+        window.open("https://www.dlsite.com/girls/work/=/product_id/" + encodeURIComponent(workno) + ".html", "_blank", "noopener,noreferrer");
+      };
       async function importCollectionDetailByRj() {
         const button = document.getElementById("collectionDetailImportButton");
         const workno = normalizeWorkno(detailText("collectionDetailRj"));
@@ -11164,6 +12544,8 @@
           title: detailText("collectionDetailTitle"),
           cv: detailText("collectionDetailCv"),
           circle: detailText("collectionDetailCircle"),
+          scenarioWriter: detailText("collectionDetailScenarioWriter"),
+          illustrator: detailText("collectionDetailIllustrator"),
           releaseDate: detailText("collectionDetailReleaseDate"),
           originalPrice: detailText("collectionDetailOriginalPrice"),
           currentPrice: detailText("collectionDetailCurrentPrice"),
@@ -11181,6 +12563,8 @@
           title: canWrite(current.title),
           cv: canWrite(current.cv),
           circle: canWrite(current.circle),
+          scenarioWriter: canWrite(current.scenarioWriter),
+          illustrator: canWrite(current.illustrator),
           releaseDate: canWrite(current.releaseDate),
           originalPrice: canWrite(current.originalPrice),
           currentPrice: canWrite(current.currentPrice),
@@ -11229,9 +12613,16 @@
               importedField = true;
             } else missingFields.push(unavailableImportField(label));
           };
+          const importOptionalText = (target, value, id) => {
+            if (!target || value === "" || value == null) return;
+            document.getElementById(id).textContent = value;
+            importedField = true;
+          };
           importText(targets.title, product.title, "collectionDetailTitle", String.fromCharCode(0x6807, 0x9898));
           importText(targets.cv, product.cv, "collectionDetailCv", "CV");
           importText(targets.circle, product.circle, "collectionDetailCircle", String.fromCharCode(0x793e, 0x56e2));
+          importOptionalText(targets.scenarioWriter, product.scenarioWriter, "collectionDetailScenarioWriter");
+          importOptionalText(targets.illustrator, product.illustrator, "collectionDetailIllustrator");
           importText(targets.releaseDate, product.releaseDate, "collectionDetailReleaseDate", String.fromCharCode(0x53d1, 0x552e, 0x65e5, 0x671f));
           importText(targets.originalPrice, product.originalPrice === "" ? "" : collectionDetailNumberText(product.originalPrice, "¥"), "collectionDetailOriginalPrice", String.fromCharCode(0x539f, 0x4ef7));
           importText(targets.currentPrice, product.currentPrice === "" ? "" : collectionDetailNumberText(product.currentPrice, "¥"), "collectionDetailCurrentPrice", String.fromCharCode(0x73b0, 0x4ef7));
@@ -11294,7 +12685,7 @@
         const numericText = id => detailText(id).replace(/^¥\s*/, "").replace(/\s*%off$/i, "").trim();
         const optionalNumber = value => value === "" ? "" : Number(value);
         const now = Date.now();
-        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), purchaseDate:normalizeCardDateValue(detailText("collectionDetailPurchaseDate")), listenedDate:normalizeCardDateValue(detailText("collectionDetailListenedDate")), releaseDate:normalizeCardDateValue(detailText("collectionDetailReleaseDate")), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverStoredSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
+        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), scenarioWriter:detailText("collectionDetailScenarioWriter"), illustrator:detailText("collectionDetailIllustrator"), purchaseDate:normalizeCardDateValue(detailText("collectionDetailPurchaseDate")), listenedDate:normalizeCardDateValue(detailText("collectionDetailListenedDate")), releaseDate:normalizeCardDateValue(detailText("collectionDetailReleaseDate")), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverStoredSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
         try {
           if (work && nextWork.id !== work.id) await deleteWork(work.id);
           await putWorks([nextWork]);
@@ -11487,6 +12878,23 @@
           }).catch(reject);
         });
       }
+      function deleteWorks(ids) {
+        const values = Array.from(new Set(ids || []));
+        return new Promise((resolve, reject) => {
+          openWorksDatabase().then(database => {
+            const transaction = database.transaction("works", "readwrite");
+            const store = transaction.objectStore("works");
+            values.forEach(id => store.delete(id));
+            transaction.oncomplete = () => {
+              database.close();
+              scheduleStoredImageGarbageCollection();
+              resolve();
+            };
+            transaction.onerror = () => { database.close(); reject(transaction.error || new Error("Collection records delete failed")); };
+            transaction.onabort = () => { database.close(); reject(transaction.error || new Error("Collection records delete aborted")); };
+          }).catch(reject);
+        });
+      }
       collectionStoredImageReferencesReader = async () => {
         const database = await openWorksDatabase();
         try {
@@ -11562,20 +12970,26 @@
       async function importCollectionByRj() {
         const button = document.getElementById("collectionRjImportButton");
         const label = button.querySelector("span");
-        const jobs = records.map((work,index) => {
+        const candidates = records.map((work,index) => {
           const legacyRjId = /^(?:RJ|BJ)\d+$/i.test(String(work.id || "")) ? work.id : "";
           return { work, index, rj:normalizeWorkno(work.rj || legacyRjId) };
         }).filter(job => job.rj);
-        let skipped = records.length - jobs.length;
-        if (!jobs.length) {
+        if (!candidates.length) {
           showCollectionRjImportResult("没有可导入的有效 RJ 号。", true);
           return;
         }
         const isEmpty = value => value == null || String(value).trim() === "";
-        const allImportTargetsEmpty = jobs.every(({ work }) => [work.title, work.cv, work.cover, work.circle, work.releaseDate, work.originalPrice, work.price, work.currentDiscount, work.lowestPrice, work.cn, work.keywords].every(isEmpty));
+        const importTargetValues = work => [work.title, work.cv, work.cover, work.circle, work.scenarioWriter, work.illustrator, work.releaseDate, work.originalPrice, work.price, work.currentDiscount, work.lowestPrice, work.cn, work.keywords];
+        const allImportTargetsEmpty = candidates.every(({ work }) => importTargetValues(work).every(isEmpty));
         const mode = allImportTargetsEmpty ? "overwrite" : await requestCollectionRjImportMode();
         if (!mode) return;
-        showCollectionRjImportLoading();
+        const jobs = mode === "fill" ? candidates.filter(({ work }) => importTargetValues(work).some(isEmpty)) : candidates;
+        let skipped = records.length - jobs.length;
+        if (!jobs.length) {
+          showCollectionRjImportResult(String.fromCharCode(0x6ca1, 0x6709, 0x9700, 0x8981, 0x586b, 0x5145, 0x7684, 0x7a7a, 0x4f4d, 0x3002));
+          return;
+        }
+        showCollectionRjImportLoading(jobs.length);
         button.disabled = true;
         button.setAttribute("aria-busy", "true");
         label.textContent = "导入中 0/" + jobs.length;
@@ -11594,6 +13008,8 @@
               const targetTitle = canWrite(job.work.title);
               const targetCv = canWrite(job.work.cv);
               const targetCircle = canWrite(job.work.circle);
+              const targetScenarioWriter = canWrite(job.work.scenarioWriter);
+              const targetIllustrator = canWrite(job.work.illustrator);
               const targetReleaseDate = canWrite(job.work.releaseDate);
               const targetOriginalPrice = canWrite(job.work.originalPrice);
               const targetCurrentPrice = canWrite(job.work.price);
@@ -11602,7 +13018,7 @@
               const targetChinese = canWrite(job.work.cn);
               const targetKeywords = canWrite(job.work.keywords);
               const targetCover = canWrite(job.work.cover);
-              if (![targetTitle, targetCv, targetCircle, targetReleaseDate, targetOriginalPrice, targetCurrentPrice, targetCurrentDiscount, targetLowestDiscount, targetChinese, targetKeywords, targetCover].some(Boolean)) {
+              if (![targetTitle, targetCv, targetCircle, targetScenarioWriter, targetIllustrator, targetReleaseDate, targetOriginalPrice, targetCurrentPrice, targetCurrentDiscount, targetLowestDiscount, targetChinese, targetKeywords, targetCover].some(Boolean)) {
                 skipped += 1;
                 continue;
               }
@@ -11652,6 +13068,14 @@
                   nextWork.circle = product.circle;
                   importedField = true;
                 } else missingFields.push(unavailableImportField(String.fromCharCode(0x793e, 0x56e2)));
+              }
+              if (targetScenarioWriter && product.scenarioWriter) {
+                nextWork.scenarioWriter = product.scenarioWriter;
+                importedField = true;
+              }
+              if (targetIllustrator && product.illustrator) {
+                nextWork.illustrator = product.illustrator;
+                importedField = true;
               }
               if (targetReleaseDate) {
                 if (product.releaseDate) {
@@ -11716,6 +13140,10 @@
                 } else missingFields.push(unavailableImportField("BK"));
               }
               if (!importedField) {
+                if (!missingFields.length) {
+                  skipped += 1;
+                  continue;
+                }
                 failed += 1;
                 failures.push({ rj:job.rj, reason:missingFields.length ? collectionImportFieldIssueText(missingFields) : UI_IMPORT_DLSITE_NO_DATA });
                 continue;
@@ -11730,6 +13158,7 @@
             } finally {
               completed += 1;
               label.textContent = "导入中 " + completed + "/" + jobs.length;
+              updateCollectionRjImportProgress(completed, jobs.length);
             }
           }
         };
@@ -11888,7 +13317,7 @@
         } else missingFields.push(unavailableImportField("BK"));
         const now = Date.now();
         return {
-          work:{ id:rj, rj, title, cn:chineseChoice, cv, circle, time:"", purchaseDate:"", listenedDate:"", releaseDate:normalizeCardDateValue(releaseDate), cardInfoType:"", originalPrice:originalPriceValue, price:currentPriceValue, currentDiscount:currentDiscountValue, lowestPrice:lowestDiscountValue, rating:"", cvRating:"", storyRating:"", seRating:"", summary:"", character:"", review:"", keywords, tags:[], cover, coverFit:"cover", addedAt:now, editedAt:now },
+          work:{ id:rj, rj, title, cn:chineseChoice, cv, circle, time:"", scenarioWriter:product.scenarioWriter || "", illustrator:product.illustrator || "", purchaseDate:"", listenedDate:"", releaseDate:normalizeCardDateValue(releaseDate), cardInfoType:"", originalPrice:originalPriceValue, price:currentPriceValue, currentDiscount:currentDiscountValue, lowestPrice:lowestDiscountValue, rating:"", cvRating:"", storyRating:"", seRating:"", summary:"", character:"", review:"", keywords, tags:[], cover, coverFit:"cover", addedAt:now, editedAt:now },
           missingFields
         };
       }
@@ -12036,6 +13465,45 @@
           [saveToCollectionButton, mobileSaveToCollectionButton].forEach(button => { if (button) { button.disabled = false; button.removeAttribute("aria-busy"); } });
         }
       }
+      importFromCollectionButton?.addEventListener("click", openCollectionPicker);
+      mobileImportFromCollectionButton?.addEventListener("click", event => {
+        if (mobileDataDropdown) mobileDataDropdown.hidden = true;
+        mobileDataMenuButton?.setAttribute("aria-expanded", "false");
+        openCollectionPicker(event);
+      });
+      collectionPickerGrid?.addEventListener("click", event => {
+        const card = event.target.closest("[data-collection-picker-id]");
+        if (card && collectionPickerGrid.contains(card)) toggleCollectionPickerSelection(card.dataset.collectionPickerId);
+      });
+      collectionPickerSearch?.addEventListener("input", () => renderCollectionPicker(true));
+      collectionPickerSort?.addEventListener("change", () => renderCollectionPicker(true));
+      collectionPickerClear?.addEventListener("click", () => {
+        collectionPickerSelection = [];
+        updateCollectionPickerCardSelection();
+        renderCollectionPickerTray();
+      });
+      collectionPickerImport?.addEventListener("click", () => void importSelectedCollectionPickerWorks());
+      collectionPickerCancel?.addEventListener("click", closeCollectionPicker);
+      collectionPickerClose?.addEventListener("click", closeCollectionPicker);
+      collectionPickerModal?.addEventListener("click", event => {
+        if (event.target === collectionPickerModal) closeCollectionPicker();
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && collectionPickerModal && !collectionPickerModal.hidden) closeCollectionPicker();
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key !== "Escape") return;
+        if (!appDialogModal.hidden) return;
+        if (!collectionBatchTagModal.hidden) {
+          closeCollectionBatchTagModal();
+          return;
+        }
+        if (collectionBatchMode) setCollectionBatchMode(false);
+      });
+      mainNavButtons.forEach(button => button.addEventListener("click", () => {
+        closeCollectionPicker();
+        if (collectionBatchMode) setCollectionBatchMode(false);
+      }));
       [saveToCollectionButton, mobileSaveToCollectionButton].forEach(button => { if (button) button.addEventListener("click", saveCurrentToCollection); });
       const collectionImportInput = document.getElementById("collectionImportInput");
       document.getElementById("collectionRjImportButton").onclick = importCollectionByRj;
@@ -12047,6 +13515,7 @@
       loadWorks().then(items => {
         records = items;
         render();
+        if (collectionPickerModal && !collectionPickerModal.hidden) renderCollectionPicker(true);
         const savedDetailId = localStorage.getItem(COLLECTION_DETAIL_KEY);
         if (savedDetailId && records.some(work => String(work.id) === savedDetailId)) openDetail(savedDetailId);
         else if (savedDetailId) localStorage.removeItem(COLLECTION_DETAIL_KEY);

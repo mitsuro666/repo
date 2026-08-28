@@ -1,4 +1,4 @@
-# 项目交接说明：乙抓记录模板
+# 项目交接说明：乙音记录模板
 
 这份文件给新开的 Codex 窗口快速接手用。先读 `AGENTS.md`，再读这份文件；`AGENTS.md` 是硬规则，这份是项目背景、模块结构和开发习惯。
 
@@ -293,4 +293,3 @@ node -e "const fs=require('fs'); const s=fs.readFileSync('js/app.js','utf8'); ne
 
 7. `file://` 可用性坏了
    - 检查是否引入了绝对 `/path`、ES module、或必须网络 fetch 的资源。
-

@@ -115,6 +115,9 @@ deployed on GitHub Pages.
 - Treat garbled terminal output as a possible decoding or display problem, not
   proof that the source file is corrupted. Compare it with the browser result
   and verify the file encoding or raw source before changing markup or text.
+- Unless the user explicitly requests otherwise, every newly added UI element
+  must match the existing buttons at the same hierarchy level in style, shape,
+  font size, font family, color values, and dimensions.
 - When adding a new button, match the existing buttons in the same module or
   action group: reuse their height, padding, border radius, border weight,
   typography, spacing, and interaction states. A semantic variant such as a
