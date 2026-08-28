@@ -1475,25 +1475,6 @@
       --card-bg-c: #f9fce9;
     }
 
-    .card[data-theme="glass-color-milk-hibiscus"] {
-      --card-ink: #624a5d;
-      --card-muted: #8b7080;
-      --card-accent: #ff5da2;
-      --card-accent-deep: #cf3f7d;
-      --card-line: #daec8b;
-      --card-line-soft: rgba(218, 236, 139, 0.68);
-      --card-dash: rgba(255, 93, 162, 0.72);
-      --card-mint: #47d0bd;
-      --card-mint-soft: rgba(71, 208, 189, 0.4);
-      --card-chip-bg: rgba(218, 236, 139, 0.66);
-      --card-panel-bg: rgba(255, 255, 255, 0.64);
-      --card-review-bg: rgba(255, 255, 255, 0.64);
-      --card-cover-bg: #fffdd6;
-      --card-bg-a: #fff5fa;
-      --card-bg-b: #fffef5;
-      --card-bg-c: #f1fcfa;
-    }
-
     .card[data-theme="sweet-peach-hazelnut"] {
       --card-ink: #7c5549;
       --card-muted: #96756f;

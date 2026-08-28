@@ -348,6 +348,13 @@
       quick: String.fromCharCode(0x901f, 0x8bc4, 0x7248),
       trio: String.fromCharCode(0x4e09, 0x5bab, 0x683c)
     });
+    const FONT_USAGE_LABELS = Object.freeze({
+      default: String.fromCharCode(0x9ed1, 0x7cd6, 0x8bdd, 0x6885),
+      "yomeng-script": "Yomeng Script",
+      "keinan-pop": String.fromCharCode(0x8346, 0x5357, 0x5706, 0x4f53),
+      "moon-stars-kai": "Moon Stars Kai Bold",
+      "chill-round": "Chill Round M"
+    });
     const THEME_USAGE_LABELS = Object.freeze({
       "matcha-berry-cheese": String.fromCharCode(0x62b9, 0x8336, 0x8393, 0x916a),
       "sakura-ice": String.fromCharCode(0x6a31, 0x82b1, 0x661f, 0x51b0),
@@ -366,7 +373,6 @@
       "cherry-fall-peach-crisp": String.fromCharCode(0x6a31, 0x843d, 0x6843, 0x9165),
       "berry-whisper-purple": String.fromCharCode(0x8393, 0x8bed, 0x8f7b, 0x7d2b),
       "apple-fragrance-green": String.fromCharCode(0x679c, 0x9999, 0x9752, 0x82f9),
-      "glass-color-milk-hibiscus": String.fromCharCode(0x7483, 0x5f69, 0x5976, 0x8299),
       "sweet-peach-hazelnut": String.fromCharCode(0x751c, 0x6843, 0x699b, 0x679c),
       "deep-red-tranquility": String.fromCharCode(0x6df1, 0x7ea2, 0x9759, 0x8c27),
       "sea-breeze-tuning": String.fromCharCode(0x6f6e, 0x98ce, 0x8c03, 0x97f3)
@@ -375,20 +381,42 @@
       const titles = Object.create(null);
       const exportTemplatePrefix = String.fromCharCode(0x5bfc, 0x51fa, 0x6a21, 0x677f, 0xff5c);
       const exportThemePrefix = String.fromCharCode(0x5bfc, 0x51fa, 0x8272, 0x5361, 0xff5c);
-      const exportComboPrefix = String.fromCharCode(0x5bfc, 0x51fa, 0x7ec4, 0x5408, 0xff5c);
-      const comboSeparator = String.fromCharCode(0x20, 0xd7, 0x20);
+      const exportFontPrefix = String.fromCharCode(0x5bfc, 0x51fa, 0x5b57, 0x4f53, 0xff5c);
+      const featureUsagePrefix = String.fromCharCode(0x529f, 0x80fd, 0x4f7f, 0x7528, 0xff5c);
       Object.entries(TEMPLATE_USAGE_LABELS).forEach(([templateId, templateLabel]) => {
         titles["export-template-" + templateId] = exportTemplatePrefix + templateLabel;
-        Object.entries(THEME_USAGE_LABELS).forEach(([themeId, themeLabel]) => {
-          titles["export-combo-" + templateId + "--" + themeId] = exportComboPrefix + templateLabel + comboSeparator + themeLabel;
-        });
       });
       Object.entries(THEME_USAGE_LABELS).forEach(([themeId, themeLabel]) => {
         titles["export-theme-" + themeId] = exportThemePrefix + themeLabel;
       });
+      Object.entries(FONT_USAGE_LABELS).forEach(([fontId, fontLabel]) => {
+        titles["export-font-" + fontId] = exportFontPrefix + fontLabel;
+      });
       titles["feature-rj-import-success"] = String.fromCharCode(0x529f, 0x80fd, 0x4f7f, 0x7528, 0xff5c, 0x52, 0x4a, 0x5bfc, 0x5165, 0x6210, 0x529f);
       titles["feature-open-collection"] = String.fromCharCode(0x529f, 0x80fd, 0x4f7f, 0x7528, 0xff5c, 0x6211, 0x7684, 0x6536, 0x85cf);
       titles["feature-open-feedback"] = String.fromCharCode(0x529f, 0x80fd, 0x4f7f, 0x7528, 0xff5c, 0x53cd, 0x9988, 0x5efa, 0x8bae);
+      titles["feature-batch-rj-add-success"] = featureUsagePrefix + String.fromCharCode(0x6536, 0x85cf, 0x6279, 0x91cf, 0x65b0, 0x589e, 0x6210, 0x529f);
+      titles["feature-template-batch-rj-fill-grid9-success"] = featureUsagePrefix + String.fromCharCode(0x4e5d, 0x5bab, 0x683c, 0x6279, 0x91cf, 0x586b, 0x5199, 0x52, 0x4a, 0x6210, 0x529f);
+      titles["feature-template-batch-rj-fill-quick-success"] = featureUsagePrefix + String.fromCharCode(0x901f, 0x8bc4, 0x7248, 0x6279, 0x91cf, 0x586b, 0x5199, 0x52, 0x4a, 0x6210, 0x529f);
+      titles["feature-import-from-collection-success"] = featureUsagePrefix + String.fromCharCode(0x4ece, 0x6536, 0x85cf, 0x5bfc, 0x5165, 0x6a21, 0x677f, 0x6210, 0x529f);
+      titles["feature-save-to-collection-success"] = featureUsagePrefix + String.fromCharCode(0x5b58, 0x5165, 0x6536, 0x85cf, 0x6210, 0x529f);
+      titles["feature-collection-batch-tag-add-success"] = featureUsagePrefix + String.fromCharCode(0x6536, 0x85cf, 0x6279, 0x91cf, 0x589e, 0x52a0, 0x6807, 0x7b7e, 0x6210, 0x529f);
+      titles["feature-collection-batch-tag-remove-success"] = featureUsagePrefix + String.fromCharCode(0x6536, 0x85cf, 0x6279, 0x91cf, 0x79fb, 0x9664, 0x6807, 0x7b7e, 0x6210, 0x529f);
+      titles["feature-collection-batch-delete-success"] = featureUsagePrefix + String.fromCharCode(0x6536, 0x85cf, 0x6279, 0x91cf, 0x5220, 0x9664, 0x6210, 0x529f);
+      titles["feature-open-dlsite"] = featureUsagePrefix + String.fromCharCode(0x6253, 0x5f00, 0x44, 0x4c, 0x73, 0x69, 0x74, 0x65, 0x9875, 0x9762);
+      titles["feature-collection-backup-export-success"] = featureUsagePrefix + String.fromCharCode(0x5bfc, 0x51fa, 0x6536, 0x85cf, 0x5907, 0x4efd, 0x6210, 0x529f);
+      titles["feature-collection-backup-import-success"] = featureUsagePrefix + String.fromCharCode(0x5bfc, 0x5165, 0x6536, 0x85cf, 0x5907, 0x4efd, 0x6210, 0x529f);
+      titles["feature-template-data-export-success"] = featureUsagePrefix + String.fromCharCode(0x5bfc, 0x51fa, 0x6a21, 0x677f, 0x6570, 0x636e, 0x6210, 0x529f);
+      titles["feature-template-data-import-success"] = featureUsagePrefix + String.fromCharCode(0x5bfc, 0x5165, 0x6a21, 0x677f, 0x6570, 0x636e, 0x6210, 0x529f);
+      titles["feature-open-storage-management"] = featureUsagePrefix + String.fromCharCode(0x6253, 0x5f00, 0x5b58, 0x50a8, 0x7ba1, 0x7406);
+      titles["feature-image-editor-done"] = featureUsagePrefix + String.fromCharCode(0x5b8c, 0x6210, 0x56fe, 0x7247, 0x7f16, 0x8f91);
+      titles["feature-image-editor-standalone-done"] = featureUsagePrefix + String.fromCharCode(0x5b8c, 0x6210, 0x72ec, 0x7acb, 0x4fee, 0x56fe, 0x5bfc, 0x51fa);
+      titles["feature-open-update-log"] = featureUsagePrefix + String.fromCharCode(0x6253, 0x5f00, 0x66f4, 0x65b0, 0x516c, 0x544a);
+      titles["feature-mobile-review-focus-editor"] = featureUsagePrefix + String.fromCharCode(0x4f7f, 0x7528, 0x624b, 0x673a, 0x8bc4, 0x4ef7, 0x4e13, 0x6ce8, 0x7f16, 0x8f91);
+      titles["feature-continuation-page-added"] = featureUsagePrefix + String.fromCharCode(0x6dfb, 0x52a0, 0x7eed, 0x9875);
+      titles["feature-open-image-tool"] = featureUsagePrefix + String.fromCharCode(0x6253, 0x5f00, 0x4fee, 0x56fe, 0x5de5, 0x5177);
+      titles["feature-open-usage-guide"] = featureUsagePrefix + String.fromCharCode(0x6253, 0x5f00, 0x4f7f, 0x7528, 0x8bf4, 0x660e);
+      titles["feature-open-about"] = featureUsagePrefix + String.fromCharCode(0x6253, 0x5f00, 0x5173, 0x4e8e, 0x672c, 0x7ad9);
       return Object.freeze(titles);
     })();
 
@@ -409,9 +437,12 @@
     function trackSuccessfulExport(templateId, themeId) {
       if (!Object.prototype.hasOwnProperty.call(TEMPLATE_USAGE_LABELS, templateId)
         || !Object.prototype.hasOwnProperty.call(THEME_USAGE_LABELS, themeId)) return;
+      const fontId = templateFontId(templateId);
       trackFixedUsageEvent("export-template-" + templateId);
       trackFixedUsageEvent("export-theme-" + themeId);
-      trackFixedUsageEvent("export-combo-" + templateId + "--" + themeId);
+      if (Object.prototype.hasOwnProperty.call(FONT_USAGE_LABELS, fontId)) {
+        trackFixedUsageEvent("export-font-" + fontId);
+      }
     }
     const FULL_CV_LINE_WIDTH = 8;
     const FULL_CIRCLE_LINE_WIDTH = 8;
@@ -790,25 +821,6 @@
         bgStops: ["#fff7f3", "#fffdf5", "#f9fce9"],
         playDeep: "#c84549",
         starFill: "#c84549"
-      },
-      "glass-color-milk-hibiscus": {
-        id: "glass-color-milk-hibiscus",
-        accent: "#ff5da2",
-        accentDeep: "#cf3f7d",
-        line: "#daec8b",
-        lineSoftAlpha: 0.68,
-        dash: "#ff5da2",
-        dashAlpha: 0.72,
-        mint: "#47d0bd",
-        ink: "#624a5d",
-        muted: "#8b7080",
-        coverBg: "#fffdd6",
-        chipBg: "rgba(218,236,139,.66)",
-        panelBg: "rgba(255,255,255,.64)",
-        reviewBg: "rgba(255,255,255,.64)",
-        bgStops: ["#fff5fa", "#fffef5", "#f1fcfa"],
-        playDeep: "#cf3f7d",
-        starFill: "#cf3f7d"
       },
       "sweet-peach-hazelnut": {
         id: "sweet-peach-hazelnut",
@@ -1260,6 +1272,7 @@
     async function openStorageManagement() {
       const persistenceRequest = persistentStorageStatusText(true);
       const [estimateText, persistenceText] = await Promise.all([browserStorageEstimateText(), persistenceRequest]);
+      trackFixedUsageEvent("feature-open-storage-management");
       const shouldClean = await queueAppDialog(
         (estimateText ? estimateText + "\n" : "") + persistenceText + "\n\n" + UI_STORAGE_MANAGE_BODY,
         true,
@@ -1656,6 +1669,7 @@
       closeTemplatePageMenu();
       renderTemplatePage();
       saveState();
+      trackFixedUsageEvent("feature-continuation-page-added");
     }
 
     async function deleteCurrentTemplateContinuationPage() {
@@ -2123,6 +2137,9 @@
       if (persist && nextPage === "collection" && previousPage !== "collection") {
         trackFixedUsageEvent("feature-open-collection");
       }
+      if (persist && nextPage === "image-tool" && previousPage !== "image-tool") {
+        trackFixedUsageEvent("feature-open-image-tool");
+      }
     }
 
     function restoreMainPage() {
@@ -2388,6 +2405,7 @@
       if (!isMobileView() || currentTemplate() !== "full" || continuationState.full.current !== 0) return;
       const app = document.querySelector(".app");
       reviewFocusSessionActive = true;
+      trackFixedUsageEvent("feature-mobile-review-focus-editor");
       reviewEditorAppScrollTop = app?.scrollTop || 0;
       reviewEditArea.value = reviewText.value || "";
       reviewEditorSelectionStart = reviewEditArea.value.length;
@@ -5442,6 +5460,7 @@
           renderImageEditor(canvas, { controls: false });
           const blob = await canvasToBlob(canvas);
           handleExportBlob(blob, standaloneExportFileName(), "", currentThemeId, UI_EXPORT_DOWNLOAD_IMAGE);
+          trackFixedUsageEvent("feature-image-editor-standalone-done");
           standaloneOriginalSrc = editorSourceSrc || standaloneOriginalSrc;
           try {
             saveEditorProject();
@@ -7024,6 +7043,7 @@
       link.click();
       link.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 500);
+      trackFixedUsageEvent("feature-template-data-export-success");
     }
 
     function normalizeImportedData(raw) {
@@ -7041,6 +7061,7 @@
           if (!data) throw new Error("empty data");
           if (!applyState(data, false)) throw new Error("invalid data");
           if (!await saveState()) throw new Error("state persistence failed");
+          trackFixedUsageEvent("feature-template-data-import-success");
         } catch (error) {
           console.error(error);
           showAppAlert(UI_IMPORT_DATA_FAILED);
@@ -7984,6 +8005,7 @@
       });
       saveState();
       closeBatchTemplateRjDialog();
+      trackFixedUsageEvent("feature-template-batch-rj-fill-" + plan.context.template + "-success");
       if (!importInfo) return;
       if (plan.context.template === "quick") await importAllQuickCovers();
       else await importAllGrid9Covers();
@@ -10495,9 +10517,13 @@
       saveEditorProject();
       saveState();
     });
-    imageDoneButton.addEventListener("click", () => {
-      if (imageEditorMode === "standalone") void exportStandaloneImageFromEditor();
-      else closeImageEditor(true);
+    imageDoneButton.addEventListener("click", async () => {
+      if (imageEditorMode === "standalone") {
+        await exportStandaloneImageFromEditor();
+      } else {
+        await closeImageEditor(true);
+        if (imageEditModal.hidden) trackFixedUsageEvent("feature-image-editor-done");
+      }
     });
     imageEditCloseButton.addEventListener("click", () => closeImageEditor(false));
     imageCancelButton.addEventListener("click", () => {
@@ -10791,21 +10817,29 @@
       mobileDataMenuButton?.setAttribute("aria-expanded", "false");
       void openStorageManagement();
     });
-    usageGuideButton?.addEventListener("click", () => { if (usageGuideModal) usageGuideModal.hidden = false; });
+    usageGuideButton?.addEventListener("click", () => {
+      if (usageGuideModal) usageGuideModal.hidden = false;
+      trackFixedUsageEvent("feature-open-usage-guide");
+    });
     mobileUsageGuideButton?.addEventListener("click", () => {
       if (mobileDataDropdown) mobileDataDropdown.hidden = true;
       mobileDataMenuButton?.setAttribute("aria-expanded", "false");
       if (usageGuideModal) usageGuideModal.hidden = false;
+      trackFixedUsageEvent("feature-open-usage-guide");
     });
     usageGuideCloseButton?.addEventListener("click", () => { if (usageGuideModal) usageGuideModal.hidden = true; });
     usageGuideModal?.addEventListener("click", (event) => {
       if (event.target === usageGuideModal) usageGuideModal.hidden = true;
     });
-    usageInfoButton?.addEventListener("click", () => { if (usageInfoModal) usageInfoModal.hidden = false; });
+    usageInfoButton?.addEventListener("click", () => {
+      if (usageInfoModal) usageInfoModal.hidden = false;
+      trackFixedUsageEvent("feature-open-about");
+    });
     mobileUsageInfoButton?.addEventListener("click", () => {
       if (mobileDataDropdown) mobileDataDropdown.hidden = true;
       mobileDataMenuButton?.setAttribute("aria-expanded", "false");
       if (usageInfoModal) usageInfoModal.hidden = false;
+      trackFixedUsageEvent("feature-open-about");
     });
     usageInfoCloseButton?.addEventListener("click", () => { if (usageInfoModal) usageInfoModal.hidden = true; });
     usageInfoModal?.addEventListener("click", (event) => {
@@ -10815,6 +10849,7 @@
       if (mobileDataDropdown) mobileDataDropdown.hidden = true;
       mobileDataMenuButton?.setAttribute("aria-expanded", "false");
       if (updateLogModal) updateLogModal.hidden = false;
+      trackFixedUsageEvent("feature-open-update-log");
     }
     updateLogButton?.addEventListener("click", openUpdateLogModal);
     mobileUpdateLogButton?.addEventListener("click", openUpdateLogModal);
@@ -11582,6 +11617,7 @@
           if (collectionPickerTemplate === "full" || collectionPickerTemplate === "compact") applySingleCollectionPickerWork(collectionPickerTemplate, preparedWorks[0]);
           else applyMultiCollectionPickerWorks(collectionPickerTemplate, preparedWorks);
           await saveState();
+          trackFixedUsageEvent("feature-import-from-collection-success");
           closeCollectionPicker();
           showAppAlert(String.fromCharCode(0x5df2, 0x4ece, 0x6536, 0x85cf, 0x5bfc, 0x5165, 0x5f53, 0x524d, 0x6a21, 0x677f, 0x3002));
         } catch (error) {
@@ -11809,6 +11845,7 @@
         if (!names.length) { await showAppAlert(COLLECTION_BATCH_TEXT.chooseTag); return; }
         collectionBatchOperationPending = true;
         collectionBatchTagConfirm.disabled = true;
+        const appliedMode = collectionBatchTagMode;
         const selectedIds = new Set(selectedCollectionIds);
         if (collectionBatchTagMode === "remove") {
           const affectedCount = records.filter(work => selectedIds.has(String(work.id)) && (work.tags || []).some(name => names.includes(name))).length;
@@ -11846,6 +11883,9 @@
             localStorage.setItem(COLLECTION_TAGS_KEY, JSON.stringify(customCollectionTags));
             localStorage.setItem(COLLECTION_REMOVED_TAGS_KEY, JSON.stringify(removedCollectionTags));
           }
+          if (changedWorks.length) {
+            trackFixedUsageEvent("feature-collection-batch-tag-" + appliedMode + "-success");
+          }
           closeCollectionBatchTagModal(true);
           render();
         } catch (error) {
@@ -11877,6 +11917,7 @@
           records = records.filter(work => !deletedIds.has(String(work.id)));
           selectedCollectionIds.clear();
           render();
+          trackFixedUsageEvent("feature-collection-batch-delete-success");
         } catch (error) {
           console.error("Batch collection delete failed", error);
           await showAppAlert(COLLECTION_BATCH_TEXT.deleteFailed + collectionBatchErrorReason(error));
@@ -12532,6 +12573,7 @@
           return;
         }
         window.open("https://www.dlsite.com/girls/work/=/product_id/" + encodeURIComponent(workno) + ".html", "_blank", "noopener,noreferrer");
+        trackFixedUsageEvent("feature-open-dlsite");
       };
       async function importCollectionDetailByRj() {
         const button = document.getElementById("collectionDetailImportButton");
@@ -12926,6 +12968,7 @@
           link.click();
           link.remove();
           window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+          trackFixedUsageEvent("feature-collection-backup-export-success");
         } catch (error) {
           console.error("Collection backup export failed", error);
           const detail = error && (error.name || error.message) ? [error.name, error.message].filter(Boolean).join(": ") : "";
@@ -12961,6 +13004,7 @@
           localStorage.setItem(COLLECTION_REMOVED_TAGS_KEY, JSON.stringify(removedCollectionTags));
           collectionPageIndex = 0;
           render();
+          trackFixedUsageEvent("feature-collection-backup-import-success");
           showAppAlert("已导入 " + imported.length + " 条收藏记录");
         } catch (error) {
           console.error("Import collection failed", error);
@@ -13457,6 +13501,7 @@
           await putWorks(nextWorks);
           records = records.filter(item => !nextWorks.some(work => work.id === item.id)).concat(nextWorks);
           render();
+          trackFixedUsageEvent("feature-save-to-collection-success");
           showAppAlert("已存入 " + added + " 条，更新 " + updated + " 条");
         } catch (error) {
           console.error("Save to collection failed", error);
