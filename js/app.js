@@ -467,6 +467,9 @@
       if (digits.length <= 6) return digits.slice(0, 4) + "-" + digits.slice(4);
       return digits.slice(0, 4) + "-" + digits.slice(4, 6) + "-" + digits.slice(6);
     }
+    function normalizeReleaseDateValue(value) {
+      return normalizeCardDateValue(value).replace(/-/g, "/");
+    }
     function syncCardInfoField() {
       const nextType = normalizeCardInfoType(cardInfoType.value);
       cardInfoType.value = nextType;
@@ -3314,7 +3317,7 @@
         circle: firstText(product.maker_name, product.circle, product.maker?.name, product.brand?.name),
         scenarioWriter: firstText(creatorText(creators, "scenario_by"), creatorText(creators, "scenario"), product.scenario_by, product.scenario),
         illustrator: firstText(creatorText(creators, "illust_by"), creatorText(creators, "illustration_by"), creatorText(creators, "illustrator"), product.illust_by, product.illustration_by, product.illustrator),
-        releaseDate: normalizeCardDateValue(firstText(product.regist_date, product.release_date, product.sales_date)),
+        releaseDate: normalizeReleaseDateValue(firstText(product.regist_date, product.release_date, product.sales_date)),
         originalPrice: originalPriceText,
         currentPrice: currentPriceText,
         currentDiscount: currentDiscountText,
@@ -12769,7 +12772,7 @@
         const numericText = id => detailText(id).replace(/^¥\s*/, "").replace(/\s*%off$/i, "").trim();
         const optionalNumber = value => value === "" ? "" : Number(value);
         const now = Date.now();
-        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), scenarioWriter:detailText("collectionDetailScenarioWriter"), illustrator:detailText("collectionDetailIllustrator"), purchaseDate:normalizeCardDateValue(detailText("collectionDetailPurchaseDate")), listenedDate:normalizeCardDateValue(detailText("collectionDetailListenedDate")), releaseDate:normalizeCardDateValue(detailText("collectionDetailReleaseDate")), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverStoredSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
+        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), scenarioWriter:detailText("collectionDetailScenarioWriter"), illustrator:detailText("collectionDetailIllustrator"), purchaseDate:normalizeCardDateValue(detailText("collectionDetailPurchaseDate")), listenedDate:normalizeCardDateValue(detailText("collectionDetailListenedDate")), releaseDate:normalizeReleaseDateValue(detailText("collectionDetailReleaseDate")), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverStoredSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
         try {
           if (work && nextWork.id !== work.id) await deleteWork(work.id);
           await putWorks([nextWork]);
@@ -13403,7 +13406,7 @@
         } else missingFields.push(unavailableImportField("BK"));
         const now = Date.now();
         return {
-          work:{ id:rj, rj, title, cn:chineseChoice, cv, circle, time:"", scenarioWriter:product.scenarioWriter || "", illustrator:product.illustrator || "", purchaseDate:"", listenedDate:"", releaseDate:normalizeCardDateValue(releaseDate), cardInfoType:"", originalPrice:originalPriceValue, price:currentPriceValue, currentDiscount:currentDiscountValue, lowestPrice:lowestDiscountValue, rating:"", cvRating:"", storyRating:"", seRating:"", summary:"", character:"", review:"", keywords, tags:[], cover, coverFit:"cover", addedAt:now, editedAt:now },
+          work:{ id:rj, rj, title, cn:chineseChoice, cv, circle, time:"", scenarioWriter:product.scenarioWriter || "", illustrator:product.illustrator || "", purchaseDate:"", listenedDate:"", releaseDate:normalizeReleaseDateValue(releaseDate), cardInfoType:"", originalPrice:originalPriceValue, price:currentPriceValue, currentDiscount:currentDiscountValue, lowestPrice:lowestDiscountValue, rating:"", cvRating:"", storyRating:"", seRating:"", summary:"", character:"", review:"", keywords, tags:[], cover, coverFit:"cover", addedAt:now, editedAt:now },
           missingFields
         };
       }
@@ -13499,7 +13502,7 @@
         const existingTemporary = !rj ? records.find(work => !work.rj && work.sourceSlot === sourceSlot) : null;
         const id = rj || existingTemporary?.id || nextTemporaryWorkId();
         const optionalNumber = value => String(value ?? "").trim() === "" ? "" : Number(value);
-        return { id, rj, title: data.title || "", cn: data.cn || "", cv: data.cv || "", circle: data.circle || "", time: data.time || "", purchaseDate:normalizeCardDateValue(data.purchaseDate), listenedDate:normalizeCardDateValue(data.listenedDate), releaseDate:normalizeCardDateValue(data.releaseDate), cardInfoType:data.cardInfoType ? normalizeCardInfoType(data.cardInfoType) : "", originalPrice: optionalNumber(data.originalPrice), price: optionalNumber(data.price), currentDiscount: optionalNumber(data.currentDiscount), lowestPrice: optionalNumber(data.lowestPrice), rating: optionalNumber(data.rating), cvRating: optionalNumber(data.cvRating), storyRating: optionalNumber(data.storyRating), seRating: optionalNumber(data.seRating), cover: data.cover || "", coverFit: data.coverFit || "cover", review: data.review || "", keywords: data.keywords || "", tags: data.tags || [], source, sourceSlot };
+        return { id, rj, title: data.title || "", cn: data.cn || "", cv: data.cv || "", circle: data.circle || "", time: data.time || "", purchaseDate:normalizeCardDateValue(data.purchaseDate), listenedDate:normalizeCardDateValue(data.listenedDate), releaseDate:normalizeReleaseDateValue(data.releaseDate), cardInfoType:data.cardInfoType ? normalizeCardInfoType(data.cardInfoType) : "", originalPrice: optionalNumber(data.originalPrice), price: optionalNumber(data.price), currentDiscount: optionalNumber(data.currentDiscount), lowestPrice: optionalNumber(data.lowestPrice), rating: optionalNumber(data.rating), cvRating: optionalNumber(data.cvRating), storyRating: optionalNumber(data.storyRating), seRating: optionalNumber(data.seRating), cover: data.cover || "", coverFit: data.coverFit || "cover", review: data.review || "", keywords: data.keywords || "", tags: data.tags || [], source, sourceSlot };
       }
       function extractCurrentWorks(state) {
         const found = new Map();
