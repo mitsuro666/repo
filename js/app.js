@@ -9,6 +9,7 @@
     const mobileExportDataButton = document.getElementById("mobileExportDataButton");
     const mobileStorageManageButton = document.getElementById("mobileStorageManageButton");
     const stage = document.getElementById("stage");
+    const fontLoadingOverlay = document.getElementById("fontLoadingOverlay");
     const imageToolPage = document.getElementById("imageToolPage");
     const collectionPage = document.getElementById("collectionPage");
     const collectionDetailPage = document.getElementById("collectionDetailPage");
@@ -307,6 +308,9 @@
     const DEFAULT_THEME_ID = "matcha-berry-cheese";
     const TEMPLATE_FONT_PREFERENCES_KEY = "otome-record-card-template-fonts-v1";
     const DEFAULT_TEMPLATE_FONT_ID = "default";
+    const INITIAL_FONT_NOTICE_DELAY_MS = 600;
+    const INITIAL_FONT_TIMEOUT_MS = 15000;
+    const FONT_LOADING_TEST_MODE = new URLSearchParams(String(window.location.search || "")).get("font-loading-test") || "";
     const TEMPLATE_IDS = Object.freeze(["full", "compact", "grid9", "quick", "trio"]);
     const TEMPLATE_FONT_TEST_TEXT = String.fromCharCode(
       0x4e59, 0x97f3, 0x8bb0, 0x5f55, 0x4e2d, 0x6587, 0x6d4b, 0x8bd5,
@@ -1427,6 +1431,80 @@
       } catch (error) {
         templateFontLoadPromises.delete(normalizedFontId);
         throw error;
+      }
+    }
+
+    function initialFontLoadingErrorMessage(error) {
+      if (error && error.code === "FONT_LOAD_TIMEOUT") {
+        return String.fromCharCode(
+          0x5b57, 0x4f53, 0x52a0, 0x8f7d, 0x65f6, 0x95f4, 0x8fc7, 0x957f, 0xff0c,
+          0x53ef, 0x80fd, 0x662f, 0x5f53, 0x524d, 0x7f51, 0x7edc, 0x8f83, 0x6162,
+          0x6216, 0x5b57, 0x4f53, 0x8bf7, 0x6c42, 0x6ca1, 0x6709, 0x54cd, 0x5e94,
+          0x3002, 0x4f60, 0x53ef, 0x4ee5, 0x91cd, 0x8bd5, 0xff0c, 0x6216, 0x5148,
+          0x4f7f, 0x7528, 0x5907, 0x7528, 0x5b57, 0x4f53, 0x7ee7, 0x7eed, 0x3002
+        );
+      }
+      const detail = error && error.message ? error.message : UI_FONT_FALLBACK_UNKNOWN;
+      return String.fromCharCode(0x5b57, 0x4f53, 0x52a0, 0x8f7d, 0x5931, 0x8d25, 0xff1a) + detail;
+    }
+
+    async function prepareInitialTemplateFont(fontId) {
+      const normalizedFontId = normalizeTemplateFontId(fontId);
+      const showMobileFeedback = isMobileView() || Boolean(FONT_LOADING_TEST_MODE);
+      if (!showMobileFeedback) {
+        try {
+          await ensureTemplateFontLoaded(normalizedFontId);
+          return true;
+        } catch (error) {
+          console.warn("Initial template font preload failed", error);
+          return false;
+        }
+      }
+
+      let attempt = 0;
+      while (true) {
+        attempt += 1;
+        let noticeTimer = 0;
+        let timeoutTimer = 0;
+        try {
+          const fontTask = ensureTemplateFontLoaded(normalizedFontId);
+          const debugDelay = FONT_LOADING_TEST_MODE === "timeout" && attempt === 1 ? INITIAL_FONT_TIMEOUT_MS + 1000
+            : FONT_LOADING_TEST_MODE ? 2500 : 0;
+          const visibleTask = debugDelay
+            ? Promise.all([fontTask, new Promise((resolve) => window.setTimeout(resolve, debugDelay))])
+            : fontTask;
+          noticeTimer = window.setTimeout(() => {
+            fitStage();
+            if (fontLoadingOverlay) fontLoadingOverlay.hidden = false;
+          }, INITIAL_FONT_NOTICE_DELAY_MS);
+          const timeoutTask = new Promise((_, reject) => {
+            timeoutTimer = window.setTimeout(() => {
+              const timeoutError = new Error("Font loading timed out after " + INITIAL_FONT_TIMEOUT_MS + "ms");
+              timeoutError.code = "FONT_LOAD_TIMEOUT";
+              reject(timeoutError);
+            }, INITIAL_FONT_TIMEOUT_MS);
+          });
+          await Promise.race([visibleTask, timeoutTask]);
+          return true;
+        } catch (error) {
+          console.warn("Initial template font preparation failed", error);
+          templateFontLoadPromises.delete(normalizedFontId);
+          if (fontLoadingOverlay) fontLoadingOverlay.hidden = true;
+          const retry = await queueAppDialog(
+            initialFontLoadingErrorMessage(error),
+            true,
+            String.fromCharCode(0x5b57, 0x4f53, 0x51c6, 0x5907, 0x672a, 0x5b8c, 0x6210),
+            {
+              confirmLabel: String.fromCharCode(0x91cd, 0x8bd5, 0x52a0, 0x8f7d),
+              cancelLabel: String.fromCharCode(0x4f7f, 0x7528, 0x5907, 0x7528, 0x5b57, 0x4f53)
+            }
+          );
+          if (!retry) return false;
+        } finally {
+          window.clearTimeout(noticeTimer);
+          window.clearTimeout(timeoutTimer);
+          if (fontLoadingOverlay) fontLoadingOverlay.hidden = true;
+        }
       }
     }
 
@@ -6144,11 +6222,7 @@
         state = await hydrateStateImageReferences(state);
       }
       const restoredTemplate = normalizeTemplateId(state && typeof state === "object" ? state.template : "full");
-      try {
-        await ensureTemplateFontLoaded(templateFontId(restoredTemplate));
-      } catch (error) {
-        console.warn("Saved template font preload failed", error);
-      }
+      await prepareInitialTemplateFont(templateFontId(restoredTemplate));
       if (!applyState(state, false)) applyCardTheme(DEFAULT_THEME_ID, false);
       applyTemplateFont(currentTemplate());
       syncTemplateFontMenu();
@@ -11055,12 +11129,8 @@
     buildQuickCells();
     buildTrioCells();
     updateReviewCharacterCounts();
-    void ensureCanvasFontReady(false).catch((error) => {
-      console.warn("Template font preload failed; using the active fallback metrics", error);
-    }).then(() => {
-      reviewChineseCharacterLimits = null;
-      return restoreState();
-    }).then(() => {
+    reviewChineseCharacterLimits = null;
+    void restoreState().then(() => {
       updateReviewCharacterCounts();
       void requestPersistentStorage();
       void migrateGrid9CoversToCompact();
