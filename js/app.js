@@ -120,6 +120,15 @@
     const mobileUsageInfoButton = document.getElementById("mobileUsageInfoButton");
     const usageInfoModal = document.getElementById("usageInfoModal");
     const usageInfoCloseButton = document.getElementById("usageInfoCloseButton");
+    const supportButton = document.getElementById("supportButton");
+    const mobileSupportButton = document.getElementById("mobileSupportButton");
+    const supportModal = document.getElementById("supportModal");
+    const supportCloseButton = document.getElementById("supportCloseButton");
+    const supportQrButtons = document.querySelectorAll("[data-support-qr]");
+    const supportQrModal = document.getElementById("supportQrModal");
+    const supportQrTitle = document.getElementById("supportQrTitle");
+    const supportQrImage = document.getElementById("supportQrImage");
+    const supportQrCloseButton = document.getElementById("supportQrCloseButton");
     const updateLogButton = document.getElementById("updateLogButton");
     const mobileUpdateLogButton = document.getElementById("mobileUpdateLogButton");
     const updateLogModal = document.getElementById("updateLogModal");
@@ -1007,7 +1016,7 @@
     const UI_EXPORT_DOWNLOAD_IMAGE = String.fromCharCode(0x4e0b, 0x8f7d, 0x56fe, 0x7247);
     const UI_REMOVE_SHORT = String.fromCharCode(0x79fb, 0x9664);
     const UI_CLOSE = String.fromCharCode(0x5173, 0x95ed);
-    const UI_LONG_PRESS_SAVE = String.fromCharCode(0x53ef, 0x4ee5, 0x957f, 0x6309, 0x56fe, 0x7247, 0x4fdd, 0x5b58, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x70b9, 0x51fb, 0x4e0b, 0x8f7d, 0x3002, 0x4e0b, 0x8f7d, 0x4fdd, 0x5b58, 0x66f4, 0x6e05, 0x6670, 0x3002);
+    const UI_LONG_PRESS_SAVE = String.fromCharCode(0x53ef, 0x4ee5, 0x957f, 0x6309, 0x56fe, 0x7247, 0x4fdd, 0x5b58, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x70b9, 0x51fb, 0x4e0b, 0x8f7d, 0x3002);
     const UI_IMPORT_INFO = String.fromCharCode(0x5bfc, 0x5165, 0x4fe1, 0x606f);
     const UI_IMPORT_HELP = [
       String.fromCharCode(0x5bfc, 0x5165, 0x4fe1, 0x606f, 0x4f1a, 0x5c1d, 0x8bd5, 0x586b, 0x5165, 0xff1a),
@@ -1079,7 +1088,6 @@
     const UI_FONT_FALLBACK_CONTINUE = String.fromCharCode(0x7528, 0x7cfb, 0x7edf, 0x5b57, 0x4f53, 0x7ee7, 0x7eed, 0x5bfc, 0x51fa);
     const UI_FONT_FALLBACK_UNKNOWN = String.fromCharCode(0x672a, 0x77e5, 0x539f, 0x56e0);
     const UI_TEMPLATE_FONT_TITLE = String.fromCharCode(0x6a21, 0x677f, 0x5b57, 0x4f53);
-    const UI_TEMPLATE_FONT_EXPORT_OVERFLOW = String.fromCharCode(0x5f53, 0x524d, 0x5b57, 0x4f53, 0x4e0b, 0x6709, 0x5185, 0x5bb9, 0x53ef, 0x80fd, 0x8d85, 0x51fa, 0x6392, 0x7248, 0x8303, 0x56f4, 0x3002, 0x662f, 0x5426, 0x4ecd, 0x7136, 0x5bfc, 0x51fa, 0xff1f);
     const UI_TEMPLATE_FONT_LOAD_FAILED = String.fromCharCode(0x5b57, 0x4f53, 0x52a0, 0x8f7d, 0x5931, 0x8d25, 0xff1a);
     const UI_FONT_FALLBACK_BODY_PREFIX = String.fromCharCode(0x5361, 0x7247, 0x4e13, 0x7528, 0x5b57, 0x4f53, 0x52a0, 0x8f7d, 0x5931, 0x8d25, 0xff08);
     const UI_FONT_FALLBACK_BODY_SUFFIX = String.fromCharCode(
@@ -1417,15 +1425,6 @@
         templateFontLoadPromises.delete(normalizedFontId);
         throw error;
       }
-    }
-
-    function templateFontHasOverflow() {
-      const root = activeCardElement();
-      if (!root || root.hidden) return false;
-      return Array.from(root.querySelectorAll('textarea, input[type="text"], [contenteditable="true"]')).some((node) => {
-        if (node.closest("[data-editor-only]") || node.hidden) return false;
-        return node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1;
-      });
     }
 
     function syncTemplateFontMenu() {
@@ -7464,8 +7463,6 @@
       try {
         const template = currentTemplate();
         if (!(await ensureCanvasFontReady(true, template))) return;
-        await new Promise((resolve) => window.requestAnimationFrame(resolve));
-        if (templateFontHasOverflow() && !(await showAppConfirm(UI_TEMPLATE_FONT_EXPORT_OVERFLOW))) return;
         if (template === "grid9") {
           await downloadGrid9Card();
           return;
@@ -10844,6 +10841,37 @@
     usageInfoCloseButton?.addEventListener("click", () => { if (usageInfoModal) usageInfoModal.hidden = true; });
     usageInfoModal?.addEventListener("click", (event) => {
       if (event.target === usageInfoModal) usageInfoModal.hidden = true;
+    });
+    function openSupportModal() {
+      if (mobileDataDropdown) mobileDataDropdown.hidden = true;
+      mobileDataMenuButton?.setAttribute("aria-expanded", "false");
+      if (supportModal) supportModal.hidden = false;
+    }
+    supportButton?.addEventListener("click", openSupportModal);
+    mobileSupportButton?.addEventListener("click", openSupportModal);
+    supportCloseButton?.addEventListener("click", () => { if (supportModal) supportModal.hidden = true; });
+    supportModal?.addEventListener("click", event => {
+      if (event.target === supportModal) supportModal.hidden = true;
+    });
+    function closeSupportQrModal() {
+      if (supportQrModal) supportQrModal.hidden = true;
+      supportQrImage?.removeAttribute("src");
+      supportQrImage?.removeAttribute("alt");
+    }
+    supportQrButtons.forEach(button => button.addEventListener("click", () => {
+      if (!supportQrModal || !supportQrImage || !supportQrTitle) return;
+      supportQrTitle.textContent = button.dataset.supportQrTitle || "";
+      supportQrImage.alt = button.dataset.supportQrAlt || "";
+      supportQrImage.src = button.dataset.supportQr || "";
+      supportQrModal.hidden = false;
+    }));
+    supportQrCloseButton?.addEventListener("click", closeSupportQrModal);
+    supportQrModal?.addEventListener("click", event => {
+      if (event.target === supportQrModal) closeSupportQrModal();
+    });
+    supportQrImage?.addEventListener("error", () => {
+      closeSupportQrModal();
+      showAppAlert(String.fromCharCode(0x6536, 0x6b3e, 0x7801, 0x56fe, 0x7247, 0x52a0, 0x8f7d, 0x5931, 0x8d25, 0xff0c, 0x8bf7, 0x68c0, 0x67e5, 0x7ad9, 0x70b9, 0x8d44, 0x6e90, 0x662f, 0x5426, 0x5b8c, 0x6574, 0x3002));
     });
     function openUpdateLogModal() {
       if (mobileDataDropdown) mobileDataDropdown.hidden = true;

@@ -32,14 +32,27 @@
 
 ## 配色参考
 
-- 【占位：待作者补充】
+- 甜桃榛果：@建筑生存手册
+- 薄荷气泡：@店铺设计小张
+- 杏桃舒芙：@桃吱
+- 抹茶莓酪、樱花星冰、脏脏莓咖：@桃芝芝
+- 午后宝石、月光碎片、玻璃微光、溶于茜色、群青沉眠、深红静谧、潮风调音：08lux_design
+- 柳岸春风、竹影清风、梦境彩虹、樱落桃酥、莓语轻紫、果香青苹：@ejui慢慢来
 
 ## 服务与商标
 
 ### DLsite 商品信息接口
 
-- 说明：本工具通过 Cloudflare Worker（`dlsite-rj-import.shuiyingsheng.workers.dev`）代理请求 DLsite 公开商品信息接口，仅用于按 RJ 号导入公开作品信息
+- 说明：本工具请求 DLsite 公开商品信息接口，并在受跨域限制时通过 Cloudflare Worker（`dlsite-rj-import.shuiyingsheng.workers.dev`）转发，仅用于按 RJ 号导入公开作品信息
 - 商标：DLsite 为 EISYS Inc. 的商标，本项目为非官方工具，与 DLsite 无隶属关系
+
+### dlwatcher 公开价格记录
+
+- 说明：本工具通过 Cloudflare Worker 请求 dlwatcher 的公开商品价格记录，仅用于补充作品的史低折扣信息
+
+### Cloudflare Worker
+
+- 说明：Worker 应用代码不会将 RJ 号、作品信息或导入结果写入本站数据库；Cloudflare、DLsite 和 dlwatcher 仍可能依照各自规则处理必要的网络请求信息
 
 ## AI 辅助说明
 
