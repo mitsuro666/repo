@@ -3263,10 +3263,26 @@
       return texts;
     }
 
+    function hasChineseOnSaleStatus(source) {
+      if (!source || typeof source !== "object") return false;
+      const translationInfo = source.translation_info && typeof source.translation_info === "object"
+        ? source.translation_info
+        : source;
+      const status = translationInfo.translation_status_for_translator || translationInfo.translationStatusForTranslator;
+      if (!status || typeof status !== "object") return false;
+      return Object.keys(status).some((key) => {
+        const languageStatus = status[key];
+        return isChineseLangCode(key)
+          && languageStatus
+          && typeof languageStatus === "object"
+          && (Number(languageStatus.on_sale_count) > 0 || Number(languageStatus.on_sale_status) > 0);
+      });
+    }
+
     function hasChineseVersionInfo(product) {
       if (!product || typeof product !== "object") return false;
       if (isChineseLangCode(product.translation_info && product.translation_info.lang)) return true;
-      return hasChineseText(productChineseTextFields(product));
+      return hasChineseOnSaleStatus(product) || hasChineseText(productChineseTextFields(product));
     }
 
     function setChineseChoice(choice) {
@@ -3286,7 +3302,7 @@
       }
       if (!product || typeof product !== "object") return null;
       const creators = product.creators || product.creaters || product.maker || {};
-      const chineseEditionWorkno = Array.isArray(product.language_editions)
+      const chineseEditionWorkno = hasChineseOnSaleStatus(product) && Array.isArray(product.language_editions)
         ? (product.language_editions.find((edition) => isChineseLangCode(edition && edition.lang)) || {}).workno || ""
         : "";
       const originalPriceText = numericText(product.official_price, product.regular_price, product.price);
@@ -3447,10 +3463,8 @@
       if (!products) return null;
       const target = String(workno || "").toUpperCase();
       const entry = products.find((item) => item && typeof item === "object" && String(item.id || item.workno || item.product_id || "").toUpperCase() === target);
-      const status = entry && entry.translationStatusForTranslator;
-      if (!status || typeof status !== "object") return null;
-      const hasChinese = Object.keys(status).some((key) => isChineseLangCode(key) && status[key] && typeof status[key] === "object" && (status[key].available === true || status[key].available === 1 || status[key].is_translated === true || status[key].is_translated === 1 || Number(status[key].on_sale_count) > 0 || Number(status[key].on_sale_status) > 0));
-      return { hasChinese };
+      if (!entry || typeof entry !== "object") return null;
+      return { hasChinese: hasChineseOnSaleStatus(entry) };
     }
 
     function applyImportedProduct(product, chineseChoice, mode = "overwrite") {
