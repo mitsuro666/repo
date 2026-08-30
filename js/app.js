@@ -462,6 +462,17 @@
     const COMPACT_CV_CIRCLE_LINE_WIDTH = 7;
     const TWO_LINE_FIELD_MAX_LINES = 2;
     const CARD_INFO_TYPES = new Set(["duration", "purchaseDate", "listenedDate", "hidden"]);
+    function isRecordObject(value) {
+      return Boolean(value && typeof value === "object" && !Array.isArray(value));
+    }
+    function parseStoredStringArray(rawValue) {
+      try {
+        const parsed = JSON.parse(rawValue || "[]");
+        return Array.isArray(parsed) ? parsed.filter((item) => typeof item === "string") : [];
+      } catch {
+        return [];
+      }
+    }
     function normalizeCardInfoType(value) {
       return CARD_INFO_TYPES.has(value) ? value : "duration";
     }
@@ -1571,7 +1582,7 @@
     function readCompactContinuationSnapshot() {
       try {
         const value = JSON.parse(localStorage.getItem(COMPACT_CONTINUATION_STORAGE_KEY) || "null");
-        return value && typeof value === "object" ? normalizeContinuationPageState(value) : null;
+        return isRecordObject(value) ? normalizeContinuationPageState(value) : null;
       } catch {
         return null;
       }
@@ -4205,6 +4216,18 @@
       selection.addRange(range);
     }
 
+    document.addEventListener("compositionstart", (event) => {
+      const target = event.target;
+      if (target instanceof HTMLElement && target.isContentEditable) fullFieldComposing.add(target);
+    });
+
+    document.addEventListener("compositionend", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement) || !target.isContentEditable) return;
+      fullFieldComposing.delete(target);
+      target.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
     document.addEventListener("input", (event) => {
       const target = event.target;
       if (target instanceof HTMLElement && target.isContentEditable) {
@@ -5972,9 +5995,14 @@
     }
 
     function mergeStoredState(draft, settings, editorProject) {
-      if (!draft || typeof draft !== "object") return null;
+      if (!isRecordObject(draft)) return null;
       if (Number(draft.storageSchemaVersion) < STORAGE_SCHEMA_VERSION) return draft;
-      return { ...draft, ...(settings || {}), ...(editorProject || {}), storageSchemaVersion: STORAGE_SCHEMA_VERSION };
+      return {
+        ...draft,
+        ...(isRecordObject(settings) ? settings : {}),
+        ...(isRecordObject(editorProject) ? editorProject : {}),
+        storageSchemaVersion: STORAGE_SCHEMA_VERSION
+      };
     }
 
     function openStateDatabase() {
@@ -6195,26 +6223,27 @@
       let loadedFromLegacyLocalStorage = false;
       try {
         state = await readStateFromIndexedDb();
-        if (state && typeof state === "object") stateUsesIndexedDb = true;
+        if (isRecordObject(state)) stateUsesIndexedDb = true;
       } catch (error) {
         console.warn("IndexedDB state restore failed", error);
       }
       if (!state) {
         try {
           state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-          loadedFromLegacyLocalStorage = Boolean(state && typeof state === "object");
+          if (!isRecordObject(state)) state = null;
+          loadedFromLegacyLocalStorage = Boolean(state);
         } catch {
           state = null;
         }
       }
       const compactContinuationSnapshot = readCompactContinuationSnapshot();
-      if (state && typeof state === "object" && compactContinuationSnapshot) {
+      if (isRecordObject(state) && compactContinuationSnapshot) {
         state.continuationPages = {
-          ...(state.continuationPages && typeof state.continuationPages === "object" ? state.continuationPages : {}),
+          ...(isRecordObject(state.continuationPages) ? state.continuationPages : {}),
           compact: compactContinuationSnapshot
         };
       }
-      if (state && typeof state === "object") {
+      if (isRecordObject(state)) {
         lastPersistedStoredState = state;
         if (loadedFromLegacyLocalStorage || Number(state.storageSchemaVersion) < STORAGE_SCHEMA_VERSION) {
           await persistState(state);
@@ -6393,7 +6422,7 @@
 
     tags.addEventListener("input", (event) => {
       const tag = event.target.closest(".tag");
-      if (!tag) return;
+      if (!tag || fullFieldComposing.has(tag)) return;
       const singleLineText = String(tag.innerText || tag.textContent || "").replace(/\r\n?|\n/g, " ");
       const plainTextOnly = tag.childNodes.length <= 1 && (!tag.firstChild || tag.firstChild.nodeType === Node.TEXT_NODE);
       if (plainTextOnly && tag.textContent === singleLineText) return;
@@ -7137,8 +7166,8 @@
     }
 
     function normalizeImportedData(raw) {
-      if (!raw || typeof raw !== "object") return null;
-      if (raw.data && typeof raw.data === "object") return raw.data;
+      if (!isRecordObject(raw)) return null;
+      if (Object.prototype.hasOwnProperty.call(raw, "data")) return isRecordObject(raw.data) ? raw.data : null;
       return raw;
     }
 
@@ -11340,8 +11369,8 @@
       let customCollectionTags = [];
       let removedCollectionTags = [];
       let collectionTagManageDraft = null;
-      try { customCollectionTags = JSON.parse(localStorage.getItem(COLLECTION_TAGS_KEY) || "[]"); } catch { customCollectionTags = []; }
-      try { removedCollectionTags = JSON.parse(localStorage.getItem(COLLECTION_REMOVED_TAGS_KEY) || "[]"); } catch { removedCollectionTags = []; }
+      customCollectionTags = parseStoredStringArray(localStorage.getItem(COLLECTION_TAGS_KEY));
+      removedCollectionTags = parseStoredStringArray(localStorage.getItem(COLLECTION_REMOVED_TAGS_KEY));
       const defaultCollectionTags = [];
       function collectionCoverReferenceIsUsed(reference) {
         return visibleCollectionCoverReferences.has(reference) || collectionPickerCoverReferences.has(reference) || collectionDetailStoredCoverValue === reference;
@@ -12995,6 +13024,7 @@
         } finally {
           database.close();
         }
+        storedWorks = storedWorks.filter((work) => isRecordObject(work) && String(work.id ?? "").trim());
         if (storedWorks.some((work) => String(work?.cover || "").startsWith("data:image/"))) {
           await putWorks(storedWorks);
         }
