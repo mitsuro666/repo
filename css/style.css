@@ -5009,6 +5009,13 @@
           -webkit-text-size-adjust: none;
           text-size-adjust: none;
         }
+        .card:not(.compact):not(.grid9):not(.quick):not(.trio) .info-panel .field:has(#rjText),
+        .card:not(.compact):not(.grid9):not(.quick):not(.trio) .info-panel .field:has(#durationText) {
+          transform: translateY(39px);
+        }
+        .card:not(.compact):not(.grid9):not(.quick):not(.trio) .info-panel .cn-field {
+          transform: translateY(31px);
+        }
       }
       .card:not(.compact):not(.grid9):not(.quick):not(.trio) .card-info-type-select {
         -webkit-appearance: none;
