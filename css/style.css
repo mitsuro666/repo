@@ -5004,6 +5004,12 @@
         touch-action: pan-x pan-y;
       }
       .card { transition: transform 180ms ease; }
+      @supports not (-webkit-touch-callout: none) {
+        .card:not(.compact):not(.grid9):not(.quick):not(.trio) {
+          -webkit-text-size-adjust: none;
+          text-size-adjust: none;
+        }
+      }
       .card:not(.compact):not(.grid9):not(.quick):not(.trio) .card-info-type-select {
         -webkit-appearance: none;
         appearance: none;
@@ -5037,8 +5043,10 @@
       .card .metric-label {
         transform: translateY(5px);
       }
-      .card .metric .soft-input {
-        transform: translateX(-8px);
+      @supports (-webkit-touch-callout: none) {
+        .card:not(.compact):not(.grid9):not(.quick):not(.trio) .metric .soft-input {
+          transform: translateX(-8px);
+        }
       }
       .card .metric-entry {
         transform: translateX(0);
