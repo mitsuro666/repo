@@ -1919,15 +1919,15 @@
       pointer-events: none;
     }
 
-    .info-panel .field:has(#cvText),
-    .info-panel .field:has(#circleText) {
+    .info-panel .cv-field,
+    .info-panel .circle-field {
       height: 93px;
       grid-template-rows: 22px 14px 58px;
       transform: translateY(-4px);
     }
 
-    .info-panel .field:has(#rjText),
-    .info-panel .field:has(#durationText) {
+    .info-panel .rj-field,
+    .info-panel #cardInfoField {
       transform: translateY(8px);
     }
 
@@ -2509,20 +2509,20 @@
     .card.compact .info-panel .field .editable { width: 100%; max-width: 100%; font-size: 22px; min-height: 28px; line-height: 1.1; text-align: center; }
     .card.compact #cvText { min-height: 53px; white-space: pre; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: normal; word-break: normal; }
     .card.compact #circleText { min-height: 53px; white-space: pre; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; overflow-wrap: normal; word-break: normal; }
-    .card.compact .info-panel .field:has(#rjText) { order: 1; transform: none; }
-    .card.compact .info-panel .field:has(#cvText) { order: 2; }
-    .card.compact .info-panel .field:has(#circleText) { order: 3; }
-    .card.compact .info-panel .field:has(#rjText),
-    .card.compact .info-panel .field:has(#cvText),
-    .card.compact .info-panel .field:has(#circleText) {
+    .card.compact .info-panel .rj-field { order: 1; transform: none; }
+    .card.compact .info-panel .cv-field { order: 2; }
+    .card.compact .info-panel .circle-field { order: 3; }
+    .card.compact .info-panel .rj-field,
+    .card.compact .info-panel .cv-field,
+    .card.compact .info-panel .circle-field {
       height: 76px;
       grid-template-rows: 24px 8px 34px;
       transform: none;
     }
-    .card.compact .info-panel .field:has(#durationText),
+    .card.compact .info-panel #cardInfoField,
     .card.compact .info-panel .cn-field { display: none; }
     .card.compact .field-label-row { width: 100%; justify-content: center; }
-    .card.compact .info-panel .field:has(#rjText) .import-button {
+    .card.compact .info-panel .rj-field .import-button {
       position: absolute;
       left: 50%;
       top: 62px;
