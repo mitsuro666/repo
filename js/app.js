@@ -6946,7 +6946,7 @@
     function drawMetric(ctx, label, value, x, y, w, h, suffix = "", options = {}) {
       fillRound(ctx, x, y, w, h, 18, "rgba(255,255,255,.66)");
       strokeRound(ctx, x, y, w, h, 18, themeAlpha("mint", .28), 2);
-      ctx.fillStyle = currentCardTheme().mint;
+      ctx.fillStyle = currentThemeId === "deep-red-tranquility" ? currentCardTheme().line : currentCardTheme().mint;
       ctx.font = canvasFont('800', 18);
       ctx.fillText(label, x + 13, y + 24);
       ctx.fillStyle = options.highDiscount ? "#d7192f" : currentCardTheme().ink;
@@ -7161,7 +7161,7 @@
         }
         ctx.textAlign = "left";
       }
-      ctx.fillStyle = theme.mint;
+      ctx.fillStyle = currentThemeId === "deep-red-tranquility" ? theme.line : theme.mint;
       ctx.font = canvasFont('900', 22);
       ctx.textAlign = "center";
       ctx.fillText(String(count), x + 349, y + 27);
@@ -9681,7 +9681,7 @@
     const UI_TRIO_PRICE = String.fromCharCode(0x73b0, 0x4ef7);
     const UI_TRIO_RATING = String.fromCharCode(0x8bc4, 0x5206);
     const UI_TRIO_REPO_LABEL = "REPO";
-    const TRIO_CV_MAX_WIDTH = 7;
+    const TRIO_CV_MAX_WIDTH = 9;
     const TRIO_REPO_MAX_WIDTH = 152;
     const TRIO_REPO_MAX_LINES = 8;
 

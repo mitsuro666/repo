@@ -1567,6 +1567,11 @@
       --card-bg-c: #f2efed;
     }
 
+    .card[data-theme="deep-red-tranquility"] .metric-label,
+    .card[data-theme="deep-red-tranquility"] .rating-value {
+      color: var(--card-line);
+    }
+
     .card[data-theme="sea-breeze-tuning"] {
       --card-ink: #396b8d;
       --card-muted: #5e6b49;
@@ -6622,6 +6627,7 @@
   font-weight: 900;
 }
 .trio-rj-label {
+  display: none;
   flex: 0 0 auto;
   color: var(--card-accent);
   font-size: 24px;
