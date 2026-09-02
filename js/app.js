@@ -299,6 +299,7 @@
     const STORED_IMAGE_GC_GRACE_MS = 24 * 60 * 60 * 1000;
     const SINGLE_COVER_MAX_SIDE = 1200;
     const COVER_JPEG_QUALITY = 0.85;
+    const STATE_WRITE_RETRY_DELAYS_MS = Object.freeze([150, 500]);
     const AUTO_SAVE_FAILURE_SESSION_KEY = "otome-record-card-auto-save-failure-warned-v1";
     const MENU_STORAGE_KEY = "otome-record-card-active-menu";
     const MAIN_PAGE_STORAGE_KEY = "otome-record-card-main-page";
@@ -517,6 +518,7 @@
     let stateRestoreComplete = false;
     let stateUsesIndexedDb = localStorage.getItem(STATE_STORAGE_MODE_KEY) === STATE_STORAGE_MODE_INDEXED_DB;
     let stateSaveQueue = Promise.resolve(true);
+    let stateSaveDeferredUntilVisible = false;
     const storedImageReferenceByDataUrl = new Map();
     const storedImageDataUrlByReference = new Map();
     const storedImageReferencePromiseByDataUrl = new Map();
@@ -1077,6 +1079,7 @@
     const UI_DELETE_CONTINUATION_CONFIRM = String.fromCharCode(0x786e, 0x5b9a, 0x5220, 0x9664, 0x5f53, 0x524d, 0x7eed, 0x9875, 0x5417, 0xff1f, 0x5220, 0x9664, 0x540e, 0x65e0, 0x6cd5, 0x6062, 0x590d, 0x3002);
     const UI_AUTO_SAVE_FAILURE_TITLE = String.fromCharCode(0x81ea, 0x52a8, 0x4fdd, 0x5b58, 0x672a, 0x5b8c, 0x6210);
     const UI_AUTO_SAVE_QUOTA_REASON = String.fromCharCode(0x672c, 0x5730, 0x5b58, 0x50a8, 0x7a7a, 0x95f4, 0x4e0d, 0x8db3, 0x3002);
+    const UI_AUTO_SAVE_INTERRUPTED_REASON = String.fromCharCode(0x6d4f, 0x89c8, 0x5668, 0x591a, 0x6b21, 0x4e2d, 0x65ad, 0x672c, 0x6b21, 0x4fdd, 0x5b58, 0x3002);
     const UI_AUTO_SAVE_UNAVAILABLE_REASON = String.fromCharCode(0x6d4f, 0x89c8, 0x5668, 0x672c, 0x5730, 0x5b58, 0x50a8, 0x4e0d, 0x53ef, 0x7528, 0x3002);
     const UI_AUTO_SAVE_RISK = String.fromCharCode(0x5f53, 0x524d, 0x9875, 0x9762, 0x5185, 0x5bb9, 0x4ecd, 0x53ef, 0x7ee7, 0x7eed, 0x7f16, 0x8f91, 0xff0c, 0x4f46, 0x5237, 0x65b0, 0x6216, 0x5173, 0x95ed, 0x9875, 0x9762, 0x540e, 0xff0c, 0x672c, 0x6b21, 0x4fee, 0x6539, 0x53ef, 0x80fd, 0x65e0, 0x6cd5, 0x6062, 0x590d, 0x3002, 0x5efa, 0x8bae, 0x5148, 0x5bfc, 0x51fa, 0x5907, 0x4efd, 0x3002);
     const UI_AUTO_SAVE_ERROR_PREFIX = String.fromCharCode(0x539f, 0x56e0, 0xff1a);
@@ -1277,11 +1280,15 @@
     function showAutoSaveFailure(error) {
       if (autoSaveFailureWasWarnedThisSession()) return;
       markAutoSaveFailureWarnedThisSession();
-      const reason = isStorageQuotaError(error) ? UI_AUTO_SAVE_QUOTA_REASON : UI_AUTO_SAVE_UNAVAILABLE_REASON;
+      const quotaError = isStorageQuotaError(error);
+      const reason = quotaError
+        ? UI_AUTO_SAVE_QUOTA_REASON
+        : (isTransientStorageError(error) ? UI_AUTO_SAVE_INTERRUPTED_REASON : UI_AUTO_SAVE_UNAVAILABLE_REASON);
       const detail = error && (error.name || error.message)
         ? Array.from(new Set([error.name, error.message].filter(Boolean))).join(": ")
         : "";
-      void browserStorageEstimateText().then((estimateText) => {
+      const estimateRequest = quotaError ? browserStorageEstimateText() : Promise.resolve("");
+      void estimateRequest.then((estimateText) => {
         const message = reason
           + (estimateText ? "\n\n" + estimateText : "")
           + "\n\n" + UI_AUTO_SAVE_RISK
@@ -6044,12 +6051,25 @@
         const { draft, settings, editorProject } = splitStoredState(state);
         await new Promise((resolve, reject) => {
           const transaction = db.transaction([STATE_DB_STORE, STATE_DB_SETTINGS_STORE, STATE_DB_EDITOR_STORE], "readwrite");
-          transaction.objectStore(STATE_DB_STORE).put(draft, STATE_DB_KEY);
-          transaction.objectStore(STATE_DB_SETTINGS_STORE).put(settings, STATE_DB_KEY);
-          transaction.objectStore(STATE_DB_EDITOR_STORE).put(editorProject, STATE_DB_KEY);
+          let requestFailure = null;
+          const putStatePart = (storeName, value) => {
+            const request = transaction.objectStore(storeName).put(value, STATE_DB_KEY);
+            request.onerror = () => {
+              if (requestFailure) return;
+              const sourceError = request.error;
+              const detail = sourceError && (sourceError.name || sourceError.message)
+                ? ": " + [sourceError.name, sourceError.message].filter(Boolean).join(": ")
+                : "";
+              requestFailure = new Error("IndexedDB " + storeName + " write failed" + detail);
+              requestFailure.name = sourceError?.name || "Error";
+            };
+          };
+          putStatePart(STATE_DB_STORE, draft);
+          putStatePart(STATE_DB_SETTINGS_STORE, settings);
+          putStatePart(STATE_DB_EDITOR_STORE, editorProject);
           transaction.oncomplete = () => resolve();
-          transaction.onerror = () => reject(transaction.error || new Error("IndexedDB write failed"));
-          transaction.onabort = () => reject(transaction.error || new Error("IndexedDB write aborted"));
+          transaction.onerror = () => reject(requestFailure || transaction.error || new Error("IndexedDB write failed"));
+          transaction.onabort = () => reject(requestFailure || transaction.error || new Error("IndexedDB write aborted"));
         });
       } finally {
         db.close();
@@ -6077,31 +6097,78 @@
       return Boolean(error && (error.name === "QuotaExceededError" || /quota/i.test(String((error && error.message) || error))));
     }
 
+    function isTransientStorageError(error) {
+      if (!error) return false;
+      const name = String(error.name || "");
+      const message = String(error.message || error);
+      return name === "AbortError"
+        || name === "UnknownError"
+        || name === "InvalidStateError"
+        || /(?:indexeddb|image blob|transaction).*abort(?:ed)?/i.test(message)
+        || /(?:database|connection).*(?:closed|closing|lost)/i.test(message);
+    }
+
+    function stateStorageSizeBytes(state) {
+      try {
+        return new Blob([JSON.stringify(state)]).size;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function waitForStateWriteRetry(delayMs) {
+      return new Promise((resolve) => window.setTimeout(resolve, delayMs));
+    }
+
     async function persistState(state) {
       let storedState = null;
       try {
+        if (document.visibilityState === "hidden") {
+          stateSaveDeferredUntilVisible = true;
+          return true;
+        }
         const requiresMigrationVerification = !stateUsesIndexedDb || Boolean(localStorage.getItem(STORAGE_KEY));
-        storedState = await serializeStateImageReferences({
-          ...state,
-          storageSchemaVersion: STORAGE_SCHEMA_VERSION
-        });
-        const writeAndVerify = async () => {
-          await writeStateToIndexedDb(storedState);
-          if (requiresMigrationVerification) {
-            const verifiedState = await readStateFromIndexedDb();
-            if (!verifiedState || Number(verifiedState.storageSchemaVersion) !== STORAGE_SCHEMA_VERSION) {
-              throw new Error("IndexedDB state migration verification failed");
+        let retryIndex = 0;
+        while (true) {
+          try {
+            storedState = await serializeStateImageReferences({
+              ...state,
+              storageSchemaVersion: STORAGE_SCHEMA_VERSION
+            });
+            if (document.visibilityState === "hidden") {
+              stateSaveDeferredUntilVisible = true;
+              return true;
             }
+            const writeAndVerify = async () => {
+              await writeStateToIndexedDb(storedState);
+              if (requiresMigrationVerification) {
+                const verifiedState = await readStateFromIndexedDb();
+                if (!verifiedState || Number(verifiedState.storageSchemaVersion) !== STORAGE_SCHEMA_VERSION) {
+                  throw new Error("IndexedDB state migration verification failed");
+                }
+              }
+            };
+            try {
+              await writeAndVerify();
+            } catch (writeError) {
+              if (!isStorageQuotaError(writeError)) throw writeError;
+              await garbageCollectStoredImages(storedState);
+              const clearedCacheCount = await clearRebuildableImageCache();
+              if (clearedCacheCount) console.info("Cleared rebuildable image cache", clearedCacheCount);
+              await writeAndVerify();
+            }
+            break;
+          } catch (writeError) {
+            if (!isTransientStorageError(writeError)) throw writeError;
+            if (document.visibilityState === "hidden") {
+              stateSaveDeferredUntilVisible = true;
+              return true;
+            }
+            if (retryIndex >= STATE_WRITE_RETRY_DELAYS_MS.length) throw writeError;
+            const retryDelay = STATE_WRITE_RETRY_DELAYS_MS[retryIndex];
+            retryIndex += 1;
+            await waitForStateWriteRetry(retryDelay);
           }
-        };
-        try {
-          await writeAndVerify();
-        } catch (writeError) {
-          if (!isStorageQuotaError(writeError)) throw writeError;
-          await garbageCollectStoredImages(storedState);
-          const clearedCacheCount = await clearRebuildableImageCache();
-          if (clearedCacheCount) console.info("Cleared rebuildable image cache", clearedCacheCount);
-          await writeAndVerify();
         }
         stateUsesIndexedDb = true;
         try {
@@ -6115,7 +6182,14 @@
         scheduleStoredImageGarbageCollection(storedState);
         return true;
       } catch (error) {
-        console.warn("IndexedDB state save failed", error);
+        if (isTransientStorageError(error) && document.visibilityState === "hidden") {
+          stateSaveDeferredUntilVisible = true;
+          return true;
+        }
+        console.warn("IndexedDB state save failed", error, {
+          visibilityState: document.visibilityState,
+          approximateBytes: stateStorageSizeBytes(storedState || state)
+        });
         showAutoSaveFailure(error);
         return false;
       }
@@ -11177,15 +11251,22 @@
     restoreActiveMenu();
     restoreMainPage();
     scrollActivePickerIntoView();
-    function flushCompactContinuationBeforeLeave() {
+    function deferStateSaveForPageSuspension() {
       window.clearTimeout(scheduleSave.timer);
       commitCompactContinuationReviewText();
+      stateSaveDeferredUntilVisible = true;
+    }
+    function resumeDeferredStateSave() {
+      if (!stateSaveDeferredUntilVisible || document.visibilityState === "hidden") return;
+      stateSaveDeferredUntilVisible = false;
       saveState();
     }
-    window.addEventListener("beforeunload", flushCompactContinuationBeforeLeave);
-    window.addEventListener("pagehide", flushCompactContinuationBeforeLeave);
+    window.addEventListener("beforeunload", deferStateSaveForPageSuspension);
+    window.addEventListener("pagehide", deferStateSaveForPageSuspension);
+    window.addEventListener("pageshow", resumeDeferredStateSave);
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") flushCompactContinuationBeforeLeave();
+      if (document.visibilityState === "hidden") deferStateSaveForPageSuspension();
+      else resumeDeferredStateSave();
     });
     window.addEventListener("resize", () => {
       const savedMainPage = localStorage.getItem(MAIN_PAGE_STORAGE_KEY) || "template";
