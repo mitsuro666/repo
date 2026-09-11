@@ -1538,7 +1538,7 @@
       --card-line-soft: rgba(120, 165, 206, 0.68);
       --card-dash: rgba(124, 85, 73, 0.5);
       --card-mint: #fff0d9;
-      --card-mint-soft: rgba(255, 240, 217, 0.7);
+      --card-mint-soft: rgba(221, 164, 180, 0.7);
       --card-chip-bg: rgba(221, 164, 180, 0.58);
       --card-panel-bg: rgba(255, 255, 255, 0.64);
       --card-review-bg: rgba(255, 255, 255, 0.64);
@@ -4065,6 +4065,7 @@
     .card .tag,
     .card .tag-remove { color: var(--card-accent-deep); }
     .card .rating-value { color: var(--card-mint); }
+    .card[data-theme="sweet-peach-hazelnut"] .rating-value { color: var(--card-accent); }
     .card .tag { border-color: color-mix(in srgb, var(--card-accent) 24%, transparent); background: var(--card-chip-bg); }
     .card .tag-remove { color: #fff; background: color-mix(in srgb, var(--card-accent) 86%, transparent); }
     .card .add-tag { background: var(--card-mint); }
@@ -4121,6 +4122,10 @@
 
     .card .metric-label {
       color: var(--card-mint);
+    }
+
+    .card[data-theme="sweet-peach-hazelnut"] .metric-label {
+      color: var(--card-accent);
     }
 
     .card .star.active {

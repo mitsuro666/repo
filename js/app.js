@@ -282,6 +282,17 @@
     let trioCellEditors = [];
     let activeTrioIndex = -1;
     const STORAGE_KEY = "otome-record-card-v1";
+    const APP_VERSION_MANIFEST_URL = "version.json";
+    const APP_UPDATE_CHECK_INTERVAL_MS = 5 * 60 * 1000;
+    const APP_VERSION = (() => {
+      try {
+        return new URL(document.currentScript?.src || "", document.baseURI).searchParams.get("v") || "";
+      } catch (error) {
+        return "";
+      }
+    })();
+    let appUpdateCheckPromise = null;
+    let appUpdateReloading = false;
     const STATE_STORAGE_MODE_KEY = "otome-record-card-storage-mode-v1";
     const STATE_STORAGE_MODE_INDEXED_DB = "indexeddb";
     const STATE_DB_NAME = "otome-record-card-state-v1";
@@ -1015,6 +1026,8 @@
     let editorSessionSnapshot = null;
     let editorRenderFrame = 0;
     let imageEditorOpening = false;
+    let templateImageEditorViewportRestoreTimer = 0;
+    let templateImageEditorViewportContent = "";
     const editCtx = imageEditCanvas.getContext("2d");
     const editOriginalCanvas = document.createElement("canvas");
     const editOriginalCtx = editOriginalCanvas.getContext("2d");
@@ -5321,7 +5334,25 @@
       }
     }
 
+    function resetMobileZoomForTemplateImageEditor() {
+      if (!isMobileView() || imageEditorMode === "standalone" || imageEditorMode === "collection-detail") return;
+      const viewportMeta = document.querySelector('meta[name="viewport"]');
+      if (!viewportMeta) return;
+      if (templateImageEditorViewportRestoreTimer) {
+        window.clearTimeout(templateImageEditorViewportRestoreTimer);
+      } else {
+        templateImageEditorViewportContent = viewportMeta.getAttribute("content") || "width=device-width, initial-scale=1";
+      }
+      viewportMeta.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no");
+      templateImageEditorViewportRestoreTimer = window.setTimeout(() => {
+        viewportMeta.setAttribute("content", templateImageEditorViewportContent || "width=device-width, initial-scale=1");
+        templateImageEditorViewportRestoreTimer = 0;
+        templateImageEditorViewportContent = "";
+      }, 180);
+    }
+
     function placeImageEditorForTemplate() {
+      resetMobileZoomForTemplateImageEditor();
       document.querySelector(".app")?.appendChild(imageEditModal);
       imageEditModal.classList.remove("standalone-editor");
       imageDoneButton.textContent = String.fromCharCode(0x5b8c, 0x6210);
@@ -6202,6 +6233,36 @@
       return stateSaveQueue;
     }
 
+    function checkForAppUpdate() {
+      if (appUpdateReloading || document.visibilityState === "hidden" || !stateRestoreComplete) return Promise.resolve(false);
+      if (appUpdateCheckPromise) return appUpdateCheckPromise;
+      appUpdateCheckPromise = (async () => {
+        const versionUrl = new URL(APP_VERSION_MANIFEST_URL, document.baseURI);
+        versionUrl.searchParams.set("_", Date.now().toString(36));
+        const response = await fetch(versionUrl, { cache: "no-store", credentials: "same-origin" });
+        if (!response.ok) throw new Error("App version request failed: HTTP " + response.status);
+        const payload = await response.json();
+        const nextVersion = typeof payload?.version === "string" && /^[a-zA-Z0-9._-]{1,64}$/.test(payload.version)
+          ? payload.version
+          : "";
+        if (!nextVersion || nextVersion === APP_VERSION) return false;
+        window.clearTimeout(scheduleSave.timer);
+        commitCompactContinuationReviewText();
+        if (!await saveState()) return false;
+        appUpdateReloading = true;
+        const reloadUrl = new URL(window.location.href);
+        reloadUrl.searchParams.set("app-version", nextVersion);
+        window.location.replace(reloadUrl.href);
+        return true;
+      })().catch((error) => {
+        console.warn("Automatic app update check failed", error);
+        return false;
+      }).finally(() => {
+        appUpdateCheckPromise = null;
+      });
+      return appUpdateCheckPromise;
+    }
+
     function renderTags(savedTags) {
       const nextTags = Array.isArray(savedTags) ? savedTags.filter(Boolean).slice(0, 8) : [];
       tags.querySelectorAll(".tag-chip").forEach((chip) => chip.remove());
@@ -6944,9 +7005,12 @@
     }
 
     function drawMetric(ctx, label, value, x, y, w, h, suffix = "", options = {}) {
+      const useSweetPeachPink = currentThemeId === "sweet-peach-hazelnut";
       fillRound(ctx, x, y, w, h, 18, "rgba(255,255,255,.66)");
-      strokeRound(ctx, x, y, w, h, 18, themeAlpha("mint", .28), 2);
-      ctx.fillStyle = currentThemeId === "deep-red-tranquility" ? currentCardTheme().line : currentCardTheme().mint;
+      strokeRound(ctx, x, y, w, h, 18, themeAlpha(useSweetPeachPink ? "accent" : "mint", useSweetPeachPink ? .7 : .28), 2);
+      ctx.fillStyle = currentThemeId === "deep-red-tranquility"
+        ? currentCardTheme().line
+        : useSweetPeachPink ? currentCardTheme().accent : currentCardTheme().mint;
       ctx.font = canvasFont('800', 18);
       ctx.fillText(label, x + 13, y + 24);
       ctx.fillStyle = options.highDiscount ? "#d7192f" : currentCardTheme().ink;
@@ -7161,7 +7225,9 @@
         }
         ctx.textAlign = "left";
       }
-      ctx.fillStyle = currentThemeId === "deep-red-tranquility" ? theme.line : theme.mint;
+      ctx.fillStyle = currentThemeId === "deep-red-tranquility"
+        ? theme.line
+        : currentThemeId === "sweet-peach-hazelnut" ? theme.accent : theme.mint;
       ctx.font = canvasFont('900', 22);
       ctx.textAlign = "center";
       ctx.fillText(String(count), x + 349, y + 27);
@@ -11243,6 +11309,7 @@
       fitStage();
       updateDiscount();
       syncDiscountColor();
+      void checkForAppUpdate();
     }).catch((error) => {
       stateRestoreComplete = true;
       console.error("State restore failed", error);
@@ -11263,11 +11330,18 @@
     }
     window.addEventListener("beforeunload", deferStateSaveForPageSuspension);
     window.addEventListener("pagehide", deferStateSaveForPageSuspension);
-    window.addEventListener("pageshow", resumeDeferredStateSave);
+    window.addEventListener("pageshow", () => {
+      resumeDeferredStateSave();
+      void checkForAppUpdate();
+    });
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") deferStateSaveForPageSuspension();
-      else resumeDeferredStateSave();
+      else {
+        resumeDeferredStateSave();
+        void checkForAppUpdate();
+      }
     });
+    window.setInterval(() => void checkForAppUpdate(), APP_UPDATE_CHECK_INTERVAL_MS);
     window.addEventListener("resize", () => {
       const savedMainPage = localStorage.getItem(MAIN_PAGE_STORAGE_KEY) || "template";
       const collectionDetailVisible = savedMainPage === "collection" && collectionDetailPage && !collectionDetailPage.hidden;

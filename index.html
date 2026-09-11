@@ -9,7 +9,27 @@
   <link rel="icon" type="image/png" sizes="64x64" href="icons/site-icon-64.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="icons/site-icon-180.png" />
   <link rel="manifest" href="site.webmanifest" />
-  <link rel="stylesheet" href="css/style.css?v=20260829-support-nav">
+  <link id="appStylesheet" rel="stylesheet" href="css/style.css?v=20260911-sweet-peach-pink-price-labels">
+  <script>
+    window.__OTOME_APP_VERSION_PROMISE__ = (() => {
+      const fallbackVersion = "20260911-sweet-peach-pink-price-labels";
+      const versionUrl = new URL("version.json", document.baseURI);
+      versionUrl.searchParams.set("_", Date.now().toString(36));
+      return fetch(versionUrl, { cache: "no-store", credentials: "same-origin" })
+        .then((response) => response.ok ? response.json() : null)
+        .then((payload) => {
+          const version = typeof payload?.version === "string" && /^[a-zA-Z0-9._-]{1,64}$/.test(payload.version)
+            ? payload.version
+            : fallbackVersion;
+          const stylesheet = document.getElementById("appStylesheet");
+          const stylesheetUrl = new URL("css/style.css", document.baseURI);
+          stylesheetUrl.searchParams.set("v", version);
+          if (stylesheet && stylesheet.href !== stylesheetUrl.href) stylesheet.href = stylesheetUrl.href;
+          return version;
+        })
+        .catch(() => fallbackVersion);
+    })();
+  </script>
   <script>
     if (location.hostname === "mitsuro666.github.io" && location.pathname.startsWith("/repo/")) {
       const goatCounterScript = document.createElement("script");
@@ -792,6 +812,15 @@
         </div>
       </div>
     </div>
-  <script src="js/app.js?v=20260829-release-date-slash"></script>
+  <script>
+    void window.__OTOME_APP_VERSION_PROMISE__.then((version) => {
+      const appScript = document.createElement("script");
+      const appScriptUrl = new URL("js/app.js", document.baseURI);
+      appScriptUrl.searchParams.set("v", version);
+      appScript.src = appScriptUrl.href;
+      appScript.async = false;
+      document.body.appendChild(appScript);
+    });
+  </script>
 </body>
 </html>
