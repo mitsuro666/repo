@@ -1812,6 +1812,7 @@
     .grid9-title-style-tools,
     .quick-cover-tool,
     .trio-cover-tool,
+    .card-info-dlsite-button,
     #importButton {
       font-family: "BlackSugarPlumCandy", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
     }
@@ -1987,6 +1988,21 @@
     .card-info-type-select:focus-visible {
       outline: 2px solid color-mix(in srgb, var(--card-accent) 42%, transparent);
       outline-offset: 2px;
+    }
+
+    .card-info-label-row {
+      grid-column: 1;
+      grid-row: 1;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      min-width: 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-info-field:not([data-info-type="duration"]) .card-info-dlsite-button {
+      display: none;
     }
 
     #purchaseDateText::placeholder,

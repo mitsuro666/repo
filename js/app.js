@@ -14,6 +14,7 @@
     const collectionPage = document.getElementById("collectionPage");
     const collectionDetailPage = document.getElementById("collectionDetailPage");
     let confirmCollectionDetailLeave = null;
+    let collectionViewMode = "list";
     const collectionMobileNewRecordButton = document.getElementById("collectionMobileNewRecordButton");
     const collectionMobileDataMenuButton = document.getElementById("collectionMobileDataMenuButton");
     const collectionMobileDataDropdown = document.getElementById("collectionMobileDataDropdown");
@@ -36,6 +37,7 @@
     const listenedDateText = document.getElementById("listenedDateText");
     const cardInfoField = document.getElementById("cardInfoField");
     const cardInfoType = document.getElementById("cardInfoType");
+    const fullOpenDlsiteButton = document.getElementById("fullOpenDlsiteButton");
     const recordTitle = document.getElementById("recordTitle");
     const reviewText = document.getElementById("reviewText");
     const reviewCharacterCount = document.getElementById("reviewCharacterCount");
@@ -2202,8 +2204,16 @@
     const PAGE_TITLES = {
       template: String.fromCharCode(0x6a21, 0x677f, 0x7f16, 0x8f91),
       "image-tool": String.fromCharCode(0x4fee, 0x56fe, 0x5de5, 0x5177),
-      collection: String.fromCharCode(0x6211, 0x7684, 0x6536, 0x85cf)
+      collection: String.fromCharCode(0x6211, 0x7684, 0x6536, 0x85cf),
+      collectionDetail: String.fromCharCode(0x4f5c, 0x54c1, 0x6863, 0x6848)
     };
+
+    function syncCollectionPages(mainPage) {
+      const collectionActive = mainPage === "collection";
+      const detailActive = collectionViewMode === "detail";
+      if (collectionPage) collectionPage.hidden = !collectionActive || detailActive;
+      if (collectionDetailPage) collectionDetailPage.hidden = !collectionActive || !detailActive;
+    }
 
     function syncTemplatePages(nextPage) {
       const page = nextPage || "template";
@@ -2223,8 +2233,7 @@
       if (trioCard) trioCard.hidden = !trioActive;
       if (trioExternalTools) trioExternalTools.hidden = !trioActive;
       if (imageToolPage) imageToolPage.hidden = page !== "image-tool";
-      if (collectionPage) collectionPage.hidden = page !== "collection";
-      if (collectionDetailPage) collectionDetailPage.hidden = true;
+      syncCollectionPages(page);
       if (templatePage && isPagedTemplate()) renderTemplatePage(false);
     }
 
@@ -2234,7 +2243,11 @@
       const previousPage = mainNavButtons.find((button) => button.classList.contains("active"))?.dataset.page || "";
       commitCompactContinuationReviewText();
       mainNavButtons.forEach((button) => button.classList.toggle("active", button.dataset.page === nextPage));
-      if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES[nextPage] || PAGE_TITLES.template;
+      if (workspaceTitle) {
+        workspaceTitle.textContent = nextPage === "collection" && collectionViewMode === "detail"
+          ? PAGE_TITLES.collectionDetail
+          : PAGE_TITLES[nextPage] || PAGE_TITLES.template;
+      }
       if (templateToolbar) templateToolbar.hidden = nextPage !== "template";
       templateToolBlocks.forEach((block) => { block.hidden = nextPage !== "template"; });
       syncTemplatePages(nextPage);
@@ -2857,6 +2870,16 @@
       const match = clean.match(/(?:RJ|BJ)?\d+/);
       if (!match) return "";
       return /^(?:RJ|BJ)/.test(match[0]) ? match[0] : "RJ" + match[0];
+    }
+
+    function openDlsiteProductPage(value) {
+      const workno = normalizeWorkno(value);
+      if (!workno) {
+        showAppAlert(String.fromCharCode(0x8bf7, 0x5148, 0x586b, 0x5199, 0x6709, 0x6548, 0x7684, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x3002));
+        return;
+      }
+      window.open("https://www.dlsite.com/girls/work/=/product_id/" + encodeURIComponent(workno) + ".html", "_blank", "noopener,noreferrer");
+      trackFixedUsageEvent("feature-open-dlsite");
     }
 
     function limitedWorknoText(value) {
@@ -11022,6 +11045,7 @@
     }
 
     importButton.addEventListener("click", importProductInfo);
+    fullOpenDlsiteButton.addEventListener("click", () => openDlsiteProductPage(rjText.textContent));
     importHelpButton.addEventListener("click", (event) => {
       event.stopPropagation();
       if (!importHelpPopover) return;
@@ -11213,10 +11237,7 @@
     });
     mainNavButtons.forEach((button) => {
       if (!button.dataset.page) return;
-      button.addEventListener("click", async () => {
-        if (confirmCollectionDetailLeave && collectionDetailPage && !collectionDetailPage.hidden) {
-          if (!await confirmCollectionDetailLeave()) return;
-        }
+      button.addEventListener("click", () => {
         setMainPage(button.dataset.page || "template");
       });
     });
@@ -12532,6 +12553,7 @@
       function openDetail(id) {
         const r = records.find(x => String(x.id) === String(id));
         if (!r) return;
+        collectionViewMode = "detail";
         activeCollectionRecordId = r.id;
         document.getElementById("collectionDeleteRecordButton").hidden = false;
         localStorage.setItem(COLLECTION_DETAIL_KEY, String(r.id));
@@ -12551,13 +12573,16 @@
         renderCollectionDetailRatings(r);
         void setCollectionDetailCoverValue(r.cover || "", r.coverFit || "contain");
         collectionDetailInitialSnapshot = collectionDetailSnapshot();
-        page.hidden = true;
-        if (collectionDetailPage) collectionDetailPage.hidden = false;
-        if (workspaceTitle) workspaceTitle.textContent = "作品档案";
-        if (collectionScroller) collectionScroller.scrollTo({ top:0, behavior:"instant" });
-        else window.scrollTo(0,0);
+        const collectionActive = mainNavButtons.some(button => button.dataset.page === "collection" && button.classList.contains("active"));
+        syncCollectionPages(collectionActive ? "collection" : "");
+        if (collectionActive) {
+          if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES.collectionDetail;
+          if (collectionScroller) collectionScroller.scrollTo({ top:0, behavior:"instant" });
+          else window.scrollTo(0,0);
+        }
       }
       function openNewDetail() {
+        collectionViewMode = "detail";
         activeCollectionRecordId = null;
         document.getElementById("collectionDeleteRecordButton").hidden = true;
         localStorage.removeItem(COLLECTION_DETAIL_KEY);
@@ -12568,9 +12593,8 @@
         renderCollectionDetailRatings(null);
         void setCollectionDetailCoverValue("", "contain");
         collectionDetailInitialSnapshot = collectionDetailSnapshot();
-        page.hidden = true;
-        if (collectionDetailPage) collectionDetailPage.hidden = false;
-        if (workspaceTitle) workspaceTitle.textContent = "作品档案";
+        syncCollectionPages("collection");
+        if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES.collectionDetail;
         if (collectionScroller) collectionScroller.scrollTo({ top:0, behavior:"instant" });
         else window.scrollTo(0,0);
       }
@@ -12813,11 +12837,11 @@
       collectionMobileGridBtn?.addEventListener("click", () => setCollectionListMode(false));
       collectionMobileListBtn?.addEventListener("click", () => setCollectionListMode(true));
       function returnToCollectionList() {
+        collectionViewMode = "list";
         localStorage.removeItem(COLLECTION_DETAIL_KEY);
         collectionDetailCoverLoadToken += 1;
         collectionDetailStoredCoverValue = "";
-        if (collectionDetailPage) collectionDetailPage.hidden = true;
-        page.hidden = false;
+        syncCollectionPages("collection");
         if (workspaceTitle) workspaceTitle.textContent = PAGE_TITLES.collection;
         render();
         requestAnimationFrame(() => { if (collectionScroller) collectionScroller.scrollTo({ top:scrollY, behavior:"instant" }); else window.scrollTo(0,scrollY); });
@@ -12865,15 +12889,7 @@
       document.getElementById("collectionDetailCoverButton").onclick = () => void setCollectionDetailCoverValue(collectionDetailArt.dataset.coverStoredSrc || "", "cover");
       document.getElementById("collectionDetailImageEditButton").onclick = () => void openImageEditorSafely(() => openCollectionDetailImageEditor());
       document.getElementById("collectionDetailRemoveCoverButton").onclick = () => void setCollectionDetailCoverValue("", collectionDetailArt.dataset.coverFit || "contain");
-      document.getElementById("collectionDetailOpenDlsiteButton").onclick = () => {
-        const workno = normalizeWorkno(detailText("collectionDetailRj"));
-        if (!workno) {
-          showAppAlert(String.fromCharCode(0x8bf7, 0x5148, 0x586b, 0x5199, 0x6709, 0x6548, 0x7684, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x3002));
-          return;
-        }
-        window.open("https://www.dlsite.com/girls/work/=/product_id/" + encodeURIComponent(workno) + ".html", "_blank", "noopener,noreferrer");
-        trackFixedUsageEvent("feature-open-dlsite");
-      };
+      document.getElementById("collectionDetailOpenDlsiteButton").onclick = () => openDlsiteProductPage(detailText("collectionDetailRj"));
       async function importCollectionDetailByRj() {
         const button = document.getElementById("collectionDetailImportButton");
         const workno = normalizeWorkno(detailText("collectionDetailRj"));
@@ -13047,7 +13063,6 @@
           const shouldSave = await requestCollectionDetailSave();
           if (shouldSave && !await saveCollectionDetail(false)) return false;
         }
-        localStorage.removeItem(COLLECTION_DETAIL_KEY);
         return true;
       };
       document.getElementById("collectionBack").onclick = async () => {

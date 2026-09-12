@@ -9,10 +9,10 @@
   <link rel="icon" type="image/png" sizes="64x64" href="icons/site-icon-64.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="icons/site-icon-180.png" />
   <link rel="manifest" href="site.webmanifest" />
-  <link id="appStylesheet" rel="stylesheet" href="css/style.css?v=20260911-sweet-peach-pink-price-labels">
+  <link id="appStylesheet" rel="stylesheet" href="css/style.css?v=20260912-full-open-dlsite">
   <script>
     window.__OTOME_APP_VERSION_PROMISE__ = (() => {
-      const fallbackVersion = "20260911-sweet-peach-pink-price-labels";
+      const fallbackVersion = "20260912-full-open-dlsite";
       const versionUrl = new URL("version.json", document.baseURI);
       versionUrl.searchParams.set("_", Date.now().toString(36));
       return fetch(versionUrl, { cache: "no-store", credentials: "same-origin" })
@@ -227,12 +227,15 @@
             <div class="editable" id="rjText" contenteditable="true" aria-label="RJ号"></div>
           </div>
           <div class="field card-info-field" id="cardInfoField" data-info-type="duration">
-            <select class="card-info-type-select" id="cardInfoType" aria-label="&#34917;&#20805;&#20449;&#24687;&#26174;&#31034;&#39033;">
-              <option value="duration">&#26102;&#38271;</option>
-              <option value="purchaseDate">&#36141;&#20080;&#26085;&#26399;</option>
-              <option value="listenedDate">&#25910;&#21548;&#26085;&#26399;</option>
-              <option value="hidden">&#19981;&#26174;&#31034;</option>
-            </select>
+            <div class="card-info-label-row">
+              <select class="card-info-type-select" id="cardInfoType" aria-label="&#34917;&#20805;&#20449;&#24687;&#26174;&#31034;&#39033;">
+                <option value="duration">&#26102;&#38271;</option>
+                <option value="purchaseDate">&#36141;&#20080;&#26085;&#26399;</option>
+                <option value="listenedDate">&#25910;&#21548;&#26085;&#26399;</option>
+                <option value="hidden">&#19981;&#26174;&#31034;</option>
+              </select>
+              <button class="import-button card-info-dlsite-button" id="fullOpenDlsiteButton" type="button" data-editor-only>&#25171;&#24320;DL&#39029;&#38754;</button>
+            </div>
             <div class="editable card-info-value" id="durationText" contenteditable="true" aria-label="&#26102;&#38271;"></div>
             <input class="soft-input card-info-value" id="purchaseDateText" type="text" inputmode="numeric" maxlength="10" placeholder="YYYY-MM-DD" aria-label="&#36141;&#20080;&#26085;&#26399;" hidden />
             <input class="soft-input card-info-value" id="listenedDateText" type="text" inputmode="numeric" maxlength="10" placeholder="YYYY-MM-DD" aria-label="&#25910;&#21548;&#26085;&#26399;" hidden />
