@@ -439,7 +439,6 @@
       titles["feature-image-editor-done"] = featureUsagePrefix + String.fromCharCode(0x5b8c, 0x6210, 0x56fe, 0x7247, 0x7f16, 0x8f91);
       titles["feature-image-editor-standalone-done"] = featureUsagePrefix + String.fromCharCode(0x5b8c, 0x6210, 0x72ec, 0x7acb, 0x4fee, 0x56fe, 0x5bfc, 0x51fa);
       titles["feature-open-update-log"] = featureUsagePrefix + String.fromCharCode(0x6253, 0x5f00, 0x66f4, 0x65b0, 0x516c, 0x544a);
-      titles["feature-mobile-review-focus-editor"] = featureUsagePrefix + String.fromCharCode(0x4f7f, 0x7528, 0x624b, 0x673a, 0x8bc4, 0x4ef7, 0x4e13, 0x6ce8, 0x7f16, 0x8f91);
       titles["feature-continuation-page-added"] = featureUsagePrefix + String.fromCharCode(0x6dfb, 0x52a0, 0x7eed, 0x9875);
       titles["feature-open-image-tool"] = featureUsagePrefix + String.fromCharCode(0x6253, 0x5f00, 0x4fee, 0x56fe, 0x5de5, 0x5177);
       titles["feature-open-usage-guide"] = featureUsagePrefix + String.fromCharCode(0x6253, 0x5f00, 0x4f7f, 0x7528, 0x8bf4, 0x660e);
@@ -2529,7 +2528,6 @@
       if (!isMobileView() || currentTemplate() !== "full" || continuationState.full.current !== 0) return;
       const app = document.querySelector(".app");
       reviewFocusSessionActive = true;
-      trackFixedUsageEvent("feature-mobile-review-focus-editor");
       reviewEditorAppScrollTop = app?.scrollTop || 0;
       reviewEditArea.value = reviewText.value || "";
       reviewEditorSelectionStart = reviewEditArea.value.length;
