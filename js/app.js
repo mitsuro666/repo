@@ -3752,8 +3752,12 @@
     }
 
     document.addEventListener("click", () => closeImportDialogHelpPopover());
-    window.addEventListener("resize", () => closeImportDialogHelpPopover());
-    window.addEventListener("scroll", () => closeImportDialogHelpPopover(), true);
+    window.addEventListener("resize", () => {
+      if (activeImportDialogInfoButton && !importDialogHelpPopover?.hidden) positionImportDialogHelpPopover(activeImportDialogInfoButton);
+    });
+    window.addEventListener("scroll", () => {
+      if (activeImportDialogInfoButton && !importDialogHelpPopover?.hidden) positionImportDialogHelpPopover(activeImportDialogInfoButton);
+    }, true);
 
     function applyImportedProduct(product, chineseChoice, mode = "overwrite", fields = new Set(TEMPLATE_IMPORT_SCOPES.full), template = "full") {
       if (fields.has("title") && product.title && (mode === "overwrite" || !editableText("recordTitle").trim())) setEditableText("recordTitle", product.title);
