@@ -34,6 +34,7 @@
     const rjText = document.getElementById("rjText");
     const durationText = document.getElementById("durationText");
     const purchaseDateText = document.getElementById("purchaseDateText");
+    const purchasePriceText = document.getElementById("purchasePriceText");
     const listenedDateText = document.getElementById("listenedDateText");
     const cardInfoField = document.getElementById("cardInfoField");
     const cardInfoType = document.getElementById("cardInfoType");
@@ -172,6 +173,7 @@
     const playerPlay = document.getElementById("playerPlay");
     const importHelpButton = document.getElementById("importHelpButton");
     const importHelpPopover = document.getElementById("importHelpPopover");
+    const importDialogHelpPopover = document.getElementById("importDialogHelpPopover");
     const grid9Card = document.getElementById("grid9Card");
     const grid9TitleText = document.getElementById("grid9TitleText");
     const grid9TitlePlaceholder = document.querySelector(".grid9-title-placeholder");
@@ -474,7 +476,7 @@
     const FULL_CIRCLE_LINE_WIDTH = 8;
     const COMPACT_CV_CIRCLE_LINE_WIDTH = 7;
     const TWO_LINE_FIELD_MAX_LINES = 2;
-    const CARD_INFO_TYPES = new Set(["duration", "purchaseDate", "listenedDate", "hidden"]);
+    const CARD_INFO_TYPES = new Set(["duration", "purchaseDate", "purchasePrice", "listenedDate", "hidden"]);
     function isRecordObject(value) {
       return Boolean(value && typeof value === "object" && !Array.isArray(value));
     }
@@ -504,6 +506,7 @@
       cardInfoField.dataset.infoType = nextType;
       durationText.hidden = nextType !== "duration";
       purchaseDateText.hidden = nextType !== "purchaseDate";
+      purchasePriceText.hidden = nextType !== "purchasePrice";
       listenedDateText.hidden = nextType !== "listenedDate";
     }
     const FULL_FIELD_MAX_WIDTHS = new Map([
@@ -1083,6 +1086,48 @@
     const UI_IMPORT_REQUEST_TIMEOUT = String.fromCharCode(0x8bf7, 0x6c42, 0x8d85, 0x65f6, 0x3002);
     const UI_IMPORT_REQUEST_NETWORK = String.fromCharCode(0x65e0, 0x6cd5, 0x8fde, 0x63a5, 0x63a5, 0x53e3, 0xff0c, 0x8bf7, 0x68c0, 0x67e5, 0x20, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x20, 0x662f, 0x5426, 0x5df2, 0x90e8, 0x7f72, 0x5e76, 0x53ef, 0x8bbf, 0x95ee, 0x3002);
     const UI_IMPORT_HTTP_PREFIX = String.fromCharCode(0x63a5, 0x53e3, 0x8fd4, 0x56de, 0x20);
+    const UI_IMPORT_STEP_MODE = String.fromCharCode(0x31, 0x3001, 0x9009, 0x62e9, 0x9700, 0x8981, 0x5bfc, 0x5165, 0x7684, 0x65b9, 0x5f0f);
+    const UI_IMPORT_STEP_SCOPE = String.fromCharCode(0x32, 0x3001, 0x9009, 0x62e9, 0x9700, 0x8981, 0x5bfc, 0x5165, 0x7684, 0x8303, 0x56f4);
+    const UI_IMPORT_MODE_OVERWRITE = String.fromCharCode(0x8986, 0x76d6, 0x5168, 0x90e8);
+    const UI_IMPORT_MODE_FILL = String.fromCharCode(0x586b, 0x5145, 0x7a7a, 0x4f4d);
+    const UI_IMPORT_START = String.fromCharCode(0x5f00, 0x59cb, 0x5bfc, 0x5165);
+    const UI_IMPORT_NOTHING_TITLE = String.fromCharCode(0x65e0, 0x9700, 0x5bfc, 0x5165);
+    const UI_IMPORT_NOTHING_TO_FILL = String.fromCharCode(0x6ca1, 0x6709, 0x9700, 0x8981, 0x586b, 0x5145, 0x7684, 0x7a7a, 0x4f4d, 0x3002);
+    const UI_IMPORT_SCOPE_LABELS = Object.freeze({
+      cover: "BK",
+      basic: String.fromCharCode(0x57fa, 0x672c, 0x4fe1, 0x606f),
+      title: String.fromCharCode(0x6807, 0x9898),
+      keywords: String.fromCharCode(0x5173, 0x952e, 0x8bcd),
+      price: String.fromCharCode(0x4ef7, 0x683c),
+      cv: "CV",
+      currentPrice: String.fromCharCode(0x73b0, 0x4ef7),
+      work: String.fromCharCode(0x4f5c, 0x54c1, 0x4fe1, 0x606f),
+      priceInfo: String.fromCharCode(0x4ef7, 0x683c, 0x4fe1, 0x606f)
+    });
+    const TEMPLATE_IMPORT_SCOPES = Object.freeze({
+      full: Object.freeze(["cover", "basic", "title", "keywords", "price"]),
+      compact: Object.freeze(["cover", "title", "basic"]),
+      grid9: Object.freeze(["cover"]),
+      quick: Object.freeze(["cover", "cv"]),
+      trio: Object.freeze(["cover", "cv", "currentPrice"])
+    });
+    const COLLECTION_IMPORT_SCOPES = Object.freeze(["cover", "title", "work", "priceInfo", "keywords"]);
+    const UI_IMPORT_DIALOG_HELP = [
+      UI_IMPORT_MODE_OVERWRITE + String.fromCharCode(0xff1a, 0x8986, 0x76d6, 0x5df2, 0x52fe, 0x9009, 0x8303, 0x56f4, 0x5185, 0x5df2, 0x6709, 0x7684, 0x4fe1, 0x606f, 0x3002),
+      UI_IMPORT_MODE_FILL + String.fromCharCode(0xff1a, 0x53ea, 0x8865, 0x5145, 0x5df2, 0x52fe, 0x9009, 0x8303, 0x56f4, 0x5185, 0x5f53, 0x524d, 0x4e3a, 0x7a7a, 0x7684, 0x4fe1, 0x606f, 0x3002),
+      String.fromCharCode(0x63a5, 0x53e3, 0x672a, 0x8fd4, 0x56de, 0x6216, 0x8bfb, 0x53d6, 0x5931, 0x8d25, 0x65f6, 0xff0c, 0x5bf9, 0x5e94, 0x4f4d, 0x7f6e, 0x4fdd, 0x6301, 0x4e0d, 0x53d8, 0x3002)
+    ].join("\n");
+    const UI_IMPORT_DIALOG_HELP_GRID9 = [
+      UI_IMPORT_MODE_OVERWRITE + String.fromCharCode(0xff1a, 0x8986, 0x76d6, 0x5df2, 0x6709, 0x7684, 0x20, 0x42, 0x4b, 0x3002),
+      UI_IMPORT_MODE_FILL + String.fromCharCode(0xff1a, 0x53ea, 0x8865, 0x5145, 0x5f53, 0x524d, 0x4e3a, 0x7a7a, 0x7684, 0x20, 0x42, 0x4b, 0x3002),
+      String.fromCharCode(0x63a5, 0x53e3, 0x672a, 0x8fd4, 0x56de, 0x6216, 0x8bfb, 0x53d6, 0x5931, 0x8d25, 0x65f6, 0xff0c, 0x5bf9, 0x5e94, 0x4f4d, 0x7f6e, 0x4fdd, 0x6301, 0x4e0d, 0x53d8, 0x3002)
+    ].join("\n");
+    const UI_COLLECTION_IMPORT_TITLE = String.fromCharCode(0x6309, 0x52, 0x4a, 0x53f7, 0x5bfc, 0x5165, 0x4fe1, 0x606f);
+    const UI_COLLECTION_IMPORTING = String.fromCharCode(0x6b63, 0x5728, 0x5bfc, 0x5165, 0x4fe1, 0x606f, 0x2026);
+    const UI_COLLECTION_IMPORT_SUCCESS_TITLE = String.fromCharCode(0x5df2, 0x6839, 0x636e, 0x52, 0x4a, 0x53f7, 0x5bfc, 0x5165, 0x4fe1, 0x606f);
+    const UI_COLLECTION_IMPORT_NO_VALID_RJ = String.fromCharCode(0x6ca1, 0x6709, 0x53ef, 0x5bfc, 0x5165, 0x7684, 0x6709, 0x6548, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x3002);
+    const UI_COLLECTION_IMPORT_PROGRESS = String.fromCharCode(0x5bfc, 0x5165, 0x4e2d, 0x20);
+    const UI_COLLECTION_IMPORT_SAVE_FAILED = String.fromCharCode(0x5bfc, 0x5165, 0x7ed3, 0x679c, 0x4fdd, 0x5b58, 0x5931, 0x8d25, 0xff0c, 0x539f, 0x6536, 0x85cf, 0x8bb0, 0x5f55, 0x672a, 0x88ab, 0x8986, 0x76d6, 0x3002);
     const UI_REVIEW_EDIT_TITLE = String.fromCharCode(0x8bc4, 0x4ef7, 0x4e13, 0x6ce8, 0x7f16, 0x8f91);
     const UI_REVIEW_PREVIEW = String.fromCharCode(0x5168, 0x56fe, 0x9884, 0x89c8);
     const UI_REVIEW_CONTINUE = String.fromCharCode(0x7ee7, 0x7eed, 0x7f16, 0x8f91);
@@ -1136,19 +1181,16 @@
       0x0a, 0x0a,
       0x5982, 0x679c, 0x4ecd, 0x60f3, 0x7ee7, 0x7eed, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x9009, 0x62e9, 0x6539, 0x7528, 0x624b, 0x673a, 0x81ea, 0x5e26, 0x5b57, 0x4f53, 0x5bfc, 0x51fa, 0xff0c, 0x5361, 0x7247, 0x6587, 0x5b57, 0x6837, 0x5f0f, 0x4f1a, 0x548c, 0x9884, 0x89c8, 0x7565, 0x6709, 0x5dee, 0x5f02, 0x3002, 0x662f, 0x5426, 0x7ee7, 0x7eed, 0xff1f
     );
-    const UPDATE_NOTICE_STORAGE_KEY = "otome-record-card-update-notice-20260829-v1";
-    const UPDATE_NOTICE_START_AT = Date.parse("2026-08-29T08:00:00+08:00");
-    const UPDATE_NOTICE_TITLE = String.fromCharCode(0x38, 0x6708, 0x32, 0x39, 0x65e5, 0x66f4, 0x65b0, 0xff5c, 0x76, 0x31, 0x2e, 0x30, 0x2e, 0x30);
+    const UPDATE_NOTICE_STORAGE_KEY = "otome-record-card-update-notice-20260923-v3";
+    const UPDATE_NOTICE_START_AT = Date.parse("2026-09-23T08:00:00+08:00");
+    const UPDATE_NOTICE_TITLE = String.fromCharCode(0x39, 0x6708, 0x32, 0x33, 0x65e5, 0x66f4, 0x65b0);
     const UPDATE_NOTICE_MESSAGE = [
-      String.fromCharCode(0x672c, 0x6b21, 0x66f4, 0x65b0, 0x5e26, 0x6765, 0x4e86, 0x66f4, 0x591a, 0x914d, 0x8272, 0x4e0e, 0x5b57, 0x4f53, 0x9009, 0x62e9, 0xff0c, 0x5e76, 0x5b8c, 0x5584, 0x4e86, 0x6a21, 0x677f, 0x586b, 0x5199, 0x548c, 0x6536, 0x85cf, 0x7ba1, 0x7406, 0x529f, 0x80fd, 0x3002, 0x7f51, 0x7ad9, 0x4e5f, 0x6b63, 0x5f0f, 0x66f4, 0x540d, 0x4e3a, 0x3010, 0x4e59, 0x97f3, 0x8bb0, 0x5f55, 0x6a21, 0x677f, 0x3011, 0xff0c, 0x8bf7, 0x4e0b, 0x6ed1, 0x67e5, 0x770b, 0x5168, 0x90e8, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x7f51, 0x7ad9, 0x540d, 0x79f0, 0x4e0e, 0x7248, 0x672c, 0xa, 0x7f51, 0x7ad9, 0x6b63, 0x5f0f, 0x66f4, 0x540d, 0x4e3a, 0x3010, 0x4e59, 0x97f3, 0x8bb0, 0x5f55, 0x6a21, 0x677f, 0x3011, 0x3002, 0xa, 0x4ece, 0x672c, 0x6b21, 0x66f4, 0x65b0, 0x5f00, 0x59cb, 0x542f, 0x7528, 0x7248, 0x672c, 0x53f7, 0xff0c, 0x5f53, 0x524d, 0x7248, 0x672c, 0x4e3a, 0x20, 0x76, 0x31, 0x2e, 0x30, 0x2e, 0x30, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x8272, 0x5361, 0x4e0e, 0x5b57, 0x4f53, 0xa, 0x65b0, 0x589e, 0x20, 0x31, 0x30, 0x20, 0x4e2a, 0x8272, 0x5361, 0x548c, 0x20, 0x34, 0x20, 0x6b3e, 0x53ef, 0x9009, 0x5b57, 0x4f53, 0xff0c, 0x53ef, 0x4ee5, 0x81ea, 0x7531, 0x642d, 0x914d, 0x559c, 0x6b22, 0x7684, 0x6a21, 0x677f, 0x98ce, 0x683c, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x52, 0x65, 0x70, 0x6f, 0x20, 0x586b, 0x5199, 0x4f18, 0x5316, 0xa, 0x5b8c, 0x6574, 0x7248, 0x548c, 0x7b80, 0x7565, 0x7248, 0x7684, 0x20, 0x72, 0x65, 0x70, 0x6f, 0x20, 0x586b, 0x5199, 0x754c, 0x9762, 0x65b0, 0x589e, 0x5b57, 0x6570, 0x63d0, 0x793a, 0xff0c, 0x586b, 0x5199, 0x957f, 0x8bc4, 0x65f6, 0x53ef, 0x4ee5, 0x66f4, 0x76f4, 0x89c2, 0x5730, 0x67e5, 0x770b, 0x5f53, 0x524d, 0x5185, 0x5bb9, 0x957f, 0x5ea6, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x4e5d, 0x5bab, 0x683c, 0x4e0e, 0x901f, 0x8bc4, 0x7248, 0xa, 0x4e5d, 0x5bab, 0x683c, 0x548c, 0x901f, 0x8bc4, 0x7248, 0x65b0, 0x589e, 0x6279, 0x91cf, 0x586b, 0x5199, 0x20, 0x52, 0x4a, 0x20, 0x53f7, 0x529f, 0x80fd, 0xff0c, 0x6574, 0x7406, 0x591a, 0x90e8, 0x4f5c, 0x54c1, 0x65f6, 0x66f4, 0x52a0, 0x65b9, 0x4fbf, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x6a21, 0x677f, 0x5bfc, 0x5165, 0x6536, 0x85cf, 0xa, 0x6a21, 0x677f, 0x7f16, 0x8f91, 0x6a21, 0x5f0f, 0x65b0, 0x589e, 0x3010, 0x5bfc, 0x5165, 0x6536, 0x85cf, 0x3011, 0x529f, 0x80fd, 0xff0c, 0x53ef, 0x4ee5, 0x76f4, 0x63a5, 0x9009, 0x62e9, 0x6536, 0x85cf, 0x4e2d, 0x7684, 0x6761, 0x76ee, 0x5e76, 0x5bfc, 0x5165, 0x6a21, 0x677f, 0xff0c, 0x51cf, 0x5c11, 0x91cd, 0x590d, 0x586b, 0x5199, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x6536, 0x85cf, 0x6279, 0x91cf, 0x7ba1, 0x7406, 0xa, 0x3010, 0x6211, 0x7684, 0x6536, 0x85cf, 0x3011, 0x65b0, 0x589e, 0x6279, 0x91cf, 0x7ba1, 0x7406, 0x529f, 0x80fd, 0xff0c, 0x53ef, 0x4ee5, 0x4e00, 0x6b21, 0x9009, 0x62e9, 0x591a, 0x6761, 0x8bb0, 0x5f55, 0xff0c, 0x8fdb, 0x884c, 0x6279, 0x91cf, 0x5220, 0x9664, 0x3001, 0x6279, 0x91cf, 0x6dfb, 0x52a0, 0x6807, 0x7b7e, 0x6216, 0x6279, 0x91cf, 0x79fb, 0x9664, 0x6807, 0x7b7e, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x6536, 0x85cf, 0x8be6, 0x60c5, 0x9875, 0xa, 0x65b0, 0x589e, 0x201c, 0x753b, 0x5e08, 0x201d, 0x548c, 0x201c, 0x5267, 0x672c, 0x4f5c, 0x8005, 0x201d, 0x5b57, 0x6bb5, 0x3002, 0xa, 0x8be6, 0x60c5, 0x9875, 0x65b0, 0x589e, 0x6253, 0x5f00, 0x5bf9, 0x5e94, 0x20, 0x44, 0x4c, 0x73, 0x69, 0x74, 0x65, 0x20, 0x9875, 0x9762, 0x7684, 0x6309, 0x94ae, 0xff0c, 0x53ef, 0x4ee5, 0x76f4, 0x63a5, 0x524d, 0x5f80, 0x4f5c, 0x54c1, 0x9875, 0x9762, 0x67e5, 0x770b, 0x8be6, 0x60c5, 0x3002),
-      String.fromCharCode(0x611f, 0x8c22, 0x5927, 0x5bb6, 0x7684, 0x53cd, 0x9988, 0x4e0e, 0x4f7f, 0x7528, 0xff01, 0x5982, 0x679c, 0x66f4, 0x65b0, 0x540e, 0x4ecd, 0x9047, 0x5230, 0x95ee, 0x9898, 0xff0c, 0x6216, 0x662f, 0x6709, 0x5176, 0x4ed6, 0x5efa, 0x8bae, 0x548c, 0x60f3, 0x8981, 0x7684, 0x529f, 0x80fd, 0xff0c, 0x6b22, 0x8fce, 0x901a, 0x8fc7, 0x7f51, 0x7ad9, 0x5185, 0x7684, 0x53cd, 0x9988, 0x5165, 0x53e3, 0x544a, 0x8bc9, 0x6211, 0xff5e)
+      String.fromCharCode(0x672c, 0x6b21, 0x66f4, 0x65b0, 0x4e3b, 0x8981, 0x5b8c, 0x5584, 0x4e86, 0x6536, 0x85cf, 0x8be6, 0x60c5, 0x9875, 0x548c, 0x20, 0x52, 0x4a, 0x20, 0x5bfc, 0x5165, 0x6d41, 0x7a0b, 0xff0c, 0x5e76, 0x8865, 0x5145, 0x4e86, 0x4e2a, 0x4eba, 0x8bb0, 0x5f55, 0x76f8, 0x5173, 0x5b57, 0x6bb5, 0x3002, 0x8bf7, 0x4e0b, 0x6ed1, 0x67e5, 0x770b, 0x5168, 0x90e8, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x52, 0x4a, 0x20, 0x5bfc, 0x5165, 0x8303, 0x56f4, 0xa, 0x5b8c, 0x6574, 0x7248, 0x3001, 0x7b80, 0x7565, 0x7248, 0x3001, 0x901f, 0x8bc4, 0x7248, 0x3001, 0x4e09, 0x5bab, 0x683c, 0x3001, 0x6536, 0x85cf, 0x9875, 0x548c, 0x8be6, 0x60c5, 0x9875, 0x65b0, 0x589e, 0x53ef, 0x9009, 0x5bfc, 0x5165, 0x8303, 0x56f4, 0xff0c, 0x53ef, 0x53ea, 0x52fe, 0x9009, 0x9700, 0x8981, 0x7684, 0x4fe1, 0x606f, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x6536, 0x85cf, 0x8be6, 0x60c5, 0x9875, 0xa, 0x7535, 0x8111, 0x7aef, 0x8be6, 0x60c5, 0x9875, 0x91cd, 0x65b0, 0x6392, 0x7248, 0xff0c, 0x65b0, 0x589e, 0x201c, 0x8d2d, 0x5165, 0x4ef7, 0x683c, 0x201d, 0x548c, 0x201c, 0x6536, 0x542c, 0x72b6, 0x6001, 0x201d, 0xff0c, 0x6536, 0x542c, 0x72b6, 0x6001, 0x652f, 0x6301, 0x672a, 0x6536, 0x542c, 0x3001, 0x6536, 0x542c, 0x4e2d, 0x3001, 0x5df2, 0x6536, 0x542c, 0x3001, 0x6401, 0x7f6e, 0x3001, 0x60f3, 0x91cd, 0x542c, 0x548c, 0x81ea, 0x5b9a, 0x4e49, 0x3002, 0x42, 0x4b, 0x20, 0x533a, 0x57df, 0x52a0, 0x5165, 0x65b0, 0x7684, 0x88c5, 0x9970, 0x76f8, 0x6846, 0xff0c, 0x64cd, 0x4f5c, 0x6309, 0x94ae, 0x4e0e, 0x6807, 0x7b7e, 0x5e03, 0x5c40, 0x540c, 0x6b65, 0x4f18, 0x5316, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x5b8c, 0x6574, 0x7248, 0x4e2a, 0x4eba, 0x8bb0, 0x5f55, 0xa, 0x5b8c, 0x6574, 0x7248, 0x7684, 0x4fe1, 0x606f, 0x4e0b, 0x62c9, 0x83dc, 0x5355, 0x65b0, 0x589e, 0x201c, 0x8d2d, 0x5165, 0x4ef7, 0x683c, 0x201d, 0xff0c, 0x5e76, 0x5c06, 0x4e2a, 0x4eba, 0x76f8, 0x5173, 0x5185, 0x5bb9, 0x7edf, 0x4e00, 0x5f52, 0x5165, 0x201c, 0x4e2a, 0x4eba, 0x8bb0, 0x5f55, 0x201d, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x5bfc, 0x5165, 0x7a33, 0x5b9a, 0x6027, 0xa, 0x672a, 0x52fe, 0x9009, 0x7684, 0x5b57, 0x6bb5, 0x4e0d, 0x4f1a, 0x88ab, 0x4fee, 0x6539, 0xff1b, 0x63a5, 0x53e3, 0x672a, 0x8fd4, 0x56de, 0x6216, 0x8bfb, 0x53d6, 0x5931, 0x8d25, 0x65f6, 0x4f1a, 0x4fdd, 0x7559, 0x539f, 0x5185, 0x5bb9, 0xff0c, 0x5e76, 0x663e, 0x793a, 0x66f4, 0x660e, 0x786e, 0x7684, 0x5931, 0x8d25, 0x539f, 0x56e0, 0x3002),
+      String.fromCharCode(0x611f, 0x8c22, 0x5927, 0x5bb6, 0x7684, 0x53cd, 0x9988, 0x4e0e, 0x4f7f, 0x7528, 0xff01, 0x5982, 0x679c, 0x66f4, 0x65b0, 0x540e, 0x4ecd, 0x9047, 0x5230, 0x95ee, 0x9898, 0xff0c, 0x6b22, 0x8fce, 0x901a, 0x8fc7, 0x7f51, 0x7ad9, 0x5185, 0x7684, 0x53cd, 0x9988, 0x5165, 0x53e3, 0x544a, 0x8bc9, 0x6211, 0xff5e)
     ].join("\n\n");
     let storageFullWarned = false;
     let appDialogQueue = Promise.resolve();
@@ -3445,6 +3487,7 @@
         title: firstText(product.work_name, product.title, product.name, product.work?.work_name),
         cv: firstText(findVoiceText(creators), findVoiceText(product), creatorText(creators, "voice_by"), product.voice_by, product.voice),
         circle: firstText(product.maker_name, product.circle, product.maker?.name, product.brand?.name),
+        duration: firstText(product.duration, product.play_time, product.playtime, product.total_time, product.voice_length),
         scenarioWriter: firstText(creatorText(creators, "scenario_by"), creatorText(creators, "scenario"), product.scenario_by, product.scenario),
         illustrator: firstText(creatorText(creators, "illust_by"), creatorText(creators, "illustration_by"), creatorText(creators, "illustrator"), product.illust_by, product.illustration_by, product.illustrator),
         releaseDate: normalizeReleaseDateValue(firstText(product.regist_date, product.release_date, product.sales_date)),
@@ -3600,23 +3643,137 @@
       return { hasChinese: hasChineseOnSaleStatus(entry) };
     }
 
-    function applyImportedProduct(product, chineseChoice, mode = "overwrite") {
-      if (product.title && (mode === "overwrite" || !editableText("recordTitle").trim())) setEditableText("recordTitle", product.title);
-      if (product.cv && (mode === "overwrite" || !editableText("cvText").trim())) setEditableText("cvText", product.cv);
-      if (product.circle && (mode === "overwrite" || !editableText("circleText").trim())) setEditableText("circleText", product.circle);
-      if (product.originalPrice !== "" && (mode === "overwrite" || !originalPrice.value.trim())) originalPrice.value = product.originalPrice;
-      if (product.currentPrice !== "" && (mode === "overwrite" || !currentPrice.value.trim())) currentPrice.value = product.currentPrice;
-      const importedCurrentDiscount = product.currentDiscount !== "" && (mode === "overwrite" || !currentDiscount.value.trim());
+    let importChoiceSequence = 0;
+    function renderImportChoiceForm(container, scopeKeys, fixedScope = false) {
+      const form = document.createElement("div");
+      form.className = "import-choice-form";
+      const modeSection = document.createElement("section");
+      modeSection.className = "import-choice-section";
+      const modeTitle = document.createElement("p");
+      modeTitle.className = "import-choice-title";
+      modeTitle.textContent = UI_IMPORT_STEP_MODE;
+      const modeOptions = document.createElement("div");
+      modeOptions.className = "import-choice-options";
+      const radioName = "import-mode-" + (++importChoiceSequence);
+      [["overwrite", UI_IMPORT_MODE_OVERWRITE], ["fill", UI_IMPORT_MODE_FILL]].forEach(([value, labelText], index) => {
+        const label = document.createElement("label");
+        label.className = "import-choice-option";
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = radioName;
+        input.value = value;
+        input.checked = index === 0;
+        const text = document.createElement("span");
+        text.textContent = labelText;
+        label.append(input, text);
+        modeOptions.appendChild(label);
+      });
+      modeSection.append(modeTitle, modeOptions);
+      let scopeSection = null;
+      if (!fixedScope) {
+        scopeSection = document.createElement("section");
+        scopeSection.className = "import-choice-section";
+        const scopeTitle = document.createElement("p");
+        scopeTitle.className = "import-choice-title";
+        scopeTitle.textContent = UI_IMPORT_STEP_SCOPE;
+        scopeSection.appendChild(scopeTitle);
+        const scopeOptions = document.createElement("div");
+        scopeOptions.className = "import-choice-options is-scopes scope-count-" + scopeKeys.length;
+        scopeKeys.forEach((key) => {
+          const label = document.createElement("label");
+          label.className = "import-choice-option";
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.value = key;
+          input.checked = true;
+          const text = document.createElement("span");
+          text.textContent = UI_IMPORT_SCOPE_LABELS[key] || key;
+          label.append(input, text);
+          scopeOptions.appendChild(label);
+        });
+        scopeSection.appendChild(scopeOptions);
+      }
+      form.appendChild(modeSection);
+      if (scopeSection) form.appendChild(scopeSection);
+      container.textContent = "";
+      container.appendChild(form);
+      return {
+        hasScope: () => fixedScope || Boolean(form.querySelector('input[type="checkbox"]:checked')),
+        value: () => ({
+          mode: form.querySelector('input[type="radio"]:checked')?.value === "fill" ? "fill" : "overwrite",
+          fields: new Set(fixedScope ? scopeKeys : Array.from(form.querySelectorAll('input[type="checkbox"]:checked')).map((input) => input.value))
+        }),
+        onScopeChange: (listener) => form.querySelectorAll('input[type="checkbox"]').forEach((input) => input.addEventListener("change", listener))
+      };
+    }
+
+    let activeImportDialogInfoButton = null;
+    function closeImportDialogHelpPopover() {
+      if (!importDialogHelpPopover) return;
+      importDialogHelpPopover.hidden = true;
+      activeImportDialogInfoButton?.setAttribute("aria-expanded", "false");
+      activeImportDialogInfoButton = null;
+    }
+
+    function positionImportDialogHelpPopover(button) {
+      if (!importDialogHelpPopover || importDialogHelpPopover.hidden || !button) return;
+      const rect = button.getBoundingClientRect();
+      importDialogHelpPopover.style.width = "max-content";
+      const width = importDialogHelpPopover.offsetWidth;
+      const height = importDialogHelpPopover.offsetHeight;
+      const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
+      const below = rect.bottom + 8;
+      const top = below + height <= window.innerHeight - 12 ? below : Math.max(12, rect.top - height - 8);
+      importDialogHelpPopover.style.left = left + "px";
+      importDialogHelpPopover.style.top = top + "px";
+    }
+
+    function configureImportInfoButton(button, helpText = UI_IMPORT_DIALOG_HELP) {
+      button.hidden = false;
+      button.setAttribute("aria-expanded", "false");
+      button.onclick = (event) => {
+        event.stopPropagation();
+        const shouldOpen = importDialogHelpPopover?.hidden || activeImportDialogInfoButton !== button;
+        closeImportDialogHelpPopover();
+        if (!shouldOpen || !importDialogHelpPopover) return;
+        activeImportDialogInfoButton = button;
+        importDialogHelpPopover.textContent = helpText;
+        importDialogHelpPopover.hidden = false;
+        button.setAttribute("aria-expanded", "true");
+        positionImportDialogHelpPopover(button);
+      };
+    }
+
+    function hideImportInfoButton(button) {
+      if (activeImportDialogInfoButton === button) closeImportDialogHelpPopover();
+      button.hidden = true;
+      button.setAttribute("aria-expanded", "false");
+      button.onclick = null;
+    }
+
+    document.addEventListener("click", () => closeImportDialogHelpPopover());
+    window.addEventListener("resize", () => closeImportDialogHelpPopover());
+    window.addEventListener("scroll", () => closeImportDialogHelpPopover(), true);
+
+    function applyImportedProduct(product, chineseChoice, mode = "overwrite", fields = new Set(TEMPLATE_IMPORT_SCOPES.full), template = "full") {
+      if (fields.has("title") && product.title && (mode === "overwrite" || !editableText("recordTitle").trim())) setEditableText("recordTitle", product.title);
+      if (fields.has("basic") && product.cv && (mode === "overwrite" || !editableText("cvText").trim())) setEditableText("cvText", product.cv);
+      if (fields.has("basic") && product.circle && (mode === "overwrite" || !editableText("circleText").trim())) setEditableText("circleText", product.circle);
+      if (fields.has("price") && product.originalPrice !== "" && (mode === "overwrite" || !originalPrice.value.trim())) originalPrice.value = product.originalPrice;
+      if (fields.has("price") && product.currentPrice !== "" && (mode === "overwrite" || !currentPrice.value.trim())) currentPrice.value = product.currentPrice;
+      const importedCurrentDiscount = fields.has("price") && product.currentDiscount !== "" && (mode === "overwrite" || !currentDiscount.value.trim());
       if (importedCurrentDiscount) {
         currentDiscount.value = product.currentDiscount;
         currentDiscountManual = false;
       }
-      if (product.lowestDiscount !== "" && (mode === "overwrite" || !lowestPrice.value.trim())) lowestPrice.value = product.lowestDiscount;
+      if (fields.has("price") && product.lowestDiscount !== "" && (mode === "overwrite" || !lowestPrice.value.trim())) lowestPrice.value = product.lowestDiscount;
       const currentChineseChoice = document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE;
-      if (mode === "overwrite" || currentChineseChoice === CHOICE_SUBTITLE) setChineseChoice(chineseChoice);
-      if (Array.isArray(product.keywords) && (mode === "overwrite" || !tags.querySelector(".tag"))) renderTags(product.keywords.slice(0, 8));
-      if (importedCurrentDiscount) syncDiscountColor();
-      else updateDiscount(mode === "overwrite");
+      if (template === "full" && fields.has("basic") && chineseChoice && (mode === "overwrite" || currentChineseChoice === CHOICE_SUBTITLE)) setChineseChoice(chineseChoice);
+      if (fields.has("keywords") && Array.isArray(product.keywords) && product.keywords.length && (mode === "overwrite" || !tags.querySelector(".tag"))) renderTags(product.keywords.slice(0, 8));
+      if (fields.has("price")) {
+        if (importedCurrentDiscount) syncDiscountColor();
+        else updateDiscount(mode === "overwrite");
+      }
       saveState();
     }
 
@@ -4125,9 +4282,9 @@
         line.textContent = failure.label + String.fromCharCode(0xff1a) + failure.reason;
         grid9ImportBody.appendChild(line);
       });
-      grid9ImportOverwriteButton.hidden = true;
-      grid9ImportFillButton.hidden = true;
+      hideImportInfoButton(grid9ImportInfoButton);
       grid9ImportCancelButton.hidden = true;
+      grid9ImportConfirmButton.hidden = true;
       grid9ImportDoneButton.hidden = false;
       grid9ImportModal.hidden = false;
     }
@@ -4138,13 +4295,46 @@
         showAppAlert(UI_IMPORT_NEED_RJ);
         return;
       }
-      const importMode = await chooseBatchImportMode(hasImportOverwriteTarget());
-      if (!importMode) return;
+      const template = currentTemplate() === "compact" ? "compact" : "full";
+      const importOptions = await requestTemplateImportOptions(template);
+      if (!importOptions) return;
+      const importMode = importOptions.mode;
+      const importFields = importOptions.fields;
+      if (importMode === "fill") {
+        const currentChineseChoice = document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE;
+        const hasFillTarget = Boolean(
+          (importFields.has("title") && !editableText("recordTitle").trim()) ||
+          (importFields.has("basic") && (
+            !editableText("cvText").trim() ||
+            !editableText("circleText").trim() ||
+            (template === "full" && currentChineseChoice === CHOICE_SUBTITLE)
+          )) ||
+          (importFields.has("price") && (
+            !originalPrice.value.trim() ||
+            !currentPrice.value.trim() ||
+            !currentDiscount.value.trim() ||
+            !lowestPrice.value.trim()
+          )) ||
+          (importFields.has("keywords") && !tags.querySelector(".tag")) ||
+          (importFields.has("cover") && !(coverOriginalSrc || coverEditedSrc || coverImage.getAttribute("src")))
+        );
+        if (!hasFillTarget) {
+          grid9ImportTitle.textContent = UI_IMPORT_NOTHING_TITLE;
+          grid9ImportBody.textContent = UI_IMPORT_NOTHING_TO_FILL;
+          hideImportInfoButton(grid9ImportInfoButton);
+          grid9ImportDoneButton.hidden = false;
+          grid9ImportCancelButton.hidden = true;
+          grid9ImportConfirmButton.hidden = true;
+          grid9ImportModal.hidden = false;
+          return;
+        }
+      }
       importButton.disabled = true;
       showGrid9ImportLoading();
       try {
         const failures = [];
-        const shouldImportLowest = importMode === "overwrite" || !lowestPrice.value.trim();
+        const shouldImportField = (currentValue) => importMode === "overwrite" || !String(currentValue || "").trim();
+        const shouldImportLowest = importFields.has("price") && shouldImportField(lowestPrice.value);
         let lowestDiscountError = null;
         const lowestDiscountPromise = shouldImportLowest
           ? fetchDlwatcherLowestDiscount(workno).catch((error) => {
@@ -4158,24 +4348,28 @@
           throw new Error("empty product");
         }
         product.lowestDiscount = await lowestDiscountPromise;
-        const shouldImportField = (currentValue) => importMode === "overwrite" || !String(currentValue || "").trim();
         [
-          [String.fromCharCode(0x6807, 0x9898), product.title, editableText("recordTitle")],
-          ["CV", product.cv, editableText("cvText")],
-          [String.fromCharCode(0x793e, 0x56e2), product.circle, editableText("circleText")],
-          [String.fromCharCode(0x539f, 0x4ef7), product.originalPrice, originalPrice.value],
-          [String.fromCharCode(0x73b0, 0x4ef7), product.currentPrice, currentPrice.value],
-          [String.fromCharCode(0x73b0, 0x6298, 0x6263), product.currentDiscount, currentDiscount.value]
-        ].forEach(([label, value, currentValue]) => {
-          if (shouldImportField(currentValue) && (value === "" || value == null)) {
+          ["title", String.fromCharCode(0x6807, 0x9898), product.title, editableText("recordTitle")],
+          ["basic", "CV", product.cv, editableText("cvText")],
+          ["basic", String.fromCharCode(0x793e, 0x56e2), product.circle, editableText("circleText")],
+          ["price", String.fromCharCode(0x539f, 0x4ef7), product.originalPrice, originalPrice.value],
+          ["price", String.fromCharCode(0x73b0, 0x4ef7), product.currentPrice, currentPrice.value],
+          ["price", String.fromCharCode(0x73b0, 0x6298, 0x6263), product.currentDiscount, currentDiscount.value]
+        ].forEach(([scope, label, value, currentValue]) => {
+          if (importFields.has(scope) && shouldImportField(currentValue) && (value === "" || value == null)) {
             failures.push({ label, reason: UI_IMPORT_API_MISSING + String.fromCharCode(0xff0c) + UI_IMPORT_UNCHANGED_MANUAL });
           }
         });
-        if (lowestDiscountError) {
+        if (importFields.has("keywords") && shouldImportField(tags.querySelector(".tag")?.textContent || "") && (!Array.isArray(product.keywords) || !product.keywords.length)) {
+          failures.push({ label: UI_IMPORT_SCOPE_LABELS.keywords, reason: UI_IMPORT_API_MISSING + String.fromCharCode(0xff0c) + UI_IMPORT_UNCHANGED_MANUAL });
+        }
+        if (shouldImportLowest && lowestDiscountError) {
           failures.push({ label: UI_IMPORT_LOWEST_LABEL, reason: fullImportFailureReason(lowestDiscountError, "lowest") });
         }
-        let chineseChoice = product.hasChineseVersion || product.chineseEditionWorkno ? CHOICE_SUBTITLE : CHOICE_NONE;
-        if (chineseChoice === CHOICE_NONE) {
+        let chineseChoice = product.hasChineseVersion || product.chineseEditionWorkno ? CHOICE_SUBTITLE : "";
+        const currentChineseChoice = document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE;
+        const shouldImportChinese = template === "full" && importFields.has("basic") && (importMode === "overwrite" || currentChineseChoice === CHOICE_SUBTITLE);
+        if (shouldImportChinese && !chineseChoice) {
           try {
             const translatable = parseTranslatableChinese(await fetchTranslatableProducts(workno), workno);
             if (translatable) chineseChoice = translatable.hasChinese ? CHOICE_SUBTITLE : CHOICE_NONE;
@@ -4184,8 +4378,8 @@
             failures.push({ label: UI_IMPORT_CHINESE_LABEL, reason: fullImportFailureReason(translatableError, "translatable") });
           }
         }
-        applyImportedProduct(product, chineseChoice, importMode);
-        if (importMode === "overwrite" || !coverImage.getAttribute("src")) {
+        applyImportedProduct(product, chineseChoice, importMode, importFields, template);
+        if (importFields.has("cover") && (importMode === "overwrite" || !coverImage.getAttribute("src"))) {
           if (product.coverUrl) {
             try {
               await importCoverFromUrl(product.coverUrl, workno);
@@ -5968,6 +6162,7 @@
         rjText: editableText("rjText"),
         durationText: editableText("durationText"),
         purchaseDate: normalizeCardDateValue(valueOf("#purchaseDateText")),
+        purchasePrice: valueOf("#purchasePriceText"),
         listenedDate: normalizeCardDateValue(valueOf("#listenedDateText")),
         cardInfoType: normalizeCardInfoType(cardInfoType.value),
         originalPrice: valueOf("#originalPrice"),
@@ -6302,6 +6497,7 @@
       setEditableText("rjText", state.rjText || "");
       setEditableText("durationText", state.durationText || "");
       purchaseDateText.value = normalizeCardDateValue(state.purchaseDate);
+      purchasePriceText.value = state.purchasePrice === "" || state.purchasePrice == null ? "" : state.purchasePrice;
       listenedDateText.value = normalizeCardDateValue(state.listenedDate);
       cardInfoType.value = normalizeCardInfoType(state.cardInfoType);
       syncCardInfoField();
@@ -6516,6 +6712,10 @@
         input.value = normalizeCardDateValue(input.value);
       });
     });
+    purchasePriceText.addEventListener("input", () => {
+      sanitizeNumericInput(purchasePriceText);
+      scheduleSave();
+    });
 
     originalPrice.addEventListener("input", () => {
       sanitizeNumericInput(originalPrice);
@@ -6717,6 +6917,7 @@
     const LABEL_RJ = String.fromCharCode(0x52, 0x4a, 0x53f7);
     const LABEL_DURATION = String.fromCharCode(0x65f6, 0x957f);
     const LABEL_PURCHASE_DATE = String.fromCharCode(0x8d2d, 0x4e70, 0x65e5, 0x671f);
+    const LABEL_PURCHASE_PRICE = String.fromCharCode(0x8d2d, 0x5165, 0x4ef7, 0x683c);
     const LABEL_LISTENED_DATE = String.fromCharCode(0x6536, 0x542c, 0x65e5, 0x671f);
     const LABEL_TAGS = String.fromCharCode(0x5173, 0x952e, 0x8bcd);
     const LABEL_PURCHASE = String.fromCharCode(0x4ef7, 0x683c);
@@ -7537,8 +7738,8 @@
       drawPreviewInfoField(ctx, LABEL_RJ, limitedFullFieldText(rjText, textOf('#rjText')), 532, 240.5, 221);
       const selectedCardInfoType = normalizeCardInfoType(cardInfoType.value);
       if (selectedCardInfoType !== "hidden") {
-        const selectedCardInfoLabel = selectedCardInfoType === "purchaseDate" ? LABEL_PURCHASE_DATE : selectedCardInfoType === "listenedDate" ? LABEL_LISTENED_DATE : LABEL_DURATION;
-        const selectedCardInfoText = selectedCardInfoType === "purchaseDate" ? purchaseDateText.value : selectedCardInfoType === "listenedDate" ? listenedDateText.value : limitedFullFieldText(durationText, textOf('#durationText'));
+        const selectedCardInfoLabel = selectedCardInfoType === "purchaseDate" ? LABEL_PURCHASE_DATE : selectedCardInfoType === "purchasePrice" ? LABEL_PURCHASE_PRICE : selectedCardInfoType === "listenedDate" ? LABEL_LISTENED_DATE : LABEL_DURATION;
+        const selectedCardInfoText = selectedCardInfoType === "purchaseDate" ? purchaseDateText.value : selectedCardInfoType === "purchasePrice" ? purchasePriceText.value : selectedCardInfoType === "listenedDate" ? listenedDateText.value : limitedFullFieldText(durationText, textOf('#durationText'));
         drawPreviewInfoField(ctx, selectedCardInfoLabel, selectedCardInfoText, 771, 240.5, 221);
       }
       drawPreviewChoiceField(ctx, document.querySelector(".choice-button.active")?.textContent.trim() || CHOICE_SUBTITLE, 534, 340.5, 366);
@@ -7792,10 +7993,10 @@
     const grid9ImportModal = document.getElementById("grid9ImportModal");
     const grid9ImportTitle = document.getElementById("grid9ImportTitle");
     const grid9ImportBody = document.getElementById("grid9ImportBody");
+    const grid9ImportInfoButton = document.getElementById("grid9ImportInfoButton");
     const grid9ImportDoneButton = document.getElementById("grid9ImportDoneButton");
-    const grid9ImportOverwriteButton = document.getElementById("grid9ImportOverwriteButton");
-    const grid9ImportFillButton = document.getElementById("grid9ImportFillButton");
     const grid9ImportCancelButton = document.getElementById("grid9ImportCancelButton");
+    const grid9ImportConfirmButton = document.getElementById("grid9ImportConfirmButton");
     const batchTemplateRjModal = document.getElementById("batchTemplateRjModal");
     const batchTemplateRjTitle = document.getElementById("batchTemplateRjTitle");
     const batchTemplateRjHelp = document.getElementById("batchTemplateRjHelp");
@@ -8098,46 +8299,53 @@
 
     function grid9FailureReason(error) {
       const message = String((error && error.message) || "");
-      let reason = "";
-      if (message === "no cover url") reason = UI_GRID9_NO_COVER;
-      else if (message === "empty product") reason = UI_GRID9_NO_DATA;
-      else reason = message || UI_GRID9_UNKNOWN;
-      return reason;
+      if (message === "no cover url") return UI_GRID9_NO_COVER;
+      if (message === "empty product") return UI_GRID9_NO_DATA;
+      return fullImportFailureReason(error, "dlsite");
     }
 
     function showGrid9ImportLoading() {
       grid9ImportTitle.textContent = UI_GRID9_IMPORTING + String.fromCharCode(0x2026);
       grid9ImportBody.textContent = "";
+      hideImportInfoButton(grid9ImportInfoButton);
       grid9ImportDoneButton.hidden = true;
+      grid9ImportCancelButton.hidden = true;
+      grid9ImportConfirmButton.hidden = true;
       grid9ImportModal.hidden = false;
     }
 
-    function chooseBatchImportMode(hasExisting) {
-      if (!hasExisting) return Promise.resolve("fill");
+    function requestTemplateImportOptions(template) {
+      const normalizedTemplate = TEMPLATE_IMPORT_SCOPES[template] ? template : "full";
+      const scopes = TEMPLATE_IMPORT_SCOPES[normalizedTemplate];
       return new Promise((resolve) => {
         grid9ImportTitle.textContent = UI_GRID9_IMPORT_ACTION;
-        grid9ImportBody.textContent = UI_GRID9_IMPORT_CHOOSE_MODE;
+        const controls = renderImportChoiceForm(grid9ImportBody, scopes, normalizedTemplate === "grid9");
+        configureImportInfoButton(grid9ImportInfoButton, normalizedTemplate === "grid9" ? UI_IMPORT_DIALOG_HELP_GRID9 : UI_IMPORT_DIALOG_HELP);
         grid9ImportDoneButton.hidden = true;
-        grid9ImportOverwriteButton.hidden = false;
-        grid9ImportFillButton.hidden = false;
         grid9ImportCancelButton.hidden = false;
+        grid9ImportConfirmButton.hidden = false;
+        grid9ImportConfirmButton.textContent = UI_IMPORT_START;
+        grid9ImportConfirmButton.disabled = !controls.hasScope();
         grid9ImportModal.hidden = false;
-        const finish = (mode) => {
-          grid9ImportOverwriteButton.hidden = true;
-          grid9ImportFillButton.hidden = true;
+        controls.onScopeChange(() => { grid9ImportConfirmButton.disabled = !controls.hasScope(); });
+        const finish = (value) => {
+          hideImportInfoButton(grid9ImportInfoButton);
           grid9ImportCancelButton.hidden = true;
+          grid9ImportConfirmButton.hidden = true;
+          grid9ImportCancelButton.onclick = null;
+          grid9ImportConfirmButton.onclick = null;
           grid9ImportModal.hidden = true;
-          resolve(mode);
+          resolve(value);
         };
-        grid9ImportOverwriteButton.onclick = () => finish("overwrite");
-        grid9ImportFillButton.onclick = () => finish("fill");
         grid9ImportCancelButton.onclick = () => finish(null);
+        grid9ImportConfirmButton.onclick = () => finish(controls.value());
       });
     }
 
     function showGrid9ImportResult(imported, failed, skipped, empty, failures, fieldIssues = []) {
       grid9ImportTitle.textContent = UI_GRID9_IMPORT_DONE_TITLE;
       grid9ImportBody.textContent = "";
+      hideImportInfoButton(grid9ImportInfoButton);
       const summary = document.createElement("p");
       summary.style.margin = "0 0 6px";
       summary.textContent = grid9ImportMessage(imported, failed, skipped, empty, fieldIssues.length);
@@ -8157,6 +8365,8 @@
         grid9ImportBody.appendChild(line);
       });
       grid9ImportDoneButton.hidden = false;
+      grid9ImportCancelButton.hidden = true;
+      grid9ImportConfirmButton.hidden = true;
       grid9ImportModal.hidden = false;
     }
 
@@ -8290,8 +8500,9 @@
     }
 
     async function importAllGrid9Covers() {
-      const mode = await chooseBatchImportMode(grid9CellEditors.some((cell) => grid9HasCover(Number(cell.dataset.grid9Index))));
-      if (!mode) return;
+      const importOptions = await requestTemplateImportOptions("grid9");
+      if (!importOptions) return;
+      const mode = importOptions.mode;
       const jobs = [];
       let emptyCount = 0;
       let skipCount = 0;
@@ -9409,8 +9620,10 @@
     }
 
     async function importAllQuickCovers() {
-      const mode = await chooseBatchImportMode(quickCellEditors.some((cell) => quickHasCover(Number(cell.dataset.quickIndex)) || cell.querySelector(".quick-cv").value.trim()));
-      if (!mode) return;
+      const importOptions = await requestTemplateImportOptions("quick");
+      if (!importOptions) return;
+      const mode = importOptions.mode;
+      const importFields = importOptions.fields;
       const jobs = [];
       let emptyCount = 0;
       let skipCount = 0;
@@ -9422,15 +9635,17 @@
         }
         const hasCover = quickHasCover(index);
         const hasCv = Boolean(cell.querySelector(".quick-cv").value.trim());
-        if (mode === "fill" && hasCover && hasCv) {
+        const importCover = importFields.has("cover") && (mode === "overwrite" || !hasCover);
+        const importCv = importFields.has("cv") && (mode === "overwrite" || !hasCv);
+        if (!importCover && !importCv) {
           skipCount += 1;
           return;
         }
         jobs.push({
           index,
           rj,
-          importCover: mode === "overwrite" || !hasCover,
-          importCv: mode === "overwrite" || !hasCv
+          importCover,
+          importCv
         });
       });
       if (!jobs.length) {
@@ -10113,8 +10328,10 @@
     }
 
     async function importAllTrioCells() {
-      const mode = await chooseBatchImportMode(trioCellEditors.some((cell) => trioHasCover(Number(cell.dataset.trioIndex)) || cell.querySelector(".trio-cv").value.trim()));
-      if (!mode) return;
+      const importOptions = await requestTemplateImportOptions("trio");
+      if (!importOptions) return;
+      const mode = importOptions.mode;
+      const importFields = importOptions.fields;
       const jobs = [];
       let emptyCount = 0;
       let skipCount = 0;
@@ -10126,16 +10343,20 @@
         }
         const hasCover = trioHasCover(index);
         const hasCv = Boolean(cell.querySelector(".trio-cv").value.trim());
-        if (mode === "fill" && hasCover && hasCv) {
+        const hasPrice = Boolean(cell.querySelector(".trio-price-input").value.trim());
+        const importCover = importFields.has("cover") && (mode === "overwrite" || !hasCover);
+        const importCv = importFields.has("cv") && (mode === "overwrite" || !hasCv);
+        const importPrice = importFields.has("currentPrice") && (mode === "overwrite" || !hasPrice);
+        if (!importCover && !importCv && !importPrice) {
           skipCount += 1;
           return;
         }
         jobs.push({
           index,
           rj,
-          importCover: mode === "overwrite" || !hasCover,
-          importCv: mode === "overwrite" || !hasCv,
-          importPrice: mode === "overwrite" || !cell.querySelector(".trio-price-input").value.trim()
+          importCover,
+          importCv,
+          importPrice
         });
       });
       if (!jobs.length) {
@@ -11425,9 +11646,9 @@
       const collectionRjImportPrompt = document.getElementById("collectionRjImportPrompt");
       const collectionRjImportPromptTitle = document.getElementById("collectionRjImportPromptTitle");
       const collectionRjImportPromptBody = document.getElementById("collectionRjImportPromptBody");
+      const collectionRjImportInfo = document.getElementById("collectionRjImportInfo");
       const collectionRjImportCancel = document.getElementById("collectionRjImportCancel");
-      const collectionRjImportFill = document.getElementById("collectionRjImportFill");
-      const collectionRjImportOverwrite = document.getElementById("collectionRjImportOverwrite");
+      const collectionRjImportConfirm = document.getElementById("collectionRjImportConfirm");
       const collectionRjImportDone = document.getElementById("collectionRjImportDone");
       const collectionBatchAddPrompt = document.getElementById("collectionBatchAddPrompt");
       const collectionBatchAddTitle = document.getElementById("collectionBatchAddTitle");
@@ -12375,36 +12596,34 @@
           collectionSavePromptConfirm.onclick = () => finish(true);
         });
       }
-      function requestCollectionRjImportMode() {
+      function requestCollectionRjImportOptions() {
         return new Promise(resolve => {
-          collectionRjImportPromptTitle.textContent = "按RJ号导入信息";
-          collectionRjImportPromptBody.textContent = "";
-          collectionRjImportPromptBody.append(
-            document.createTextNode(String.fromCharCode(0x586b, 0x5145, 0x7a7a, 0x4f4d, 0xff1a, 0x53ea, 0x8865, 0x5145, 0x5f53, 0x524d, 0x4e3a, 0x7a7a, 0x7684, 0x4fe1, 0x606f, 0x3002)),
-            document.createElement("br"),
-            document.createTextNode(String.fromCharCode(0x8986, 0x76d6, 0x5168, 0x90e8, 0xff1a, 0x8986, 0x76d6, 0x5df2, 0x6709, 0x7684, 0x6807, 0x9898, 0x3001, 0x43, 0x56, 0x3001, 0x793e, 0x56e2, 0x3001, 0x53d1, 0x552e, 0x65e5, 0x671f, 0x3001, 0x4ef7, 0x683c, 0x3001, 0x6298, 0x6263, 0x3001, 0x4e2d, 0x6587, 0x72b6, 0x6001, 0x3001, 0x4f5c, 0x54c1, 0x5173, 0x952e, 0x8bcd, 0x548c, 0x20, 0x42, 0x4b, 0x3002, 0x5982, 0x679c, 0x83b7, 0x53d6, 0x5931, 0x8d25, 0x5219, 0x7ef4, 0x6301, 0x539f, 0x503c, 0x3002))
-          );
-          collectionRjImportOverwrite.hidden = false;
-          collectionRjImportFill.hidden = false;
+          collectionRjImportPromptTitle.textContent = UI_COLLECTION_IMPORT_TITLE;
+          const controls = renderImportChoiceForm(collectionRjImportPromptBody, COLLECTION_IMPORT_SCOPES);
+          configureImportInfoButton(collectionRjImportInfo);
           collectionRjImportCancel.hidden = false;
+          collectionRjImportConfirm.hidden = false;
+          collectionRjImportConfirm.textContent = UI_IMPORT_START;
+          collectionRjImportConfirm.disabled = !controls.hasScope();
           collectionRjImportDone.hidden = true;
           collectionRjImportPrompt.hidden = false;
-          collectionRjImportOverwrite.focus();
+          collectionRjImportConfirm.focus();
+          controls.onScopeChange(() => { collectionRjImportConfirm.disabled = !controls.hasScope(); });
           const finish = value => {
+            hideImportInfoButton(collectionRjImportInfo);
             collectionRjImportPrompt.hidden = true;
             collectionRjImportCancel.onclick = null;
-            collectionRjImportFill.onclick = null;
-            collectionRjImportOverwrite.onclick = null;
+            collectionRjImportConfirm.onclick = null;
             resolve(value);
           };
           collectionRjImportCancel.onclick = () => finish(null);
-          collectionRjImportFill.onclick = () => finish("fill");
-          collectionRjImportOverwrite.onclick = () => finish("overwrite");
+          collectionRjImportConfirm.onclick = () => finish(controls.value());
         });
       }
       function showCollectionRjImportLoading(total = 0) {
-        collectionRjImportPromptTitle.textContent = "正在导入信息…";
+        collectionRjImportPromptTitle.textContent = UI_COLLECTION_IMPORTING;
         collectionRjImportPromptBody.textContent = "";
+        hideImportInfoButton(collectionRjImportInfo);
         if (total > 0) {
           const progress = document.createElement("div");
           progress.className = "collection-rj-import-progress";
@@ -12426,9 +12645,8 @@
           collectionRjImportPromptBody.appendChild(progress);
           updateCollectionRjImportProgress(0, total);
         }
-        collectionRjImportOverwrite.hidden = true;
-        collectionRjImportFill.hidden = true;
         collectionRjImportCancel.hidden = true;
+        collectionRjImportConfirm.hidden = true;
         collectionRjImportDone.hidden = true;
         collectionRjImportPrompt.hidden = false;
       }
@@ -12446,8 +12664,9 @@
         return UI_IMPORT_MISSING_FIELDS + String.fromCharCode(0xff1a) + fields.join(String.fromCharCode(0x3001));
       }
       function showCollectionRjImportResult(message, failed = false, details = []) {
-        collectionRjImportPromptTitle.textContent = failed ? "导入失败" : "已根据RJ号导入信息";
+        collectionRjImportPromptTitle.textContent = failed ? UI_IMPORT_RESULT_FAILED : UI_COLLECTION_IMPORT_SUCCESS_TITLE;
         collectionRjImportPromptBody.textContent = "";
+        hideImportInfoButton(collectionRjImportInfo);
         const summary = document.createElement("p");
         summary.style.margin = details.length ? "0 0 6px" : "0";
         summary.textContent = message;
@@ -12465,6 +12684,8 @@
           note.textContent = UI_IMPORT_UNCHANGED_MANUAL;
           collectionRjImportPromptBody.appendChild(note);
         }
+        collectionRjImportCancel.hidden = true;
+        collectionRjImportConfirm.hidden = true;
         collectionRjImportDone.hidden = false;
         collectionRjImportPrompt.hidden = false;
       }
@@ -12482,6 +12703,7 @@
         "collectionDetailScenarioWriter",
         "collectionDetailIllustrator",
         "collectionDetailPurchaseDate",
+        "collectionDetailPurchasePrice",
         "collectionDetailListenedDate",
         "collectionDetailReleaseDate",
         "collectionDetailOriginalPrice",
@@ -12496,6 +12718,34 @@
         "collectionDetailCharacter",
         "collectionDetailReview"
       ];
+      const collectionDetailListeningStatus = document.getElementById("collectionDetailListeningStatus");
+      const collectionDetailListeningStatusCustom = document.getElementById("collectionDetailListeningStatusCustom");
+      function syncCollectionDetailListeningStatusCustom(focusCustom = false) {
+        const customSelected = collectionDetailListeningStatus.value === "custom";
+        collectionDetailListeningStatusCustom.hidden = !customSelected;
+        if (customSelected && focusCustom) collectionDetailListeningStatusCustom.focus();
+      }
+      function collectionDetailListeningStatusValue() {
+        return collectionDetailListeningStatus.value === "custom"
+          ? collectionDetailListeningStatusCustom.value.trim()
+          : collectionDetailListeningStatus.value;
+      }
+      function setCollectionDetailListeningStatus(value) {
+        const nextValue = String(value || "").trim();
+        const matchingOption = Array.from(collectionDetailListeningStatus.options).find(option => option.value !== "custom" && option.value === nextValue);
+        if (matchingOption) {
+          collectionDetailListeningStatus.value = matchingOption.value;
+          collectionDetailListeningStatusCustom.value = "";
+        } else if (nextValue) {
+          collectionDetailListeningStatus.value = "custom";
+          collectionDetailListeningStatusCustom.value = nextValue;
+        } else {
+          collectionDetailListeningStatus.selectedIndex = 0;
+          collectionDetailListeningStatusCustom.value = "";
+        }
+        syncCollectionDetailListeningStatusCustom();
+      }
+      collectionDetailListeningStatus.addEventListener("change", () => syncCollectionDetailListeningStatusCustom(true));
       const collectionDetailRatingFields = [
         ["collectionDetailRating", "collectionDetailRatingStars", "rating"],
         ["collectionDetailCvRating", "collectionDetailCvRatingStars", "cvRating"],
@@ -12546,7 +12796,7 @@
       }
       function collectionDetailSnapshot() {
         const art = document.getElementById("collectionDetailArt");
-        return JSON.stringify({ text:collectionDetailTextIds.map(detailText), keywords:detailChipValues("collectionDetailKeywords"), tags:detailChipValues("collectionDetailLibraryTags"), cover:art?.dataset.coverStoredSrc || "", coverFit:art?.dataset.coverFit || "contain" });
+        return JSON.stringify({ text:collectionDetailTextIds.map(detailText), listeningStatus:collectionDetailListeningStatusValue(), keywords:detailChipValues("collectionDetailKeywords"), tags:detailChipValues("collectionDetailLibraryTags"), cover:art?.dataset.coverStoredSrc || "", coverFit:art?.dataset.coverFit || "contain" });
       }
       function openDetail(id) {
         const r = records.find(x => String(x.id) === String(id));
@@ -12559,6 +12809,8 @@
         document.getElementById("collectionDetailTitle").textContent = r.title || "";
         document.getElementById("collectionDetailCn").textContent = r.cn || "";
         ["Cv","Circle","Rj","Time","ScenarioWriter","Illustrator","PurchaseDate","ListenedDate","ReleaseDate"].forEach((key,index) => { document.getElementById("collectionDetail" + key).textContent = [r.cv,r.circle,r.rj,r.time,r.scenarioWriter,r.illustrator,r.purchaseDate,r.listenedDate,r.releaseDate][index] || ""; });
+        document.getElementById("collectionDetailPurchasePrice").textContent = collectionDetailNumberText(r.purchasePrice, "¥");
+        setCollectionDetailListeningStatus(r.listeningStatus);
         document.getElementById("collectionDetailOriginalPrice").textContent = collectionDetailNumberText(r.originalPrice, "¥");
         document.getElementById("collectionDetailCurrentPrice").textContent = collectionDetailNumberText(r.price, "¥");
         document.getElementById("collectionDetailCurrentDiscount").textContent = collectionDetailNumberText(r.currentDiscount, "", "%off");
@@ -12586,6 +12838,7 @@
         localStorage.removeItem(COLLECTION_DETAIL_KEY);
         scrollY = collectionScroller ? collectionScroller.scrollTop : window.scrollY;
         collectionDetailTextIds.forEach(id => { document.getElementById(id).textContent = ""; });
+        setCollectionDetailListeningStatus("");
         renderDetailChips("collectionDetailKeywords", []);
         renderDetailChips("collectionDetailLibraryTags", []);
         renderCollectionDetailRatings(null);
@@ -12899,6 +13152,7 @@
           title: detailText("collectionDetailTitle"),
           cv: detailText("collectionDetailCv"),
           circle: detailText("collectionDetailCircle"),
+          time: detailText("collectionDetailTime"),
           scenarioWriter: detailText("collectionDetailScenarioWriter"),
           illustrator: detailText("collectionDetailIllustrator"),
           releaseDate: detailText("collectionDetailReleaseDate"),
@@ -12911,24 +13165,31 @@
           cover: collectionDetailArt.dataset.coverSrc || ""
         };
         const isEmpty = value => Array.isArray(value) ? !value.length : value == null || String(value).trim() === "";
-        const mode = Object.values(current).every(isEmpty) ? "overwrite" : await requestCollectionRjImportMode();
-        if (!mode) return;
+        const importOptions = await requestCollectionRjImportOptions();
+        if (!importOptions) return;
+        const mode = importOptions.mode;
+        const importFields = importOptions.fields;
         const canWrite = value => mode === "overwrite" || isEmpty(value);
         const targets = {
-          title: canWrite(current.title),
-          cv: canWrite(current.cv),
-          circle: canWrite(current.circle),
-          scenarioWriter: canWrite(current.scenarioWriter),
-          illustrator: canWrite(current.illustrator),
-          releaseDate: canWrite(current.releaseDate),
-          originalPrice: canWrite(current.originalPrice),
-          currentPrice: canWrite(current.currentPrice),
-          currentDiscount: canWrite(current.currentDiscount),
-          lowestDiscount: canWrite(current.lowestDiscount),
-          chinese: canWrite(current.chinese),
-          keywords: canWrite(current.keywords),
-          cover: canWrite(current.cover)
+          title: importFields.has("title") && canWrite(current.title),
+          cv: importFields.has("work") && canWrite(current.cv),
+          circle: importFields.has("work") && canWrite(current.circle),
+          time: importFields.has("work") && canWrite(current.time),
+          scenarioWriter: importFields.has("work") && canWrite(current.scenarioWriter),
+          illustrator: importFields.has("work") && canWrite(current.illustrator),
+          releaseDate: importFields.has("work") && canWrite(current.releaseDate),
+          originalPrice: importFields.has("priceInfo") && canWrite(current.originalPrice),
+          currentPrice: importFields.has("priceInfo") && canWrite(current.currentPrice),
+          currentDiscount: importFields.has("priceInfo") && canWrite(current.currentDiscount),
+          lowestDiscount: importFields.has("priceInfo") && canWrite(current.lowestDiscount),
+          chinese: importFields.has("work") && canWrite(current.chinese),
+          keywords: importFields.has("keywords") && canWrite(current.keywords),
+          cover: importFields.has("cover") && canWrite(current.cover)
         };
+        if (!Object.values(targets).some(Boolean)) {
+          showCollectionRjImportResult(UI_GRID9_NOTHING);
+          return;
+        }
         showCollectionRjImportLoading();
         button.disabled = true;
         button.setAttribute("aria-busy", "true");
@@ -12976,6 +13237,7 @@
           importText(targets.title, product.title, "collectionDetailTitle", String.fromCharCode(0x6807, 0x9898));
           importText(targets.cv, product.cv, "collectionDetailCv", "CV");
           importText(targets.circle, product.circle, "collectionDetailCircle", String.fromCharCode(0x793e, 0x56e2));
+          importOptionalText(targets.time, product.duration, "collectionDetailTime");
           importOptionalText(targets.scenarioWriter, product.scenarioWriter, "collectionDetailScenarioWriter");
           importOptionalText(targets.illustrator, product.illustrator, "collectionDetailIllustrator");
           importText(targets.releaseDate, product.releaseDate, "collectionDetailReleaseDate", String.fromCharCode(0x53d1, 0x552e, 0x65e5, 0x671f));
@@ -13040,7 +13302,7 @@
         const numericText = id => detailText(id).replace(/^¥\s*/, "").replace(/\s*%off$/i, "").trim();
         const optionalNumber = value => value === "" ? "" : Number(value);
         const now = Date.now();
-        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), scenarioWriter:detailText("collectionDetailScenarioWriter"), illustrator:detailText("collectionDetailIllustrator"), purchaseDate:normalizeCardDateValue(detailText("collectionDetailPurchaseDate")), listenedDate:normalizeCardDateValue(detailText("collectionDetailListenedDate")), releaseDate:normalizeReleaseDateValue(detailText("collectionDetailReleaseDate")), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverStoredSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
+        const nextWork = { ...(work || { id:nextRj || "collection-" + now, addedAt:now, cover:"", originalPrice:"", price:"", currentDiscount:"", lowestPrice:"" }), id:nextRj || work?.id || "collection-" + now, rj:nextRj, title:detailText("collectionDetailTitle"), cn:detailText("collectionDetailCn"), cv:detailText("collectionDetailCv"), circle:detailText("collectionDetailCircle"), time:detailText("collectionDetailTime"), scenarioWriter:detailText("collectionDetailScenarioWriter"), illustrator:detailText("collectionDetailIllustrator"), purchaseDate:normalizeCardDateValue(detailText("collectionDetailPurchaseDate")), purchasePrice:optionalNumber(numericText("collectionDetailPurchasePrice")), listenedDate:normalizeCardDateValue(detailText("collectionDetailListenedDate")), listeningStatus:collectionDetailListeningStatusValue(), releaseDate:normalizeReleaseDateValue(detailText("collectionDetailReleaseDate")), originalPrice:optionalNumber(numericText("collectionDetailOriginalPrice")), price:optionalNumber(numericText("collectionDetailCurrentPrice")), currentDiscount:optionalNumber(numericText("collectionDetailCurrentDiscount")), lowestPrice:optionalNumber(numericText("collectionDetailLowestDiscount")), rating:optionalNumber(numericText("collectionDetailRating")), cvRating:optionalNumber(numericText("collectionDetailCvRating")), storyRating:optionalNumber(numericText("collectionDetailStoryRating")), seRating:optionalNumber(numericText("collectionDetailSeRating")), summary:detailText("collectionDetailSummary"), character:detailText("collectionDetailCharacter"), review:detailText("collectionDetailReview"), keywords:detailChipValues("collectionDetailKeywords").join(" / "), tags:detailChipValues("collectionDetailLibraryTags"), cover:collectionDetailArt.dataset.coverStoredSrc || "", coverFit:collectionDetailArt.dataset.coverFit || "contain", editedAt:now };
         try {
           if (work && nextWork.id !== work.id) await deleteWork(work.id);
           await putWorks([nextWork]);
@@ -13088,7 +13350,7 @@
         if (!work) return;
         const state = collectState();
         const hasCurrentFullInformation = Boolean(
-          [state.recordTitle, state.cvText, state.circleText, state.rjText, state.durationText, state.purchaseDate, state.listenedDate, state.originalPrice, state.currentPrice, state.currentDiscount, state.lowestPrice, state.reviewText]
+          [state.recordTitle, state.cvText, state.circleText, state.rjText, state.durationText, state.purchaseDate, state.purchasePrice, state.listenedDate, state.originalPrice, state.currentPrice, state.currentDiscount, state.lowestPrice, state.reviewText]
             .some(value => String(value ?? "").trim()) ||
           (state.cnChoice && state.cnChoice !== CHOICE_SUBTITLE) ||
           (state.ratings || []).some(value => Number(value) !== 4) ||
@@ -13099,7 +13361,7 @@
         if (hasCurrentFullInformation && !await showAppConfirm(String.fromCharCode(0x5f53, 0x524d, 0x5b8c, 0x6574, 0x7248, 0x5df2, 0x6709, 0x4fe1, 0x606f, 0xff0c, 0x5236, 0x4f5c, 0x20, 0x72, 0x65, 0x70, 0x6f, 0x20, 0x4f1a, 0x8986, 0x76d6, 0x73b0, 0x6709, 0x5185, 0x5bb9, 0x3002, 0x786e, 0x5b9a, 0x7ee7, 0x7eed, 0x5417, 0xff1f))) return;
         const ratings = [work.rating, work.cvRating, work.storyRating, work.seRating].map(value => value === "" || value == null ? 0 : Number(value) || 0);
         const workCover = await resolveStoredImageReferenceSafely(work.cover);
-        applyState({ ...state, template:"full", theme:"matcha-berry-cheese", recordTitle:work.title || "", cvText:work.cv || "", circleText:work.circle || "", rjText:work.rj || "", durationText:work.time || "", purchaseDate:work.purchaseDate || "", listenedDate:work.listenedDate || "", cardInfoType:normalizeCardInfoType(work.cardInfoType), originalPrice:work.originalPrice === "" || work.originalPrice == null ? "" : work.originalPrice, currentPrice:work.price === "" || work.price == null ? "" : work.price, currentDiscount:work.currentDiscount === "" || work.currentDiscount == null ? "" : work.currentDiscount, lowestPrice:work.lowestPrice === "" || work.lowestPrice == null ? "" : work.lowestPrice, cnChoice:work.cn || CHOICE_SUBTITLE, ratings, tags:String(work.keywords || "").split(" / ").filter(Boolean), reviewText:work.review || "", coverSrc:workCover || "", coverOriginalSrc:workCover || "", coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverWhiteFogMaskSrc:"", coverEditorUndoStack:[], coverEditorRedoStack:[], coverEditorHistoryCheckpoint:null, coverEditorOperations:[], coverEditorRedoOperations:[], coverEditorHistoryFormat:"operations-v1", coverStickers:[] }, true);
+        applyState({ ...state, template:"full", theme:"matcha-berry-cheese", recordTitle:work.title || "", cvText:work.cv || "", circleText:work.circle || "", rjText:work.rj || "", durationText:work.time || "", purchaseDate:work.purchaseDate || "", purchasePrice:work.purchasePrice === "" || work.purchasePrice == null ? "" : work.purchasePrice, listenedDate:work.listenedDate || "", cardInfoType:normalizeCardInfoType(work.cardInfoType), originalPrice:work.originalPrice === "" || work.originalPrice == null ? "" : work.originalPrice, currentPrice:work.price === "" || work.price == null ? "" : work.price, currentDiscount:work.currentDiscount === "" || work.currentDiscount == null ? "" : work.currentDiscount, lowestPrice:work.lowestPrice === "" || work.lowestPrice == null ? "" : work.lowestPrice, cnChoice:work.cn || CHOICE_SUBTITLE, ratings, tags:String(work.keywords || "").split(" / ").filter(Boolean), reviewText:work.review || "", coverSrc:workCover || "", coverOriginalSrc:workCover || "", coverEditedSrc:"", coverMosaicMaskSrc:"", coverBlurMaskSrc:"", coverWhiteFogMaskSrc:"", coverEditorUndoStack:[], coverEditorRedoStack:[], coverEditorHistoryCheckpoint:null, coverEditorOperations:[], coverEditorRedoOperations:[], coverEditorHistoryFormat:"operations-v1", coverStickers:[] }, true);
         setMainPage("template");
       };
       function closeCollectionDetailMobileMenu() {
@@ -13332,14 +13594,23 @@
           return { work, index, rj:normalizeWorkno(work.rj || legacyRjId) };
         }).filter(job => job.rj);
         if (!candidates.length) {
-          showCollectionRjImportResult("没有可导入的有效 RJ 号。", true);
+          showCollectionRjImportResult(UI_COLLECTION_IMPORT_NO_VALID_RJ, true);
           return;
         }
         const isEmpty = value => value == null || String(value).trim() === "";
-        const importTargetValues = work => [work.title, work.cv, work.cover, work.circle, work.scenarioWriter, work.illustrator, work.releaseDate, work.originalPrice, work.price, work.currentDiscount, work.lowestPrice, work.cn, work.keywords];
-        const allImportTargetsEmpty = candidates.every(({ work }) => importTargetValues(work).every(isEmpty));
-        const mode = allImportTargetsEmpty ? "overwrite" : await requestCollectionRjImportMode();
-        if (!mode) return;
+        const importOptions = await requestCollectionRjImportOptions();
+        if (!importOptions) return;
+        const mode = importOptions.mode;
+        const importFields = importOptions.fields;
+        const importTargetValues = work => {
+          const values = [];
+          if (importFields.has("cover")) values.push(work.cover);
+          if (importFields.has("title")) values.push(work.title);
+          if (importFields.has("work")) values.push(work.cv, work.circle, work.time, work.scenarioWriter, work.illustrator, work.releaseDate, work.cn);
+          if (importFields.has("priceInfo")) values.push(work.originalPrice, work.price, work.currentDiscount, work.lowestPrice);
+          if (importFields.has("keywords")) values.push(work.keywords);
+          return values;
+        };
         const jobs = mode === "fill" ? candidates.filter(({ work }) => importTargetValues(work).some(isEmpty)) : candidates;
         let skipped = records.length - jobs.length;
         if (!jobs.length) {
@@ -13349,7 +13620,7 @@
         showCollectionRjImportLoading(jobs.length);
         button.disabled = true;
         button.setAttribute("aria-busy", "true");
-        label.textContent = "导入中 0/" + jobs.length;
+        label.textContent = UI_COLLECTION_IMPORT_PROGRESS + "0/" + jobs.length;
         const updates = [];
         const fieldIssues = [];
         const failures = [];
@@ -13362,20 +13633,21 @@
             cursor += 1;
             try {
               const canWrite = value => mode === "overwrite" || isEmpty(value);
-              const targetTitle = canWrite(job.work.title);
-              const targetCv = canWrite(job.work.cv);
-              const targetCircle = canWrite(job.work.circle);
-              const targetScenarioWriter = canWrite(job.work.scenarioWriter);
-              const targetIllustrator = canWrite(job.work.illustrator);
-              const targetReleaseDate = canWrite(job.work.releaseDate);
-              const targetOriginalPrice = canWrite(job.work.originalPrice);
-              const targetCurrentPrice = canWrite(job.work.price);
-              const targetCurrentDiscount = canWrite(job.work.currentDiscount);
-              const targetLowestDiscount = canWrite(job.work.lowestPrice);
-              const targetChinese = canWrite(job.work.cn);
-              const targetKeywords = canWrite(job.work.keywords);
-              const targetCover = canWrite(job.work.cover);
-              if (![targetTitle, targetCv, targetCircle, targetScenarioWriter, targetIllustrator, targetReleaseDate, targetOriginalPrice, targetCurrentPrice, targetCurrentDiscount, targetLowestDiscount, targetChinese, targetKeywords, targetCover].some(Boolean)) {
+              const targetTitle = importFields.has("title") && canWrite(job.work.title);
+              const targetCv = importFields.has("work") && canWrite(job.work.cv);
+              const targetCircle = importFields.has("work") && canWrite(job.work.circle);
+              const targetTime = importFields.has("work") && canWrite(job.work.time);
+              const targetScenarioWriter = importFields.has("work") && canWrite(job.work.scenarioWriter);
+              const targetIllustrator = importFields.has("work") && canWrite(job.work.illustrator);
+              const targetReleaseDate = importFields.has("work") && canWrite(job.work.releaseDate);
+              const targetOriginalPrice = importFields.has("priceInfo") && canWrite(job.work.originalPrice);
+              const targetCurrentPrice = importFields.has("priceInfo") && canWrite(job.work.price);
+              const targetCurrentDiscount = importFields.has("priceInfo") && canWrite(job.work.currentDiscount);
+              const targetLowestDiscount = importFields.has("priceInfo") && canWrite(job.work.lowestPrice);
+              const targetChinese = importFields.has("work") && canWrite(job.work.cn);
+              const targetKeywords = importFields.has("keywords") && canWrite(job.work.keywords);
+              const targetCover = importFields.has("cover") && canWrite(job.work.cover);
+              if (![targetTitle, targetCv, targetCircle, targetTime, targetScenarioWriter, targetIllustrator, targetReleaseDate, targetOriginalPrice, targetCurrentPrice, targetCurrentDiscount, targetLowestDiscount, targetChinese, targetKeywords, targetCover].some(Boolean)) {
                 skipped += 1;
                 continue;
               }
@@ -13425,6 +13697,10 @@
                   nextWork.circle = product.circle;
                   importedField = true;
                 } else missingFields.push(unavailableImportField(String.fromCharCode(0x793e, 0x56e2)));
+              }
+              if (targetTime && product.duration) {
+                nextWork.time = product.duration;
+                importedField = true;
               }
               if (targetScenarioWriter && product.scenarioWriter) {
                 nextWork.scenarioWriter = product.scenarioWriter;
@@ -13514,7 +13790,7 @@
               console.warn("Collection RJ import failed", job.rj, error);
             } finally {
               completed += 1;
-              label.textContent = "导入中 " + completed + "/" + jobs.length;
+              label.textContent = UI_COLLECTION_IMPORT_PROGRESS + completed + "/" + jobs.length;
               updateCollectionRjImportProgress(completed, jobs.length);
             }
           }
@@ -13532,14 +13808,14 @@
           if (fieldIssues.length) parts.push(UI_IMPORT_PARTIAL_COUNT + " " + fieldIssues.length + " " + String.fromCharCode(0x6761));
           if (failed) parts.push(UI_GRID9_FAILED + " " + failed + " " + String.fromCharCode(0x6761));
           if (skipped) parts.push(UI_GRID9_SKIPPED + " " + skipped + " " + String.fromCharCode(0x6761));
-          showCollectionRjImportResult(parts.join(String.fromCharCode(0xff0c)), false, fieldIssues.concat(failures));
+          showCollectionRjImportResult(parts.join(String.fromCharCode(0xff0c)), updates.length === 0 && failed > 0, fieldIssues.concat(failures));
         } catch (error) {
           console.error("Save collection RJ import failed", error);
-          showCollectionRjImportResult("导入结果保存失败，原收藏记录未被覆盖。", true);
+          showCollectionRjImportResult(UI_COLLECTION_IMPORT_SAVE_FAILED, true);
         } finally {
           button.disabled = false;
           button.removeAttribute("aria-busy");
-          label.textContent = "按RJ号导入信息";
+          label.textContent = UI_COLLECTION_IMPORT_TITLE;
         }
       }
       const COLLECTION_BATCH_ADD_TEXT = {
@@ -13674,7 +13950,7 @@
         } else missingFields.push(unavailableImportField("BK"));
         const now = Date.now();
         return {
-          work:{ id:rj, rj, title, cn:chineseChoice, cv, circle, time:"", scenarioWriter:product.scenarioWriter || "", illustrator:product.illustrator || "", purchaseDate:"", listenedDate:"", releaseDate:normalizeReleaseDateValue(releaseDate), cardInfoType:"", originalPrice:originalPriceValue, price:currentPriceValue, currentDiscount:currentDiscountValue, lowestPrice:lowestDiscountValue, rating:"", cvRating:"", storyRating:"", seRating:"", summary:"", character:"", review:"", keywords, tags:[], cover, coverFit:"cover", addedAt:now, editedAt:now },
+          work:{ id:rj, rj, title, cn:chineseChoice, cv, circle, time:product.duration || "", scenarioWriter:product.scenarioWriter || "", illustrator:product.illustrator || "", purchaseDate:"", purchasePrice:"", listenedDate:"", listeningStatus:"", releaseDate:normalizeReleaseDateValue(releaseDate), cardInfoType:"", originalPrice:originalPriceValue, price:currentPriceValue, currentDiscount:currentDiscountValue, lowestPrice:lowestDiscountValue, rating:"", cvRating:"", storyRating:"", seRating:"", summary:"", character:"", review:"", keywords, tags:[], cover, coverFit:"cover", addedAt:now, editedAt:now },
           missingFields
         };
       }
@@ -13764,13 +14040,13 @@
       }
       function normalizedWork(source, index, data) {
         const rj = normalizeWorkno(data.rj || "");
-        const hasContent = Boolean(rj || data.title || data.cv || data.review || data.cover || data.price || data.rating);
+        const hasContent = Boolean(rj || data.title || data.cv || data.review || data.cover || data.price || data.purchasePrice || data.rating);
         if (!hasContent) return null;
         const sourceSlot = source + ":" + index;
         const existingTemporary = !rj ? records.find(work => !work.rj && work.sourceSlot === sourceSlot) : null;
         const id = rj || existingTemporary?.id || nextTemporaryWorkId();
         const optionalNumber = value => String(value ?? "").trim() === "" ? "" : Number(value);
-        return { id, rj, title: data.title || "", cn: data.cn || "", cv: data.cv || "", circle: data.circle || "", time: data.time || "", purchaseDate:normalizeCardDateValue(data.purchaseDate), listenedDate:normalizeCardDateValue(data.listenedDate), releaseDate:normalizeReleaseDateValue(data.releaseDate), cardInfoType:data.cardInfoType ? normalizeCardInfoType(data.cardInfoType) : "", originalPrice: optionalNumber(data.originalPrice), price: optionalNumber(data.price), currentDiscount: optionalNumber(data.currentDiscount), lowestPrice: optionalNumber(data.lowestPrice), rating: optionalNumber(data.rating), cvRating: optionalNumber(data.cvRating), storyRating: optionalNumber(data.storyRating), seRating: optionalNumber(data.seRating), cover: data.cover || "", coverFit: data.coverFit || "cover", review: data.review || "", keywords: data.keywords || "", tags: data.tags || [], source, sourceSlot };
+        return { id, rj, title: data.title || "", cn: data.cn || "", cv: data.cv || "", circle: data.circle || "", time: data.time || "", purchaseDate:normalizeCardDateValue(data.purchaseDate), purchasePrice:optionalNumber(data.purchasePrice), listenedDate:normalizeCardDateValue(data.listenedDate), listeningStatus:data.listeningStatus || "", releaseDate:normalizeReleaseDateValue(data.releaseDate), cardInfoType:data.cardInfoType ? normalizeCardInfoType(data.cardInfoType) : "", originalPrice: optionalNumber(data.originalPrice), price: optionalNumber(data.price), currentDiscount: optionalNumber(data.currentDiscount), lowestPrice: optionalNumber(data.lowestPrice), rating: optionalNumber(data.rating), cvRating: optionalNumber(data.cvRating), storyRating: optionalNumber(data.storyRating), seRating: optionalNumber(data.seRating), cover: data.cover || "", coverFit: data.coverFit || "cover", review: data.review || "", keywords: data.keywords || "", tags: data.tags || [], source, sourceSlot };
       }
       function extractCurrentWorks(state) {
         const found = new Map();
@@ -13786,7 +14062,7 @@
           ...(state.continuationPages?.full?.pages || []),
           ...(state.continuationPages?.compact?.pages || [])
         ].map(part => String(part || "").replace(/\r\n?/g, "\n")).filter(part => part.trim() !== "");
-        add("single", 0, { rj:state.rjText, title:state.recordTitle, cn:state.cnChoice, cv:state.cvText, circle:state.circleText, time:state.durationText, purchaseDate:state.purchaseDate, listenedDate:state.listenedDate, cardInfoType:state.cardInfoType, originalPrice:state.originalPrice, price:state.currentPrice, currentDiscount:state.currentDiscount, lowestPrice:state.lowestPrice, rating:Array.isArray(state.ratings) ? state.ratings[0] : 0, cvRating:Array.isArray(state.ratings) ? state.ratings[1] : "", storyRating:Array.isArray(state.ratings) ? state.ratings[2] : "", seRating:Array.isArray(state.ratings) ? state.ratings[3] : "", cover:state.coverSrc || state.coverEditedSrc || state.coverOriginalSrc, coverFit:state.coverFit, review:mergedReviewParts.join("\n"), keywords:(state.tags || []).join(" / ") });
+        add("single", 0, { rj:state.rjText, title:state.recordTitle, cn:state.cnChoice, cv:state.cvText, circle:state.circleText, time:state.durationText, purchaseDate:state.purchaseDate, purchasePrice:state.purchasePrice, listenedDate:state.listenedDate, cardInfoType:state.cardInfoType, originalPrice:state.originalPrice, price:state.currentPrice, currentDiscount:state.currentDiscount, lowestPrice:state.lowestPrice, rating:Array.isArray(state.ratings) ? state.ratings[0] : 0, cvRating:Array.isArray(state.ratings) ? state.ratings[1] : "", storyRating:Array.isArray(state.ratings) ? state.ratings[2] : "", seRating:Array.isArray(state.ratings) ? state.ratings[3] : "", cover:state.coverSrc || state.coverEditedSrc || state.coverOriginalSrc, coverFit:state.coverFit, review:mergedReviewParts.join("\n"), keywords:(state.tags || []).join(" / ") });
         (state.grid9?.cells || []).slice(0,9).forEach((cell,index) => add("grid9", index, { rj:cell.rj, cover:cell.cover, coverFit:cell.fit, review:cell.review }));
         (state.quick?.cells || []).slice(0,12).forEach((cell,index) => add("quick", index, { rj:cell.rj, cv:cell.cv, cover:cell.cover, coverFit:cell.coverFit, review:cell.review }));
         (state.trio?.cells || []).slice(0,3).forEach((cell,index) => add("trio", index, { rj:cell.rj, price:cell.price, rating:cell.rating, cover:cell.cover, coverFit:cell.coverFit, review:cell.repo }));

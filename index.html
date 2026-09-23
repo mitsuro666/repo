@@ -9,10 +9,10 @@
   <link rel="icon" type="image/png" sizes="64x64" href="icons/site-icon-64.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="icons/site-icon-180.png" />
   <link rel="manifest" href="site.webmanifest" />
-  <link id="appStylesheet" rel="stylesheet" href="css/style.css?v=20260912-full-open-dlsite">
+  <link id="appStylesheet" rel="stylesheet" href="css/style.css?v=20260923-update-notice-v3">
   <script>
     window.__OTOME_APP_VERSION_PROMISE__ = (() => {
-      const fallbackVersion = "20260912-full-open-dlsite";
+      const fallbackVersion = "20260923-update-notice-v3";
       const versionUrl = new URL("version.json", document.baseURI);
       versionUrl.searchParams.set("_", Date.now().toString(36));
       return fetch(versionUrl, { cache: "no-store", credentials: "same-origin" })
@@ -231,6 +231,7 @@
               <select class="card-info-type-select" id="cardInfoType" aria-label="&#34917;&#20805;&#20449;&#24687;&#26174;&#31034;&#39033;">
                 <option value="duration">&#26102;&#38271;</option>
                 <option value="purchaseDate">&#36141;&#20080;&#26085;&#26399;</option>
+                <option value="purchasePrice">&#36141;&#20837;&#20215;&#26684;</option>
                 <option value="listenedDate">&#25910;&#21548;&#26085;&#26399;</option>
                 <option value="hidden">&#19981;&#26174;&#31034;</option>
               </select>
@@ -238,6 +239,7 @@
             </div>
             <div class="editable card-info-value" id="durationText" contenteditable="true" aria-label="&#26102;&#38271;"></div>
             <input class="soft-input card-info-value" id="purchaseDateText" type="text" inputmode="numeric" maxlength="10" placeholder="YYYY-MM-DD" aria-label="&#36141;&#20080;&#26085;&#26399;" hidden />
+            <input class="soft-input card-info-value" id="purchasePriceText" type="text" inputmode="numeric" pattern="[0-9]*" aria-label="&#36141;&#20837;&#20215;&#26684;" hidden />
             <input class="soft-input card-info-value" id="listenedDateText" type="text" inputmode="numeric" maxlength="10" placeholder="YYYY-MM-DD" aria-label="&#25910;&#21548;&#26085;&#26399;" hidden />
           </div>
           <div class="field cn-field">
@@ -445,7 +447,35 @@
     <section class="app-page collection-detail-page" id="collectionDetailPage" hidden>
       <div class="collection-detail-workspace">
       <div class="collection-detail-toolbar"><button id="collectionBack" type="button"><span class="collection-detail-desktop-label">← 返回列表</span><span class="collection-detail-mobile-label">&#8592;&#36820;&#22238;</span></button><div><button id="collectionDetailImportButton" type="button">&#23548;&#20837;&#20449;&#24687;</button><button id="collectionEditRecordButton" type="button">&#21046;&#20316;repo</button><button class="danger" id="collectionDeleteRecordButton" type="button" hidden><span class="collection-detail-desktop-label">删除条目</span><span class="collection-detail-mobile-label">&#21024;&#38500;</span></button><button class="primary" id="collectionDetailSaveButton" type="button"><span class="collection-detail-desktop-label">保存记录</span><span class="collection-detail-mobile-label">&#20445;&#23384;</span></button><div class="collection-detail-mobile-menu"><button id="collectionDetailMobileMenuButton" type="button" aria-label="&#26356;&#22810;&#25805;&#20316;" aria-expanded="false" aria-controls="collectionDetailMobileDropdown">&#8943;</button><div class="collection-mobile-data-dropdown collection-detail-mobile-dropdown" id="collectionDetailMobileDropdown" hidden><button class="collection-mobile-data-option" id="collectionDetailMobileImportButton" type="button">&#23548;&#20837;&#20449;&#24687;</button><button class="collection-mobile-data-option" id="collectionDetailMobileMakeRepoButton" type="button">&#21046;&#20316;repo</button></div></div></div></div>
-      <article class="collection-archive-sheet"><header class="collection-archive-hero"><div class="collection-detail-art-wrap"><button class="collection-detail-art" id="collectionDetailArt" type="button" aria-label="上传 BK 图片"><span>点击上传 BK</span></button><input class="hidden" id="collectionDetailCoverInput" type="file" accept="image/*" /><div class="collection-detail-cover-tools"><button class="tiny-button" id="collectionDetailContainButton" type="button">完整显示</button><button class="tiny-button" id="collectionDetailCoverButton" type="button">铺满裁切</button><button class="tiny-button" id="collectionDetailImageEditButton" type="button">编辑</button><button class="tiny-button" id="collectionDetailRemoveCoverButton" type="button">移除</button></div></div><div class="collection-archive-intro"><div class="collection-archive-kicker"><small>OTOME VOICE ARCHIVE</small><button id="collectionDetailOpenDlsiteButton" type="button">&#25171;&#24320;DL&#39029;&#38754;</button></div><h2 id="collectionDetailTitle" contenteditable="true"></h2><div class="collection-facts"><div><b>CV</b><span id="collectionDetailCv" contenteditable="true"></span></div><div><b>&#31038;&#22242;</b><span id="collectionDetailCircle" contenteditable="true"></span></div><div><b>RJ</b><span id="collectionDetailRj" contenteditable="true"></span></div><div><b>&#26102;&#38271;</b><span id="collectionDetailTime" contenteditable="true"></span></div><div><b>&#21095;&#26412;&#20316;&#32773;</b><span id="collectionDetailScenarioWriter" contenteditable="true"></span></div><div><b>&#30011;&#24072;</b><span id="collectionDetailIllustrator" contenteditable="true"></span></div><div><b>&#20013;&#25991;</b><span id="collectionDetailCn" contenteditable="true"></span></div><div><b>&#21457;&#21806;&#26085;&#26399;</b><span id="collectionDetailReleaseDate" contenteditable="true"></span></div><div><b>&#36141;&#20080;&#26085;&#26399;</b><span id="collectionDetailPurchaseDate" contenteditable="true"></span></div><div><b>&#25910;&#21548;&#26085;&#26399;</b><span id="collectionDetailListenedDate" contenteditable="true"></span></div><div><b>&#21407;&#20215;</b><span id="collectionDetailOriginalPrice" contenteditable="true"></span></div><div><b>&#29616;&#20215;</b><span id="collectionDetailCurrentPrice" contenteditable="true"></span></div><div><b>&#29616;&#25240;&#25187;</b><span id="collectionDetailCurrentDiscount" contenteditable="true"></span></div><div><b>&#21490;&#20302;&#25240;&#25187;</b><span id="collectionDetailLowestDiscount" contenteditable="true"></span></div></div><div class="collection-archive-tags"><div><span>作品关键词</span><div id="collectionDetailKeywords"></div><button class="collection-detail-add-button" id="collectionDetailAddKeyword" type="button" aria-label="&#28155;&#21152;&#20851;&#38190;&#35789;">＋</button></div><div><span>我的标签</span><div id="collectionDetailLibraryTags"></div><button class="collection-detail-add-button" id="collectionDetailAddTag" type="button" aria-label="&#28155;&#21152;&#26631;&#31614;">＋</button></div></div></div></header><div class="collection-archive-body"><section><h3>作品简介</h3><p id="collectionDetailSummary" contenteditable="true"></p></section><section><h3>角色资料</h3><p id="collectionDetailCharacter" contenteditable="true"></p></section><section><h3>我的评价</h3><div class="collection-rating-table"><div><span>&#24635;&#20307;</span><span class="collection-rating-editor" id="collectionDetailRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailRatingStars"></span></div><div><span>CV</span><span class="collection-rating-editor" id="collectionDetailCvRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailCvRatingStars"></span></div><div><span>&#21095;&#26412;</span><span class="collection-rating-editor" id="collectionDetailStoryRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailStoryRatingStars"></span></div><div><span>SE</span><span class="collection-rating-editor" id="collectionDetailSeRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailSeRatingStars"></span></div></div></section><section class="collection-archive-review"><h3>Repo / 感想</h3><p id="collectionDetailReview" contenteditable="true"></p></section></div></article>
+      <article class="collection-archive-sheet">
+        <header class="collection-archive-hero">
+          <div class="collection-archive-left">
+            <div class="collection-detail-art-wrap"><div class="collection-detail-art-frame"><button class="collection-detail-art" id="collectionDetailArt" type="button" aria-label="上传 BK 图片"><span>点击上传 BK</span></button><img class="collection-detail-art-frame-image" src="assets/collection-bk-frame.png" alt="" aria-hidden="true" /></div><input class="hidden" id="collectionDetailCoverInput" type="file" accept="image/*" /><div class="collection-detail-cover-tools"><button class="tiny-button" id="collectionDetailContainButton" type="button">完整显示</button><button class="tiny-button" id="collectionDetailCoverButton" type="button">铺满裁切</button><button class="tiny-button" id="collectionDetailImageEditButton" type="button">编辑</button><button class="tiny-button" id="collectionDetailRemoveCoverButton" type="button">移除</button></div></div>
+            <section class="collection-fact-group collection-personal-record">
+              <h3>&#20010;&#20154;&#35760;&#24405;</h3>
+              <div class="collection-facts"><div><b>&#36141;&#20080;&#26085;&#26399;</b><span id="collectionDetailPurchaseDate" contenteditable="true"></span></div><div><b>&#36141;&#20837;&#20215;&#26684;</b><span id="collectionDetailPurchasePrice" contenteditable="true"></span></div><div><b>&#25910;&#21548;&#26085;&#26399;</b><span id="collectionDetailListenedDate" contenteditable="true"></span></div><div><b>&#25910;&#21548;&#29366;&#24577;</b><span class="collection-listening-status-control"><select id="collectionDetailListeningStatus" aria-label="&#25910;&#21548;&#29366;&#24577;"><option value="&#26410;&#25910;&#21548;">&#26410;&#25910;&#21548;</option><option value="&#25910;&#21548;&#20013;">&#25910;&#21548;&#20013;</option><option value="&#24050;&#25910;&#21548;">&#24050;&#25910;&#21548;</option><option value="&#25601;&#32622;">&#25601;&#32622;</option><option value="&#24819;&#37325;&#21548;">&#24819;&#37325;&#21548;</option><option value="custom">&#33258;&#23450;&#20041;</option></select><input id="collectionDetailListeningStatusCustom" type="text" aria-label="&#33258;&#23450;&#20041;&#25910;&#21548;&#29366;&#24577;" hidden /></span></div></div>
+            </section>
+          </div>
+          <div class="collection-archive-main">
+            <div class="collection-archive-intro">
+              <div class="collection-archive-kicker"><small>OTOME VOICE ARCHIVE</small><button id="collectionDetailOpenDlsiteButton" type="button">&#25171;&#24320;DL&#39029;&#38754;</button></div>
+              <h2 id="collectionDetailTitle" contenteditable="true"></h2>
+            </div>
+            <div class="collection-fact-groups">
+              <section class="collection-fact-group collection-work-info">
+                <h3>&#20316;&#21697;&#20449;&#24687;</h3>
+                <div class="collection-facts"><div><b>CV</b><span id="collectionDetailCv" contenteditable="true"></span></div><div><b>&#31038;&#22242;</b><span id="collectionDetailCircle" contenteditable="true"></span></div><div><b>RJ</b><span id="collectionDetailRj" contenteditable="true"></span></div><div><b>&#26102;&#38271;</b><span id="collectionDetailTime" contenteditable="true"></span></div><div><b>&#21095;&#26412;&#20316;&#32773;</b><span id="collectionDetailScenarioWriter" contenteditable="true"></span></div><div><b>&#30011;&#24072;</b><span id="collectionDetailIllustrator" contenteditable="true"></span></div><div><b>&#20013;&#25991;</b><span id="collectionDetailCn" contenteditable="true"></span></div><div><b>&#21457;&#21806;&#26085;&#26399;</b><span id="collectionDetailReleaseDate" contenteditable="true"></span></div></div>
+              </section>
+              <section class="collection-fact-group collection-price-info">
+                <h3>&#20215;&#26684;&#20449;&#24687;</h3>
+                <div class="collection-facts"><div><b>&#21407;&#20215;</b><span id="collectionDetailOriginalPrice" contenteditable="true"></span></div><div><b>&#29616;&#20215;</b><span id="collectionDetailCurrentPrice" contenteditable="true"></span></div><div><b>&#29616;&#25240;&#25187;</b><span id="collectionDetailCurrentDiscount" contenteditable="true"></span></div><div><b>&#21490;&#20302;&#25240;&#25187;</b><span id="collectionDetailLowestDiscount" contenteditable="true"></span></div></div>
+              </section>
+            </div>
+            <div class="collection-archive-tags"><div><span>作品关键词</span><div id="collectionDetailKeywords"></div><button class="collection-detail-add-button" id="collectionDetailAddKeyword" type="button" aria-label="&#28155;&#21152;&#20851;&#38190;&#35789;">＋</button></div><div><span>我的标签</span><div id="collectionDetailLibraryTags"></div><button class="collection-detail-add-button" id="collectionDetailAddTag" type="button" aria-label="&#28155;&#21152;&#26631;&#31614;">＋</button></div></div>
+          </div>
+        </header>
+        <div class="collection-archive-body"><section><h3>作品简介</h3><p id="collectionDetailSummary" contenteditable="true"></p></section><section><h3>角色资料</h3><p id="collectionDetailCharacter" contenteditable="true"></p></section><section><h3>我的评价</h3><div class="collection-rating-table"><div><span>&#24635;&#20307;</span><span class="collection-rating-editor" id="collectionDetailRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailRatingStars"></span></div><div><span>CV</span><span class="collection-rating-editor" id="collectionDetailCvRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailCvRatingStars"></span></div><div><span>&#21095;&#26412;</span><span class="collection-rating-editor" id="collectionDetailStoryRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailStoryRatingStars"></span></div><div><span>SE</span><span class="collection-rating-editor" id="collectionDetailSeRating" contenteditable="true"></span><span class="collection-rating-stars" id="collectionDetailSeRatingStars"></span></div></div></section><section class="collection-archive-review"><h3>Repo / 感想</h3><p id="collectionDetailReview" contenteditable="true"></p></section></div>
+      </article>
       </div>
     </section>
 
@@ -458,9 +488,9 @@
 
     <div class="grid9-import-modal" id="collectionRjImportPrompt" hidden>
       <div class="grid9-import-sheet" role="dialog" aria-modal="true" aria-labelledby="collectionRjImportPromptTitle">
-        <h2 class="grid9-import-title" id="collectionRjImportPromptTitle">按RJ号导入信息</h2>
+        <div class="import-dialog-heading"><h2 class="grid9-import-title" id="collectionRjImportPromptTitle">按RJ号导入信息</h2><button class="import-dialog-info" id="collectionRjImportInfo" type="button" aria-label="&#23548;&#20837;&#35828;&#26126;" aria-expanded="false" hidden>i</button></div>
         <div class="grid9-import-body" id="collectionRjImportPromptBody">检测到已有信息，请选择导入方式。</div>
-        <div class="grid9-import-actions"><button class="tool-button primary" id="collectionRjImportOverwrite" type="button">覆盖全部</button><button class="tool-button" id="collectionRjImportFill" type="button">填充空位</button><button class="tool-button" id="collectionRjImportCancel" type="button">取消</button><button class="tool-button primary" id="collectionRjImportDone" type="button" hidden>完成</button></div>
+        <div class="grid9-import-actions"><button class="tool-button" id="collectionRjImportCancel" type="button">取消</button><button class="tool-button primary" id="collectionRjImportConfirm" type="button" hidden>开始导入</button><button class="tool-button primary" id="collectionRjImportDone" type="button" hidden>完成</button></div>
       </div>
     </div>
 
@@ -512,6 +542,7 @@
     </div>
 
     <div class="import-help-popover" id="importHelpPopover" hidden></div>
+    <div class="import-help-popover" id="importDialogHelpPopover" hidden></div>
 
 <div class="export-modal" id="exportModal" hidden>
       <div class="export-sheet">
@@ -595,12 +626,11 @@
 
     <div class="grid9-import-modal" id="grid9ImportModal" hidden>
       <div class="grid9-import-sheet">
-        <h2 class="grid9-import-title" id="grid9ImportTitle"></h2>
+        <div class="import-dialog-heading"><h2 class="grid9-import-title" id="grid9ImportTitle"></h2><button class="import-dialog-info" id="grid9ImportInfoButton" type="button" aria-label="&#23548;&#20837;&#35828;&#26126;" aria-expanded="false" hidden>i</button></div>
         <div class="grid9-import-body" id="grid9ImportBody"></div>
         <div class="grid9-import-actions">
-          <button class="tool-button primary" id="grid9ImportOverwriteButton" type="button" hidden>&#35206;&#30422;&#20840;&#37096;</button>
-          <button class="tool-button" id="grid9ImportFillButton" type="button" hidden>&#22635;&#20805;&#31354;&#20301;</button>
           <button class="tool-button" id="grid9ImportCancelButton" type="button" hidden>&#21462;&#28040;</button>
+          <button class="tool-button primary" id="grid9ImportConfirmButton" type="button" hidden>&#24320;&#22987;&#23548;&#20837;</button>
           <button class="tool-button primary" id="grid9ImportDoneButton" type="button">&#23436;&#25104;</button>
         </div>
       </div>
@@ -752,6 +782,19 @@
         <button class="usage-info-close" id="updateLogCloseButton" type="button" aria-label="&#20851;&#38381;&#26356;&#26032;&#20844;&#21578;"><span aria-hidden="true">&times;</span></button>
         <h2 class="usage-info-title" id="updateLogTitle">&#26356;&#26032;&#20844;&#21578;</h2>
         <div class="update-log-list">
+          <details class="update-log-entry" open>
+            <summary>
+              <div class="update-log-meta"><time datetime="2026-09-23">2026.09.23</time><span>&#21151;&#33021;&#26356;&#26032; &#183; &#20307;&#39564;&#20248;&#21270;</span></div>
+              <h3>9&#26376;23&#26085;&#26356;&#26032;</h3>
+            </summary>
+            <ul>
+              <li>&#23436;&#25972;&#29256;&#12289;&#31616;&#30053;&#29256;&#12289;&#36895;&#35780;&#29256;&#12289;&#19977;&#23467;&#26684;&#12289;&#25910;&#34255;&#39029;&#21644;&#35814;&#24773;&#39029;&#26032;&#22686;&#21487;&#36873;&#23548;&#20837;&#33539;&#22260;</li>
+              <li>&#23436;&#25972;&#29256;&#26032;&#22686;&#8220;&#36141;&#20837;&#20215;&#26684;&#8221;&#36873;&#39033;</li>
+              <li>&#25910;&#34255;&#35814;&#24773;&#39029;&#26032;&#22686;&#8220;&#36141;&#20837;&#20215;&#26684;&#8221;&#21644;&#8220;&#25910;&#21548;&#29366;&#24577;&#8221;</li>
+              <li>&#20248;&#21270;&#25910;&#34255;&#35814;&#24773;&#39029;&#30005;&#33041;&#31471;&#24067;&#23616;&#12289;&#20998;&#31867;&#26631;&#31614;&#12289;BK&#30456;&#26694;&#21644;&#22270;&#29255;&#24037;&#20855;&#25353;&#38062;</li>
+              <li>&#20248;&#21270;RJ&#23548;&#20837;&#22833;&#36133;&#25552;&#31034;&#65292;&#23548;&#20837;&#22833;&#36133;&#26102;&#20445;&#30041;&#21407;&#20869;&#23481;</li>
+            </ul>
+          </details>
           <details class="update-log-entry" open>
             <summary>
               <div class="update-log-meta"><time datetime="2026-08-29">2026.08.29</time><span>&#21151;&#33021;&#26356;&#26032; &#183; &#29256;&#26412;&#26356;&#26032;</span></div>
