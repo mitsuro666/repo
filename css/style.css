@@ -7542,6 +7542,13 @@
   .template-page-controls.compact .template-page-two-column-toggle:not([hidden]) { display: inline-flex; }
   .template-page-controls.compact .template-page-desktop-label { display: none; }
   .template-page-controls.compact .template-page-mobile-label { display: inline; }
+  .template-page-controls.compact.has-divider-toggle .template-page-two-column-toggle,
+  .template-page-controls.compact.has-divider-toggle #templateDeletePage,
+  .template-page-controls.compact.has-divider-toggle #templateAddPage {
+    width: 76px;
+    min-width: 0;
+    flex: 0 1 76px;
+  }
 
   .template-page-controls.compact {
     height: 42px;
@@ -7603,6 +7610,12 @@
   .template-page-controls.compact .template-page-action { padding: 0 7px;font-size: 11px; }
   .template-page-controls.compact .template-page-two-column-toggle { gap: 4px; }
   .template-page-controls.compact .template-page-two-column-toggle input { width: 14px;height: 14px; }
+  .template-page-controls.compact.has-divider-toggle .template-page-two-column-toggle,
+  .template-page-controls.compact.has-divider-toggle #templateDeletePage,
+  .template-page-controls.compact.has-divider-toggle #templateAddPage {
+    width: 56px;
+    flex-basis: 56px;
+  }
 }
 
 @media (max-width: 1000px) {
@@ -7649,15 +7662,18 @@
   .template-page-controls.full-mode-controls #fullPageModeMobileSelect:not([hidden]) {
     display: inline-block;
     order: 1;
-    width: 72px;
+    width: 96px;
   }
   .template-page-controls.full-mode-controls .template-page-nav {
     order: 2;
     flex: 0 0 auto;
     align-self: center;
+    margin-left: auto;
   }
   .template-page-controls.full-mode-controls #templateDeletePage { order: 3; }
   .template-page-controls.full-mode-controls #templateAddPage { order: 4; }
+  .template-page-controls.full-mode-controls #templateDeletePage,
+  .template-page-controls.full-mode-controls #templateAddPage { padding: 0 11px; }
   .template-page-controls.full-mode-controls .template-page-desktop-label { display: none; }
   .template-page-controls.full-mode-controls .template-page-mobile-label { display: inline; }
   .template-page-controls.full-mode-controls .template-page-arrow { width: 28px; }
