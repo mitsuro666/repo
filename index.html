@@ -378,16 +378,18 @@
       </section>
     </div>
     <div class="template-page-controls" id="templatePageControls">
-      <div class="template-page-nav">
+      <div class="template-page-nav" id="templatePageNav">
         <button class="template-page-arrow" id="templatePrevPage" type="button" aria-label="&#19978;&#19968;&#39029;">&#8249;</button>
         <button class="template-page-count" id="templatePageCount" type="button" aria-expanded="false" aria-controls="templatePageMenu"><span id="templatePageCountText">01 / 01</span><span class="template-page-chevron">&#9662;</span></button>
         <button class="template-page-arrow" id="templateNextPage" type="button" aria-label="&#19979;&#19968;&#39029;">&#8250;</button>
       </div>
       <div class="template-page-actions">
+        <select class="template-page-action template-page-mode-select template-page-mobile-mode-select" id="fullPageModeMobileSelect" aria-label="&#23436;&#25972;&#29256;&#21152;&#39029;&#27169;&#24335;" hidden><option value="continuation">&#32493;&#39029;</option><option value="extend">&#24310;&#38271;</option></select>
+        <label class="template-page-action template-page-divider-toggle" id="templatePageDividerToggle" hidden><input id="templatePageDividerCheckbox" type="checkbox" aria-label="&#28155;&#21152;&#20998;&#21106;&#32447;" /><span>&#28155;&#21152;&#20998;&#21106;&#32447;</span></label>
+        <label class="template-page-action template-page-two-column-toggle" id="templatePageTwoColumnToggle" hidden><input id="templatePageTwoColumnCheckbox" type="checkbox" aria-label="&#20004;&#21015;" /><span>&#20004;&#21015;</span></label>
+        <button class="template-page-action danger" id="templateDeletePage" type="button" hidden><span class="template-page-desktop-label">&#21024;&#38500;&#32493;&#39029;</span><span class="template-page-mobile-label">&#21024;&#39029;</span></button>
+        <button class="template-page-action primary" id="templateAddPage" type="button"><span class="template-page-desktop-label">&#65291; &#28155;&#21152;&#32493;&#39029;</span><span class="template-page-mobile-label">&#21152;&#39029;</span></button>
         <select class="template-page-action template-page-mode-select" id="fullPageModeSelect" aria-label="&#23436;&#25972;&#29256;&#21152;&#39029;&#27169;&#24335;" hidden><option value="continuation">&#32493;&#39029;&#27169;&#24335;</option><option value="extend">&#24310;&#38271;&#27169;&#24335;</option></select>
-        <label class="template-page-action template-page-divider-toggle" id="templatePageDividerToggle" hidden><input id="templatePageDividerCheckbox" type="checkbox" aria-label="&#21435;&#25481;&#20998;&#21106;&#32447;" /><span>&#21435;&#25481;&#20998;&#21106;&#32447;</span></label>
-        <button class="template-page-action danger" id="templateDeletePage" type="button" hidden>&#21024;&#38500;&#32493;&#39029;</button>
-        <button class="template-page-action primary" id="templateAddPage" type="button">&#65291; &#28155;&#21152;&#32493;&#39029;</button>
       </div>
       <div class="template-page-menu" id="templatePageMenu" hidden></div>
     </div>

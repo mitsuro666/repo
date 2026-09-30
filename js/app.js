@@ -98,16 +98,20 @@
     const compactContinuationReviewCharacterCount = document.getElementById("compactContinuationReviewCharacterCount");
     const compactContinuationPageNumber = document.getElementById("compactContinuationPageNumber");
     const templatePageControls = document.getElementById("templatePageControls");
+    const templatePageNav = document.getElementById("templatePageNav");
     const templatePrevPage = document.getElementById("templatePrevPage");
     const templateNextPage = document.getElementById("templateNextPage");
     const templatePageCount = document.getElementById("templatePageCount");
     const templatePageCountText = document.getElementById("templatePageCountText");
     const templatePageMenu = document.getElementById("templatePageMenu");
     const fullPageModeSelect = document.getElementById("fullPageModeSelect");
+    const fullPageModeMobileSelect = document.getElementById("fullPageModeMobileSelect");
     const templateAddPage = document.getElementById("templateAddPage");
     const templateDeletePage = document.getElementById("templateDeletePage");
     const templatePageDividerToggle = document.getElementById("templatePageDividerToggle");
     const templatePageDividerCheckbox = document.getElementById("templatePageDividerCheckbox");
+    const templatePageTwoColumnToggle = document.getElementById("templatePageTwoColumnToggle");
+    const templatePageTwoColumnCheckbox = document.getElementById("templatePageTwoColumnCheckbox");
     const reviewEditModal = document.getElementById("reviewEditModal");
     const reviewEditTitle = document.getElementById("reviewEditTitle");
     const reviewEditLineStatus = document.getElementById("reviewEditLineStatus");
@@ -1669,7 +1673,7 @@
     function normalizeCompactContinuationPageState(value) {
       const state = normalizeContinuationPageState(value);
       const savedModes = Array.isArray(value?.singleColumnPages) ? value.singleColumnPages : [];
-      state.singleColumnPages = state.pages.map((_, index) => savedModes[index] === true);
+      state.singleColumnPages = state.pages.map((_, index) => savedModes[index] !== false);
       return state;
     }
 
@@ -1821,7 +1825,10 @@
       templatePageControls.classList.toggle("compact", template === "compact");
       templatePageControls.classList.toggle("full-mode-controls", template === "full");
       fullPageModeSelect.hidden = template !== "full";
+      fullPageModeMobileSelect.hidden = template !== "full";
       fullPageModeSelect.value = fullPageMode;
+      fullPageModeMobileSelect.value = fullPageMode;
+      templatePageNav.hidden = template === "full" && fullPageMode === "extend";
       templateAddPage.hidden = template === "full" && fullPageMode === "extend";
       pageState.current = Math.max(0, Math.min(pageState.pages.length, pageState.current));
       if (template === "full" && fullPageMode === "extend") pageState.current = 0;
@@ -1838,8 +1845,10 @@
       const compactContinuation = template === "compact" && continuation;
       const singleColumn = compactContinuation && pageState.singleColumnPages[pageState.current - 1] === true;
       templatePageDividerToggle.hidden = !compactContinuation;
+      templatePageTwoColumnToggle.hidden = !compactContinuation;
       templatePageControls.classList.toggle("has-divider-toggle", compactContinuation);
-      templatePageDividerCheckbox.checked = singleColumn;
+      templatePageDividerCheckbox.checked = compactContinuation && !singleColumn;
+      templatePageTwoColumnCheckbox.checked = compactContinuation && !singleColumn;
       compactContinuationCard.classList.toggle("single-column", singleColumn);
       if (continuation) {
         syncContinuationSharedInfo();
@@ -1875,7 +1884,7 @@
       if (!pageState || (currentTemplate() === "full" && fullPageMode === "extend")) return;
       commitCompactContinuationReviewText();
       pageState.pages.push("");
-      if (currentTemplate() === "compact") pageState.singleColumnPages.push(false);
+      if (currentTemplate() === "compact") pageState.singleColumnPages.push(true);
       else pageState.leadingBreaks.push(false);
       pageState.current = pageState.pages.length;
       closeTemplatePageMenu();
@@ -2277,6 +2286,7 @@
       const next = nextMode === "extend" ? "extend" : "continuation";
       if (next === fullPageMode || currentTemplate() !== "full") {
         fullPageModeSelect.value = fullPageMode;
+        fullPageModeMobileSelect.value = fullPageMode;
         return;
       }
       const pageState = continuationState.full;
@@ -2290,11 +2300,14 @@
         if (main !== combined) {
           const lostCount = wrappingCharacters(combined.slice(main.length)).length;
           fullPageModeSelect.value = fullPageMode;
+          fullPageModeMobileSelect.value = fullPageMode;
           fullPageModeSelect.disabled = true;
+          fullPageModeMobileSelect.disabled = true;
           const confirmed = await showAppConfirm(
             String.fromCharCode(0x5408, 0x5e76, 0x540e, 0x7684, 0x8bc4, 0x4ef7, 0x8d85, 0x8fc7, 0x5ef6, 0x957f, 0x6a21, 0x5f0f, 0x7684, 0x20, 0x32, 0x38, 0x38, 0x30, 0x70, 0x78, 0x20, 0x9ad8, 0x5ea6, 0x4e0a, 0x9650, 0x3002, 0x7ee7, 0x7eed, 0x5207, 0x6362, 0x4f1a, 0x4e22, 0x5931, 0x672b, 0x5c3e, 0x20) + lostCount + String.fromCharCode(0x20, 0x5b57, 0x3002, 0x662f, 0x5426, 0x4ecd, 0x8981, 0x5207, 0x6362, 0xff1f)
           );
           fullPageModeSelect.disabled = false;
+          fullPageModeMobileSelect.disabled = false;
           if (!confirmed) return;
         }
       } else {
@@ -11691,18 +11704,23 @@
     templatePrevPage.addEventListener("click", () => changeTemplatePage(-1));
     templateNextPage.addEventListener("click", () => changeTemplatePage(1));
     fullPageModeSelect.addEventListener("change", () => void changeFullPageMode(fullPageModeSelect.value));
+    fullPageModeMobileSelect.addEventListener("change", () => void changeFullPageMode(fullPageModeMobileSelect.value));
     templateAddPage.addEventListener("click", addTemplateContinuationPage);
     templateDeletePage.addEventListener("click", deleteCurrentTemplateContinuationPage);
-    templatePageDividerCheckbox.addEventListener("change", () => {
+    function setCompactContinuationSingleColumn(singleColumn) {
       const pageState = continuationState.compact;
       if (currentTemplate() !== "compact" || pageState.current <= 0) return;
       commitCompactContinuationReviewText();
-      pageState.singleColumnPages[pageState.current - 1] = templatePageDividerCheckbox.checked;
-      compactContinuationCard.classList.toggle("single-column", templatePageDividerCheckbox.checked);
+      pageState.singleColumnPages[pageState.current - 1] = singleColumn;
+      templatePageDividerCheckbox.checked = !singleColumn;
+      templatePageTwoColumnCheckbox.checked = !singleColumn;
+      compactContinuationCard.classList.toggle("single-column", singleColumn);
       renderCompactContinuationReview(pageState.pages[pageState.current - 1]);
       updateReviewCharacterCounts();
       saveState();
-    });
+    }
+    templatePageDividerCheckbox.addEventListener("change", () => setCompactContinuationSingleColumn(!templatePageDividerCheckbox.checked));
+    templatePageTwoColumnCheckbox.addEventListener("change", () => setCompactContinuationSingleColumn(!templatePageTwoColumnCheckbox.checked));
     templatePageCount.addEventListener("click", (event) => {
       event.stopPropagation();
       templatePageMenu.hidden = !templatePageMenu.hidden;
