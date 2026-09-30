@@ -103,8 +103,11 @@
     const templatePageCount = document.getElementById("templatePageCount");
     const templatePageCountText = document.getElementById("templatePageCountText");
     const templatePageMenu = document.getElementById("templatePageMenu");
+    const fullPageModeSelect = document.getElementById("fullPageModeSelect");
     const templateAddPage = document.getElementById("templateAddPage");
     const templateDeletePage = document.getElementById("templateDeletePage");
+    const templatePageDividerToggle = document.getElementById("templatePageDividerToggle");
+    const templatePageDividerCheckbox = document.getElementById("templatePageDividerCheckbox");
     const reviewEditModal = document.getElementById("reviewEditModal");
     const reviewEditTitle = document.getElementById("reviewEditTitle");
     const reviewEditLineStatus = document.getElementById("reviewEditLineStatus");
@@ -286,6 +289,7 @@
     let trioCellEditors = [];
     let activeTrioIndex = -1;
     const STORAGE_KEY = "otome-record-card-v1";
+    const FULL_PAGE_MODE_STORAGE_KEY = "otome-record-card-full-page-mode-v1";
     const APP_VERSION_MANIFEST_URL = "version.json";
     const APP_UPDATE_CHECK_INTERVAL_MS = 5 * 60 * 1000;
     const APP_VERSION = (() => {
@@ -523,10 +527,13 @@
     const FULL_REVIEW_MAX_WIDTH = 407;
     const FULL_REVIEW_LINE_WIDTH = 904;
     const FULL_REVIEW_MAX_LINES = 11;
+    const FULL_EXTENDED_MAX_HEIGHT = 2880;
+    const FULL_EXTENDED_REVIEW_MAX_LINES = FULL_REVIEW_MAX_LINES + Math.floor((FULL_EXTENDED_MAX_HEIGHT - 1440) / 31);
     const FULL_CONTINUATION_REVIEW_WIDTH = 904;
     const FULL_CONTINUATION_REVIEW_MAX_LINES = 34;
     const COMPACT_CONTINUATION_COLUMN_WIDTH = 237;
     const COMPACT_CONTINUATION_LINES_PER_COLUMN = 20;
+    const COMPACT_CONTINUATION_SINGLE_WIDTH = 508;
     const REVIEW_CHARACTER_LIMIT_SAMPLE_LENGTH = 4096;
     const GRID9_REVIEW_LINE_WIDTH = (1080 - 58 * 2 - 18 * 2) / 3 - 19;
     const GRID9_REVIEW_MAX_LINES = 4;
@@ -938,9 +945,11 @@
     let lastExportPages = [];
     let exportPageIndex = 0;
     const continuationState = {
-      full: { current: 0, pages: [] },
-      compact: { current: 0, pages: [] }
+      full: { current: 0, pages: [], leadingBreaks: [] },
+      compact: { current: 0, pages: [], singleColumnPages: [] }
     };
+    let fullPageMode = localStorage.getItem(FULL_PAGE_MODE_STORAGE_KEY) === "extend" ? "extend" : "continuation";
+    let applyingState = false;
     let currentDiscountManual = false;
     let reviewChineseCharacterLimits = null;
     const PLAYER_BAR_WIDTH = 484;
@@ -1181,16 +1190,15 @@
       0x0a, 0x0a,
       0x5982, 0x679c, 0x4ecd, 0x60f3, 0x7ee7, 0x7eed, 0xff0c, 0x4e5f, 0x53ef, 0x4ee5, 0x9009, 0x62e9, 0x6539, 0x7528, 0x624b, 0x673a, 0x81ea, 0x5e26, 0x5b57, 0x4f53, 0x5bfc, 0x51fa, 0xff0c, 0x5361, 0x7247, 0x6587, 0x5b57, 0x6837, 0x5f0f, 0x4f1a, 0x548c, 0x9884, 0x89c8, 0x7565, 0x6709, 0x5dee, 0x5f02, 0x3002, 0x662f, 0x5426, 0x7ee7, 0x7eed, 0xff1f
     );
-    const UPDATE_NOTICE_STORAGE_KEY = "otome-record-card-update-notice-20260923-v3";
-    const UPDATE_NOTICE_START_AT = Date.parse("2026-09-23T08:00:00+08:00");
-    const UPDATE_NOTICE_TITLE = String.fromCharCode(0x39, 0x6708, 0x32, 0x33, 0x65e5, 0x66f4, 0x65b0);
+    const UPDATE_NOTICE_STORAGE_KEY = "otome-record-card-update-notice-20260930-v1";
+    const UPDATE_NOTICE_START_AT = Date.parse("2026-09-30T08:00:00+08:00");
+    const UPDATE_NOTICE_TITLE = String.fromCharCode(0x39, 0x6708, 0x33, 0x30, 0x65e5, 0x66f4, 0x65b0);
     const UPDATE_NOTICE_MESSAGE = [
-      String.fromCharCode(0x672c, 0x6b21, 0x66f4, 0x65b0, 0x4e3b, 0x8981, 0x5b8c, 0x5584, 0x4e86, 0x6536, 0x85cf, 0x8be6, 0x60c5, 0x9875, 0x548c, 0x20, 0x52, 0x4a, 0x20, 0x5bfc, 0x5165, 0x6d41, 0x7a0b, 0xff0c, 0x5e76, 0x8865, 0x5145, 0x4e86, 0x4e2a, 0x4eba, 0x8bb0, 0x5f55, 0x76f8, 0x5173, 0x5b57, 0x6bb5, 0x3002, 0x8bf7, 0x4e0b, 0x6ed1, 0x67e5, 0x770b, 0x5168, 0x90e8, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x52, 0x4a, 0x20, 0x5bfc, 0x5165, 0x8303, 0x56f4, 0xa, 0x5b8c, 0x6574, 0x7248, 0x3001, 0x7b80, 0x7565, 0x7248, 0x3001, 0x901f, 0x8bc4, 0x7248, 0x3001, 0x4e09, 0x5bab, 0x683c, 0x3001, 0x6536, 0x85cf, 0x9875, 0x548c, 0x8be6, 0x60c5, 0x9875, 0x65b0, 0x589e, 0x53ef, 0x9009, 0x5bfc, 0x5165, 0x8303, 0x56f4, 0xff0c, 0x53ef, 0x53ea, 0x52fe, 0x9009, 0x9700, 0x8981, 0x7684, 0x4fe1, 0x606f, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x6536, 0x85cf, 0x8be6, 0x60c5, 0x9875, 0xa, 0x7535, 0x8111, 0x7aef, 0x8be6, 0x60c5, 0x9875, 0x91cd, 0x65b0, 0x6392, 0x7248, 0xff0c, 0x65b0, 0x589e, 0x201c, 0x8d2d, 0x5165, 0x4ef7, 0x683c, 0x201d, 0x548c, 0x201c, 0x6536, 0x542c, 0x72b6, 0x6001, 0x201d, 0xff0c, 0x6536, 0x542c, 0x72b6, 0x6001, 0x652f, 0x6301, 0x672a, 0x6536, 0x542c, 0x3001, 0x6536, 0x542c, 0x4e2d, 0x3001, 0x5df2, 0x6536, 0x542c, 0x3001, 0x6401, 0x7f6e, 0x3001, 0x60f3, 0x91cd, 0x542c, 0x548c, 0x81ea, 0x5b9a, 0x4e49, 0x3002, 0x42, 0x4b, 0x20, 0x533a, 0x57df, 0x52a0, 0x5165, 0x65b0, 0x7684, 0x88c5, 0x9970, 0x76f8, 0x6846, 0xff0c, 0x64cd, 0x4f5c, 0x6309, 0x94ae, 0x4e0e, 0x6807, 0x7b7e, 0x5e03, 0x5c40, 0x540c, 0x6b65, 0x4f18, 0x5316, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x5b8c, 0x6574, 0x7248, 0x4e2a, 0x4eba, 0x8bb0, 0x5f55, 0xa, 0x5b8c, 0x6574, 0x7248, 0x7684, 0x4fe1, 0x606f, 0x4e0b, 0x62c9, 0x83dc, 0x5355, 0x65b0, 0x589e, 0x201c, 0x8d2d, 0x5165, 0x4ef7, 0x683c, 0x201d, 0xff0c, 0x5e76, 0x5c06, 0x4e2a, 0x4eba, 0x76f8, 0x5173, 0x5185, 0x5bb9, 0x7edf, 0x4e00, 0x5f52, 0x5165, 0x201c, 0x4e2a, 0x4eba, 0x8bb0, 0x5f55, 0x201d, 0x3002),
-      String.fromCharCode(0x2022, 0x20, 0x5bfc, 0x5165, 0x7a33, 0x5b9a, 0x6027, 0xa, 0x672a, 0x52fe, 0x9009, 0x7684, 0x5b57, 0x6bb5, 0x4e0d, 0x4f1a, 0x88ab, 0x4fee, 0x6539, 0xff1b, 0x63a5, 0x53e3, 0x672a, 0x8fd4, 0x56de, 0x6216, 0x8bfb, 0x53d6, 0x5931, 0x8d25, 0x65f6, 0x4f1a, 0x4fdd, 0x7559, 0x539f, 0x5185, 0x5bb9, 0xff0c, 0x5e76, 0x663e, 0x793a, 0x66f4, 0x660e, 0x786e, 0x7684, 0x5931, 0x8d25, 0x539f, 0x56e0, 0x3002),
-      String.fromCharCode(0x611f, 0x8c22, 0x5927, 0x5bb6, 0x7684, 0x53cd, 0x9988, 0x4e0e, 0x4f7f, 0x7528, 0xff01, 0x5982, 0x679c, 0x66f4, 0x65b0, 0x540e, 0x4ecd, 0x9047, 0x5230, 0x95ee, 0x9898, 0xff0c, 0x6b22, 0x8fce, 0x901a, 0x8fc7, 0x7f51, 0x7ad9, 0x5185, 0x7684, 0x53cd, 0x9988, 0x5165, 0x53e3, 0x544a, 0x8bc9, 0x6211, 0xff5e)
+      String.fromCharCode(0x672c, 0x6b21, 0x66f4, 0x65b0, 0x589e, 0x52a0, 0x4e86, 0x5b8c, 0x6574, 0x7248, 0x8bc4, 0x4ef7, 0x7684, 0x5ef6, 0x957f, 0x6a21, 0x5f0f, 0xff0c, 0x5e76, 0x8c03, 0x6574, 0x4e86, 0x7b80, 0x7565, 0x7248, 0x7eed, 0x9875, 0x548c, 0x6536, 0x85cf, 0x8be6, 0x60c5, 0x9875, 0x3002, 0x8bf7, 0x4e0b, 0x6ed1, 0x67e5, 0x770b, 0x5168, 0x90e8, 0x5185, 0x5bb9, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x5b8c, 0x6574, 0x7248, 0x8bc4, 0x4ef7, 0x52a0, 0x9875, 0xa, 0x73b0, 0x5728, 0x53ef, 0x4ee5, 0x5728, 0x201c, 0x7eed, 0x9875, 0x6a21, 0x5f0f, 0x201d, 0x548c, 0x201c, 0x5ef6, 0x957f, 0x6a21, 0x5f0f, 0x201d, 0x4e4b, 0x95f4, 0x9009, 0x62e9, 0xff0c, 0x9ed8, 0x8ba4, 0x4f7f, 0x7528, 0x7eed, 0x9875, 0x6a21, 0x5f0f, 0x3002, 0x5ef6, 0x957f, 0x6a21, 0x5f0f, 0x4f1a, 0x968f, 0x8bc4, 0x4ef7, 0x6587, 0x5b57, 0x589e, 0x52a0, 0x800c, 0x62c9, 0x957f, 0x7b2c, 0x4e00, 0x9875, 0xff0c, 0x5bfc, 0x51fa, 0x56fe, 0x7247, 0x4e5f, 0x4f1a, 0x91c7, 0x7528, 0x5f53, 0x524d, 0x957f, 0x5ea6, 0x3002, 0x5207, 0x6362, 0x6a21, 0x5f0f, 0x65f6, 0x4f1a, 0x81ea, 0x52a8, 0x5408, 0x5e76, 0x6216, 0x62c6, 0x5206, 0x6587, 0x5b57, 0xff1b, 0x5982, 0x679c, 0x5408, 0x5e76, 0x540e, 0x8d85, 0x8fc7, 0x9ad8, 0x5ea6, 0x4e0a, 0x9650, 0xff0c, 0x4f1a, 0x5148, 0x63d0, 0x793a, 0x53ef, 0x80fd, 0x4e22, 0x5931, 0x7684, 0x5185, 0x5bb9, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x7b80, 0x7565, 0x7248, 0x7eed, 0x9875, 0xa, 0x65b0, 0x589e, 0x201c, 0x53bb, 0x6389, 0x5206, 0x5272, 0x7ebf, 0x201d, 0x9009, 0x9879, 0xff0c, 0x52fe, 0x9009, 0x540e, 0x8bc4, 0x4ef7, 0x6539, 0x4e3a, 0x5355, 0x680f, 0x663e, 0x793a, 0x3002),
+      String.fromCharCode(0x2022, 0x20, 0x6536, 0x85cf, 0x4e0e, 0x8d44, 0x6599, 0x5bfc, 0x5165, 0xa, 0x8c03, 0x6574, 0x4e86, 0x6536, 0x85cf, 0x8be6, 0x60c5, 0x9875, 0x7684, 0x20, 0x42, 0x4b, 0x20, 0x548c, 0x4e2a, 0x4eba, 0x8bb0, 0x5f55, 0x5e03, 0x5c40, 0xff0c, 0x8ba9, 0x65e5, 0x671f, 0x5b8c, 0x6574, 0x663e, 0x793a, 0xff1b, 0x4fee, 0x6b63, 0x4e86, 0x90e8, 0x5206, 0x5355, 0x72ec, 0x53d1, 0x884c, 0x7684, 0x7b80, 0x4e2d, 0x7248, 0x4f5c, 0x54c1, 0x5728, 0x5bfc, 0x5165, 0x65f6, 0x628a, 0x7ffb, 0x8bd1, 0x4eba, 0x5458, 0x586b, 0x5165, 0x201c, 0x793e, 0x56e2, 0x201d, 0x7684, 0x95ee, 0x9898, 0x3002),
+      String.fromCharCode(0x611f, 0x8c22, 0x5927, 0x5bb6, 0x7684, 0x53cd, 0x9988, 0x4e0e, 0x4f7f, 0x7528, 0xff01, 0x5982, 0x679c, 0x66f4, 0x65b0, 0x540e, 0x9047, 0x5230, 0x95ee, 0x9898, 0xff0c, 0x6b22, 0x8fce, 0x901a, 0x8fc7, 0x7f51, 0x7ad9, 0x5185, 0x7684, 0x53cd, 0x9988, 0x5165, 0x53e3, 0x544a, 0x8bc9, 0x6211, 0xff5e)
     ].join("\n\n");
     let storageFullWarned = false;
     let appDialogQueue = Promise.resolve();
@@ -1606,6 +1614,7 @@
         applyTemplateFont(targetTemplate, normalizedFontId);
         reviewChineseCharacterLimits = null;
         updateReviewCharacterCounts();
+        syncFullReviewHeight();
         fitStage();
       } catch (error) {
         console.warn("Template font load failed", error);
@@ -1627,6 +1636,7 @@
 
     function templatePageTotal(template = currentTemplate()) {
       const pageState = currentContinuationState(template);
+      if (template === "full" && fullPageMode === "extend") return 1;
       return pageState ? pageState.pages.length + 1 : 1;
     }
 
@@ -1642,17 +1652,40 @@
       return { current, pages };
     }
 
+    function normalizeFullContinuationPageState(value) {
+      const state = normalizeContinuationPageState(value);
+      const savedBreaks = Array.isArray(value?.leadingBreaks) ? value.leadingBreaks : [];
+      const legacyPages = !Array.isArray(value?.leadingBreaks);
+      state.leadingBreaks = state.pages.map((page, index) => {
+        if (legacyPages && page.startsWith("\n")) {
+          state.pages[index] = page.slice(1);
+          return true;
+        }
+        return savedBreaks[index] === true;
+      });
+      return state;
+    }
+
+    function normalizeCompactContinuationPageState(value) {
+      const state = normalizeContinuationPageState(value);
+      const savedModes = Array.isArray(value?.singleColumnPages) ? value.singleColumnPages : [];
+      state.singleColumnPages = state.pages.map((_, index) => savedModes[index] === true);
+      return state;
+    }
+
     function readCompactContinuationSnapshot() {
       try {
         const value = JSON.parse(localStorage.getItem(COMPACT_CONTINUATION_STORAGE_KEY) || "null");
-        return isRecordObject(value) ? normalizeContinuationPageState(value) : null;
+        return isRecordObject(value) ? normalizeCompactContinuationPageState(value) : null;
       } catch {
         return null;
       }
     }
 
     function compactContinuationReviewText() {
-      return String(compactContinuationReview.innerText || compactContinuationReview.textContent || "").replace(/\r\n?/g, "\n");
+      const content = String(compactContinuationReview.textContent || "");
+      const rendered = String(compactContinuationReview.innerText || "");
+      return (rendered.length >= content.length ? rendered : content).replace(/\r\n?/g, "\n");
     }
 
     function reviewCharacterCountText(value, limit) {
@@ -1665,7 +1698,8 @@
       reviewChineseCharacterLimits = {
         fullHome: wrappingCharacters(limitedFullReviewText(sample)).length,
         fullContinuation: wrappingCharacters(limitedFullContinuationReviewText(sample)).length,
-        compactContinuation: wrappingCharacters(limitedCompactContinuationReviewText(sample)).length
+        compactContinuation: wrappingCharacters(limitedCompactContinuationReviewText(sample)).length,
+        compactContinuationSingle: wrappingCharacters(limitedCompactContinuationReviewText(sample, true)).length
       };
       return reviewChineseCharacterLimits;
     }
@@ -1674,25 +1708,34 @@
       const limits = currentReviewChineseCharacterLimits();
       reviewCharacterCount.textContent = reviewCharacterCountText(reviewText.value, limits.fullHome);
       fullContinuationReviewCharacterCount.textContent = reviewCharacterCountText(fullContinuationReview.value, limits.fullContinuation);
-      compactContinuationReviewCharacterCount.textContent = reviewCharacterCountText(compactContinuationReviewText(), limits.compactContinuation);
+      compactContinuationReviewCharacterCount.textContent = reviewCharacterCountText(
+        compactContinuationReviewText(),
+        compactContinuationCard.classList.contains("single-column") ? limits.compactContinuationSingle : limits.compactContinuation
+      );
     }
 
-    function limitedCompactContinuationReviewText(value) {
+    function limitedCompactContinuationReviewText(value, singleColumn = false) {
       return limitedByMeasuredLines(
         value,
         compactContinuationReview,
-        COMPACT_CONTINUATION_COLUMN_WIDTH,
-        COMPACT_CONTINUATION_LINES_PER_COLUMN * 2
+        singleColumn ? COMPACT_CONTINUATION_SINGLE_WIDTH : COMPACT_CONTINUATION_COLUMN_WIDTH,
+        COMPACT_CONTINUATION_LINES_PER_COLUMN * (singleColumn ? 1 : 2)
       );
     }
 
     function renderCompactContinuationReview(value) {
-      compactContinuationReview.textContent = String(value || "");
+      compactContinuationReview.textContent = limitedCompactContinuationReviewText(
+        value,
+        compactContinuationCard.classList.contains("single-column")
+      );
     }
 
     function limitCompactContinuationReviewInput() {
       const current = compactContinuationReviewText();
-      const limited = limitedCompactContinuationReviewText(current);
+      const limited = limitedCompactContinuationReviewText(
+        current,
+        compactContinuationCard.classList.contains("single-column")
+      );
       if (limited === current) return false;
       compactContinuationReview.textContent = limited;
       placeCaretAtFullFieldEnd(compactContinuationReview);
@@ -1771,11 +1814,17 @@
         templatePageControls.hidden = true;
         fullContinuationCard.hidden = true;
         compactContinuationCard.hidden = true;
+        syncFullReviewHeight();
         if (fit) fitStage();
         return;
       }
       templatePageControls.classList.toggle("compact", template === "compact");
+      templatePageControls.classList.toggle("full-mode-controls", template === "full");
+      fullPageModeSelect.hidden = template !== "full";
+      fullPageModeSelect.value = fullPageMode;
+      templateAddPage.hidden = template === "full" && fullPageMode === "extend";
       pageState.current = Math.max(0, Math.min(pageState.pages.length, pageState.current));
+      if (template === "full" && fullPageMode === "extend") pageState.current = 0;
       const total = templatePageTotal(template);
       const continuation = pageState.current > 0;
       card.hidden = continuation;
@@ -1786,6 +1835,12 @@
       templatePrevPage.disabled = pageState.current === 0;
       templateNextPage.disabled = pageState.current >= total - 1;
       templateDeletePage.hidden = !continuation;
+      const compactContinuation = template === "compact" && continuation;
+      const singleColumn = compactContinuation && pageState.singleColumnPages[pageState.current - 1] === true;
+      templatePageDividerToggle.hidden = !compactContinuation;
+      templatePageControls.classList.toggle("has-divider-toggle", compactContinuation);
+      templatePageDividerCheckbox.checked = singleColumn;
+      compactContinuationCard.classList.toggle("single-column", singleColumn);
       if (continuation) {
         syncContinuationSharedInfo();
         const pageText = pageState.pages[pageState.current - 1] || "";
@@ -1799,6 +1854,7 @@
       }
       updateReviewCharacterCounts();
       renderTemplatePageMenu();
+      syncFullReviewHeight();
       if (fit) fitStage();
     }
 
@@ -1816,9 +1872,11 @@
 
     function addTemplateContinuationPage() {
       const pageState = currentContinuationState();
-      if (!pageState) return;
+      if (!pageState || (currentTemplate() === "full" && fullPageMode === "extend")) return;
       commitCompactContinuationReviewText();
       pageState.pages.push("");
+      if (currentTemplate() === "compact") pageState.singleColumnPages.push(false);
+      else pageState.leadingBreaks.push(false);
       pageState.current = pageState.pages.length;
       closeTemplatePageMenu();
       renderTemplatePage();
@@ -1831,6 +1889,8 @@
       if (!pageState || pageState.current === 0) return;
       if (!await showAppConfirm(UI_DELETE_CONTINUATION_CONFIRM)) return;
       pageState.pages.splice(pageState.current - 1, 1);
+      if (currentTemplate() === "compact") pageState.singleColumnPages.splice(pageState.current - 1, 1);
+      else pageState.leadingBreaks.splice(pageState.current - 1, 1);
       pageState.current = Math.min(pageState.current, pageState.pages.length);
       closeTemplatePageMenu();
       renderTemplatePage();
@@ -2126,13 +2186,131 @@
 
     const fullReviewComposing = new WeakSet();
 
-    function limitedFullReviewText(value) {
+    function limitedStandardFullReviewText(value) {
       return limitedByMeasuredLines(
         limitedByFullWidth(value, FULL_REVIEW_MAX_WIDTH),
         reviewText,
         FULL_REVIEW_LINE_WIDTH,
         FULL_REVIEW_MAX_LINES
       );
+    }
+
+    function limitedExtendedFullReviewText(value) {
+      return limitedByMeasuredLines(value, reviewText, FULL_REVIEW_LINE_WIDTH, FULL_EXTENDED_REVIEW_MAX_LINES);
+    }
+
+    function limitedFullReviewText(value) {
+      return fullPageMode === "extend" ? limitedExtendedFullReviewText(value) : limitedStandardFullReviewText(value);
+    }
+
+    function fullReviewLineLimit() {
+      return fullPageMode === "extend" ? FULL_EXTENDED_REVIEW_MAX_LINES : FULL_REVIEW_MAX_LINES;
+    }
+
+    function fullReviewExtraHeight(value = reviewText.value) {
+      if (fullPageMode !== "extend") return 0;
+      const lineCount = measuredWrappedLineCount(value, reviewText, FULL_REVIEW_LINE_WIDTH);
+      return Math.min(FULL_EXTENDED_MAX_HEIGHT - 1440, Math.max(0, lineCount - FULL_REVIEW_MAX_LINES) * 31);
+    }
+
+    function syncFullReviewHeight() {
+      const extended = currentTemplate() === "full" && fullPageMode === "extend";
+      const wasExtended = card.classList.contains("full-extended");
+      const previousHeight = card.style.getPropertyValue("--full-review-extra-height");
+      card.classList.toggle("full-extended", extended);
+      if (extended) card.style.setProperty("--full-review-extra-height", fullReviewExtraHeight() + "px");
+      else card.style.removeProperty("--full-review-extra-height");
+      return wasExtended !== extended || previousHeight !== card.style.getPropertyValue("--full-review-extra-height");
+    }
+
+    function splitFullReviewPages(value) {
+      let remaining = String(value || "").replace(/\r\n?/g, "\n");
+      const pages = [];
+      const leadingBreaks = [];
+      while (remaining) {
+        const leadingBreak = remaining.startsWith("\n");
+        if (leadingBreak) remaining = remaining.slice(1);
+        const pageText = limitedFullContinuationReviewText(remaining) || wrappingCharacters(remaining)[0] || "";
+        if (!pageText && !leadingBreak) break;
+        pages.push(pageText);
+        leadingBreaks.push(leadingBreak);
+        remaining = remaining.slice(pageText.length);
+      }
+      return { pages, leadingBreaks };
+    }
+
+    function combinedFullReviewText() {
+      const pageState = continuationState.full;
+      return (reviewText.value + pageState.pages.map((page, index) =>
+        (pageState.leadingBreaks[index] ? "\n" : "") + page
+      ).join("")).replace(/\r\n?/g, "\n");
+    }
+
+    function normalizeFullReviewForMode() {
+      if (currentTemplate() !== "full") return;
+      const pageState = continuationState.full;
+      if (fullPageMode === "extend") {
+        const combined = combinedFullReviewText();
+        if (limitedExtendedFullReviewText(combined) === combined) {
+          reviewText.value = combined;
+          pageState.pages = [];
+          pageState.leadingBreaks = [];
+          pageState.current = 0;
+          return;
+        }
+        fullPageMode = "continuation";
+        localStorage.setItem(FULL_PAGE_MODE_STORAGE_KEY, fullPageMode);
+        reviewChineseCharacterLimits = null;
+        void showAppAlert(String.fromCharCode(0x5f53, 0x524d, 0x8bb0, 0x5f55, 0x7684, 0x8bc4, 0x4ef7, 0x8d85, 0x8fc7, 0x5ef6, 0x957f, 0x6a21, 0x5f0f, 0x4e0a, 0x9650, 0xff0c, 0x5df2, 0x4fdd, 0x6301, 0x7eed, 0x9875, 0x6a21, 0x5f0f, 0x4ee5, 0x514d, 0x4e22, 0x5931, 0x6587, 0x5b57, 0x3002));
+      }
+      const main = limitedStandardFullReviewText(reviewText.value);
+      if (main !== reviewText.value) {
+        const extra = splitFullReviewPages(reviewText.value.slice(main.length));
+        reviewText.value = main;
+        pageState.pages = extra.pages.concat(pageState.pages);
+        pageState.leadingBreaks = extra.leadingBreaks.concat(pageState.leadingBreaks);
+        if (pageState.current > 0) pageState.current += extra.pages.length;
+      }
+    }
+
+    async function changeFullPageMode(nextMode) {
+      const next = nextMode === "extend" ? "extend" : "continuation";
+      if (next === fullPageMode || currentTemplate() !== "full") {
+        fullPageModeSelect.value = fullPageMode;
+        return;
+      }
+      const pageState = continuationState.full;
+      if (pageState.current > 0) pageState.pages[pageState.current - 1] = fullContinuationReview.value;
+      const combined = combinedFullReviewText();
+      let main;
+      let split;
+      if (next === "extend") {
+        main = limitedExtendedFullReviewText(combined);
+        split = { pages: [], leadingBreaks: [] };
+        if (main !== combined) {
+          const lostCount = wrappingCharacters(combined.slice(main.length)).length;
+          fullPageModeSelect.value = fullPageMode;
+          fullPageModeSelect.disabled = true;
+          const confirmed = await showAppConfirm(
+            String.fromCharCode(0x5408, 0x5e76, 0x540e, 0x7684, 0x8bc4, 0x4ef7, 0x8d85, 0x8fc7, 0x5ef6, 0x957f, 0x6a21, 0x5f0f, 0x7684, 0x20, 0x32, 0x38, 0x38, 0x30, 0x70, 0x78, 0x20, 0x9ad8, 0x5ea6, 0x4e0a, 0x9650, 0x3002, 0x7ee7, 0x7eed, 0x5207, 0x6362, 0x4f1a, 0x4e22, 0x5931, 0x672b, 0x5c3e, 0x20) + lostCount + String.fromCharCode(0x20, 0x5b57, 0x3002, 0x662f, 0x5426, 0x4ecd, 0x8981, 0x5207, 0x6362, 0xff1f)
+          );
+          fullPageModeSelect.disabled = false;
+          if (!confirmed) return;
+        }
+      } else {
+        main = limitedStandardFullReviewText(combined);
+        split = splitFullReviewPages(combined.slice(main.length));
+      }
+      fullPageMode = next;
+      localStorage.setItem(FULL_PAGE_MODE_STORAGE_KEY, next);
+      reviewText.value = main;
+      pageState.pages = split.pages;
+      pageState.leadingBreaks = split.leadingBreaks;
+      pageState.current = 0;
+      reviewChineseCharacterLimits = null;
+      closeTemplatePageMenu();
+      renderTemplatePage();
+      saveState();
     }
 
     function limitFullReviewInput(input) {
@@ -2163,6 +2341,10 @@
       input?.addEventListener("compositionend", () => {
         fullReviewComposing.delete(input);
         limitFullReviewInput(input);
+        if (input === reviewText) {
+          updateReviewCharacterCounts();
+          if (syncFullReviewHeight()) fitStage();
+        }
         scheduleSave();
       });
       input?.addEventListener("input", () => {
@@ -2313,7 +2495,7 @@
 
     function templateSize() {
       if (currentTemplate() === "compact") return { width: 600, height: 800 };
-      return { width: 1080, height: 1440 };
+      return { width: 1080, height: currentTemplate() === "full" ? 1440 + fullReviewExtraHeight() : 1440 };
     }
 
     function normalizeThemeId(themeId) {
@@ -2501,8 +2683,8 @@
 
     function updateReviewEditLineStatus() {
       const lineCount = measuredWrappedLineCount(reviewEditArea.value, reviewText, FULL_REVIEW_LINE_WIDTH);
-      reviewEditLineStatus.textContent = reviewCharacterCountText(reviewEditArea.value, currentReviewChineseCharacterLimits().fullHome) + " \u00b7 " + String.fromCharCode(0x672c, 0x9875) + " " + lineCount + " / " + FULL_REVIEW_MAX_LINES + " " + String.fromCharCode(0x884c);
-      reviewEditLineStatus.classList.toggle("is-full", lineCount >= FULL_REVIEW_MAX_LINES);
+      reviewEditLineStatus.textContent = reviewCharacterCountText(reviewEditArea.value, currentReviewChineseCharacterLimits().fullHome) + " \u00b7 " + String.fromCharCode(0x672c, 0x9875) + " " + lineCount + " / " + fullReviewLineLimit() + " " + String.fromCharCode(0x884c);
+      reviewEditLineStatus.classList.toggle("is-full", lineCount >= fullReviewLineLimit());
     }
 
     function updateReviewFocusViewport() {
@@ -2638,6 +2820,7 @@
       card.classList.toggle("grid9", nextTemplate === "grid9");
       card.classList.toggle("quick", nextTemplate === "quick");
       card.classList.toggle("trio", nextTemplate === "trio");
+      if (nextTemplate === "full" && !applyingState) normalizeFullReviewForMode();
       if (nextTemplate === "full" || nextTemplate === "compact") {
         card.style.setProperty("--template-font-family", templateFontStack(DEFAULT_TEMPLATE_FONT_ID));
         limitAllCurrentFields();
@@ -2649,11 +2832,13 @@
       if (stage) stage.classList.remove("is-focused");
       syncTemplatePages();
       if (isPagedTemplate(nextTemplate)) renderTemplatePage(false);
+      syncFullReviewHeight();
       fitStage();
       syncTemplateFontMenu();
       void ensureTemplateFontLoaded(templateFontId(nextTemplate)).then(() => {
         reviewChineseCharacterLimits = null;
         updateReviewCharacterCounts();
+        syncFullReviewHeight();
         fitStage();
         syncTemplateFontMenu();
       }).catch((error) => {
@@ -3467,7 +3652,7 @@
       });
     }
 
-    function parseDlsiteProduct(raw) {
+    function parseDlsiteProduct(raw, workno = "") {
       let product = Array.isArray(raw) ? raw[0] : raw;
       if (product?.work && typeof product.work === "object") product = product.work;
       else if (product?.product && typeof product.product === "object") product = product.product;
@@ -3477,6 +3662,13 @@
       }
       if (!product || typeof product !== "object") return null;
       const creators = product.creators || product.creaters || product.maker || {};
+      const editions = Array.isArray(product.language_editions) ? product.language_editions : [];
+      const currentWorkno = normalizeWorkno(workno || product.workno);
+      const currentEdition = editions.find((edition) => normalizeWorkno(edition?.workno) === currentWorkno);
+      const isChineseEdition = isChineseLangCode(product.translation_info?.lang || currentEdition?.lang);
+      const originalWorkno = isChineseEdition
+        ? normalizeWorkno(product.translation_info?.original_workno || editions.find((edition) => edition?.lang === "JPN")?.workno)
+        : "";
       const chineseEditionWorkno = hasChineseOnSaleStatus(product) && Array.isArray(product.language_editions)
         ? (product.language_editions.find((edition) => isChineseLangCode(edition && edition.lang)) || {}).workno || ""
         : "";
@@ -3487,6 +3679,7 @@
         title: firstText(product.work_name, product.title, product.name, product.work?.work_name),
         cv: firstText(findVoiceText(creators), findVoiceText(product), creatorText(creators, "voice_by"), product.voice_by, product.voice),
         circle: firstText(product.maker_name, product.circle, product.maker?.name, product.brand?.name),
+        originalWorkno: originalWorkno && originalWorkno !== currentWorkno ? originalWorkno : "",
         duration: firstText(product.duration, product.play_time, product.playtime, product.total_time, product.voice_length),
         scenarioWriter: firstText(creatorText(creators, "scenario_by"), creatorText(creators, "scenario"), product.scenario_by, product.scenario),
         illustrator: firstText(creatorText(creators, "illust_by"), creatorText(creators, "illustration_by"), creatorText(creators, "illustrator"), product.illust_by, product.illustration_by, product.illustrator),
@@ -3560,6 +3753,20 @@
         }
       }
       throw lastError || new Error("DLsite import failed");
+    }
+
+    async function fetchDlsiteProductWithOriginalCircle(workno, resolveCircle = true) {
+      const product = parseDlsiteProduct(await fetchProductJson(workno), workno);
+      if (!resolveCircle || !product?.originalWorkno) return product;
+      let original;
+      try {
+        original = parseDlsiteProduct(await fetchProductJson(product.originalWorkno), product.originalWorkno);
+      } catch (error) {
+        throw new Error("DLsite original work " + product.originalWorkno + " circle lookup: " + String(error?.message || error));
+      }
+      if (!original?.circle) throw new Error("DLsite original work " + product.originalWorkno + " has no circle");
+      product.circle = original.circle;
+      return product;
     }
 
     async function fetchTranslatableProducts(workno) {
@@ -4347,7 +4554,7 @@
             return "";
           })
           : Promise.resolve("");
-        const product = parseDlsiteProduct(await fetchProductJson(workno));
+        const product = await fetchDlsiteProductWithOriginalCircle(workno, importFields.has("basic") && shouldImportField(editableText("circleText")));
         if (!product || (!product.title && !product.cv && !product.circle && !product.originalPrice && !product.currentPrice)) {
           throw new Error("empty product");
         }
@@ -6213,9 +6420,14 @@
         continuationPages: {
           full: {
             current: continuationState.full.current,
-            pages: continuationState.full.pages.map((page) => limitedFullContinuationReviewText(page))
+            pages: continuationState.full.pages.map((page) => limitedFullContinuationReviewText(page)),
+            leadingBreaks: continuationState.full.leadingBreaks.slice()
           },
-          compact: { current: continuationState.compact.current, pages: continuationState.compact.pages.slice() }
+          compact: {
+            current: continuationState.compact.current,
+            pages: continuationState.compact.pages.slice(),
+            singleColumnPages: continuationState.compact.singleColumnPages.slice()
+          }
         },
         playerTotalSeconds,
         playerProgress,
@@ -6491,9 +6703,11 @@
 
     function applyState(state, persist = false) {
       if (!state || typeof state !== "object") return false;
-      continuationState.full = normalizeContinuationPageState(state.continuationPages?.full);
-      continuationState.compact = normalizeContinuationPageState(state.continuationPages?.compact);
-      setTemplate(state.template || "full", false);
+      continuationState.full = normalizeFullContinuationPageState(state.continuationPages?.full);
+      continuationState.compact = normalizeCompactContinuationPageState(state.continuationPages?.compact);
+      applyingState = true;
+      try { setTemplate(state.template || "full", false); }
+      finally { applyingState = false; }
       applyCardTheme(state.theme || DEFAULT_THEME_ID, false);
       setEditableText("recordTitle", state.recordTitle || state.jpTitle || state.cnTitle || "");
       setEditableText("cvText", state.cvText || "");
@@ -6516,6 +6730,7 @@
       document.querySelectorAll(".rating-row").forEach((row, index) => setRating(row, state.ratings?.[index] ?? 4));
       renderTags(state.tags);
       reviewText.value = state.reviewText || "";
+      normalizeFullReviewForMode();
       updateReviewCharacterCounts();
       coverOriginalSrc = state.coverOriginalSrc || "";
       coverEditedSrc = state.coverEditedSrc || "";
@@ -6832,8 +7047,8 @@
       playerPlaying = false;
       syncPlayerUi(true);
       updateDiscount(true);
-      continuationState.full = { current: 0, pages: [] };
-      continuationState.compact = { current: 0, pages: [] };
+      continuationState.full = { current: 0, pages: [], leadingBreaks: [] };
+      continuationState.compact = { current: 0, pages: [], singleColumnPages: [] };
       renderTemplatePage();
       saveState();
     });
@@ -7629,8 +7844,8 @@
         strokeRound(ctx, 18, 18, 564, 764, 18, themeAlpha("dash", theme.dashAlpha), 1, true, [5, 5]);
         return;
       }
-      strokeRound(ctx, 16, 16, 1048, 1408, 30, themeAlpha("line", .78), 3);
-      strokeRound(ctx, 30, 30, 1020, 1380, 22, themeAlpha("dash", theme.dashAlpha), 2, true, [6, 6]);
+      strokeRound(ctx, 16, 16, 1048, height - 32, 30, themeAlpha("line", .78), 3);
+      strokeRound(ctx, 30, 30, 1020, height - 60, 22, themeAlpha("dash", theme.dashAlpha), 2, true, [6, 6]);
     }
 
     function drawSingleLineEllipsizedText(ctx, text, x, y, maxWidth) {
@@ -7722,11 +7937,16 @@
 
     async function renderFullHomeCanvas() {
       const canvas = document.createElement("canvas");
+      const reviewValue = reviewText.value;
+      const extended = fullPageMode === "extend";
+      const extraHeight = fullReviewExtraHeight(reviewValue);
+      const reviewCopy = extended ? limitedExtendedFullReviewText(reviewValue) : limitedStandardFullReviewText(reviewValue);
+      const reviewLineLimit = extended ? FULL_EXTENDED_REVIEW_MAX_LINES : FULL_REVIEW_MAX_LINES;
       canvas.width = 1080;
-      canvas.height = 1440;
+      canvas.height = 1440 + extraHeight;
       const ctx = canvas.getContext("2d");
       const theme = currentCardTheme();
-      drawTemplateCanvasBackground(ctx, 1080, 1440, true);
+      drawTemplateCanvasBackground(ctx, 1080, canvas.height, true);
 
       await drawCover(ctx, 64, 83.5, 420, 315, 24, true, null, true, 4);
 
@@ -7789,12 +8009,12 @@
       drawStars(ctx, LABEL_STORY, ratingValue(rows[2]), 574, 856.5);
       drawStars(ctx, "SE", ratingValue(rows[3]), 574, 899.5);
 
-      fillRound(ctx, 64, 995.5, 952, 382, 28, theme.reviewBg);
-      strokeRound(ctx, 64, 995.5, 952, 382, 28, themeAlpha("line", theme.lineSoftAlpha), 2);
+      fillRound(ctx, 64, 995.5, 952, 382 + extraHeight, 28, theme.reviewBg);
+      strokeRound(ctx, 64, 995.5, 952, 382 + extraHeight, 28, themeAlpha("line", theme.lineSoftAlpha), 2);
       drawStickerLabel(ctx, LABEL_REVIEW, 82, 974.5);
       ctx.fillStyle = theme.ink;
       ctx.font = canvasFont('400', 24);
-      drawWrappedText(ctx, limitedFullReviewText(reviewText.value), 88, 1051.5, FULL_REVIEW_LINE_WIDTH, 31, FULL_REVIEW_MAX_LINES);
+      drawWrappedText(ctx, reviewCopy, 88, 1051.5, FULL_REVIEW_LINE_WIDTH, 31, reviewLineLimit);
       return canvas;
     }
 
@@ -7861,7 +8081,7 @@
       return canvas;
     }
 
-    async function renderCompactContinuationCanvas(pageText, pageIndex, pageTotal) {
+    async function renderCompactContinuationCanvas(pageText, pageIndex, pageTotal, singleColumn = false) {
       const canvas = document.createElement("canvas");
       canvas.width = 1080;
       canvas.height = 1440;
@@ -7900,13 +8120,13 @@
       ctx.textAlign = "center";
       ctx.fillText("\u266b", 300, 65);
       ctx.textAlign = "left";
-      drawCompactContinuationSpine(ctx);
+      if (!singleColumn) drawCompactContinuationSpine(ctx);
       ctx.fillStyle = theme.ink;
       ctx.font = canvasFont('400', 18);
       if ("letterSpacing" in ctx) ctx.letterSpacing = ".36px";
-      const lines = compactContinuationCanvasLines(ctx, pageText, COMPACT_CONTINUATION_COLUMN_WIDTH);
+      const lines = compactContinuationCanvasLines(ctx, pageText, singleColumn ? COMPACT_CONTINUATION_SINGLE_WIDTH : COMPACT_CONTINUATION_COLUMN_WIDTH);
       drawCompactContinuationColumn(ctx, lines.slice(0, COMPACT_CONTINUATION_LINES_PER_COLUMN), 44, 102, 32.4);
-      drawCompactContinuationColumn(ctx, lines.slice(COMPACT_CONTINUATION_LINES_PER_COLUMN, COMPACT_CONTINUATION_LINES_PER_COLUMN * 2), 335, 102, 32.4);
+      if (!singleColumn) drawCompactContinuationColumn(ctx, lines.slice(COMPACT_CONTINUATION_LINES_PER_COLUMN, COMPACT_CONTINUATION_LINES_PER_COLUMN * 2), 335, 102, 32.4);
       if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
       ctx.strokeStyle = themeAlpha("mint", .44);
       ctx.beginPath();
@@ -7931,7 +8151,7 @@
         let canvas;
         try {
           if (index === 0) canvas = template === "compact" ? await renderCompactHomeCanvas() : await renderFullHomeCanvas();
-          else if (template === "compact") canvas = await renderCompactContinuationCanvas(pageState.pages[index - 1], index, total);
+          else if (template === "compact") canvas = await renderCompactContinuationCanvas(pageState.pages[index - 1], index, total, pageState.singleColumnPages[index - 1] === true);
           else canvas = await renderFullContinuationCanvas(pageState.pages[index - 1], index, total);
           pages.push({ blob: await canvasToBlob(canvas), fileName: templatePageExportFileName(template, index, total) });
         } finally {
@@ -11470,8 +11690,19 @@
 
     templatePrevPage.addEventListener("click", () => changeTemplatePage(-1));
     templateNextPage.addEventListener("click", () => changeTemplatePage(1));
+    fullPageModeSelect.addEventListener("change", () => void changeFullPageMode(fullPageModeSelect.value));
     templateAddPage.addEventListener("click", addTemplateContinuationPage);
     templateDeletePage.addEventListener("click", deleteCurrentTemplateContinuationPage);
+    templatePageDividerCheckbox.addEventListener("change", () => {
+      const pageState = continuationState.compact;
+      if (currentTemplate() !== "compact" || pageState.current <= 0) return;
+      commitCompactContinuationReviewText();
+      pageState.singleColumnPages[pageState.current - 1] = templatePageDividerCheckbox.checked;
+      compactContinuationCard.classList.toggle("single-column", templatePageDividerCheckbox.checked);
+      renderCompactContinuationReview(pageState.pages[pageState.current - 1]);
+      updateReviewCharacterCounts();
+      saveState();
+    });
     templatePageCount.addEventListener("click", (event) => {
       event.stopPropagation();
       templatePageMenu.hidden = !templatePageMenu.hidden;
@@ -11486,23 +11717,43 @@
       updateReviewCharacterCounts();
       scheduleSave();
     });
+    let compactContinuationReviewComposing = false;
+    compactContinuationReview.addEventListener("compositionstart", () => {
+      compactContinuationReviewComposing = true;
+    });
+    compactContinuationReview.addEventListener("compositionend", () => {
+      compactContinuationReviewComposing = false;
+      limitCompactContinuationReviewInput();
+      commitCompactContinuationReviewText();
+      updateReviewCharacterCounts();
+      scheduleSave();
+    });
     compactContinuationReview.addEventListener("input", () => {
+      if (!compactContinuationReviewComposing) limitCompactContinuationReviewInput();
       commitCompactContinuationReviewText();
       updateReviewCharacterCounts();
       scheduleSave();
     });
     compactContinuationReview.addEventListener("paste", () => {
       window.setTimeout(() => {
+        if (!compactContinuationReviewComposing) limitCompactContinuationReviewInput();
         commitCompactContinuationReviewText();
+        updateReviewCharacterCounts();
         saveState();
       }, 0);
     });
     compactContinuationReview.addEventListener("blur", () => {
+      if (!compactContinuationReviewComposing) limitCompactContinuationReviewInput();
       commitCompactContinuationReviewText();
+      updateReviewCharacterCounts();
       saveState();
     });
     const compactContinuationReviewObserver = new MutationObserver(() => {
-      if (commitCompactContinuationReviewText()) scheduleSave();
+      if (compactContinuationReviewComposing) return;
+      if (commitCompactContinuationReviewText()) {
+        updateReviewCharacterCounts();
+        scheduleSave();
+      }
     });
     compactContinuationReviewObserver.observe(compactContinuationReview, {
       childList: true,
@@ -11530,7 +11781,10 @@
     document.addEventListener("input", (event) => {
       if (event.target && event.target.id === "circleText") syncCircleTextLayout();
       if (event.target && ["recordTitle", "cvText", "rjText"].includes(event.target.id)) syncContinuationSharedInfo();
-      if (event.target === reviewText) updateReviewCharacterCounts();
+      if (event.target === reviewText) {
+        updateReviewCharacterCounts();
+        if (syncFullReviewHeight()) fitStage();
+      }
       if (fullFieldComposing.has(event.target)) return;
       scheduleSave();
     });
@@ -12032,7 +12286,7 @@
       }
       function paginateFullCollectionRepo(value) {
         const normalized = String(value || "").replace(/\r\n?/g, "\n");
-        const main = limitedFullReviewText(normalized);
+        const main = limitedStandardFullReviewText(normalized);
         return {
           main,
           pages:splitCollectionRepoPages(normalized.slice(main.length), limitedFullContinuationReviewText)
@@ -13206,7 +13460,7 @@
               return "";
             })
             : Promise.resolve("");
-          const product = parseDlsiteProduct(await fetchProductJson(workno));
+          const product = await fetchDlsiteProductWithOriginalCircle(workno, targets.circle);
           if (!product || (!product.title && !product.cv && !product.circle && !product.releaseDate && !product.originalPrice && !product.currentPrice && !product.coverUrl && !product.keywords?.length)) throw new Error("empty product");
           product.lowestDiscount = await lowestDiscountPromise;
           let chineseChoice = "";
@@ -13663,7 +13917,7 @@
                   return "";
                 })
                 : Promise.resolve("");
-              const product = parseDlsiteProduct(await fetchProductJson(job.rj));
+              const product = await fetchDlsiteProductWithOriginalCircle(job.rj, targetCircle);
               if (!product || (!product.title && !product.cv && !product.circle && !product.originalPrice && !product.currentPrice && !product.coverUrl && !product.keywords?.length)) throw new Error("empty product");
               product.lowestDiscount = await lowestDiscountPromise;
               let chineseChoice = "";
@@ -13906,7 +14160,7 @@
           console.warn("Collection batch add lowest discount import failed", rj, error);
           return "";
         });
-        const product = parseDlsiteProduct(await fetchProductJson(rj));
+        const product = await fetchDlsiteProductWithOriginalCircle(rj);
         if (!product || (!product.title && !product.cv && !product.circle && !product.releaseDate && !product.originalPrice && !product.currentPrice && !product.coverUrl && !product.keywords?.length)) throw new Error("empty product");
         product.lowestDiscount = await lowestDiscountPromise;
         let chineseChoice = "";

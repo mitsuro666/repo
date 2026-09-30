@@ -9,10 +9,10 @@
   <link rel="icon" type="image/png" sizes="64x64" href="icons/site-icon-64.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="icons/site-icon-180.png" />
   <link rel="manifest" href="site.webmanifest" />
-  <link id="appStylesheet" rel="stylesheet" href="css/style.css?v=20260923-update-notice-v4">
+  <link id="appStylesheet" rel="stylesheet" href="css/style.css?v=20260930-full-extend-mode-v1">
   <script>
     window.__OTOME_APP_VERSION_PROMISE__ = (() => {
-      const fallbackVersion = "20260923-update-notice-v4";
+      const fallbackVersion = "20260930-full-extend-mode-v1";
       const versionUrl = new URL("version.json", document.baseURI);
       versionUrl.searchParams.set("_", Date.now().toString(36));
       return fetch(versionUrl, { cache: "no-store", credentials: "same-origin" })
@@ -384,6 +384,8 @@
         <button class="template-page-arrow" id="templateNextPage" type="button" aria-label="&#19979;&#19968;&#39029;">&#8250;</button>
       </div>
       <div class="template-page-actions">
+        <select class="template-page-action template-page-mode-select" id="fullPageModeSelect" aria-label="&#23436;&#25972;&#29256;&#21152;&#39029;&#27169;&#24335;" hidden><option value="continuation">&#32493;&#39029;&#27169;&#24335;</option><option value="extend">&#24310;&#38271;&#27169;&#24335;</option></select>
+        <label class="template-page-action template-page-divider-toggle" id="templatePageDividerToggle" hidden><input id="templatePageDividerCheckbox" type="checkbox" aria-label="&#21435;&#25481;&#20998;&#21106;&#32447;" /><span>&#21435;&#25481;&#20998;&#21106;&#32447;</span></label>
         <button class="template-page-action danger" id="templateDeletePage" type="button" hidden>&#21024;&#38500;&#32493;&#39029;</button>
         <button class="template-page-action primary" id="templateAddPage" type="button">&#65291; &#28155;&#21152;&#32493;&#39029;</button>
       </div>
@@ -782,6 +784,19 @@
         <button class="usage-info-close" id="updateLogCloseButton" type="button" aria-label="&#20851;&#38381;&#26356;&#26032;&#20844;&#21578;"><span aria-hidden="true">&times;</span></button>
         <h2 class="usage-info-title" id="updateLogTitle">&#26356;&#26032;&#20844;&#21578;</h2>
         <div class="update-log-list">
+          <details class="update-log-entry" open>
+            <summary>
+              <div class="update-log-meta"><time datetime="2026-09-30">2026.09.30</time><span>&#21151;&#33021;&#26356;&#26032; &#183; &#20307;&#39564;&#20248;&#21270;</span></div>
+              <h3>9&#26376;30&#26085;&#26356;&#26032;</h3>
+            </summary>
+            <ul>
+              <li>&#23436;&#25972;&#29256;&#26032;&#22686;&#8220;&#24310;&#38271;&#27169;&#24335;&#8221;&#65292;&#35780;&#20215;&#26694;&#21487;&#38543;&#25991;&#23383;&#37327;&#24310;&#38271;&#65292;&#22270;&#29255;&#25353;&#24403;&#21069;&#21345;&#29255;&#39640;&#24230;&#23548;&#20986;&#65307;&#21407;&#26377;&#8220;&#32493;&#39029;&#27169;&#24335;&#8221;&#20173;&#20026;&#40664;&#35748;&#36873;&#39033;&#12290;</li>
+              <li>&#23436;&#25972;&#29256;&#25903;&#25345;&#22312;&#20004;&#31181;&#27169;&#24335;&#38388;&#33258;&#21160;&#21512;&#24182;&#12289;&#25286;&#20998;&#35780;&#20215;&#25991;&#23383;&#12290;&#20869;&#23481;&#36229;&#36807;&#24310;&#38271;&#27169;&#24335;&#19978;&#38480;&#26102;&#65292;&#20250;&#25552;&#31034;&#21487;&#33021;&#20002;&#22833;&#30340;&#23383;&#25968;&#65292;&#30001;&#29992;&#25143;&#20915;&#23450;&#26159;&#21542;&#20999;&#25442;&#12290;</li>
+              <li>&#31616;&#30053;&#29256;&#32493;&#39029;&#26032;&#22686;&#8220;&#21435;&#25481;&#20998;&#21106;&#32447;&#8221;&#36873;&#39033;&#12290;</li>
+              <li>&#20248;&#21270;&#25910;&#34255;&#35814;&#24773;&#39029;&#30340; BK&#12289;&#20316;&#21697;&#20449;&#24687;&#21644;&#20010;&#20154;&#35760;&#24405;&#24067;&#23616;&#65292;&#36141;&#20080;&#26085;&#26399;&#12289;&#25910;&#21548;&#26085;&#26399;&#21487;&#23436;&#25972;&#26174;&#31034;&#12290;</li>
+              <li>&#20462;&#27491;&#37096;&#20998;&#21333;&#29420;&#21457;&#34892;&#30340;&#31616;&#20013;&#29256;&#20316;&#21697;&#22312;&#23548;&#20837;&#26102;&#23558;&#32763;&#35793;&#20154;&#21592;&#35823;&#22635;&#20026;&#31038;&#22242;&#30340;&#38382;&#39064;&#12290;</li>
+            </ul>
+          </details>
           <details class="update-log-entry" open>
             <summary>
               <div class="update-log-meta"><time datetime="2026-09-23">2026.09.23</time><span>&#21151;&#33021;&#26356;&#26032; &#183; &#20307;&#39564;&#20248;&#21270;</span></div>
