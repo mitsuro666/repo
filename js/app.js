@@ -3693,6 +3693,9 @@
         cv: firstText(findVoiceText(creators), findVoiceText(product), creatorText(creators, "voice_by"), product.voice_by, product.voice),
         circle: firstText(product.maker_name, product.circle, product.maker?.name, product.brand?.name),
         originalWorkno: originalWorkno && originalWorkno !== currentWorkno ? originalWorkno : "",
+        translationParentWorkno: product.translation_info?.is_child === true
+          ? normalizeWorkno(product.translation_info.parent_workno)
+          : "",
         duration: firstText(product.duration, product.play_time, product.playtime, product.total_time, product.voice_length),
         scenarioWriter: firstText(creatorText(creators, "scenario_by"), creatorText(creators, "scenario"), product.scenario_by, product.scenario),
         illustrator: firstText(creatorText(creators, "illust_by"), creatorText(creators, "illustration_by"), creatorText(creators, "illustrator"), product.illust_by, product.illustration_by, product.illustrator),
@@ -3830,7 +3833,7 @@
       return String(Math.round(candidates[0].discount));
     }
 
-    async function fetchDlwatcherLowestDiscount(workno) {
+    async function fetchDlwatcherLowestDiscount(workno, productPromise = null) {
       const directUrl = "https://dlwatcher.com/product/" + encodeURIComponent(workno) + ".json";
       const proxyUrl = buildProxyUrl(dlsiteProxyUrl(), workno, "dlwatcher");
       const attempts = proxyUrl ? [proxyUrl, directUrl] : [directUrl];
@@ -3849,6 +3852,12 @@
           if (!httpError && /^HTTP \d+/.test(String(error && error.message))) httpError = error;
           console.warn("DLwatcher import attempt failed", url, error);
         }
+      }
+      // Translation child IDs may only be tracked under their same-language parent.
+      const product = productPromise ? await productPromise : null;
+      const parentWorkno = normalizeWorkno(product?.translationParentWorkno);
+      if (parentWorkno && parentWorkno !== normalizeWorkno(workno)) {
+        return fetchDlwatcherLowestDiscount(parentWorkno);
       }
       if (receivedWithoutDiscount) throw new Error("empty lowest discount");
       throw httpError || lastError || new Error("empty lowest discount");
@@ -4559,15 +4568,16 @@
         const failures = [];
         const shouldImportField = (currentValue) => importMode === "overwrite" || !String(currentValue || "").trim();
         const shouldImportLowest = importFields.has("price") && shouldImportField(lowestPrice.value);
+        const productPromise = fetchDlsiteProductWithOriginalCircle(workno, importFields.has("basic") && shouldImportField(editableText("circleText")));
         let lowestDiscountError = null;
         const lowestDiscountPromise = shouldImportLowest
-          ? fetchDlwatcherLowestDiscount(workno).catch((error) => {
+          ? fetchDlwatcherLowestDiscount(workno, productPromise).catch((error) => {
             lowestDiscountError = error;
             console.warn("DLwatcher lowest discount import failed", error);
             return "";
           })
           : Promise.resolve("");
-        const product = await fetchDlsiteProductWithOriginalCircle(workno, importFields.has("basic") && shouldImportField(editableText("circleText")));
+        const product = await productPromise;
         if (!product || (!product.title && !product.cv && !product.circle && !product.originalPrice && !product.currentPrice)) {
           throw new Error("empty product");
         }
@@ -13470,15 +13480,16 @@
         button.disabled = true;
         button.setAttribute("aria-busy", "true");
         try {
+          const productPromise = fetchDlsiteProductWithOriginalCircle(workno, targets.circle);
           let lowestDiscountError = null;
           const lowestDiscountPromise = targets.lowestDiscount
-            ? fetchDlwatcherLowestDiscount(workno).catch(error => {
+            ? fetchDlwatcherLowestDiscount(workno, productPromise).catch(error => {
               lowestDiscountError = error;
               console.warn("Collection detail RJ lowest discount import failed", workno, error);
               return "";
             })
             : Promise.resolve("");
-          const product = await fetchDlsiteProductWithOriginalCircle(workno, targets.circle);
+          const product = await productPromise;
           if (!product || (!product.title && !product.cv && !product.circle && !product.releaseDate && !product.originalPrice && !product.currentPrice && !product.coverUrl && !product.keywords?.length)) throw new Error("empty product");
           product.lowestDiscount = await lowestDiscountPromise;
           let chineseChoice = "";
@@ -13927,15 +13938,16 @@
                 skipped += 1;
                 continue;
               }
+              const productPromise = fetchDlsiteProductWithOriginalCircle(job.rj, targetCircle);
               let lowestDiscountError = null;
               const lowestDiscountPromise = targetLowestDiscount
-                ? fetchDlwatcherLowestDiscount(job.rj).catch(error => {
+                ? fetchDlwatcherLowestDiscount(job.rj, productPromise).catch(error => {
                   lowestDiscountError = error;
                   console.warn("Collection RJ lowest discount import failed", job.rj, error);
                   return "";
                 })
                 : Promise.resolve("");
-              const product = await fetchDlsiteProductWithOriginalCircle(job.rj, targetCircle);
+              const product = await productPromise;
               if (!product || (!product.title && !product.cv && !product.circle && !product.originalPrice && !product.currentPrice && !product.coverUrl && !product.keywords?.length)) throw new Error("empty product");
               product.lowestDiscount = await lowestDiscountPromise;
               let chineseChoice = "";
@@ -14172,13 +14184,14 @@
       }
       async function fetchCollectionBatchAddWork(rj) {
         const missingFields = [];
+        const productPromise = fetchDlsiteProductWithOriginalCircle(rj);
         let lowestDiscountError = null;
-        const lowestDiscountPromise = fetchDlwatcherLowestDiscount(rj).catch(error => {
+        const lowestDiscountPromise = fetchDlwatcherLowestDiscount(rj, productPromise).catch(error => {
           lowestDiscountError = error;
           console.warn("Collection batch add lowest discount import failed", rj, error);
           return "";
         });
-        const product = await fetchDlsiteProductWithOriginalCircle(rj);
+        const product = await productPromise;
         if (!product || (!product.title && !product.cv && !product.circle && !product.releaseDate && !product.originalPrice && !product.currentPrice && !product.coverUrl && !product.keywords?.length)) throw new Error("empty product");
         product.lowestDiscount = await lowestDiscountPromise;
         let chineseChoice = "";
