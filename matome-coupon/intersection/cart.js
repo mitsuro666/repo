@@ -3,6 +3,7 @@
   const $ = id => document.getElementById(id);
   const cn = (...codes) => String.fromCharCode(...codes);
   const CART_KEY = 'dlsite-intersection-cart-v1';
+  const PURCHASED_KEY = 'dlsite-intersection-purchased-v1';
   const UNIT_PRICE = 167;
   const RATE_URL = 'https://api.frankfurter.dev/v2/rate/jpy/cny';
   const RATE_TTL = 15 * 60 * 1000;
@@ -33,6 +34,7 @@
   }
   const byRJ = new Map(catalog.works.map(work => [work.rj, work]));
   const cart = new Set();
+  const purchased = new Set();
   const money = new Intl.NumberFormat('zh-CN', {maximumFractionDigits: 0});
   const rmb = new Intl.NumberFormat('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
   let pendingRemove = null;
@@ -51,6 +53,11 @@
     if (!Array.isArray(stored) || !stored.every(rj => typeof rj === 'string')) throw new Error(text.invalidCart);
     stored.forEach(rj => { if (byRJ.has(rj)) cart.add(rj); });
   } catch (error) { failure(text.readError, error); }
+  try {
+    const stored = JSON.parse(localStorage.getItem(PURCHASED_KEY) || '[]');
+    if (!Array.isArray(stored) || !stored.every(rj => typeof rj === 'string')) throw new Error(cn(0x5df2,0x4e70,0x8bb0,0x5f55,0x683c,0x5f0f,0x65e0,0x6548));
+    stored.forEach(rj => { if (byRJ.has(rj)) purchased.add(rj); });
+  } catch (error) { failure(cn(0x5df2,0x4e70,0x8bb0,0x5f55,0x8bfb,0x53d6,0x5931,0x8d25), error); }
 
   function persist(next) {
     try { localStorage.setItem(CART_KEY, JSON.stringify([...next])); }
@@ -62,6 +69,7 @@
   }
   function syncButtons() {
     $('cart-clear').disabled = cart.size === 0;
+    $('cart-purchase').disabled = ![...cart].some(rj => !purchased.has(rj));
     $('cart-count').textContent = String(cart.size);
     $('cart-count').hidden = !cart.size;
     for (const button of document.querySelectorAll('[data-cart-rj]')) {
@@ -107,6 +115,7 @@
     for (const rj of cart) {
       const work = byRJ.get(rj);
       const row = $('cart-row-template').content.firstElementChild.cloneNode(true);
+      row.querySelector('.cart-purchased').hidden = !purchased.has(rj);
       const cover = row.querySelector('.cart-cover');
       const badge = row.querySelector('.cart-rj');
       badge.textContent = work.rj;
@@ -177,6 +186,17 @@
   }
   $('cart-open').addEventListener('click', openCart);
   $('cart-rate-retry').addEventListener('click', fetchRate);
+  $('cart-purchase').addEventListener('click', () => {
+    if (!cart.size) return;
+    const next = new Set([...purchased, ...cart]);
+    try { localStorage.setItem(PURCHASED_KEY, JSON.stringify([...next])); }
+    catch (error) { failure(cn(0x5df2,0x4e70,0x8bb0,0x5f55,0x4fdd,0x5b58,0x5931,0x8d25), error); return; }
+    purchased.clear();
+    next.forEach(rj => purchased.add(rj));
+    syncButtons();
+    renderCart();
+    window.dispatchEvent(new Event('dlsite-purchases-change'));
+  });
   $('cart-clear').addEventListener('click', () => {
     if (!cart.size) return;
     $('cart-clear-message').textContent = cn(0x786e,0x5b9a,0x5c06,0x8d2d,0x7269,0x8f66,0x4e2d,0x7684,0x5168,0x90e8) + ' ' + cart.size + ' ' + cn(0x90e8,0x4f5c,0x54c1,0x79fb,0x51fa,0xff1f);
@@ -198,7 +218,7 @@
       renderCart();
     }
   });
-  window.DLSITE_CART = {createButton};
+  window.DLSITE_CART = {createButton, isPurchased: rj => purchased.has(rj)};
   syncButtons();
 })();
 

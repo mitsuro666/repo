@@ -65,7 +65,9 @@
   try { saved = JSON.parse(sessionStorage.getItem(STORE_KEY) || '{}') || {}; } catch (_) { /* Optional UI preference storage. */ }
   const selectedVoices = new Set((Array.isArray(saved.voices) ? saved.voices : []).filter(name => voiceStats.has(name)));
   const selectedCircles = new Set((Array.isArray(saved.circles) ? saved.circles : []).filter(id => circleStats.has(id)));
-  const languageButtons = [...$('language-filters').querySelectorAll('button')];
+  const languageButtons = [...$('language-filters').querySelectorAll('button[data-language]')];
+  const purchasedFilter = $('purchased-filter');
+  let showPurchased = false;
   const selectedLanguages = new Set((Array.isArray(saved.languages) ? saved.languages : [])
     .filter(key => languageButtons.some(button => button.dataset.language === key)));
   let page = Math.max(1, Math.floor(Number(saved.page) || 1));
@@ -181,9 +183,11 @@
     }
     $('selected-filters').replaceChildren(...chips);
     $('selected-filters').hidden = !chips.length;
-    const filterCount = chips.length + selectedLanguages.size;
+    const filterCount = chips.length + selectedLanguages.size + Number(showPurchased);
     $('filter-count').textContent = String(filterCount);
     $('filter-count').hidden = !filterCount;
+    purchasedFilter.classList.toggle('is-present', showPurchased);
+    purchasedFilter.setAttribute('aria-pressed', String(showPurchased));
     for (const button of languageButtons) {
       const selected = selectedLanguages.has(button.dataset.language);
       button.classList.toggle('is-present', selected);
@@ -207,6 +211,11 @@
     rj.textContent = work.rj;
     const cartButton = window.DLSITE_CART.createButton(work);
     cover.append(cartButton);
+    const purchasedBadge = document.createElement('span');
+    purchasedBadge.className = 'purchased-badge';
+    purchasedBadge.textContent = cn(0x5df2,0x8d2d,0x4e70);
+    purchasedBadge.hidden = !window.DLSITE_CART.isPurchased(work.rj);
+    cover.append(purchasedBadge);
     const image = document.createElement('img');
     image.alt = work.title;
     image.width = work.bk.width || 320;
@@ -215,7 +224,7 @@
     image.decoding = 'async';
     image.addEventListener('error', () => {
       cover.classList.add('missing');
-      cover.replaceChildren(document.createTextNode(labels.coverError), rj, cartButton);
+      cover.replaceChildren(document.createTextNode(labels.coverError), rj, cartButton, purchasedBadge);
       if (!imageErrorShown) {
         imageErrorShown = true;
         showError(labels.coverError + '\uff1a' + work.bk.path);
@@ -226,7 +235,7 @@
       cover.append(image);
     } else {
       cover.classList.add('missing');
-      cover.replaceChildren(document.createTextNode(labels.coverError), rj, cartButton);
+      cover.replaceChildren(document.createTextNode(labels.coverError), rj, cartButton, purchasedBadge);
     }
     const title = article.querySelector('.title-link');
     title.href = safeURL(work.url);
@@ -300,6 +309,7 @@
   function applyFilters(resetPage) {
     const tokens = fold($('query').value).trim().split(/\s+/).filter(Boolean);
     matched = indexed.filter(item => tokens.every(token => item.text.includes(token)) &&
+      window.DLSITE_CART.isPurchased(item.work.rj) === showPurchased &&
       (!selectedVoices.size || item.voices.some(voice => selectedVoices.has(voice))) &&
       (!selectedCircles.size || selectedCircles.has(item.circleID)) &&
       [...selectedLanguages].every(key => languageStates(item.work)[key] === true));
@@ -317,6 +327,7 @@
     selectedVoices.clear();
     selectedCircles.clear();
     selectedLanguages.clear();
+    showPurchased = false;
     $('query').value = '';
     $('sort').value = 'default';
     for (const kind of ['voice', 'circle']) {
@@ -332,6 +343,11 @@
   });
   $('search-form').addEventListener('submit', event => { event.preventDefault(); clearTimeout(queryTimer); applyFilters(true); });
   $('sort').addEventListener('change', () => applyFilters(true));
+  purchasedFilter.addEventListener('click', () => {
+    showPurchased = !showPurchased;
+    applyFilters(true);
+  });
+  window.addEventListener('dlsite-purchases-change', () => applyFilters(false));
   for (const button of languageButtons) {
     button.addEventListener('click', () => {
       const key = button.dataset.language;
