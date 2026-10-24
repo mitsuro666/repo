@@ -137,28 +137,30 @@ dialog h2 { margin: 0; font-size: 20px; }
   .heading-title { display: grid; grid-template-columns: max-content max-content; gap: 0 8px; }
   h1 { font-size: clamp(20px, 5.4vw, 24px); letter-spacing: 0; }
   .deadline { display: block; grid-column: 1; grid-row: 2; margin-left: 0; }
-  .heading-title .total { grid-column: 2; grid-row: 1 / 3; }
+  .heading-title .total { grid-column: 2; grid-row: 1; }
   .total { font-size: 11px; padding: 3px 10px; }
   .header-actions .campaign-link { display: none; }
   .header-actions button { min-height: 34px; padding: 6px 10px; font-size: 11px; border-radius: 8px; white-space: nowrap; }
-  .toolbar { grid-template-columns: 1fr 1.25fr .75fr; gap: 8px; }
+  .toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)) 60px; gap: 8px; }
   .query-wrap { grid-column: 1 / -1; order: 0; height: 38px; gap: 8px; padding: 0 10px; border-radius: 8px; }
   .query-wrap input { font-size: 16px; }
   .query-wrap input::placeholder { font-size: 12px; }
   .query-wrap svg { width: 20px; height: 20px; }
-  #filter-toggle { display: flex; order: 1; min-width: 0; justify-content: center; height: 36px; min-height: 36px; padding: 6px 8px; border-radius: 8px; font-size: 12px; gap: 6px; }
+  #filter-toggle { display: none; }
   #filter-toggle svg { width: 17px; height: 17px; }
   #filter-toggle .chevron { width: 13px; }
   #filter-toggle[aria-expanded="true"] { background: var(--selected); }
   #filter-count { font-size: 11px; }
-  .sort-wrap { order: 2; }
+  .sort-wrap { display: none; }
   .sort-wrap select { height: 36px; min-height: 36px; border-radius: 8px; padding: 5px 28px 5px 10px; font-size: 12px; }
   .reset { order: 3; height: 36px; min-height: 36px; border-radius: 8px; padding: 5px 10px; font-size: 12px; }
-  .voice-filter, .circle-filter { display: none; grid-column: 1 / -1; }
-  .voice-filter { order: 4; }
-  .circle-filter { order: 5; }
+  .voice-filter, .circle-filter { display: block; grid-column: auto; }
+  .voice-filter { order: 1; }
+  .circle-filter { order: 2; }
+  .voice-filter summary, .circle-filter summary { height: 36px; min-height: 36px; padding: 5px 8px; border-radius: 8px; font-size: 12px; }
   .mobile-expanded .voice-filter, .mobile-expanded .circle-filter { display: block; }
-  .filter-panel { position: static; width: 100%; margin-top: 5px; box-shadow: none; }
+  .filter-panel { position: absolute; width: min(320px, calc(200% + 8px)); margin-top: 0; }
+  .circle-filter .filter-panel { left: auto; right: 0; }
   .option { min-height: 38px; }
   .option-query { font-size: 16px; }
   .summary { font-size: 11px; margin: 10px 0 8px; padding-top: 8px; }
