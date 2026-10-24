@@ -91,7 +91,6 @@
   }
   function renderTotals() {
     const total = cart.size * UNIT_PRICE;
-    $('cart-formula').textContent = cart.size + ' ' + text.unit + ' \u00d7 ' + UNIT_PRICE + ' ' + text.yen;
     $('cart-jpy').textContent = text.total + ' ' + money.format(total) + ' ' + text.yen;
     $('cart-items-count').textContent = cart.size + ' ' + text.unit;
     $('cart-cny').textContent = total === 0 ? text.approx + ' \u00a50.00 ' + text.cny :
@@ -108,6 +107,8 @@
       const work = byRJ.get(rj);
       const row = $('cart-row-template').content.firstElementChild.cloneNode(true);
       const cover = row.querySelector('.cart-cover');
+      const badge = row.querySelector('.cart-rj');
+      badge.textContent = work.rj;
       const image = document.createElement('img');
       image.alt = work.title;
       image.width = 88;
@@ -115,12 +116,12 @@
       image.loading = 'lazy';
       image.decoding = 'async';
       image.addEventListener('error', () => {
-        cover.textContent = document.body.dataset.coverError;
+        cover.replaceChildren(document.createTextNode(document.body.dataset.coverError), badge);
       }, {once: true});
       if (/^\.\.\/(matome20261023voice|dlsite-coupon-20261016)\/images\/RJ\d+\.webp$/.test(work.bk.path)) {
         image.src = work.bk.path;
         cover.append(image);
-      } else cover.textContent = document.body.dataset.coverError;
+      } else cover.replaceChildren(document.createTextNode(document.body.dataset.coverError), badge);
       const title = row.querySelector('.cart-title');
       title.href = /^https:\/\/www\.dlsite\.com\//.test(work.url || '') ? work.url : '';
       title.title = work.title;
