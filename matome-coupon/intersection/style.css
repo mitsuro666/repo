@@ -161,6 +161,8 @@ dialog h2 { margin: 0; font-size: 20px; }
 .cart-totals { flex: 0 0 auto; padding: 16px 26px 20px; border-top: 1px solid var(--line); background: var(--surface); }
 .cart-totals p { margin: 0; }
 .cart-total-line { display: flex; align-items: baseline; gap: 12px; white-space: nowrap; }
+.cart-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.cart-summary #cart-purchase { flex: 0 0 auto; margin-left: auto; }
 .cart-jpy { color: #c65c86; font-size: 26px; font-weight: 700; line-height: 1.5; }
 .cart-cny { font-size: 17px; }
 .cart-rate-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
@@ -257,6 +259,7 @@ dialog h2 { margin: 0; font-size: 20px; }
   .cart-remove { width: 30px; height: 34px; min-height: 34px; padding: 5px; }
   .cart-totals { padding: 12px 14px max(14px, env(safe-area-inset-bottom)); }
   .cart-total-line { gap: 8px; }
+  .cart-summary { gap: 8px; }
   .cart-jpy { font-size: 20px; }
   .cart-cny { font-size: 12px; }
 }

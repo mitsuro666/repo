@@ -69,7 +69,7 @@
   }
   function syncButtons() {
     $('cart-clear').disabled = cart.size === 0;
-    $('cart-purchase').disabled = ![...cart].some(rj => !purchased.has(rj));
+    $('cart-purchase').disabled = cart.size === 0;
     $('cart-count').textContent = String(cart.size);
     $('cart-count').hidden = !cart.size;
     for (const button of document.querySelectorAll('[data-cart-rj]')) {
@@ -189,12 +189,29 @@
   $('cart-purchase').addEventListener('click', () => {
     if (!cart.size) return;
     const next = new Set([...purchased, ...cart]);
-    try { localStorage.setItem(PURCHASED_KEY, JSON.stringify([...next])); }
-    catch (error) { failure(cn(0x5df2,0x4e70,0x8bb0,0x5f55,0x4fdd,0x5b58,0x5931,0x8d25), error); return; }
+    let previous = null;
+    let wrotePurchases = false;
+    try {
+      previous = localStorage.getItem(PURCHASED_KEY);
+      localStorage.setItem(PURCHASED_KEY, JSON.stringify([...next]));
+      wrotePurchases = true;
+      localStorage.setItem(CART_KEY, '[]');
+    } catch (error) {
+      if (wrotePurchases) {
+        try {
+          if (previous === null) localStorage.removeItem(PURCHASED_KEY);
+          else localStorage.setItem(PURCHASED_KEY, previous);
+        } catch (rollbackError) { error = new Error(error.message + '; rollback: ' + rollbackError.message); }
+      }
+      failure(cn(0x5df2,0x4e70,0x8bb0,0x5f55,0x4fdd,0x5b58,0x5931,0x8d25), error);
+      return;
+    }
     purchased.clear();
     next.forEach(rj => purchased.add(rj));
+    cart.clear();
     syncButtons();
     renderCart();
+    $('cart-dialog').close();
     window.dispatchEvent(new Event('dlsite-purchases-change'));
   });
   $('cart-clear').addEventListener('click', () => {
