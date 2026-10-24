@@ -3,6 +3,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+from web_assets import write_web_catalog
 
 ROOT = Path(__file__).resolve().parent
 SOURCES = ['matome20261023voice', 'dlsite-coupon-20261016']
@@ -47,9 +48,7 @@ def main():
     data_dir = ROOT / 'data'
     data_dir.mkdir(exist_ok=True)
     (data_dir / 'works.json').write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
-    content = json.dumps(payload, ensure_ascii=False, separators=(',', ':'))
-    content = content.replace('<', '\\u003c').replace('\u2028', '\\u2028').replace('\u2029', '\\u2029')
-    (data_dir / 'works.js').write_text('window.DLSITE_INTERSECTION = ' + content + ';\n', encoding='utf-8')
+    write_web_catalog(payload, data_dir)
     print(json.dumps({k: v for k, v in metadata.items() if k != 'sources'}))
 
 

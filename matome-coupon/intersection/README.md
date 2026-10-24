@@ -21,12 +21,14 @@
 
 `build_data.py` 按 RJ 号取两份现有 JSON 的交集，保留第一份活动名单的原始顺序，生成 `data/works.json` 和可本地直接加载的 `data/works.js`。不联网、不改变来源文件。
 
-每条交集记录保留主要字段，以及 `source_records` 中的两份原始记录。BK 复用相邻资料库的本地图片，优先选择可用的真实图片。
+`data/works.json` 保留完整交集记录及 `source_records` 中的两份原始记录。网页加载的 `data/works.js` 由 `web_assets.py` 精简导出，只保留标题、RJ、声优、社团、链接、BK路径及尺寸、三个中文状态；原始记录和证据不随网页加载。BK 复用相邻资料库的本地图片。
+
+`font/BlackSugarPlumCandy-web.woff2` 只包含页面及当前作品列表需要的字体字符；`font/webfont.css` 使用互不重叠的 `unicode-range`，其他字符按需使用主项目 `font/black-sugar-plum-candy.woff2`。原始 TTF 继续保留。网页数据或界面文案更新后运行 `web_assets.py`，重新生成网页数据及字体。
 
 保持以下相对位置即可使用：
 
 ```text
-dlsite/
+matome-coupon/
   intersection/                  # index.html / style.css / app.js / data/
   matome20261023voice/images/
   dlsite-coupon-20261016/images/
@@ -37,7 +39,10 @@ dlsite/
 更新两份源数据后，在 `D:\repo` 运行：
 
 ```powershell
-& 'C:\Users\shuiy\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' dlsite/intersection/build_data.py
+& 'C:\Users\shuiy\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' matome-coupon/intersection/build_data.py
+& 'C:\Users\shuiy\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' matome-coupon/intersection/web_assets.py
 ```
+
+字体生成依赖 fonttools 4.67.0 和 brotli 1.2.1，本地安装在已忽略的 `.build-tools/` 中，不属于网页运行依赖。重新配置时使用上述 Python 的 `-m pip install --target matome-coupon/intersection/.build-tools fonttools==4.67.0 brotli==1.2.1`。
 
 实现依据为本聊天中确认的新版 PC、移动端概念图。按项目协作规则，仅进行基本语法及静态检查，实际浏览效果由用户确认。
