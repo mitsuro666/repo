@@ -4,8 +4,24 @@
   const cn = (...codes) => String.fromCharCode(...codes);
   const labels = document.body.dataset;
   const STORE_KEY = 'dlsite-intersection-ui-v1';
+  const DISPLAY_KEY = 'dlsite-intersection-display-v1';
   const UNLISTED = '__unlisted__';
   const app = $('app');
+  const displayControls = ['hide-rj', 'hide-cart-buttons'];
+  let displaySaved = {};
+  try { displaySaved = JSON.parse(localStorage.getItem(DISPLAY_KEY) || '{}') || {}; } catch (_) { /* Optional display preferences. */ }
+  for (const id of displayControls) {
+    const input = $(id);
+    input.checked = displaySaved[id] === true;
+    $('results').classList.toggle(id, input.checked);
+    input.addEventListener('change', () => {
+      $('results').classList.toggle(id, input.checked);
+      try {
+        localStorage.setItem(DISPLAY_KEY, JSON.stringify(Object.fromEntries(
+          displayControls.map(key => [key, $(key).checked]))));
+      } catch (_) { /* The display switch still works when storage is unavailable. */ }
+    });
+  }
   const mobile = window.matchMedia('(max-width: 640px)');
   const collator = new Intl.Collator(['ja', 'zh-CN'], {numeric: true, sensitivity: 'base'});
   const fold = value => String(value || '').normalize('NFKC').toLocaleLowerCase();

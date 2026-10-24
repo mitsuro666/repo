@@ -65,6 +65,11 @@ summary svg { width: 16px; height: 16px; }
 .chip svg { width: 13px; height: 13px; }
 .summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 12px; border-top: 1px solid var(--line); padding-top: 12px; color: var(--muted); font-size: 13px; }
 .summary p { margin: 0; }
+.result-heading { position: relative; display: flex; align-items: center; gap: 10px; }
+.display-settings { position: static; }
+.display-settings summary { height: 30px; min-height: 30px; padding: 4px 8px; border-radius: 6px; font-size: 12px; }
+.display-settings .filter-panel { left: 0; width: 220px; }
+#results.hide-rj .rj, #results.hide-cart-buttons .cart-add { display: none; }
 .language-filters { display: flex; gap: 6px; margin-left: auto; }
 .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
 .card { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; }
