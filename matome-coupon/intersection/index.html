@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <title>3&#26412;999x50&#21048;&#20132;&#38598;</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="data/works.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body data-unknown="&#23448;&#26041;&#26410;&#26631;&#27880;" data-voice="&#22768;&#20248;" data-circle="&#31038;&#22242;" data-total="&#20849;" data-works="&#37096;&#20316;&#21697;" data-all="&#20840;&#37096;" data-cover-error="&#23553;&#38754;&#26080;&#27861;&#35835;&#21462;" data-remove="&#31227;&#38500;">
+  <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M6 18 18 6M7 6h11v11"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 4h18l-7 8v7l-4 2v-9Z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  </svg>
+  <main class="app" id="app">
+    <div class="page">
+      <header class="heading">
+        <div class="heading-title"><h1>3&#26412;999x50&#21048;&#20132;&#38598;</h1><span id="total" class="total"></span><small class="deadline">10/29 12:59&#20026;&#27490;&#65288;&#21271;&#20140;&#26102;&#38388;&#65289;</small></div>
+        <nav class="header-actions" aria-label="&#27963;&#21160;&#20837;&#21475;">
+          <a id="bulk-link" class="button campaign-link" target="_blank" rel="noopener noreferrer">3&#26412;999&#26085;&#20803;&#27963;&#21160;<svg><use href="#i-external"/></svg></a>
+          <a id="coupon-link" class="button campaign-link" target="_blank" rel="noopener noreferrer">50%OFF&#21048;<svg><use href="#i-external"/></svg></a>
+          <button id="info-open" type="button">&#25968;&#25454;&#35828;&#26126;</button>
+        </nav>
+      </header>
+      <form class="toolbar" id="search-form" role="search">
+        <label class="query-wrap"><svg aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">&#25628;&#32034;&#20316;&#21697;&#21517;&#12289;&#22768;&#20248;&#12289;RJ&#21495;&#12289;&#31038;&#22242;</span><input id="query" type="search" placeholder="&#25628;&#32034;&#20316;&#21697;&#21517;&#12289;&#22768;&#20248;&#12289;RJ&#21495;&#12289;&#31038;&#22242;" autocomplete="off"></label>
+        <button id="filter-toggle" type="button" aria-expanded="false" aria-controls="voice-filter circle-filter"><svg aria-hidden="true"><use href="#i-filter"/></svg><span>&#31579;&#36873;</span><span id="filter-count" hidden></span><svg class="chevron" aria-hidden="true"><use href="#i-down"/></svg></button>
+        <details class="filter-group voice-filter" id="voice-filter">
+          <summary><span id="voice-summary">&#22768;&#20248;&#65306;&#20840;&#37096;</span><svg aria-hidden="true"><use href="#i-down"/></svg></summary>
+          <div class="filter-panel"><label class="sr-only" for="voice-query">&#25628;&#32034;&#22768;&#20248;</label><input id="voice-query" class="option-query" type="search" placeholder="&#25628;&#32034;&#22768;&#20248;" autocomplete="off"><div id="voice-options" class="options"></div></div>
+        </details>
+        <details class="filter-group circle-filter" id="circle-filter">
+          <summary><span id="circle-summary">&#31038;&#22242;&#65306;&#20840;&#37096;</span><svg aria-hidden="true"><use href="#i-down"/></svg></summary>
+          <div class="filter-panel"><label class="sr-only" for="circle-query">&#25628;&#32034;&#31038;&#22242;</label><input id="circle-query" class="option-query" type="search" placeholder="&#25628;&#32034;&#31038;&#22242;" autocomplete="off"><div id="circle-options" class="options"></div></div>
+        </details>
+        <label class="sort-wrap"><span class="sr-only">&#25490;&#24207;</span><select id="sort"><option value="default">&#40664;&#35748;&#25490;&#24207;</option><option value="title">&#20316;&#21697;&#21517;</option><option value="circle">&#31038;&#22242;&#21517;</option><option value="rj">RJ&#21495;</option></select><svg aria-hidden="true"><use href="#i-down"/></svg></label>
+        <button type="button" id="reset" class="reset">&#28165;&#31354;</button>
+      </form>
+      <div id="selected-filters" class="selected-filters" hidden></div>
+      <div class="summary"><p id="count" role="status" aria-live="polite"></p><div id="language-filters" class="language-filters" role="group" aria-label="&#20013;&#25991;&#29366;&#24577;&#31579;&#36873;"><button type="button" class="language-tag language-filter" data-language="version" aria-pressed="false">&#20013;&#25991;&#29256;&#26412;</button><button type="button" class="language-tag language-filter" data-language="subtitles" aria-pressed="false">&#20013;&#25991;&#23383;&#24149;</button><button type="button" class="language-tag language-filter" data-language="script" aria-pressed="false">&#20013;&#25991;&#21488;&#26412;</button></div></div>
+      <section id="results" class="grid" aria-label="&#20316;&#21697;&#21015;&#34920;" aria-busy="true"></section>
+      <div id="empty" class="empty" hidden><p>&#27809;&#26377;&#21305;&#37197;&#30340;&#20316;&#21697;</p><button id="empty-reset" type="button">&#28165;&#31354;&#31579;&#36873;</button></div>
+      <nav class="pager" id="pager" aria-label="&#20998;&#39029;"><button id="prev" type="button">&#19978;&#19968;&#39029;</button><label class="page-control"><span class="sr-only">&#39029;&#30721;</span><select id="page"></select><svg aria-hidden="true"><use href="#i-down"/></svg></label><button id="next" type="button">&#19979;&#19968;&#39029;</button></nav>
+      <noscript><p>&#35831;&#21551;&#29992; JavaScript &#20197;&#20351;&#29992;&#26412;&#22320;&#26816;&#32034;&#12290;</p></noscript>
+    </div>
+  </main>
+  <template id="card-template">
+    <article class="card">
+      <div class="cover"><span class="rj"></span></div>
+      <h2><a class="title-link" target="_blank" rel="noopener noreferrer"><span></span><svg aria-hidden="true"><use href="#i-external"/></svg></a></h2>
+      <div class="facts"><span class="voices"></span><span class="circle"><a target="_blank" rel="noopener noreferrer"></a></span></div>
+      <div class="language-tags"><span class="language-tag" data-language="version">&#20013;&#25991;&#29256;&#26412;</span><span class="language-tag" data-language="subtitles">&#20013;&#25991;&#23383;&#24149;</span><span class="language-tag" data-language="script">&#20013;&#25991;&#21488;&#26412;</span></div>
+    </article>
+  </template>
+  <dialog id="info-dialog" aria-labelledby="info-title"><div class="dialog-heading"><h2 id="info-title">&#25968;&#25454;&#35828;&#26126;</h2><button class="icon-button" type="button" data-close-dialog aria-label="&#20851;&#38381;"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div><div class="dialog-body"><p>&#25353; RJ &#21495;&#21462;&#20004;&#20221;&#26412;&#22320;&#27963;&#21160;&#21517;&#21333;&#30340;&#20132;&#38598;&#65292;&#19981;&#21516; RJ &#30340;&#35821;&#35328;&#29256;&#26412;&#20998;&#21035;&#20445;&#30041;&#12290;</p><dl id="dataset-facts"></dl><div id="source-details"></div><p>&#21516;&#31867;&#31579;&#36873;&#22810;&#36873;&#26102;&#21305;&#37197;&#20219;&#24847;&#19968;&#39033;&#65307;&#25628;&#32034;&#12289;&#22768;&#20248;&#12289;&#31038;&#22242;&#20043;&#38388;&#21516;&#26102;&#28385;&#36275;&#12290;&#25628;&#32034;&#35789;&#29992;&#31354;&#26684;&#20998;&#38548;&#26102;&#21516;&#26102;&#21305;&#37197;&#12290;</p><p>&#23448;&#26041;&#26410;&#26631;&#27880;&#30340;&#22768;&#20248;&#20445;&#30041;&#20026;&#31354;&#12290;&#23436;&#25972;&#20316;&#21697;&#21517;&#21487;&#20174;&#26631;&#39064;&#38142;&#25509;&#26597;&#30475;&#65292;&#26631;&#39064;&#38142;&#25509;&#22312;&#26032;&#26631;&#31614;&#39029;&#25171;&#24320;&#12290;</p></div><div class="dialog-actions"><button type="button" data-close-dialog>&#20851;&#38381;</button></div></dialog>
+  <dialog id="error-dialog" aria-labelledby="error-title"><h2 id="error-title">&#25968;&#25454;&#21152;&#36733;&#22833;&#36133;</h2><p id="error-message">&#26410;&#35835;&#21462;&#21040;&#26377;&#25928;&#30340; data/works.js&#12290;&#35831;&#20445;&#30041;&#23436;&#25972;&#25991;&#20214;&#22841;&#21518;&#37325;&#26032;&#25171;&#24320;&#12290;</p><div class="dialog-actions"><button type="button" data-close-dialog>&#20851;&#38381;</button></div></dialog>
+</body>
+</html>
