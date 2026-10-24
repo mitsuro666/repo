@@ -61,6 +61,7 @@
     return true;
   }
   function syncButtons() {
+    $('cart-clear').disabled = cart.size === 0;
     $('cart-count').textContent = String(cart.size);
     $('cart-count').hidden = !cart.size;
     for (const button of document.querySelectorAll('[data-cart-rj]')) {
@@ -176,6 +177,17 @@
   }
   $('cart-open').addEventListener('click', openCart);
   $('cart-rate-retry').addEventListener('click', fetchRate);
+  $('cart-clear').addEventListener('click', () => {
+    if (!cart.size) return;
+    $('cart-clear-message').textContent = cn(0x786e,0x5b9a,0x5c06,0x8d2d,0x7269,0x8f66,0x4e2d,0x7684,0x5168,0x90e8) + ' ' + cart.size + ' ' + cn(0x90e8,0x4f5c,0x54c1,0x79fb,0x51fa,0xff1f);
+    $('cart-clear-dialog').showModal();
+  });
+  $('cart-clear-confirm').addEventListener('click', () => {
+    if (persist(new Set())) {
+      $('cart-clear-dialog').close();
+      renderCart();
+    }
+  });
   $('cart-remove-dialog').addEventListener('close', () => { pendingRemove = null; });
   $('cart-remove-confirm').addEventListener('click', () => {
     if (!pendingRemove) return;
