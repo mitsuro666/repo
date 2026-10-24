@@ -35,6 +35,8 @@
   const byRJ = new Map(catalog.works.map(work => [work.rj, work]));
   const cart = new Set();
   const purchased = new Set();
+  const ROW_CACHE_LIMIT = 96;
+  const rowCache = new Map();
   const money = new Intl.NumberFormat('zh-CN', {maximumFractionDigits: 0});
   const rmb = new Intl.NumberFormat('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
   let pendingRemove = null;
@@ -109,47 +111,64 @@
       rate !== null ? 'Frankfurter \u00b7 ' + rateDate + ' \u00b7 ' + text.referenceRate + ' 1 JPY = ' + rate.toFixed(6) + ' CNY' : '';
     $('cart-rate-retry').hidden = !rateError || rateBusy;
   }
+  function createCartRow(work, index) {
+    const rj = work.rj;
+    const row = $('cart-row-template').content.firstElementChild.cloneNode(true);
+    row.dataset.rj = rj;
+    row.querySelector('.cart-purchased').hidden = !purchased.has(rj);
+    const cover = row.querySelector('.cart-cover');
+    const badge = row.querySelector('.cart-rj');
+    badge.textContent = work.rj;
+    const image = document.createElement('img');
+    image.alt = work.title;
+    image.width = 88;
+    image.height = 66;
+    image.loading = index < 6 ? 'eager' : 'lazy';
+    image.decoding = 'async';
+    image.addEventListener('error', () => {
+      if (rowCache.get(rj) === row) rowCache.delete(rj);
+      cover.replaceChildren(document.createTextNode(document.body.dataset.coverError), badge);
+    }, {once: true});
+    if (/^\.\.\/(matome20261023voice|dlsite-coupon-20261016)\/images\/RJ\d+\.webp$/.test(work.bk.path)) {
+      image.src = work.bk.path;
+      cover.append(image);
+    } else cover.replaceChildren(document.createTextNode(document.body.dataset.coverError), badge);
+    const title = row.querySelector('.cart-title');
+    title.href = /^https:\/\/www\.dlsite\.com\//.test(work.url || '') ? work.url : '';
+    title.title = work.title;
+    title.querySelector('span').textContent = work.title;
+    const voices = row.querySelector('.cart-voices');
+    voices.textContent = work.voice_actors.join(' / ') || text.unknown;
+    voices.title = voices.textContent;
+    const circle = row.querySelector('.cart-circle');
+    circle.textContent = work.circle.name;
+    circle.title = work.circle.name;
+    row.querySelector('.cart-remove').addEventListener('click', () => {
+      pendingRemove = rj;
+      $('cart-remove-name').textContent = work.title;
+      $('cart-remove-dialog').showModal();
+    });
+    return row;
+  }
   function renderCart() {
-    const scrollTop = $('cart-list').parentElement.scrollTop;
-    const fragment = document.createDocumentFragment();
-    for (const rj of cart) {
-      const work = byRJ.get(rj);
-      const row = $('cart-row-template').content.firstElementChild.cloneNode(true);
+    const list = $('cart-list');
+    const scrollTop = list.parentElement.scrollTop;
+    const existing = new Map([...list.children].map(row => [row.dataset.rj, row]));
+    const rows = [...cart].map((rj, index) => {
+      const cached = existing.get(rj) || rowCache.get(rj);
+      const row = cached?.querySelector('.cart-cover img') ? cached : createCartRow(byRJ.get(rj), index);
       row.querySelector('.cart-purchased').hidden = !purchased.has(rj);
-      const cover = row.querySelector('.cart-cover');
-      const badge = row.querySelector('.cart-rj');
-      badge.textContent = work.rj;
-      const image = document.createElement('img');
-      image.alt = work.title;
-      image.width = 88;
-      image.height = 66;
-      image.loading = 'lazy';
-      image.decoding = 'async';
-      image.addEventListener('error', () => {
-        cover.replaceChildren(document.createTextNode(document.body.dataset.coverError), badge);
-      }, {once: true});
-      if (/^\.\.\/(matome20261023voice|dlsite-coupon-20261016)\/images\/RJ\d+\.webp$/.test(work.bk.path)) {
-        image.src = work.bk.path;
-        cover.append(image);
-      } else cover.replaceChildren(document.createTextNode(document.body.dataset.coverError), badge);
-      const title = row.querySelector('.cart-title');
-      title.href = /^https:\/\/www\.dlsite\.com\//.test(work.url || '') ? work.url : '';
-      title.title = work.title;
-      title.querySelector('span').textContent = work.title;
-      const voices = row.querySelector('.cart-voices');
-      voices.textContent = work.voice_actors.join(' / ') || text.unknown;
-      voices.title = voices.textContent;
-      const circle = row.querySelector('.cart-circle');
-      circle.textContent = work.circle.name;
-      circle.title = work.circle.name;
-      row.querySelector('.cart-remove').addEventListener('click', () => {
-        pendingRemove = rj;
-        $('cart-remove-name').textContent = work.title;
-        $('cart-remove-dialog').showModal();
-      });
-      fragment.append(row);
+      const image = row.querySelector('.cart-cover img');
+      if (image && index < 6) image.loading = 'eager';
+      if (image?.complete && image.naturalWidth > 0) image.decoding = 'sync';
+      rowCache.delete(rj);
+      rowCache.set(rj, row);
+      if (rowCache.size > ROW_CACHE_LIMIT) rowCache.delete(rowCache.keys().next().value);
+      return row;
+    });
+    if (list.children.length !== rows.length || rows.some((row, index) => list.children[index] !== row)) {
+      list.replaceChildren(...rows);
     }
-    $('cart-list').replaceChildren(fragment);
     $('cart-empty').hidden = cart.size > 0;
     $('cart-list').parentElement.scrollTop = scrollTop;
     renderTotals();
@@ -235,7 +254,7 @@
       renderCart();
     }
   });
-  window.DLSITE_CART = {createButton, isPurchased: rj => purchased.has(rj)};
+  window.DLSITE_CART = {createButton, refreshButtons: syncButtons, isPurchased: rj => purchased.has(rj)};
   syncButtons();
 })();
 

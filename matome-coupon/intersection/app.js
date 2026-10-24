@@ -45,6 +45,8 @@
   }
 
   const works = catalog.works;
+  const CARD_CACHE_LIMIT = 96;
+  const cardCache = new Map();
   const voiceStats = new Map();
   const circleStats = new Map();
   const indexed = works.map((work, index) => {
@@ -204,7 +206,18 @@
     };
   }
 
-  function card(work) {
+  function card(work, index) {
+    const cached = cardCache.get(work.rj);
+    if (cached) {
+      cardCache.delete(work.rj);
+      cardCache.set(work.rj, cached);
+      cached.querySelector('.purchased-badge').hidden = !window.DLSITE_CART.isPurchased(work.rj);
+      const image = cached.querySelector('.cover img');
+      if (image && index < 8) image.loading = 'eager';
+      if (image && index < (mobile.matches ? 2 : 4)) image.fetchPriority = 'high';
+      if (image?.complete && image.naturalWidth > 0) image.decoding = 'sync';
+      return cached;
+    }
     const article = $('card-template').content.firstElementChild.cloneNode(true);
     const cover = article.querySelector('.cover');
     const rj = article.querySelector('.rj');
@@ -220,9 +233,11 @@
     image.alt = work.title;
     image.width = work.bk.width || 320;
     image.height = work.bk.height || 240;
-    image.loading = 'lazy';
+    image.loading = index < 8 ? 'eager' : 'lazy';
+    image.fetchPriority = index < (mobile.matches ? 2 : 4) ? 'high' : 'auto';
     image.decoding = 'async';
     image.addEventListener('error', () => {
+      if (cardCache.get(work.rj) === article) cardCache.delete(work.rj);
       cover.classList.add('missing');
       cover.replaceChildren(document.createTextNode(labels.coverError), rj, cartButton, purchasedBadge);
       if (!imageErrorShown) {
@@ -258,6 +273,8 @@
       tag.title = tag.textContent + '\uff1a' + status;
       tag.setAttribute('aria-label', tag.title);
     });
+    cardCache.set(work.rj, article);
+    if (cardCache.size > CARD_CACHE_LIMIT) cardCache.delete(cardCache.keys().next().value);
     return article;
   }
 
@@ -293,7 +310,12 @@
     const pages = Math.max(1, Math.ceil(matched.length / pageSize));
     page = Math.min(Math.max(1, page), pages);
     imageErrorShown = false;
-    $('results').replaceChildren(...matched.slice((page - 1) * pageSize, page * pageSize).map(item => card(item.work)));
+    const cards = matched.slice((page - 1) * pageSize, page * pageSize).map((item, index) => card(item.work, index));
+    const results = $('results');
+    if (results.children.length !== cards.length || cards.some((node, index) => results.children[index] !== node)) {
+      results.replaceChildren(...cards);
+    }
+    window.DLSITE_CART.refreshButtons();
     $('results').setAttribute('aria-busy', 'false');
     $('count').textContent = labels.total + ' ' + (matched.length === works.length ? works.length : matched.length + ' / ' + works.length) + ' ' + labels.works;
     $('empty').hidden = matched.length > 0;
