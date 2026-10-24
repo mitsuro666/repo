@@ -250,6 +250,34 @@
     return article;
   }
 
+  function renderPageNumbers(pages) {
+    const windowSize = mobile.matches ? 3 : 5;
+    const start = Math.max(1, Math.min(page - Math.floor(windowSize / 2), pages - windowSize + 1));
+    const visible = new Set([1, pages]);
+    for (let number = start; number <= Math.min(pages, start + windowSize - 1); number++) visible.add(number);
+    const items = [];
+    let previous = 0;
+    for (const number of [...visible].sort((a, b) => a - b)) {
+      if (previous && number - previous > 1) {
+        const gap = document.createElement('span');
+        gap.className = 'page-gap';
+        gap.textContent = '\u2026';
+        gap.setAttribute('aria-hidden', 'true');
+        items.push(gap);
+      }
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'page-number';
+      button.textContent = String(number);
+      button.setAttribute('aria-label', cn(0x7b2c) + number + cn(0x9875));
+      if (number === page) button.setAttribute('aria-current', 'page');
+      button.addEventListener('click', () => { if (number !== page) turn(number); });
+      items.push(button);
+      previous = number;
+    }
+    $('page-numbers').replaceChildren(...items);
+  }
+
   function render() {
     const pages = Math.max(1, Math.ceil(matched.length / pageSize));
     page = Math.min(Math.max(1, page), pages);
@@ -261,8 +289,9 @@
     $('pager').hidden = matched.length === 0;
     $('prev').disabled = page === 1;
     $('next').disabled = page === pages;
-    $('page').replaceChildren(...Array.from({length: pages}, (_, index) => new Option((index + 1) + ' / ' + pages, String(index + 1))));
-    $('page').value = String(page);
+    $('first').disabled = page === 1;
+    $('last').disabled = page === pages;
+    renderPageNumbers(pages);
     updateFilterLabels();
     saveState();
   }
@@ -318,7 +347,8 @@
   }
   $('prev').addEventListener('click', () => turn(page - 1));
   $('next').addEventListener('click', () => turn(page + 1));
-  $('page').addEventListener('change', () => turn(Number($('page').value)));
+  $('first').addEventListener('click', () => turn(1));
+  $('last').addEventListener('click', () => turn(Math.max(1, Math.ceil(matched.length / pageSize))));
   mobile.addEventListener('change', () => {
     const first = (page - 1) * pageSize;
     pageSize = mobile.matches ? 16 : 20;

@@ -60,10 +60,10 @@ summary svg { width: 16px; height: 16px; }
 .option input { accent-color: var(--ink); width: 16px; height: 16px; flex-shrink: 0; }
 .option-name { flex: 1; overflow-wrap: anywhere; }
 .option-count { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
-.sort-wrap, .page-control { position: relative; display: block; min-width: 0; }
-.sort-wrap select, .page-control select { appearance: none; width: 100%; padding-right: 32px; cursor: pointer; }
+.sort-wrap { position: relative; display: block; min-width: 0; }
+.sort-wrap select { appearance: none; width: 100%; padding-right: 32px; cursor: pointer; }
 .sort-wrap select { height: 44px; }
-.sort-wrap > svg, .page-control > svg { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); width: 15px; height: 15px; pointer-events: none; }
+.sort-wrap > svg { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); width: 15px; height: 15px; pointer-events: none; }
 .reset { height: 44px; background: var(--river); border-color: var(--river); }
 .reset:hover { background: #c6d3dc; }
 #filter-toggle { display: none; }
@@ -98,10 +98,15 @@ summary svg { width: 16px; height: 16px; }
 .language-tag[data-language="script"].is-present { background: var(--lavender); border-color: #9990ad; }
 .language-filter { min-height: 30px; padding: 4px 10px; font-size: 12px; }
 .language-filter:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
-.pager { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 25px; }
-.pager button { min-width: 92px; }
-.page-control { min-width: 96px; }
-.page-control select { background: var(--lavender); text-align: center; font-variant-numeric: tabular-nums; border-color: var(--lavender); }
+.pager { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 25px; }
+.page-numbers { display: flex; align-items: center; gap: 8px; }
+.pager button { flex: 0 0 auto; width: 38px; min-width: 38px; height: 38px; min-height: 38px; padding: 0; font-size: 14px; font-variant-numeric: tabular-nums; }
+.pager .pager-arrow { border-radius: 50%; border-color: #ecd7de; background: var(--surface); }
+.pager-arrow svg { width: 16px; height: 16px; }
+.pager .page-number { border-color: transparent; border-radius: 8px; background: transparent; }
+.pager .page-number:hover { background: #f9e8ed; }
+.pager .page-number[aria-current="page"] { border-color: #e6a1b7; background: #f9e8ed; color: #c65c86; }
+.page-gap { width: 20px; text-align: center; color: var(--muted); }
 .empty { padding: 60px 10px; text-align: center; }
 dialog { position: fixed; max-width: min(540px, calc(100% - 28px)); max-height: calc(100dvh - 40px); padding: 24px; border: 1px solid var(--line); border-radius: 16px; color: #804d65; background: white; box-shadow: 0 18px 64px #554d5d26; overscroll-behavior: contain; }
 dialog::backdrop { background: #342b3f66; }
@@ -178,9 +183,12 @@ dialog h2 { margin: 0; font-size: 20px; }
   .rj { top: 3px; right: 3px; padding: 1px 3px; font-size: 9px; }
   .language-tags { gap: 3px; margin-top: 5px; }
   .language-tag { padding: 2px 0; font-size: clamp(9px, 2.4vw, 11px); border-radius: 4px; }
-  .pager { gap: 8px; margin-top: 20px; }
-  .pager button { min-height: 38px; min-width: 78px; padding: 6px 10px; font-size: 12px; }
-  .page-control select { min-height: 38px; font-size: 12px; }
+  .pager { gap: 2px; margin-top: 20px; }
+  .page-numbers { gap: 2px; }
+  .pager button { width: 26px; min-width: 26px; height: 32px; min-height: 32px; padding: 0; font-size: 12px; }
+  .pager .pager-arrow { height: 26px; min-height: 26px; }
+  .pager-arrow svg { width: 14px; height: 14px; }
+  .page-gap { width: 10px; }
   .selected-filters { margin-top: 8px; }
   dialog { padding: 18px; }
 }

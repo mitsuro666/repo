@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="referrer" content="no-referrer">
   <title>3&#26412;999x50&#21048;&#20132;&#38598;</title>
-  <link rel="stylesheet" href="style.css?v=20261024-03">
+  <link rel="stylesheet" href="style.css?v=20261024-04">
   <script defer src="data/works.js?v=20261024-02"></script>
-  <script defer src="app.js?v=20261024-02"></script>
+  <script defer src="app.js?v=20261024-04"></script>
 </head>
 <body data-unknown="&#23448;&#26041;&#26410;&#26631;&#27880;" data-voice="&#22768;&#20248;" data-circle="&#31038;&#22242;" data-total="&#20849;" data-works="&#37096;&#20316;&#21697;" data-all="&#20840;&#37096;" data-cover-error="&#23553;&#38754;&#26080;&#27861;&#35835;&#21462;" data-remove="&#31227;&#38500;">
   <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -16,6 +16,10 @@
     <symbol id="i-external" viewBox="0 0 24 24"><path d="M6 18 18 6M7 6h11v11"/></symbol>
     <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 4h18l-7 8v7l-4 2v-9Z"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="m15 6-8 6 8 6Z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="m9 6 8 6-8 6Z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-first" viewBox="0 0 24 24"><path d="M6 6v12"/><path d="m17 6-8 6 8 6Z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-last" viewBox="0 0 24 24"><path d="M18 6v12"/><path d="m7 6 8 6-8 6Z" fill="currentColor" stroke="none"/></symbol>
   </svg>
   <main class="app" id="app">
     <div class="page">
@@ -45,7 +49,7 @@
       <div class="summary"><p id="count" role="status" aria-live="polite"></p><div id="language-filters" class="language-filters" role="group" aria-label="&#20013;&#25991;&#29366;&#24577;&#31579;&#36873;"><button type="button" class="language-tag language-filter" data-language="version" aria-pressed="false">&#20013;&#25991;&#29256;&#26412;</button><button type="button" class="language-tag language-filter" data-language="subtitles" aria-pressed="false">&#20013;&#25991;&#23383;&#24149;</button><button type="button" class="language-tag language-filter" data-language="script" aria-pressed="false">&#20013;&#25991;&#21488;&#26412;</button></div></div>
       <section id="results" class="grid" aria-label="&#20316;&#21697;&#21015;&#34920;" aria-busy="true"></section>
       <div id="empty" class="empty" hidden><p>&#27809;&#26377;&#21305;&#37197;&#30340;&#20316;&#21697;</p><button id="empty-reset" type="button">&#28165;&#31354;&#31579;&#36873;</button></div>
-      <nav class="pager" id="pager" aria-label="&#20998;&#39029;"><button id="prev" type="button">&#19978;&#19968;&#39029;</button><label class="page-control"><span class="sr-only">&#39029;&#30721;</span><select id="page"></select><svg aria-hidden="true"><use href="#i-down"/></svg></label><button id="next" type="button">&#19979;&#19968;&#39029;</button></nav>
+      <nav class="pager" id="pager" aria-label="&#20998;&#39029;"><button id="first" class="pager-arrow" type="button" aria-label="&#39318;&#39029;" title="&#39318;&#39029;"><svg aria-hidden="true"><use href="#i-first"/></svg></button><button id="prev" class="pager-arrow" type="button" aria-label="&#19978;&#19968;&#39029;" title="&#19978;&#19968;&#39029;"><svg aria-hidden="true"><use href="#i-prev"/></svg></button><div id="page-numbers" class="page-numbers"></div><button id="next" class="pager-arrow" type="button" aria-label="&#19979;&#19968;&#39029;" title="&#19979;&#19968;&#39029;"><svg aria-hidden="true"><use href="#i-next"/></svg></button><button id="last" class="pager-arrow" type="button" aria-label="&#26411;&#39029;" title="&#26411;&#39029;"><svg aria-hidden="true"><use href="#i-last"/></svg></button></nav>
       <noscript><p>&#35831;&#21551;&#29992; JavaScript &#20197;&#20351;&#29992;&#26412;&#22320;&#26816;&#32034;&#12290;</p></noscript>
     </div>
   </main>
