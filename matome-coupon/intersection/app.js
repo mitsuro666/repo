@@ -31,8 +31,8 @@
       button.addEventListener('click', () => dialog.close());
     });
   }
-  $('info-open').addEventListener('click', () => $('info-dialog').showModal());
   function showError(message) {
+    $('error-title').textContent = cn(0x6570,0x636e,0x52a0,0x8f7d,0x5931,0x8d25);
     if (message) $('error-message').textContent = message;
     if (!$('error-dialog').open) $('error-dialog').showModal();
   }
@@ -205,6 +205,8 @@
     const cover = article.querySelector('.cover');
     const rj = article.querySelector('.rj');
     rj.textContent = work.rj;
+    const cartButton = window.DLSITE_CART.createButton(work);
+    cover.append(cartButton);
     const image = document.createElement('img');
     image.alt = work.title;
     image.width = work.bk.width || 320;
@@ -213,7 +215,7 @@
     image.decoding = 'async';
     image.addEventListener('error', () => {
       cover.classList.add('missing');
-      cover.replaceChildren(document.createTextNode(labels.coverError), rj);
+      cover.replaceChildren(document.createTextNode(labels.coverError), rj, cartButton);
       if (!imageErrorShown) {
         imageErrorShown = true;
         showError(labels.coverError + '\uff1a' + work.bk.path);
@@ -224,7 +226,7 @@
       cover.append(image);
     } else {
       cover.classList.add('missing');
-      cover.replaceChildren(document.createTextNode(labels.coverError), rj);
+      cover.replaceChildren(document.createTextNode(labels.coverError), rj, cartButton);
     }
     const title = article.querySelector('.title-link');
     title.href = safeURL(work.url);
@@ -358,33 +360,9 @@
 
   const meta = catalog.metadata;
   $('total').textContent = works.length + ' ' + cn(0x90e8);
-  const dataRows = [[cn(0x4f5c,0x54c1), meta.count], [labels.voice, meta.voice_count],
-    [labels.circle, meta.circle_count], [labels.unknown + labels.voice, meta.unlisted_voice_count]];
-  for (const [name, value] of dataRows) {
-    const dt = document.createElement('dt');
-    const dd = document.createElement('dd');
-    dt.textContent = name;
-    dd.textContent = String(value);
-    $('dataset-facts').append(dt, dd);
-  }
-  const sourceNames = [cn(0x33,0x672c,0x39,0x39,0x39,0x65e5,0x5143,0x6d3b,0x52a8), '50%OFF' + cn(0x5238)];
   meta.sources.forEach((source, index) => {
     const headerLink = $(index === 0 ? 'bulk-link' : 'coupon-link');
     headerLink.href = safeURL(source.source_url);
-    const entry = document.createElement('div');
-    entry.className = 'source-entry';
-    const a = document.createElement('a');
-    a.href = safeURL(source.source_url);
-    a.textContent = sourceNames[index];
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    const stamp = document.createElement('p');
-    const date = new Date(source.exported_at);
-    stamp.textContent = source.collected_count + ' ' + labels.works + ' / ' +
-      cn(0x91c7,0x96c6,0x65f6,0x95f4) + '\uff1a' + (Number.isNaN(date.getTime()) ? source.exported_at :
-      date.toLocaleString('zh-CN', {timeZone: 'Asia/Shanghai', hour12: false}));
-    entry.append(a, stamp);
-    $('source-details').append(entry);
   });
   applyFilters(false);
   requestAnimationFrame(() => { app.scrollTop = Math.max(0, Number(saved.scroll) || 0); });

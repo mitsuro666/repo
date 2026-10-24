@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="referrer" content="no-referrer">
   <title>3&#26412;999x50&#21048;&#20132;&#38598;</title>
-  <link rel="stylesheet" href="style.css?v=20261024-04">
+  <link rel="stylesheet" href="style.css?v=20261024-05">
   <script defer src="data/works.js?v=20261024-02"></script>
-  <script defer src="app.js?v=20261024-04"></script>
+  <script defer src="cart.js?v=20261024-05"></script>
+  <script defer src="app.js?v=20261024-05"></script>
 </head>
 <body data-unknown="&#23448;&#26041;&#26410;&#26631;&#27880;" data-voice="&#22768;&#20248;" data-circle="&#31038;&#22242;" data-total="&#20849;" data-works="&#37096;&#20316;&#21697;" data-all="&#20840;&#37096;" data-cover-error="&#23553;&#38754;&#26080;&#27861;&#35835;&#21462;" data-remove="&#31227;&#38500;">
   <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -16,6 +17,10 @@
     <symbol id="i-external" viewBox="0 0 24 24"><path d="M6 18 18 6M7 6h11v11"/></symbol>
     <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 4h18l-7 8v7l-4 2v-9Z"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24"><path d="M2 3h3l3 13h11l2-9H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></symbol>
+    <symbol id="i-cart-add" viewBox="0 0 24 24"><path d="M2 3h3l3 13h11l1-4M6 7h7M18 3v6M15 6h6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/></symbol>
     <symbol id="i-prev" viewBox="0 0 24 24"><path d="m15 6-8 6 8 6Z" fill="currentColor" stroke="none"/></symbol>
     <symbol id="i-next" viewBox="0 0 24 24"><path d="m9 6 8 6-8 6Z" fill="currentColor" stroke="none"/></symbol>
     <symbol id="i-first" viewBox="0 0 24 24"><path d="M6 6v12"/><path d="m17 6-8 6 8 6Z" fill="currentColor" stroke="none"/></symbol>
@@ -28,7 +33,7 @@
         <nav class="header-actions" aria-label="&#27963;&#21160;&#20837;&#21475;">
           <a id="bulk-link" class="button campaign-link" target="_blank" rel="noopener noreferrer">3&#26412;999&#26085;&#20803;&#27963;&#21160;<svg><use href="#i-external"/></svg></a>
           <a id="coupon-link" class="button campaign-link" target="_blank" rel="noopener noreferrer">50%OFF&#21048;<svg><use href="#i-external"/></svg></a>
-          <button id="info-open" type="button">&#25968;&#25454;&#35828;&#26126;</button>
+          <button id="cart-open" type="button" aria-haspopup="dialog" aria-controls="cart-dialog">&#26597;&#30475;&#36141;&#29289;&#36710;<span id="cart-count" class="cart-count" hidden>0</span></button>
         </nav>
       </header>
       <form class="toolbar" id="search-form" role="search">
@@ -61,7 +66,13 @@
       <div class="language-tags"><span class="language-tag" data-language="version">&#20013;&#25991;&#29256;&#26412;</span><span class="language-tag" data-language="subtitles">&#20013;&#25991;&#23383;&#24149;</span><span class="language-tag" data-language="script">&#20013;&#25991;&#21488;&#26412;</span></div>
     </article>
   </template>
-  <dialog id="info-dialog" aria-labelledby="info-title"><div class="dialog-heading"><h2 id="info-title">&#25968;&#25454;&#35828;&#26126;</h2><button class="icon-button" type="button" data-close-dialog aria-label="&#20851;&#38381;"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div><div class="dialog-body"><p>&#25353; RJ &#21495;&#21462;&#20004;&#20221;&#26412;&#22320;&#27963;&#21160;&#21517;&#21333;&#30340;&#20132;&#38598;&#65292;&#19981;&#21516; RJ &#30340;&#35821;&#35328;&#29256;&#26412;&#20998;&#21035;&#20445;&#30041;&#12290;</p><dl id="dataset-facts"></dl><div id="source-details"></div><p>&#21516;&#31867;&#31579;&#36873;&#22810;&#36873;&#26102;&#21305;&#37197;&#20219;&#24847;&#19968;&#39033;&#65307;&#25628;&#32034;&#12289;&#22768;&#20248;&#12289;&#31038;&#22242;&#20043;&#38388;&#21516;&#26102;&#28385;&#36275;&#12290;&#25628;&#32034;&#35789;&#29992;&#31354;&#26684;&#20998;&#38548;&#26102;&#21516;&#26102;&#21305;&#37197;&#12290;</p><p>&#23448;&#26041;&#26410;&#26631;&#27880;&#30340;&#22768;&#20248;&#20445;&#30041;&#20026;&#31354;&#12290;&#23436;&#25972;&#20316;&#21697;&#21517;&#21487;&#20174;&#26631;&#39064;&#38142;&#25509;&#26597;&#30475;&#65292;&#26631;&#39064;&#38142;&#25509;&#22312;&#26032;&#26631;&#31614;&#39029;&#25171;&#24320;&#12290;</p></div><div class="dialog-actions"><button type="button" data-close-dialog>&#20851;&#38381;</button></div></dialog>
   <dialog id="error-dialog" aria-labelledby="error-title"><h2 id="error-title">&#25968;&#25454;&#21152;&#36733;&#22833;&#36133;</h2><p id="error-message">&#26410;&#35835;&#21462;&#21040;&#26377;&#25928;&#30340; data/works.js&#12290;&#35831;&#20445;&#30041;&#23436;&#25972;&#25991;&#20214;&#22841;&#21518;&#37325;&#26032;&#25171;&#24320;&#12290;</p><div class="dialog-actions"><button type="button" data-close-dialog>&#20851;&#38381;</button></div></dialog>
+  <dialog id="cart-dialog" class="cart-dialog" aria-labelledby="cart-title">
+    <div class="cart-heading"><h2 id="cart-title">&#36141;&#29289;&#36710; <span id="cart-items-count" class="cart-count">0</span></h2><button class="icon-button" type="button" data-close-dialog aria-label="&#20851;&#38381;"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
+    <div class="cart-body"><p id="cart-empty">&#36141;&#29289;&#36710;&#20026;&#31354;</p><ul id="cart-list" class="cart-list"></ul></div>
+    <footer class="cart-totals" aria-live="polite" aria-atomic="true"><p id="cart-formula"></p><p id="cart-jpy" class="cart-jpy"></p><p id="cart-cny" class="cart-cny"></p><div class="cart-rate-row"><p id="cart-rate"></p><button id="cart-rate-retry" type="button" hidden>&#37325;&#35797;</button></div></footer>
+  </dialog>
+  <dialog id="cart-remove-dialog" aria-labelledby="cart-remove-title"><h2 id="cart-remove-title">&#31227;&#20986;&#36141;&#29289;&#36710;</h2><p id="cart-remove-name"></p><div class="dialog-actions"><button type="button" data-close-dialog>&#21462;&#28040;</button><button id="cart-remove-confirm" type="button">&#30830;&#35748;&#31227;&#20986;</button></div></dialog>
+  <template id="cart-row-template"><li class="cart-row"><div class="cart-cover"></div><div class="cart-copy"><a class="cart-title" target="_blank" rel="noopener noreferrer"><span></span><svg aria-hidden="true"><use href="#i-external"/></svg></a><div class="cart-facts"><span class="cart-voices"></span><span class="cart-circle"></span></div></div><button class="cart-remove icon-button" type="button" aria-label="&#31227;&#20986;&#36141;&#29289;&#36710;"><svg aria-hidden="true"><use href="#i-trash"/></svg></button></li></template>
 </body>
 </html>
