@@ -1,0 +1,11 @@
+# Local collection responses and Python caches; keep these files on disk.
+**/raw/
+**/__pycache__/
+*.py[cod]
+*.tmp
+*.part
+*.sqlite-journal
+
+# Unused font copies. The active font stays in intersection/font/.
+/BlackSugarPlumCandy-Bold.ttf
+/intersection/font/MoonStarsKai-Bold.ttf

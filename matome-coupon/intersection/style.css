@@ -166,10 +166,10 @@ dialog h2 { margin: 0; font-size: 20px; }
   .language-filters .language-filter { min-height: 30px; padding: 4px 7px; font-size: 11px; border-radius: 5px; }
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 8px; }
   .card { padding: 5px; border-radius: 9px; }
-  .cover { height: clamp(48px, calc((100svh - 222px) / 4 - 89px), 104px); aspect-ratio: auto; border-radius: 5px; background: transparent; }
-  .cover img { height: 100%; width: auto; max-width: 100%; object-fit: contain; }
-  .card h2 { margin: 4px 0 3px; font-size: 13px; line-height: 16px; max-height: 48px; }
-  .title-link > span { -webkit-line-clamp: 3; }
+  .cover { height: auto; aspect-ratio: 4 / 3; border-radius: 5px; background: transparent; }
+  .cover img { height: 100%; width: 100%; max-width: 100%; object-fit: contain; }
+  .card h2 { margin: 4px 0 3px; font-size: 12px; line-height: 16px; max-height: 32px; }
+  .title-link > span { -webkit-line-clamp: 2; }
   .title-link { padding-right: 13px; }
   .title-link > svg { top: 2px; width: 12px; height: 12px; margin: 0; }
   .facts { gap: 5px; font-size: 11px; line-height: 13px; }
