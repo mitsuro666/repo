@@ -10,6 +10,9 @@ SOURCES = ['matome20261023voice', 'dlsite-coupon-20261016']
 
 
 def main():
+    previous_path = ROOT / 'data/works.json'
+    previous = json.loads(previous_path.read_text(encoding='utf-8')) if previous_path.is_file() else {}
+    previous_by_rj = {w['rj']: w for w in previous.get('works', [])}
     catalogs = [json.loads((ROOT.parent / name / 'data/works.json').read_text(encoding='utf-8'))
                 for name in SOURCES]
     maps = [{w['rj']: w for w in catalog['works']} for catalog in catalogs]
@@ -17,6 +20,13 @@ def main():
     for original in catalogs[0]['works']:
         rj = original['rj']
         if rj not in maps[1]:
+            continue
+        # Append missing works without replacing separately reviewed existing records or absent flags.
+        if rj in previous_by_rj:
+            work = deepcopy(previous_by_rj[rj])
+            if not (ROOT / work['bk']['path']).is_file():
+                raise ValueError('Missing existing intersection BK: ' + rj)
+            works.append(work)
             continue
         records = [maps[0][rj], maps[1][rj]]
         work = deepcopy(original)

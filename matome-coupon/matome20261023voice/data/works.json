@@ -31,27 +31,76 @@
       22,
       23,
       24,
-      25
+      25,
+      26
     ],
     "errors": [],
-    "expected_count": 1226,
-    "page_count": 25,
-    "exported_at": "2026-10-24T04:07:20+00:00",
-    "collected_count": 1226,
-    "thumbnail_count": 1226,
+    "expected_count": 1270,
+    "page_count": 26,
+    "exported_at": "2026-10-25T01:28:57+00:00",
+    "collected_count": 1270,
+    "thumbnail_count": 1270,
     "placeholder_count": 0,
-    "complete_voice_count": 1226,
+    "complete_voice_count": 1270,
     "listing_complete": true,
     "complete": true,
-    "unlisted_voice_count": 44,
+    "unlisted_voice_count": 45,
     "fallback_thumbnail_count": 5,
     "unavailable_cover_count": 0,
     "language_errors": [],
-    "language_checked_count": 1226,
+    "language_checked_count": 1270,
     "chinese_version_count": 8,
     "chinese_subtitles_count": 4,
-    "chinese_script_count": 21,
-    "language_complete": true
+    "chinese_script_count": 22,
+    "language_complete": true,
+    "region_refresh_at": "2026-10-25T01:28:57+00:00",
+    "region_refresh_source": "system_proxy",
+    "region_added": [
+      "RJ01020908",
+      "RJ01054254",
+      "RJ01054256",
+      "RJ01072739",
+      "RJ01084046",
+      "RJ01120230",
+      "RJ01120339",
+      "RJ01120341",
+      "RJ01131449",
+      "RJ01169725",
+      "RJ01170879",
+      "RJ01182151",
+      "RJ01182169",
+      "RJ01182176",
+      "RJ01205225",
+      "RJ01217388",
+      "RJ01267729",
+      "RJ01298775",
+      "RJ01323573",
+      "RJ01360155",
+      "RJ01400038",
+      "RJ01438748",
+      "RJ01624303",
+      "RJ01665745",
+      "RJ01670170",
+      "RJ01671520",
+      "RJ204163",
+      "RJ208943",
+      "RJ215679",
+      "RJ230865",
+      "RJ249612",
+      "RJ259186",
+      "RJ268570",
+      "RJ271468",
+      "RJ274531",
+      "RJ280788",
+      "RJ292062",
+      "RJ308429",
+      "RJ336223",
+      "RJ390722",
+      "RJ407206",
+      "RJ413580",
+      "RJ431707",
+      "RJ434953"
+    ]
   },
   "works": [
     {
@@ -51827,6 +51876,1841 @@
         "chinese_script": "unknown",
         "evidence": [],
         "checked_at": "2026-10-24T04:07:19+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ390722",
+      "title": "【耳舐めたっぷり】生意気なヤンキー生徒を教師の私が”快楽堕ちさせた”話【逆転えっち】",
+      "voice_actors": [
+        "三橋渡"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG65488",
+        "name": "ちぇりーさうんど",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG65488.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ390722.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ391000/RJ390722_img_main.jpg",
+        "path": "images/RJ390722.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 1,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=1",
+      "fetched_at": "2026-10-25T01:25:15+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ390722",
+      "language": {
+        "is_chinese_version": null,
+        "edition_label": "",
+        "codes": [
+          "CHI",
+          "CHI_HANS",
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "yes",
+        "evidence": [
+          {
+            "kind": "script",
+            "field": "official_description",
+            "text": "https://twitter.com/marchetakamura 中国語台本への翻訳 橘コウさん https://twitter.com/tachiba519 制作:ちぇりーさ",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ390722.html"
+          },
+          {
+            "kind": "script",
+            "field": "official_description",
+            "text": "t/ 月に憑かれたピエロ 様 ご協力いただいた皆様に感謝いたします! 中文版中包含已本地化的文本文件，但相应作品的内容本体仍为创作者所使用的原始语言。",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ390722.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:27:06+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ336223",
+      "title": "〈絶倫&濃厚!!〉イルカな彼は100倍濃いv【ダミヘ:KU100】(出演:三橋渡)",
+      "voice_actors": [
+        "三橋渡"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG47372",
+        "name": "ホープシー",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG47372.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ336223.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ337000/RJ336223_img_main.jpg",
+        "path": "images/RJ336223.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 2,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=2",
+      "fetched_at": "2026-10-25T01:25:16+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ336223",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ336223.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:27:06+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ271468",
+      "title": "放課後の秘事～体育倉庫で先輩と生とろエッチ～",
+      "voice_actors": [
+        "恋津田蓮也"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG47890",
+        "name": "Under Rain",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG47890.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ271468.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ272000/RJ271468_img_main.jpg",
+        "path": "images/RJ271468.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 2,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=2",
+      "fetched_at": "2026-10-25T01:25:16+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ271468",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ271468.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:59+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ204163",
+      "title": "嘘つきだらけの男子寮",
+      "voice_actors": [
+        "羽山太洋"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG38170",
+        "name": "geometric rose",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG38170.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ204163.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ205000/RJ204163_img_main.jpg",
+        "path": "images/RJ204163.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 3,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=3",
+      "fetched_at": "2026-10-25T01:25:16+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ204163",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ204163.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:50+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01169725",
+      "title": "【オナニー実演】あどけない少年ボイスの理系大学生がオナホで恥じらいながらガチオナニー【完全ノーカット26分】",
+      "voice_actors": [
+        "弓月奏太"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01007488",
+        "name": "ASMR本舗",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01007488.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01169725.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01170000/RJ01169725_img_main.jpg",
+        "path": "images/RJ01169725.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 3,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=3",
+      "fetched_at": "2026-10-25T01:25:16+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01169725",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01169725.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:30+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01217388",
+      "title": "「お外で勉強しよ♪」野外で中出し♪ぱこぱこレポート報告!～奥手なクーデレ男子と二人でとろあまクリシコ校外学習～",
+      "voice_actors": [
+        "霧雨よいと"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01017688",
+        "name": "ペフコランド",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01017688.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01217388.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01218000/RJ01217388_img_main.jpg",
+        "path": "images/RJ01217388.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 3,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=3",
+      "fetched_at": "2026-10-25T01:25:16+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01217388",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01217388.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:36+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01670170",
+      "title": "《ポリネシアンオナニー》聞かれたがりの早漏ドM学生くん✨射精したのに…勃起止まんない⁉️「僕のこと、オカズにしてください…ッ♡///」〈白前ひなた〉",
+      "voice_actors": [
+        "白前ひなた"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01040533",
+        "name": "絶対狂愛エゴイズム",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01040533.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01670170.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01671000/RJ01670170_img_main.jpg",
+        "path": "images/RJ01670170.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 4,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=4",
+      "fetched_at": "2026-10-25T01:25:16+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01670170",
+      "language": {
+        "is_chinese_version": null,
+        "edition_label": "",
+        "codes": [
+          "CHI",
+          "CHI_HANS",
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:49+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ407206",
+      "title": "【総尺173分】バスケ部部長の嫉妬と独占欲、恋人レ○プ",
+      "voice_actors": [
+        "深川緑"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG66094",
+        "name": "white mist",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG66094.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ407206.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ408000/RJ407206_img_main.jpg",
+        "path": "images/RJ407206.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 6,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=6",
+      "fetched_at": "2026-10-25T01:25:17+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ407206",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:27:08+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01360155",
+      "title": "「ぜ～んぶカメラに映るようにしようね」クリフェラAV公開収録！～大人び男子と文化祭準備でずこばこ交尾REC～",
+      "voice_actors": [
+        "一条ひらめ"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01017688",
+        "name": "ペフコランド",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01017688.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01360155.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01361000/RJ01360155_img_main.jpg",
+        "path": "images/RJ01360155.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 7,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=7",
+      "fetched_at": "2026-10-25T01:25:17+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01360155",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01360155.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:39+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01267729",
+      "title": "「俺たちのクンニが一番♪」クラス対抗!クンニトーナメント!?～イクイクカウントダウンで狙えNo.1～",
+      "voice_actors": [
+        "天河雄成"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01017688",
+        "name": "ペフコランド",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01017688.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01267729.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01268000/RJ01267729_img_main.jpg",
+        "path": "images/RJ01267729.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 7,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=7",
+      "fetched_at": "2026-10-25T01:25:17+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01267729",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:36+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ268570",
+      "title": "放課後の秘事〜保健室で先生とイケナイ身体検査〜",
+      "voice_actors": [
+        "すばる(遺伝子組み換えでない)"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG47890",
+        "name": "Under Rain",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG47890.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ268570.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ269000/RJ268570_img_main.jpg",
+        "path": "images/RJ268570.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 7,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=7",
+      "fetched_at": "2026-10-25T01:25:17+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ268570",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ268570.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:58+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ230865",
+      "title": "お決まりだらけの男子寮",
+      "voice_actors": [
+        "羽山太洋"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG38170",
+        "name": "geometric rose",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG38170.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ230865.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ231000/RJ230865_img_main.jpg",
+        "path": "images/RJ230865.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 7,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=7",
+      "fetched_at": "2026-10-25T01:25:17+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ230865",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ230865.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:54+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01298775",
+      "title": "【ヤり捨てなんてしないよね…?】八雲先輩は裏垢男子?～ハジメテ中出し好き好き嫉妬えっち～",
+      "voice_actors": [
+        "マシュマロ焼太郎"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01009160",
+        "name": "キミが好きだから…",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01009160.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01298775.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01299000/RJ01298775_img_main.jpg",
+        "path": "images/RJ01298775.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 8,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=8",
+      "fetched_at": "2026-10-25T01:25:20+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01298775",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:36+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01624303",
+      "title": "【 THE FIRST SHAKE 】禁欲12日後の本気オナニー / cast.れい「ダメだ、手止まんねぇ」21歳 / 性欲増し増し裏アカ男子学生の新鮮ビギナー実演",
+      "voice_actors": [
+        "れい"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01022058",
+        "name": "Vivi℃. | ASMR",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01022058.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01624303.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01625000/RJ01624303_img_main.jpg",
+        "path": "images/RJ01624303.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 8,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=8",
+      "fetched_at": "2026-10-25T01:25:20+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01624303",
+      "language": {
+        "is_chinese_version": null,
+        "edition_label": "",
+        "codes": [
+          "CHI",
+          "CHI_HANS",
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:46+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ431707",
+      "title": "高校最後の思い出は分からせセックス!?〜拒否しても離してあげない〜",
+      "voice_actors": [
+        "羽柴礼"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG69235",
+        "name": "U/Crosette",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG69235.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ431707.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ432000/RJ431707_img_main.jpg",
+        "path": "images/RJ431707.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 9,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=9",
+      "fetched_at": "2026-10-25T01:25:18+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ431707",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ431707.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:27:10+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ308429",
+      "title": "教イク実習生～放課後の教室で幼なじみ先生といちゃ生えっち～",
+      "voice_actors": [
+        "下尾恭一郎"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG47890",
+        "name": "Under Rain",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG47890.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ308429.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ309000/RJ308429_img_main.jpg",
+        "path": "images/RJ308429.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 9,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=9",
+      "fetched_at": "2026-10-25T01:25:18+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ308429",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ308429.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:27:03+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ413580",
+      "title": "【KU100】ようこそ!メ○ガキ体験会へ(シチュ/催○同梱)_女性用",
+      "voice_actors": [
+        "大山チロル",
+        "秋太郎",
+        "鷹取レイジ",
+        "熊田乱"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG42536",
+        "name": "お嬢さん堂",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG42536.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ413580.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ414000/RJ413580_img_main.jpg",
+        "path": "images/RJ413580.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 10,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=10",
+      "fetched_at": "2026-10-25T01:25:19+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ413580",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ413580.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:27:10+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ249612",
+      "title": "ドキッ! モブだらけの輪○大会 白濁精液一気飲み! ―学園編―",
+      "voice_actors": [
+        "水谷六花",
+        "松平雲太",
+        "ysd.",
+        "折原幸平",
+        "酒仙克",
+        "十月トウマ",
+        "シャウト・ニコニコ",
+        "狸田太一",
+        "熊田乱"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG44920",
+        "name": "竿淵釣具店",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG44920.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ249612.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ250000/RJ249612_img_main.jpg",
+        "path": "images/RJ249612.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 11,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=11",
+      "fetched_at": "2026-10-25T01:25:20+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ249612",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:56+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01182151",
+      "title": "オトナの鬼ごっこ～ワケありエリート御影鏡真の執着愛～",
+      "voice_actors": [
+        "マーガリン天狗"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01013716",
+        "name": "CAnDY BIBInBA",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01013716.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01182151.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01183000/RJ01182151_img_main.jpg",
+        "path": "images/RJ01182151.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 14,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=14",
+      "fetched_at": "2026-10-25T01:25:21+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01182151",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01182151.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:30+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ215679",
+      "title": "強気彼氏～弟みたいな幼馴染に迫られて～",
+      "voice_actors": [
+        "福田純"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG11941",
+        "name": "ジェントルメガネ",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG11941.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ215679.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ216000/RJ215679_img_main.jpg",
+        "path": "images/RJ215679.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 15,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=15",
+      "fetched_at": "2026-10-25T01:25:21+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ215679",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:54+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01400038",
+      "title": "【舐め多め】冷静で理屈屋な彼の快楽責め「……君じゃないと、ダメなんだ。」",
+      "voice_actors": [
+        "霧雨よいと"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01030027",
+        "name": "秘密のきのこちゃん",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01030027.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01400038.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01401000/RJ01400038_img_main.jpg",
+        "path": "images/RJ01400038.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 15,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=15",
+      "fetched_at": "2026-10-25T01:25:21+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01400038",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01400038.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:43+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01120230",
+      "title": "学生のうちにできることなんて一つじゃん?",
+      "voice_actors": [
+        "速水理人"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG69235",
+        "name": "U/Crosette",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG69235.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01120230.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01121000/RJ01120230_img_main.jpg",
+        "path": "images/RJ01120230.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 15,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=15",
+      "fetched_at": "2026-10-25T01:25:21+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01120230",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01120230.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:23+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01120341",
+      "title": "さくらくんは私のことが気になっている",
+      "voice_actors": [
+        "野犬アルト"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG69235",
+        "name": "U/Crosette",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG69235.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01120341.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01121000/RJ01120341_img_main.jpg",
+        "path": "images/RJ01120341.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 16,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=16",
+      "fetched_at": "2026-10-25T01:25:22+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01120341",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:26+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01072739",
+      "title": "盲目なカレの愛し方",
+      "voice_actors": [
+        "春真最中"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG69235",
+        "name": "U/Crosette",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG69235.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01072739.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01073000/RJ01072739_img_main.jpg",
+        "path": "images/RJ01072739.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 17,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=17",
+      "fetched_at": "2026-10-25T01:25:24+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01072739",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:23+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01182169",
+      "title": "オトナの鬼ごっこ～ワケありエリート黒鉄大我の一途愛～",
+      "voice_actors": [
+        "香純秋"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01013716",
+        "name": "CAnDY BIBInBA",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01013716.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01182169.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01183000/RJ01182169_img_main.jpg",
+        "path": "images/RJ01182169.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 17,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=17",
+      "fetched_at": "2026-10-25T01:25:24+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01182169",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01182169.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:33+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ280788",
+      "title": "東京シークエンス～刀遣いは聖女様に逆らえない～",
+      "voice_actors": [
+        "秋太郎",
+        "白狼王魔",
+        "羽澄愛"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG42536",
+        "name": "お嬢さん堂",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG42536.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ280788.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ281000/RJ280788_img_main.jpg",
+        "path": "images/RJ280788.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 17,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=17",
+      "fetched_at": "2026-10-25T01:25:24+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ280788",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ280788.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:27:02+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ434953",
+      "title": "せんせーとぼくのひみつじかん～放課後の空き教室で孕ませセックス～",
+      "voice_actors": [
+        "瀬内蘭丸"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG69235",
+        "name": "U/Crosette",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG69235.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ434953.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ435000/RJ434953_img_main.jpg",
+        "path": "images/RJ434953.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 18,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=18",
+      "fetched_at": "2026-10-25T01:25:23+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ434953",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:27:11+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01170879",
+      "title": "教え子に性教育まで教えることになりました",
+      "voice_actors": [
+        "あさぎ夕"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01004534",
+        "name": "Dignity",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01004534.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01170879.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01171000/RJ01170879_img_main.jpg",
+        "path": "images/RJ01170879.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 18,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=18",
+      "fetched_at": "2026-10-25T01:25:23+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01170879",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01170879.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:30+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ274531",
+      "title": "Sな執事はWフェイス〜ドS執事に責められアクメ〜",
+      "voice_actors": [
+        "福田純"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG43721",
+        "name": "Icicle Pink",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG43721.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ274531.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ275000/RJ274531_img_main.jpg",
+        "path": "images/RJ274531.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 19,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=19",
+      "fetched_at": "2026-10-25T01:25:23+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ274531",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:27:00+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01120339",
+      "title": "教室の片隅で君を見ていた",
+      "voice_actors": [
+        "春真最中"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG69235",
+        "name": "U/Crosette",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG69235.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01120339.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01121000/RJ01120339_img_main.jpg",
+        "path": "images/RJ01120339.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 19,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=19",
+      "fetched_at": "2026-10-25T01:25:23+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01120339",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:26+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01182176",
+      "title": "オトナの鬼ごっこ～ワケありエリート鶴来朔夜の束縛愛～",
+      "voice_actors": [
+        "芝元泰滋"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01013716",
+        "name": "CAnDY BIBInBA",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01013716.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01182176.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01183000/RJ01182176_img_main.jpg",
+        "path": "images/RJ01182176.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 19,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=19",
+      "fetched_at": "2026-10-25T01:25:23+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01182176",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:33+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ208943",
+      "title": "ひだまりのあじさい色",
+      "voice_actors": [
+        "福田純"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG11941",
+        "name": "ジェントルメガネ",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG11941.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ208943.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ209000/RJ208943_img_main.jpg",
+        "path": "images/RJ208943.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 20,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=20",
+      "fetched_at": "2026-10-25T01:25:25+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ208943",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:53+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01665745",
+      "title": "後輩はとっても変態で嗅いでくる",
+      "voice_actors": [
+        "雨色オニオン"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG69235",
+        "name": "U/Crosette",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG69235.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01665745.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01666000/RJ01665745_img_main.jpg",
+        "path": "images/RJ01665745.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 20,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=20",
+      "fetched_at": "2026-10-25T01:25:25+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01665745",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:46+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01054256",
+      "title": "大学生カップルの日常～もっと大好きしよ?～",
+      "voice_actors": [
+        "指永拷人"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG69235",
+        "name": "U/Crosette",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG69235.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01054256.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01055000/RJ01054256_img_main.jpg",
+        "path": "images/RJ01054256.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 21,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=21",
+      "fetched_at": "2026-10-25T01:25:25+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01054256",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:19+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01131449",
+      "title": "完璧生徒会長のあまあま御奉仕SEX 密会×禁断×純愛",
+      "voice_actors": [
+        "乃木悠星"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG65737",
+        "name": "blood rain",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG65737.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01131449.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01132000/RJ01131449_img_main.jpg",
+        "path": "images/RJ01131449.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 21,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=21",
+      "fetched_at": "2026-10-25T01:25:25+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01131449",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01131449.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:26+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01020908",
+      "title": "オオカミでにゃんこな彼とのヒメゴト",
+      "voice_actors": [
+        "新堂大輔"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG69235",
+        "name": "U/Crosette",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG69235.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01020908.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01021000/RJ01020908_img_main.jpg",
+        "path": "images/RJ01020908.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 22,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=22",
+      "fetched_at": "2026-10-25T01:25:25+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01020908",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "日本語",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [
+          {
+            "kind": "edition",
+            "field": "language_editions.current.label",
+            "text": "日本語",
+            "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01020908.html"
+          }
+        ],
+        "checked_at": "2026-10-25T01:26:19+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01054254",
+      "title": "せんせーとぼくのひみつじかん～せんせーの家で孕ませセックス～",
+      "voice_actors": [
+        "瀬内蘭丸"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG69235",
+        "name": "U/Crosette",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG69235.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01054254.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01055000/RJ01054254_img_main.jpg",
+        "path": "images/RJ01054254.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 22,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=22",
+      "fetched_at": "2026-10-25T01:25:25+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01054254",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:19+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ259186",
+      "title": "ダーリンは大学生",
+      "voice_actors": [
+        "麻生修也"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG35715",
+        "name": "スタジオレイン",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG35715.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ259186.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ260000/RJ259186_img_main.jpg",
+        "path": "images/RJ259186.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 23,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=23",
+      "fetched_at": "2026-10-25T01:25:26+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ259186",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:57+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01205225",
+      "title": "ヤンキー純愛物語 耳舐め×クンニ×中出し",
+      "voice_actors": [
+        "速水理人"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG65737",
+        "name": "blood rain",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG65737.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01205225.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01206000/RJ01205225_img_main.jpg",
+        "path": "images/RJ01205225.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 23,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=23",
+      "fetched_at": "2026-10-25T01:25:26+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01205225",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:33+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ292062",
+      "title": "天色キネマ～マジ恋全力宣言～",
+      "voice_actors": [
+        "野中亮"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG43046",
+        "name": "UI-MUI",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG43046.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ292062.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ293000/RJ292062_img_main.jpg",
+        "path": "images/RJ292062.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 23,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=23",
+      "fetched_at": "2026-10-25T01:25:26+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ292062",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:27:03+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01671520",
+      "title": "らちかんラジオ19『男子生徒を配信に呼んで●学校の現代国語の女教師ちゃんに「淫語」の授業をさせながらパコってみた』",
+      "voice_actors": [],
+      "voices_complete": true,
+      "voices_source": "detail_not_listed",
+      "circle": {
+        "id": "RG01006110",
+        "name": "紳士な変態",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01006110.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01671520.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01672000/RJ01671520_img_main.jpg",
+        "path": "images/RJ01671520.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 24,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=24",
+      "fetched_at": "2026-10-25T01:25:27+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/work/=/product_id/RJ01671520.html",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:51+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01084046",
+      "title": "天色キネマ～期間限定契約彼氏～",
+      "voice_actors": [
+        "さめたろう"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG43046",
+        "name": "UI-MUI",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG43046.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01084046.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01085000/RJ01084046_img_main.jpg",
+        "path": "images/RJ01084046.webp",
+        "width": 320,
+        "height": 240,
+        "is_placeholder": false
+      },
+      "source_page": 25,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=25",
+      "fetched_at": "2026-10-25T01:25:26+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01084046",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:23+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01323573",
+      "title": "君で作った「陰毛醤油」は性春の蜜の味 ～出来上がったら、君の目の前で、味見してあげるからね～",
+      "voice_actors": [
+        "KTaihen"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01006110",
+        "name": "紳士な変態",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01006110.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01323573.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01324000/RJ01323573_img_main.jpg",
+        "path": "images/RJ01323573.webp",
+        "width": 320,
+        "height": 320,
+        "is_placeholder": false
+      },
+      "source_page": 25,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=25",
+      "fetched_at": "2026-10-25T01:25:26+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01323573",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:39+00:00",
+        "detail_checked": true
+      }
+    },
+    {
+      "rj": "RJ01438748",
+      "title": "真夏のホラーアダルトボイス『客の消えるブル●ラショップ』～鬼◎変質者に拉〇監●され強●玩具にされ続ける君～",
+      "voice_actors": [
+        "KTaihen"
+      ],
+      "voices_complete": true,
+      "voices_source": "product_api",
+      "circle": {
+        "id": "RG01006110",
+        "name": "紳士な変態",
+        "url": "https://www.dlsite.com/girls/circle/profile/=/maker_id/RG01006110.html"
+      },
+      "url": "https://www.dlsite.com/girls/work/=/product_id/RJ01438748.html",
+      "bk": {
+        "source_url": "https://img.dlsite.jp/modpub/images2/work/doujin/RJ01439000/RJ01438748_img_main.jpg",
+        "path": "images/RJ01438748.webp",
+        "width": 320,
+        "height": 320,
+        "is_placeholder": false
+      },
+      "source_page": 25,
+      "source_url": "https://www.dlsite.com/girls/campaign/bulkbuy/ajax/=/key/matome20261023voice/?site_group%5B0%5D=girls&ai%5B0%5D=AIG&order=trend&per_page=50&page=25",
+      "fetched_at": "2026-10-25T01:25:26+00:00",
+      "voices_source_url": "https://www.dlsite.com/girls/api/=/product.json?workno=RJ01438748",
+      "language": {
+        "is_chinese_version": false,
+        "edition_label": "",
+        "codes": [
+          "JPN"
+        ],
+        "chinese_subtitles": "unknown",
+        "chinese_script": "unknown",
+        "evidence": [],
+        "checked_at": "2026-10-25T01:26:43+00:00",
         "detail_checked": true
       }
     }
