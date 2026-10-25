@@ -111,7 +111,7 @@ summary svg { width: 16px; height: 16px; }
 .cart-purchased { display: inline-block; margin-top: 4px; }
 .language-filter { min-height: 30px; padding: 4px 10px; font-size: 12px; }
 .language-filter:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
-.pager { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 25px; }
+.pager { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 25px; }
 .page-numbers { display: flex; align-items: center; gap: 8px; }
 .pager button { flex: 0 0 auto; width: 38px; min-width: 38px; height: 38px; min-height: 38px; padding: 0; font-size: 14px; font-variant-numeric: tabular-nums; }
 .pager .pager-arrow { border-radius: 50%; border-color: #ecd7de; background: var(--surface); }
@@ -120,6 +120,9 @@ summary svg { width: 16px; height: 16px; }
 .pager .page-number:hover { background: #f9e8ed; }
 .pager .page-number[aria-current="page"] { border-color: #e6a1b7; background: #f9e8ed; color: #c65c86; }
 .page-gap { width: 20px; text-align: center; color: var(--muted); }
+.page-jump { display: flex; align-items: center; gap: 6px; margin-left: 8px; }
+.page-jump input { width: 64px; min-width: 0; height: 38px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; text-align: center; }
+.page-jump button { width: auto; min-width: 52px; padding: 0 10px; border-radius: 8px; }
 .empty { padding: 60px 10px; text-align: center; }
 dialog { position: fixed; max-width: min(540px, calc(100% - 28px)); max-height: calc(100dvh - 40px); padding: 24px; border: 1px solid var(--line); border-radius: 16px; color: #804d65; background: white; box-shadow: 0 18px 64px #554d5d26; overscroll-behavior: contain; }
 dialog::backdrop { background: #342b3f66; }
@@ -248,6 +251,9 @@ dialog h2 { margin: 0; font-size: 20px; }
   .pager .pager-arrow { height: 26px; min-height: 26px; }
   .pager-arrow svg { width: 14px; height: 14px; }
   .page-gap { width: 10px; }
+  .page-jump { flex-basis: 100%; justify-content: center; margin: 6px 0 0; }
+  .page-jump input { height: 32px; font-size: 16px; }
+  .page-jump button { width: auto; min-width: 52px; padding: 0 8px; }
   .selected-filters { margin-top: 8px; }
   dialog { padding: 18px; }
   #cart-open, #favorites-open, #batch-open { gap: 4px; padding: 6px 8px; }

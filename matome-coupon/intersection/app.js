@@ -47,8 +47,8 @@
       button.addEventListener('click', () => dialog.close());
     });
   }
-  function showError(message) {
-    $('error-title').textContent = cn(0x6570,0x636e,0x52a0,0x8f7d,0x5931,0x8d25);
+  function showError(message, title = cn(0x6570,0x636e,0x52a0,0x8f7d,0x5931,0x8d25)) {
+    $('error-title').textContent = title;
     if (message) $('error-message').textContent = message;
     if (!$('error-dialog').open) $('error-dialog').showModal();
   }
@@ -428,6 +428,8 @@
     $('next').disabled = page === pages;
     $('first').disabled = page === 1;
     $('last').disabled = page === pages;
+    $('page-jump-input').max = String(pages);
+    $('page-jump-input').value = '';
     renderPageNumbers(pages);
     updateFilterLabels();
     saveState();
@@ -493,6 +495,19 @@
   $('next').addEventListener('click', () => turn(page + 1));
   $('first').addEventListener('click', () => turn(1));
   $('last').addEventListener('click', () => turn(Math.max(1, Math.ceil(matched.length / pageSize))));
+  $('page-jump').addEventListener('submit', event => {
+    event.preventDefault();
+    const input = $('page-jump-input');
+    const value = input.value.trim();
+    const target = Number(value);
+    const pages = Math.max(1, Math.ceil(matched.length / pageSize));
+    if (!value || !Number.isInteger(target) || target < 1 || target > pages) {
+      showError(cn(0x8bf7,0x8f93,0x5165,0x31,0x81f3) + pages + cn(0x4e4b,0x95f4,0x7684,0x6574,0x6570,0x9875,0x7801,0x3002), cn(0x9875,0x7801,0x8f93,0x5165,0x65e0,0x6548));
+      return;
+    }
+    input.blur();
+    turn(target);
+  });
   mobile.addEventListener('change', () => {
     const first = (page - 1) * pageSize;
     pageSize = mobile.matches ? 16 : 20;
