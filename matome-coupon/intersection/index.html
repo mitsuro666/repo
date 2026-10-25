@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="referrer" content="no-referrer">
   <title>3&#26412;999x50&#21048;&#20132;&#38598;</title>
-  <link rel="stylesheet" href="font/webfont.css?v=20261025-05">
-  <link rel="stylesheet" href="style.css?v=20261025-05">
+  <link rel="stylesheet" href="font/webfont.css?v=20261025-06">
+  <link rel="stylesheet" href="style.css?v=20261025-06">
   <script defer src="data/works.js?v=20261025-04"></script>
-  <script defer src="cart.js?v=20261025-05"></script>
-  <script defer src="app.js?v=20261025-03"></script>
+  <script defer src="cart.js?v=20261025-06"></script>
+  <script defer src="app.js?v=20261025-06"></script>
 </head>
 <body data-unknown="&#23448;&#26041;&#26410;&#26631;&#27880;" data-voice="&#22768;&#20248;" data-circle="&#31038;&#22242;" data-total="&#20849;" data-works="&#37096;&#20316;&#21697;" data-all="&#20840;&#37096;" data-cover-error="&#23553;&#38754;&#26080;&#27861;&#35835;&#21462;" data-remove="&#31227;&#38500;">
   <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -36,6 +36,7 @@
           <a id="coupon-link" class="button campaign-link" target="_blank" rel="noopener noreferrer">50%OFF&#21048;<svg><use href="#i-external"/></svg></a>
           <button id="cart-open" type="button" aria-haspopup="dialog" aria-controls="cart-dialog">&#26597;&#30475;&#36141;&#29289;&#36710;<span id="cart-count" class="cart-count" hidden>0</span></button>
           <button id="favorites-open" type="button" aria-haspopup="dialog" aria-controls="favorites-dialog">&#25171;&#24320;&#25910;&#34255;<span id="favorites-count" class="cart-count" hidden>0</span></button>
+          <button id="batch-open" type="button" aria-pressed="false" aria-controls="batch-dialog"><span id="batch-label">&#25209;&#37327;&#31649;&#29702;</span><span id="batch-count" class="cart-count" hidden>0</span></button>
         </nav>
       </header>
       <form class="toolbar" id="search-form" role="search">
@@ -81,5 +82,7 @@
     <div class="cart-heading"><div class="cart-heading-main"><h2 id="favorites-title">&#25910;&#34255; <span id="favorites-items-count" class="cart-count">0</span></h2><button id="favorites-clear" type="button" aria-haspopup="dialog" aria-controls="cart-clear-dialog">&#19968;&#38190;&#28165;&#31354;</button></div><button class="icon-button" type="button" data-close-dialog aria-label="&#20851;&#38381;"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
     <div class="cart-body"><p id="favorites-empty" class="collection-empty">&#26242;&#26080;&#25910;&#34255;</p><ul id="favorites-list" class="cart-list"></ul></div>
   </dialog>
+  <dialog id="batch-dialog" class="batch-dialog" aria-labelledby="batch-title"><div class="dialog-heading"><h2 id="batch-title">&#25209;&#37327;&#31649;&#29702;</h2><button class="icon-button" type="button" data-close-dialog aria-label="&#20851;&#38381;"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div><p id="batch-summary"></p><div class="batch-actions"><button type="button" data-batch-action="favorites-add">&#21152;&#20837;&#25910;&#34255;</button><button type="button" data-batch-action="favorites-remove">&#31227;&#20986;&#25910;&#34255;</button><button type="button" data-batch-action="purchased-add">&#21152;&#20837;&#24050;&#36141;&#20080;</button><button type="button" data-batch-action="purchased-remove">&#31227;&#20986;&#24050;&#36141;&#20080;</button><button type="button" data-batch-action="cart-add">&#21152;&#20837;&#36141;&#29289;&#36710;</button><button type="button" data-batch-action="cart-remove">&#31227;&#20986;&#36141;&#29289;&#36710;</button><button id="batch-select-page" type="button">&#20840;&#36873;&#24403;&#21069;&#39029;</button><button id="batch-clear-selection" type="button">&#28165;&#31354;&#36873;&#25321;</button></div><p id="batch-status" role="status" aria-live="polite"></p><div class="dialog-actions"><button id="batch-exit" type="button">&#36864;&#20986;&#25209;&#37327;&#31649;&#29702;</button></div></dialog>
+  <dialog id="batch-confirm-dialog" aria-labelledby="batch-confirm-title"><h2 id="batch-confirm-title">&#30830;&#35748;&#25209;&#37327;&#25805;&#20316;</h2><p id="batch-confirm-message"></p><div class="dialog-actions"><button type="button" data-close-dialog>&#21462;&#28040;</button><button id="batch-confirm" type="button">&#30830;&#35748;</button></div></dialog>
 </body>
 </html>

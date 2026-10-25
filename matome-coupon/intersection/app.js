@@ -54,6 +54,7 @@
   }
   const catalog = window.DLSITE_INTERSECTION;
   if (!catalog || !Array.isArray(catalog.works) || !catalog.metadata) {
+    $('batch-open').disabled = true;
     $('results').setAttribute('aria-busy', 'false');
     $('pager').hidden = true;
     showError();
@@ -63,6 +64,10 @@
   const works = catalog.works;
   const CARD_CACHE_LIMIT = 96;
   const cardCache = new Map();
+  const batchSelected = new Set();
+  const batchActions = [...document.querySelectorAll('[data-batch-action]')];
+  let batchMode = false;
+  let pendingBatch = null;
   const voiceStats = new Map();
   const circleStats = new Map();
   const indexed = works.map((work, index) => {
@@ -96,6 +101,74 @@
   let imageErrorShown = false;
   $('query').value = typeof saved.query === 'string' ? saved.query : '';
   if (['default', 'title', 'circle', 'rj'].includes(saved.sort)) $('sort').value = saved.sort;
+
+  function syncBatchSelection() {
+    $('results').classList.toggle('batch-mode', batchMode);
+    $('batch-label').textContent = batchMode ? cn(0x6279,0x91cf,0x64cd,0x4f5c) : cn(0x6279,0x91cf,0x7ba1,0x7406);
+    $('batch-open').setAttribute('aria-pressed', String(batchMode));
+    if (batchMode) $('batch-open').setAttribute('aria-haspopup', 'dialog');
+    else $('batch-open').removeAttribute('aria-haspopup');
+    $('batch-count').textContent = String(batchSelected.size);
+    $('batch-count').hidden = !batchMode;
+    $('batch-summary').textContent = cn(0x5df2,0x9009,0x62e9) + ' ' + batchSelected.size + ' ' + cn(0x90e8,0x4f5c,0x54c1);
+    batchActions.forEach(button => { button.disabled = batchSelected.size === 0; });
+    $('batch-clear-selection').disabled = batchSelected.size === 0;
+    $('batch-select-page').disabled = matched.length === 0;
+    document.querySelectorAll('[data-batch-rj]').forEach(input => {
+      input.checked = batchSelected.has(input.dataset.batchRj);
+    });
+  }
+  function runBatch(action, rjs) {
+    const button = batchActions.find(item => item.dataset.batchAction === action);
+    const affected = window.DLSITE_CART.applyBatch(action, rjs);
+    if (affected === null) return false;
+    $('batch-status').textContent = button.textContent + '\uff1a' + affected + ' ' + cn(0x90e8);
+    syncBatchSelection();
+    return true;
+  }
+  $('batch-open').addEventListener('click', () => {
+    if (!batchMode) {
+      batchMode = true;
+      $('batch-status').textContent = '';
+      syncBatchSelection();
+      return;
+    }
+    syncBatchSelection();
+    if (!$('batch-dialog').open) $('batch-dialog').showModal();
+  });
+  batchActions.forEach(button => {
+    button.addEventListener('click', () => {
+      if (!batchSelected.size) return;
+      const action = button.dataset.batchAction;
+      const rjs = [...batchSelected];
+      if (action.endsWith('-remove')) {
+        pendingBatch = {action, rjs};
+        $('batch-confirm-message').textContent = cn(0x786e,0x8ba4,0x5bf9,0x9009,0x4e2d,0x7684) + ' ' + rjs.length + ' ' +
+          cn(0x90e8,0x4f5c,0x54c1,0x6267,0x884c) + '\u300c' + button.textContent + '\u300d\uff1f';
+        $('batch-confirm-dialog').showModal();
+      } else runBatch(action, rjs);
+    });
+  });
+  $('batch-confirm').addEventListener('click', () => {
+    if (pendingBatch && runBatch(pendingBatch.action, pendingBatch.rjs)) $('batch-confirm-dialog').close();
+  });
+  $('batch-confirm-dialog').addEventListener('close', () => { pendingBatch = null; });
+  $('batch-select-page').addEventListener('click', () => {
+    matched.slice((page - 1) * pageSize, page * pageSize).forEach(item => batchSelected.add(item.work.rj));
+    $('batch-status').textContent = '';
+    syncBatchSelection();
+  });
+  $('batch-clear-selection').addEventListener('click', () => {
+    batchSelected.clear();
+    $('batch-status').textContent = '';
+    syncBatchSelection();
+  });
+  $('batch-exit').addEventListener('click', () => {
+    batchMode = false;
+    batchSelected.clear();
+    $('batch-dialog').close();
+    syncBatchSelection();
+  });
 
   function saveState() {
     try {
@@ -245,6 +318,20 @@
     purchasedBadge.textContent = cn(0x5df2,0x8d2d,0x4e70);
     purchasedBadge.hidden = !window.DLSITE_CART.isPurchased(work.rj);
     cover.append(purchasedBadge);
+    const batchPick = document.createElement('label');
+    batchPick.className = 'batch-pick';
+    const batchInput = document.createElement('input');
+    batchInput.type = 'checkbox';
+    batchInput.dataset.batchRj = work.rj;
+    batchInput.checked = batchSelected.has(work.rj);
+    batchInput.setAttribute('aria-label', cn(0x9009,0x62e9) + ' ' + work.title);
+    batchInput.addEventListener('change', () => {
+      if (batchInput.checked) batchSelected.add(work.rj); else batchSelected.delete(work.rj);
+      $('batch-status').textContent = '';
+      syncBatchSelection();
+    });
+    batchPick.append(batchInput);
+    cover.append(batchPick);
     const image = document.createElement('img');
     image.alt = work.title;
     image.width = work.bk.width || 320;
@@ -255,7 +342,7 @@
     image.addEventListener('error', () => {
       if (cardCache.get(work.rj) === article) cardCache.delete(work.rj);
       cover.classList.add('missing');
-      cover.replaceChildren(document.createTextNode(labels.coverError), rj, cartButton, purchasedBadge);
+      cover.replaceChildren(document.createTextNode(labels.coverError), rj, cartButton, purchasedBadge, batchPick);
       if (!imageErrorShown) {
         imageErrorShown = true;
         showError(labels.coverError + '\uff1a' + work.bk.path);
@@ -266,7 +353,7 @@
       cover.append(image);
     } else {
       cover.classList.add('missing');
-      cover.replaceChildren(document.createTextNode(labels.coverError), rj, cartButton, purchasedBadge);
+      cover.replaceChildren(document.createTextNode(labels.coverError), rj, cartButton, purchasedBadge, batchPick);
     }
     const title = article.querySelector('.title-link');
     title.href = safeURL(work.url);
@@ -332,6 +419,7 @@
       results.replaceChildren(...cards);
     }
     window.DLSITE_CART.refreshButtons();
+    syncBatchSelection();
     $('results').setAttribute('aria-busy', 'false');
     $('count').textContent = labels.total + ' ' + (matched.length === works.length ? works.length : matched.length + ' / ' + works.length) + ' ' + labels.works;
     $('empty').hidden = matched.length > 0;

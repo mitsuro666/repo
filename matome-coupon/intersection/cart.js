@@ -312,7 +312,39 @@
       if (isFavorites) renderFavorites(); else renderCart();
     }
   });
-  window.DLSITE_CART = {createButton, refreshButtons: syncButtons, isPurchased: rj => purchased.has(rj)};
+  function applyBatch(action, rjs) {
+    const [kind, operation] = action.split('-');
+    const collections = {cart, favorites, purchased};
+    const current = collections[kind];
+    if (!current || !['add', 'remove'].includes(operation)) {
+      failure(cn(0x6279,0x91cf,0x64cd,0x4f5c,0x5931,0x8d25), new Error(cn(0x672a,0x77e5,0x64cd,0x4f5c)));
+      return null;
+    }
+    const next = new Set(current);
+    let affected = 0;
+    for (const rj of new Set(rjs)) {
+      if (!byRJ.has(rj)) continue;
+      if (operation === 'add' && !next.has(rj)) { next.add(rj); affected++; }
+      if (operation === 'remove' && next.delete(rj)) affected++;
+    }
+    if (!affected) return 0;
+    if (kind === 'cart') {
+      if (!persist(next)) return null;
+    } else if (kind === 'favorites') {
+      if (!persistFavorites(next)) return null;
+    } else {
+      try { localStorage.setItem(PURCHASED_KEY, JSON.stringify([...next])); }
+      catch (error) { failure(cn(0x5df2,0x4e70,0x8bb0,0x5f55,0x4fdd,0x5b58,0x5931,0x8d25), error); return null; }
+      purchased.clear();
+      next.forEach(rj => purchased.add(rj));
+      syncButtons();
+    }
+    if ($('cart-dialog').open) renderCart();
+    if ($('favorites-dialog').open) renderFavorites();
+    if (kind === 'purchased') window.dispatchEvent(new Event('dlsite-purchases-change'));
+    return affected;
+  }
+  window.DLSITE_CART = {createButton, refreshButtons: syncButtons, isPurchased: rj => purchased.has(rj), applyBatch};
   syncButtons();
 })();
 

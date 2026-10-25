@@ -70,6 +70,17 @@ summary svg { width: 16px; height: 16px; }
 .display-settings summary { height: 30px; min-height: 30px; padding: 4px 8px; border-radius: 6px; font-size: 12px; }
 .display-settings .filter-panel { left: 0; width: 220px; }
 #results.hide-rj .rj, #results.hide-cart-buttons .cart-add { display: none; }
+.batch-pick { display: none; position: absolute; z-index: 2; bottom: 6px; right: 6px; width: 30px; height: 30px; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); cursor: pointer; }
+#results.batch-mode .batch-pick { display: flex; }
+.batch-pick:has(input:checked) { background: var(--rose); border-color: #c69da3; }
+.batch-pick input { width: 18px; height: 18px; margin: 0; accent-color: #c65c86; cursor: pointer; }
+#batch-open[aria-pressed="true"] { background: var(--rose); }
+.batch-dialog { width: min(460px, calc(100% - 28px)); }
+.batch-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.batch-actions button { font-size: 14px; }
+#batch-summary { margin: 14px 0; }
+#batch-status { min-height: 21px; margin: 12px 0 0; color: var(--muted); font-size: 13px; }
+#batch-confirm-dialog .dialog-actions { gap: 8px; }
 .language-filters { display: flex; gap: 6px; margin-left: auto; }
 .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
 .card { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; }
@@ -187,7 +198,7 @@ dialog h2 { margin: 0; font-size: 20px; }
   .page { padding: max(12px, env(safe-area-inset-top)) 14px max(20px, env(safe-area-inset-bottom)); }
   .heading { flex-wrap: wrap; margin-bottom: 10px; gap: 8px; }
   .heading-title { display: grid; flex-basis: 100%; grid-template-columns: max-content max-content; gap: 0 8px; }
-  .header-actions { margin-left: auto; gap: 8px; }
+  .header-actions { margin-left: auto; gap: 8px; flex-wrap: wrap; justify-content: flex-end; max-width: 100%; }
   h1 { font-size: clamp(20px, 5.4vw, 24px); letter-spacing: 0; }
   .deadline { display: block; grid-column: 1; grid-row: 2; margin-left: 0; }
   .heading-title .total { grid-column: 2; grid-row: 1; }
@@ -239,8 +250,9 @@ dialog h2 { margin: 0; font-size: 20px; }
   .page-gap { width: 10px; }
   .selected-filters { margin-top: 8px; }
   dialog { padding: 18px; }
-  #cart-open, #favorites-open { gap: 4px; padding: 6px 8px; }
-  #cart-open .cart-count, #favorites-open .cart-count { padding: 0 5px; font-size: 10px; }
+  #cart-open, #favorites-open, #batch-open { gap: 4px; padding: 6px 8px; }
+  #cart-open .cart-count, #favorites-open .cart-count, #batch-open .cart-count { padding: 0 5px; font-size: 10px; }
+  .batch-pick { bottom: 3px; right: 3px; width: 28px; height: 28px; }
   .cart-add { top: 3px; left: 3px; width: 30px; height: 30px; min-height: 30px; padding: 5px; }
   .cart-add svg { width: 19px; height: 19px; }
   .cart-dialog { width: calc(100% - 20px); height: calc(100dvh - 24px); max-height: calc(100dvh - 24px); padding: 0; border-radius: 14px; }
