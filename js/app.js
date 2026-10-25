@@ -11965,6 +11965,9 @@
       const collectionPageJumpInput = document.getElementById("collectionPageJumpInput");
       const collectionSearchInput = document.getElementById("collectionSearch");
       const collectionSearchDesktopPlaceholder = collectionSearchInput.placeholder;
+      // Keep collection search in memory so browser form restoration cannot revive an old query.
+      let collectionSearchQuery = "";
+      collectionSearchInput.value = collectionSearchQuery;
       const collectionBatchManageButton = document.getElementById("collectionBatchManageButton");
       const collectionBatchSelectionBar = document.getElementById("collectionBatchSelectionBar");
       const collectionBatchSelectPage = document.getElementById("collectionBatchSelectPage");
@@ -12760,12 +12763,13 @@
         links.innerHTML = buttons.map(item => `<div class="collection-tag-row">${collectionTagEditMode && item.name !== "all" ? `<span class="collection-tag-filter ${tag === item.name ? "active" : ""}" contenteditable="true" data-original-collection-tag="${escapeCollectionText(item.name)}">${escapeCollectionText(item.label)}</span>` : `<button type="button" class="collection-tag-filter ${tag === item.name ? "active" : ""}" data-collection-tag="${escapeCollectionText(item.name)}"><span>${escapeCollectionText(item.label)}</span></button>`}<span class="collection-tag-count">${item.count}</span>${item.name === "all" ? "" : `<button type="button" class="collection-tag-remove" data-remove-collection-tag="${escapeCollectionText(item.name)}" aria-label="移除标签 ${escapeCollectionText(item.label)}">×</button>`}</div>`).join("") + (collectionTagDraftActive ? `<div class="collection-tag-row collection-tag-draft"><span class="collection-tag-draft-name" contenteditable="true">新标签</span><button type="button" class="collection-tag-finish" data-finish-collection-tag>完成</button></div>` : "");
       }
       function render() {
+        restoreCollectionSearchInput();
         const renderToken = ++collectionCoverRenderToken;
         const recordIds = new Set(records.map(work => String(work.id)));
         Array.from(selectedCollectionIds).forEach(id => { if (!recordIds.has(id)) selectedCollectionIds.delete(id); });
         renderCollectionTags();
         renderMobileTagSelect();
-        const q = collectionSearchInput.value.trim().toLowerCase();
+        const q = collectionSearchQuery.trim().toLowerCase();
         let a = records.filter(r => tag === "all" || (r.tags || []).includes(tag)).filter(r => !q || [r.title,r.cn,r.cv,r.rj,r.circle,r.keywords,...(r.tags || [])].join(" ").toLowerCase().includes(q));
         const s = collectionSort.value;
         if (s === "recent") a.sort((x,y) => (y.editedAt || 0) - (x.editedAt || 0));
@@ -13216,7 +13220,21 @@
       collectionBatchTagModal.onclick = event => {
         if (event.target === collectionBatchTagModal) closeCollectionBatchTagModal();
       };
-      collectionSearchInput.oninput = () => { collectionPageIndex = 0; render(); };
+      function restoreCollectionSearchInput() {
+        if (collectionSearchInput.value !== collectionSearchQuery) collectionSearchInput.value = collectionSearchQuery;
+      }
+      collectionSearchInput.oninput = () => {
+        collectionSearchQuery = collectionSearchInput.value;
+        collectionPageIndex = 0;
+        render();
+      };
+      window.addEventListener("pageshow", () => {
+        restoreCollectionSearchInput();
+        window.setTimeout(restoreCollectionSearchInput, 0);
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") restoreCollectionSearchInput();
+      });
       collectionSort.onchange = () => {
         if (collectionMobileSort) collectionMobileSort.value = collectionSort.value;
         collectionPageIndex = 0;
