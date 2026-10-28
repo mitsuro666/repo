@@ -90,7 +90,15 @@
   const selectedCircles = new Set((Array.isArray(saved.circles) ? saved.circles : []).filter(id => circleStats.has(id)));
   const languageButtons = [...$('language-filters').querySelectorAll('button[data-language]')];
   const purchasedFilter = $('purchased-filter');
+  const nonCouponFilter = $('non-coupon-filter');
+  const couponOverlap = window.DLSITE_COUPON_OVERLAP;
+  const couponDataAvailable = couponOverlap instanceof Set && couponOverlap.size > 0;
+  if (!couponDataAvailable) {
+    nonCouponFilter.disabled = true;
+    nonCouponFilter.title = '50%OFF活动名单尚未加载，请刷新页面重试';
+  }
   let showPurchased = false;
+  let onlyNonCoupon = couponDataAvailable && saved.onlyNonCoupon === true;
   const selectedLanguages = new Set((Array.isArray(saved.languages) ? saved.languages : [])
     .filter(key => languageButtons.some(button => button.dataset.language === key)));
   let page = Math.max(1, Math.floor(Number(saved.page) || 1));
@@ -173,7 +181,7 @@
   function saveState() {
     try {
       sessionStorage.setItem(STORE_KEY, JSON.stringify({query: $('query').value,
-        sort: $('sort').value, voices: [...selectedVoices], circles: [...selectedCircles], languages: [...selectedLanguages],
+        sort: $('sort').value, voices: [...selectedVoices], circles: [...selectedCircles], languages: [...selectedLanguages], onlyNonCoupon,
         page, scroll: app.scrollTop}));
     } catch (_) { /* Browsing still works when storage is unavailable. */ }
   }
@@ -274,11 +282,13 @@
     }
     $('selected-filters').replaceChildren(...chips);
     $('selected-filters').hidden = !chips.length;
-    const filterCount = chips.length + selectedLanguages.size + Number(showPurchased);
+    const filterCount = chips.length + selectedLanguages.size + Number(showPurchased) + Number(onlyNonCoupon);
     $('filter-count').textContent = String(filterCount);
     $('filter-count').hidden = !filterCount;
     purchasedFilter.classList.toggle('is-present', showPurchased);
     purchasedFilter.setAttribute('aria-pressed', String(showPurchased));
+    nonCouponFilter.classList.toggle('is-present', onlyNonCoupon);
+    nonCouponFilter.setAttribute('aria-pressed', String(onlyNonCoupon));
     for (const button of languageButtons) {
       const selected = selectedLanguages.has(button.dataset.language);
       button.classList.toggle('is-present', selected);
@@ -438,6 +448,7 @@
     const tokens = fold($('query').value).trim().split(/\s+/).filter(Boolean);
     matched = indexed.filter(item => tokens.every(token => item.text.includes(token)) &&
       window.DLSITE_CART.isPurchased(item.work.rj) === showPurchased &&
+      (!onlyNonCoupon || !couponOverlap.has(item.work.rj)) &&
       (!selectedVoices.size || item.voices.some(voice => selectedVoices.has(voice))) &&
       (!selectedCircles.size || selectedCircles.has(item.circleID)) &&
       [...selectedLanguages].every(key => languageStates(item.work)[key] === true));
@@ -456,6 +467,7 @@
     selectedCircles.clear();
     selectedLanguages.clear();
     showPurchased = false;
+    onlyNonCoupon = false;
     $('query').value = '';
     $('sort').value = 'default';
     for (const kind of ['voice', 'circle']) {
@@ -473,6 +485,11 @@
   $('sort').addEventListener('change', () => applyFilters(true));
   purchasedFilter.addEventListener('click', () => {
     showPurchased = !showPurchased;
+    applyFilters(true);
+  });
+  nonCouponFilter.addEventListener('click', () => {
+    if (!couponDataAvailable) return;
+    onlyNonCoupon = !onlyNonCoupon;
     applyFilters(true);
   });
   window.addEventListener('dlsite-purchases-change', () => applyFilters(false));
