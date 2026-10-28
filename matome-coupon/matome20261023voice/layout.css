@@ -106,6 +106,8 @@ summary svg { width: 16px; height: 16px; }
 .language-tag[data-language="subtitles"].is-present { background: var(--river); border-color: #95abba; }
 .language-tag[data-language="script"].is-present { background: var(--lavender); border-color: #9990ad; }
 #purchased-filter.is-present { background: var(--dusk); border-color: #bf997b; }
+#non-coupon-filter.is-present { background: var(--lavender); border-color: #9990ad; color: var(--ink); }
+#non-coupon-filter:disabled { opacity: .5; cursor: not-allowed; }
 .purchased-badge, .cart-purchased { padding: 2px 5px; border: 1px solid #c69da3; border-radius: 4px; background: var(--rose); color: var(--ink); font-size: 11px; line-height: 1.4; white-space: nowrap; }
 .purchased-badge { position: absolute; z-index: 1; bottom: 6px; left: 6px; }
 .cart-purchased { display: inline-block; margin-top: 4px; }
@@ -231,7 +233,7 @@ dialog h2 { margin: 0; font-size: 20px; }
   .option { min-height: 38px; }
   .option-query { font-size: 16px; }
   .summary { font-size: 11px; margin: 10px 0 8px; padding-top: 8px; }
-  .language-filters { gap: 4px; }
+  .language-filters { gap: 4px; width: 100%; margin-left: 0; flex-wrap: wrap; justify-content: flex-start; }
   .language-filters .language-filter { min-height: 30px; padding: 4px 7px; font-size: 11px; border-radius: 5px; }
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 8px; }
   .card { padding: 5px; border-radius: 9px; }
