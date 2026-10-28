@@ -2,9 +2,22 @@
 
 活动编号：`matome20261023voice`。按用户原始活动链接收录：TL（乙女向）、排除 AI 生成作品，不额外限制语言；不同 RJ 的语言版本分别保存。
 
+## 2026-10-28：页面采用 intersection 同款版式
+
+网页入口保持为 `index.html`，手机和电脑的搜索、卡片、筛选、分页与弹窗沿用 `../intersection/` 的布局体系。
+
+- **1270 部作品的数据没有改动**：继续直接读取当前 `data/works.js`。`data/works.json`、SQLite、全部本地 `images/` 及采集脚本也保持原样。
+- `catalog-adapter.js` 仅在浏览器内将 `window.DLSITE_CATALOG` 适配为同款界面使用的数据格式，同时调整缩略图的相对路径，不改变作品字段及原数据。
+- `layout.css`、`layout-app.js`、`layout-cart.js` 为以 `intersection` 为基准的独立界面文件；共享 `../intersection/font/webfont.css` 字体，布局样式一致。原始 `style.css`、`app.js` 仍保留在目录内作为历史版本参考。
+- 额外提供了同款声优／社团筛选、语言标签、收藏、购物车、已购买标记和批量管理；独立本地存储，与 `intersection` 购物车数据隔离。
+- 本活动为**3部999日元**，购物车按每部333日元显示**凑满3部时的参考金额**，没有套用 `intersection` 的50%优惠券。具体结算及非整组情况以DLsite实际活动页为准。
+- 页面字体来自同仓库相邻目录，按原仓库目录层级部署 GitHub Pages 即可加载。
+
+页面链接：`https://mitsuro666.github.io/repo/matome-coupon/matome20261023voice/`。
+
 ## 打开检索页
 
-双击 `index.html`。保留同目录的 `app.js`、`style.css`、`data/works.js` 和 `images/`，即可离线检索作品名、声优、RJ号、社团；官方作品及社团链接需要联网打开。页面每页展示48条，可翻页或选择页码。搜索词以空格分隔时同时匹配。
+打开 `index.html`。当前布局需要本目录的 `catalog-adapter.js`、`layout-app.js`、`layout-cart.js`、`layout.css`、`data/works.js`、`images/`，以及相邻 `../intersection/font/` 下的共享字体。可离线检索作品名、声优、RJ号、社团；官方作品及社团链接需要联网。电脑每页20条、手机每页16条，支持搜索词空格组合、筛选与分页。
 
 卡片按官方信息分别显示“中文版本”“中文台本”“中文字幕”的状态。未明确标注的显示“未标注”。
 
